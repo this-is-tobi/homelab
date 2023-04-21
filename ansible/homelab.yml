@@ -1,0 +1,113 @@
+#---------#
+# Gateway #
+#---------#
+
+# Init gateway
+- hosts: gateway
+  become: true
+  tags: 
+    - gateway
+    - gateway-init
+  roles:
+    - common/hostname
+    - common/ssh
+    - common/docker
+
+# Launch gateway services
+- hosts: gateway
+  become: true
+  tags: 
+    - gateway
+    - gateway-services
+  roles:
+    - gateway/openvpn
+    - gateway/crowdsec
+    - gateway/haproxy
+
+
+#---------#
+# Bastion #
+#---------#
+
+# Init bastion
+- hosts: bastion
+  become: true
+  tags: 
+    - bastion
+    - bastion-init
+  roles:
+    - common/hostname
+    - common/ssh
+    - bastion/users
+    - bastion/setup
+
+
+#-----------#
+# K3S infra #
+#-----------#
+
+# Init cluster
+- hosts: cluster
+  become: true
+  tags: 
+    - k3s
+    - k3s-init
+  roles:
+    - common/hostname
+    - common/ssh
+    - k3s/prereq
+    - k3s/download
+    - k3s/storage
+    - k3s/registry
+
+# Deploy cluster
+- hosts: masters
+  become: true
+  serial: 1
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-deploy-masters
+  roles:
+    - k3s/deploy/masters
+- hosts: workers
+  become: true
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-deploy-workers
+  roles:
+    - k3s/deploy/workers
+
+# Destroy cluster
+- hosts: cluster
+  become: true
+  tags: 
+    - k3s-destroy
+  roles:
+    - k3s/destroy
+
+
+#--------------#
+# K3S services #
+#--------------#
+
+# Deploy kubernetes services
+- hosts: localhost
+  become: false
+  vars_files:
+    - inventory/group_vars/cluster.yml
+  tags: 
+    - k3s
+    - k3s-services
+  roles:
+    # - kubernetes/metallb
+    - kubernetes/longhorn
+    - kubernetes/cert-manager
+    - kubernetes/test
+    - kubernetes/kubernetes-dashboard
+    - kubernetes/traefik
+    - kubernetes/kube-prometheus
+    - kubernetes/grafana
+    - kubernetes/minio
+    - kubernetes/harbor

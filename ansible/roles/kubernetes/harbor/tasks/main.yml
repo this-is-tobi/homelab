@@ -1,0 +1,33 @@
+---
+- name: Generate registry htpasswd base on registry_username and registry_password
+  ansible.builtin.shell:
+    cmd: htpasswd -nbBC10 {{ registry_username }} {{ registry_password }}
+  register: harbor_htpasswd
+  no_log: true
+
+- name: Fetch registry htpasswd
+  delegate_to: localhost
+  become: false
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^registry_htpasswd:"
+    line: "registry_htpasswd: {{ harbor_htpasswd.stdout }}"
+  no_log: true
+
+- name: Add bitnami helm repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+    state: present
+
+- name: Deploy harbor helm chart
+  kubernetes.core.helm:
+    name: harbor
+    update_repo_cache: true
+    chart_ref: bitnami/harbor
+    chart_version: 16.5.2
+    create_namespace: true
+    namespace: harbor
+    wait: true
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"

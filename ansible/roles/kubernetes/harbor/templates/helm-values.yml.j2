@@ -1,0 +1,84 @@
+---
+global:
+  storageClass: longhorn
+
+adminPassword: {{ harbor_password }}
+
+registry:
+  credentials:
+    username: {{ registry_username }}
+    password: {{ registry_password }}
+    htpasswd: {{ registry_htpasswd }}
+  nodeSelector:
+    node-type: worker
+
+nginx:
+  nodeSelector:
+    node-type: worker
+
+portal:
+  nodeSelector:
+    node-type: worker
+
+core:
+  nodeSelector:
+    node-type: worker
+
+jobservice:
+  nodeSelector:
+    node-type: worker
+
+chartmuseum:
+  nodeSelector:
+    node-type: worker
+
+notary:
+  server:
+    nodeSelector:
+      node-type: worker
+  signer:
+    nodeSelector:
+      node-type: worker
+
+trivy:
+  nodeSelector:
+    node-type: worker
+
+exporter:
+  nodeSelector:
+    node-type: worker
+
+exposureType: ingress
+externalURL: "https://{{ registry_url }}"
+
+ingress:
+  core:
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hostname: "{{ registry_url }}"
+    tls: true
+  notary:
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    hostname: "notary.{{ registry_url }}"
+    tls: true
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  mountPath: /data
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeClaim:
+    registry:
+      size: 500Gi
+    jobservice:
+      size: 25Gi
+      scanData:
+        size: 25Gi
+    chartmuseum:
+      size: 25Gi
+    trivy:
+      size: 25Gi

@@ -1,0 +1,26 @@
+---
+operator:
+  enabled: true
+  nodeSelector:
+    node-type: worker
+
+prometheus:
+  enabled: true
+  nodeSelector:
+    node-type: worker
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 100Gi
+  thanos:
+    create: true
+
+altermanager:
+  enabled: true
+  nodeSelector:
+    node-type: worker
+
+blackboxExporter:
+  enabled: true
+  nodeSelector:
+    node-type: worker

@@ -1,0 +1,13 @@
+#---------#
+# Gateway #
+#---------#
+
+# Openvpn
+openvpn_root_passphrase: password-to-change
+openvpn_server_hostname: vpn.domain.com
+openvpn_local_dir: secrets/openvpn
+
+# Crowdsec
+crowdsec_bouncer_nftables_key: bouncer-key-to-change
+crowdsec_enroll_key: enroll-key-to-change
+crowdsec_enroll_instance_name: homelab

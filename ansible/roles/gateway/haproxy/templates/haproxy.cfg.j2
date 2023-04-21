@@ -1,0 +1,55 @@
+global
+  stats socket /var/run/api.sock user haproxy group haproxy mode 660 level admin expose-fd listeners
+  log stdout format raw local0 info
+
+defaults
+  mode tcp
+  log global
+  option tcplog
+  option http-server-close
+  timeout connect 1s
+  timeout client  20s
+  timeout server  20s
+  timeout client-fin 20s
+  timeout tunnel 1h
+  errorfile 400 /etc/haproxy/errors/400.http
+  errorfile 403 /etc/haproxy/errors/403.http
+  errorfile 408 /etc/haproxy/errors/408.http
+  errorfile 500 /etc/haproxy/errors/500.http
+  errorfile 502 /etc/haproxy/errors/502.http
+  errorfile 503 /etc/haproxy/errors/503.http
+  errorfile 504 /etc/haproxy/errors/504.http
+
+frontend stats
+  mode http
+  bind *:8404
+  stats enable
+  stats uri /
+  stats refresh 60s
+
+frontend homelab_entrypoint_lb
+  bind *:80
+  bind *:443
+  default_backend homelab_entrypoint
+
+frontend k3s_api_server_lb
+  bind *:6443
+  acl white_list src 192.168.0.0/24
+  tcp-request connection reject if !white_list
+  default_backend k3s_api_server
+
+backend homelab_entrypoint
+  mode tcp
+  balance roundrobin
+  option tcp-check
+  {% for host in groups['masters'] %}
+server {{ host }} {{ hostvars[host]['ansible_host'] }} check port 80
+  {% endfor %}
+
+backend k3s_api_server
+  mode tcp
+  balance roundrobin
+  option tcp-check
+  {% for host in groups['masters'] %}
+server {{ host }} {{ hostvars[host]['ansible_host'] }} check port 6443
+  {% endfor %}

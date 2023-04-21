@@ -1,0 +1,62 @@
+---
+- name: Install required system packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - python3-pip
+
+- name: Add required python packages
+  ansible.builtin.pip:
+    name:
+      - pexpect
+      - docker
+    executable: pip3
+
+- name: Create openvpn service dir
+  ansible.builtin.file:
+    path: "/services/openvpn"
+    state: directory
+    owner: root
+    group: "{{ ansible_user }}"
+    mode: 0775
+
+- name: Copy openvpn script file
+  ansible.builtin.template:
+    src: "openvpn.sh.j2"
+    dest: "/services/openvpn/openvpn.sh"
+
+- name: Copy docker-compose file
+  ansible.builtin.template:
+    src: "docker-compose.yml.j2"
+    dest: "/services/openvpn/docker-compose.yml"
+
+- name: Get infos on openvpn container
+  community.general.docker_container_info:
+    name: openvpn
+  register: openvpn_container
+
+- name: Does container exist?
+  debug:
+    msg: "The openvpn container {{ 'exists' if openvpn_container.exists else 'does not exist' }}"
+
+- name: Init openvpn
+  ansible.builtin.expect:
+    command: "sh ./openvpn.sh -i"
+    chdir: "/services/openvpn"
+    timeout: 600
+    responses:
+      (?i)Confirm removal: "yes"
+      (?i)Remove current 'vars' file: "yes"
+      (?i)Enter New CA Key Passphrase: "{{ openvpn_root_passphrase }}"
+      (?i)Confirm New CA Key Passphrase: "{{ openvpn_root_passphrase }}"
+      (?i)Common Name: "openvpn-ca"
+      (?i)Confirm request details: "yes"
+      (?i)Enter pass phrase for: "{{ openvpn_root_passphrase }}"
+  no_log: true
+  when: not openvpn_container.exists
+
+- name: Add openvpn users
+  include_tasks: add-users.yml
+  loop: "{{ bastion_users }}"

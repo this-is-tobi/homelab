@@ -1,0 +1,15 @@
+# Ansible inventory
+inventory/
+
+# Kubernetes access files
+auth/
+htpasswd
+
+# Homelab folder with ovpn & ssh files
+secrets/
+
+# Environment files
+.env
+
+# Common
+.DS_Store

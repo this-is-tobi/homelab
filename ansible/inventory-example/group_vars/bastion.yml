@@ -1,0 +1,6 @@
+#---------#
+# Bastion #
+#---------#
+
+# SSH
+ssh_local_dir: secrets/ssh

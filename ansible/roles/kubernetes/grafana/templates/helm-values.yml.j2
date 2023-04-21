@@ -1,0 +1,36 @@
+---
+global:
+  storageClass: longhorn
+
+admin:
+  user: {{ grafana_username }}
+  password: {{ grafana_password }}
+
+dashboardsProvider:
+  enabled: true
+
+dashboardsConfigMaps:
+  - configMapName: k3s-dashboard
+    folderName: k3s
+    fileName: k3s.json
+  - configMapName: cert-manager-dashboard
+    folderName: cert-manager
+    fileName: cert-manager.json
+
+grafana:
+  nodeSelector:
+    node-type: worker
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  size: 25Gi
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hostname: {{ grafana_url }}
+  path: /
+  tls: true

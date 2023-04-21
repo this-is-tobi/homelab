@@ -1,0 +1,33 @@
+---
+auth:
+  rootUser: {{ minio_username }}
+  rootPassword: {{ minio_password }}
+
+nodeSelector:
+  node-type: worker
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hostname: {{ minio_url }}
+  path: /
+  tls: true
+
+apiIngress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hostname: {{ minio_api_url }}
+  path: /
+  tls: true
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  mountPath: /data
+  accessModes:
+    - ReadWriteOnce
+  size: 500Gi

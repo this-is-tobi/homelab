@@ -1,0 +1,49 @@
+---
+- name: Remove /etc/ssh/sshd_config.d/rename_user.conf
+  ansible.builtin.file:
+    state: absent
+    path: /etc/ssh/sshd_config.d/rename_user.conf
+
+- name: Create personnal group for each admin user
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: present
+  no_log: true
+  loop: "{{ bastion_users }}"
+
+- name: Create admin group
+  ansible.builtin.group:
+    name: admin
+    state: present
+    gid: 2000
+
+- name: Allow 'admin' group to have passwordless sudo
+  community.general.sudoers:
+    name: admin-group
+    group: "admin"
+    commands: ALL
+    state: present
+
+- name: Create admin users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    state: present
+    shell: /bin/bash
+    create_home: true
+    group: "{{ item.name }}"
+    groups: "admin,docker"
+    append: true
+    generate_ssh_key: true
+    ssh_key_bits: 4096
+    ssh_key_type: rsa
+    password: '*'
+  no_log: true
+  loop: "{{ bastion_users }}"
+
+- name: Add ssh key in authorized_keys
+  ansible.posix.authorized_key:
+    user: "{{ item.name }}"
+    state: present
+    key: "{{ lookup('file', '{{ ssh_local_dir }}/{{ item.name }}.pub') }}"
+  no_log: true
+  loop: "{{ bastion_users }}"

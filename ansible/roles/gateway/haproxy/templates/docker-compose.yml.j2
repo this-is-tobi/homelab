@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  haproxy:
+    image: docker.io/haproxytech/haproxy-alpine:2.8
+    container_name: haproxy
+    restart: always
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    ports:
+      - 80:80
+      - 443:443
+      - 6443:6443
+      - 8404:8404
+    logging:
+      driver: syslog
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    driver: bridge

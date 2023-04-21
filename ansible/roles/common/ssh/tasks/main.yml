@@ -1,0 +1,28 @@
+---
+- name: Remove /etc/ssh/sshd_config.d/rename_user.conf
+  ansible.builtin.file:
+    state: absent
+    path: /etc/ssh/sshd_config.d/rename_user.conf
+
+- name: Copy sshd_config file
+  ansible.builtin.template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Copy ssh security conf file
+  ansible.builtin.template:
+    src: security.conf.j2
+    dest: /etc/ssh/sshd_config.d/security.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart sshd
+
+- name: Add ssh key in authorized_keys
+  ansible.builtin.authorized_key:
+    user: "{{ ansible_user }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

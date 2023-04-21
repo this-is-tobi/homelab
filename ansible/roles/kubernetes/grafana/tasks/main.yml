@@ -1,0 +1,29 @@
+---
+- name: Deploy grafana dashboards
+  kubernetes.core.k8s:
+    state: present
+    template:
+      path: "{{ item }}"
+      variable_start_string: '[['
+      variable_end_string: ']]'
+  with_items:
+    - 100-k3s-dashboard.yml.j2
+    - 200-cert-manager-dashboard.yml.j2
+
+- name: Add bitnami helm repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+    state: present
+
+- name: Deploy grafana helm chart
+  kubernetes.core.helm:
+    name: grafana
+    update_repo_cache: true
+    chart_ref: bitnami/grafana
+    chart_version: 8.2.33
+    create_namespace: true
+    namespace: monitoring
+    wait: true
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"

@@ -1,0 +1,47 @@
+---
+- name: Check if user exists
+  stat:
+    path: "/services/openvpn/users/{{ item.name }}.ovpn"
+  register: openvpn_profile
+
+- name: Add openvpn profile for {{ item.name }}
+  ansible.builtin.expect:
+    command: "sh ./openvpn.sh -a {{ item.name }}"
+    chdir: "/services/openvpn"
+    responses:
+      (?i)Confirm request details: "yes"
+      (?i)Enter pass phrase for: "{{ openvpn_root_passphrase }}"
+  no_log: true
+  when: not openvpn_profile.stat.exists
+
+- name: Retrieve openvpn profile
+  ansible.builtin.shell:
+    cmd: "sh openvpn.sh -g {{ item.name }}"
+    chdir: "/services/openvpn"
+  no_log: true
+  when: not openvpn_profile.stat.exists
+
+- name: Update users conf with correct vpn server hostname
+  ansible.builtin.lineinfile:
+    path: "/services/openvpn/users/{{ item.name }}.ovpn"
+    regexp: "^remote "
+    line: "remote {{ openvpn_server_hostname }} 1194 udp"
+  no_log: true
+  when: not openvpn_profile.stat.exists
+
+- name: Update users conf permissions
+  ansible.builtin.file:
+    path: "/services/openvpn/users/{{ item.name }}.ovpn"
+    owner: "root"
+    group: "root"
+    mode: 0751
+  no_log: true
+  when: not openvpn_profile.stat.exists
+
+- name: Fetch users conf
+  ansible.builtin.fetch:
+    src: "/services/openvpn/users/{{ item.name }}.ovpn"
+    dest: "{{ openvpn_local_dir }}/{{ item.name }}.ovpn"
+    flat: yes
+  no_log: true
+  when: not openvpn_profile.stat.exists

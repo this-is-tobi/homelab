@@ -1,0 +1,102 @@
+---
+- name: Define masters init args
+  ansible.builtin.set_fact:
+    init_server_args: "{{ '--cluster-init' if (ansible_default_ipv4.address == master_ip) else '--server https://' + apiserver_endpoint + ':6443 --token ' + hostvars[groups['masters'][0]]['token'] }}"
+
+- name: Copy k3s service file
+  register: k3s_service
+  ansible.builtin.template:
+    src: "k3s.service.j2"
+    dest: "{{ systemd_dir }}/k3s.service"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable and check k3s service
+  timeout: 60
+  retries: 3
+  delay: 10
+  ansible.builtin.systemd:
+    name: k3s
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
+- name: Wait for node-token
+  ansible.builtin.wait_for:
+    path: /var/lib/rancher/k3s/server/node-token
+
+- name: Register node-token file access mode
+  ansible.builtin.stat:
+    path: /var/lib/rancher/k3s/server/node-token
+  register: p
+
+- name: Change file access node-token
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/server/node-token
+    mode: "g+rx,o+rx"
+
+- name: Read node-token from master
+  ansible.builtin.slurp:
+    path: /var/lib/rancher/k3s/server/node-token
+  register: node_token
+
+- name: Store Master node-token
+  ansible.builtin.set_fact:
+    token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
+
+- name: Fetch k3s_token
+  delegate_to: localhost
+  become: false
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^k3s_token:"
+    line: "k3s_token: {{ token }}"
+  no_log: true
+  when: ansible_default_ipv4.address == master_ip
+
+- name: Restore node-token file access
+  ansible.builtin.file:
+    path: /var/lib/rancher/k3s/server/node-token
+    mode: "{{ p.stat.mode }}"
+
+- name: Create directory .kube
+  ansible.builtin.file:
+    path: "{{ ansible_user_dir }}/.kube"
+    state: directory
+    owner: "{{ ansible_user }}"
+    mode: "u=rwx,g=rx,o="
+
+- name: Copy config file to user home directory
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ ansible_user_dir }}/.kube/config"
+    remote_src: yes
+    owner: "{{ ansible_user }}"
+    mode: "u=rw,g=,o="
+
+- name: Configure kubectl cluster to {{ endpoint_url }}
+  ansible.builtin.command: >-
+    k3s kubectl config set-cluster default
+      --server https://{{ apiserver_endpoint }}:6443
+      --kubeconfig {{ ansible_user_dir }}/.kube/config
+  changed_when: true
+
+- name: Create kubectl symlink
+  ansible.builtin.file:
+    src: /usr/local/bin/k3s
+    dest: /usr/local/bin/kubectl
+    state: link
+
+- name: Create crictl symlink
+  ansible.builtin.file:
+    src: /usr/local/bin/k3s
+    dest: /usr/local/bin/crictl
+    state: link
+
+- name: Fetch kube config
+  ansible.builtin.fetch:
+    src: "{{ ansible_user_dir }}/.kube/config"
+    dest: "~/.kube/"
+    flat: yes
+  when: ansible_default_ipv4.address == master_ip

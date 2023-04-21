@@ -1,0 +1,14 @@
+#---------#
+# Ansible #
+#---------#
+
+# SSH
+ansible_user: devops
+ansible_port: 22
+
+# Bastion users
+bastion_users:
+  - name: tobi
+    setup: true
+  - name: anotherone
+    setup: false

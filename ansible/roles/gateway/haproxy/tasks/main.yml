@@ -1,0 +1,26 @@
+---
+- name: Create haproxy service dir
+  ansible.builtin.file:
+    path: "/services/haproxy"
+    state: directory
+    owner: root
+    group: "{{ ansible_user }}"
+    mode: 0775
+
+- name: Copy haproxy config file
+  ansible.builtin.template:
+    src: "haproxy.cfg.j2"
+    dest: "/services/haproxy/haproxy.cfg"
+
+- name: Copy docker-compose file
+  ansible.builtin.template:
+    src: "docker-compose.yml.j2"
+    dest: "/services/haproxy/docker-compose.yml"
+
+- name: Launch haproxy
+  community.docker.docker_compose:
+    state: present
+    recreate: always
+    project_src: "/services/haproxy"
+    files: 
+      - "docker-compose.yml"

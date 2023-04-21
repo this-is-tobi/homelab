@@ -1,0 +1,91 @@
+---
+#---------#
+# Cluster #
+#---------#
+
+# k3s version
+k3s_version: v1.27.1+k3s1
+
+# k3s_token is required  masters can talk together securely this token should be alpha numeric only
+k3s_token: ""
+
+# system
+systemd_dir: /etc/systemd/system
+
+# interface which will be used for flannel
+flannel_iface: eth0
+
+# apiserver_endpoint is haproxy loadbalancer ip-address which will be configured on each master
+apiserver_endpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+
+# master node ip address
+master_ip: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
+
+# node ip address
+node_ip: "{{ ansible_facts[flannel_iface]['ipv4']['address'] }}"
+
+# extra args to pass to both master and worker nodes
+extra_args: >-
+  --node-name {{ inventory_hostname }} 
+  --node-ip={{ node_ip }}
+  --prefer-bundled-bin 
+  --flannel-iface {{ flannel_iface }}
+
+# extra args to pass to master nodes
+extra_server_args: >-
+  {{ extra_args }} 
+  --tls-san {{ apiserver_endpoint }}
+  --disable local-storage 
+  --write-kubeconfig-mode 644 
+  --node-taint node-role.kubernetes.io/master=true:NoSchedule 
+  --node-label node-type=master
+# --disable servicelb 
+
+# extra args to pass to worker nodes
+extra_agent_args: >-
+  {{ extra_args }} 
+  --node-label node-type=worker
+
+# extra args to pass if longhorn need to create disk (cf. inventory hosts)
+extra_storage_args: ""
+
+
+#----------#
+# Services #
+#----------#
+
+# Cert Manager
+email: email-to-change@email.com
+
+# Grafana
+grafana_url: grafana.domain.com
+grafana_username: admin
+grafana_password: password-to-change
+
+# Kubernetes dashboard
+kubernetes_dashboard_url: console.domain.com
+kubernetes_dashboard_token: ""
+
+# Longhorn
+longhorn_url: longhorn.ohmlab.local
+
+# Metallb
+# metal_lb_ip_address_pool: 192.168.0.200-192.168.0.250
+
+# Minio
+minio_url: minio.domain.com
+minio_api_url: api.minio.domain.com
+minio_username: admin
+minio_password: password-to-change
+
+
+# Registry
+registry_url: registry.domain.com
+harbor_username: admin
+harbor_password: password-to-change
+
+# Test deployment
+test_url: test.domain.com
+
+# Traefik
+traefik_url: traefik.domain.local

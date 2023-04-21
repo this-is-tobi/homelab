@@ -1,0 +1,48 @@
+---
+- name: Add kubernetes-dashboard helm repo
+  kubernetes.core.helm_repository:
+    name: kubernetes-dashboard
+    repo_url: https://kubernetes.github.io/dashboard
+    state: present
+
+- name: Deploy kubernetes-dashboard helm chart
+  kubernetes.core.helm:
+    name: kubernetes-dashboard
+    update_repo_cache: true
+    chart_ref: kubernetes-dashboard/kubernetes-dashboard
+    chart_version: 6.0.7
+    create_namespace: true
+    namespace: kubernetes-dashboard
+    wait: true
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Create kubernetes-dashboard service account token
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 100-cluster-role.yml.j2
+    - 200-cluster-role-binding.yml.j2
+    - 300-service-account-token.yml.j2
+
+- name: Get kubernetes-dashboard connection token
+  kubernetes.core.k8s_info:
+    api: v1
+    kind: Secret
+    namespace: kubernetes-dashboard
+    name: kubernetes-dashboard-token
+  register: kubernetes_dashbord_secrets
+
+- name: Set facts for kubernetes-dashboard connection token
+  set_fact:
+    kubernetes_dashboard_token: '{{ item.data["token"] | b64decode }}'
+  with_items: "{{ kubernetes_dashbord_secrets.resources }}"
+  no_log: true
+
+- name: Fetch kubernetes-dashboard connection token
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^kubernetes_dashboard_token:"
+    line: "kubernetes_dashboard_token: {{ kubernetes_dashboard_token }}"
+  no_log: true
