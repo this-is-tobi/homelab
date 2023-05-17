@@ -1,9 +1,9 @@
 mirrors:
-  {{ registry_url }}:
+  {{ harbor_domain }}:
     endpoint:
-      - "https://{{ registry_url }}"
+      - "https://{{ harbor_domain }}"
 configs:
-  "https://{{ registry_url }}":
+  "https://{{ harbor_domain }}":
     auth:
       username: {{ registry_username }}
       password: {{ registry_password }}

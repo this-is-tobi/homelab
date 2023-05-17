@@ -9,7 +9,7 @@ k3s_version: v1.27.1+k3s1
 # k3s_token is required  masters can talk together securely this token should be alpha numeric only
 k3s_token: ""
 
-# system
+# systemd directory
 systemd_dir: /etc/systemd/system
 
 # interface which will be used for flannel
@@ -54,38 +54,37 @@ extra_storage_args: ""
 # Services #
 #----------#
 
-# Cert Manager
+# cert-manager
 email: email-to-change@email.com
 
-# Grafana
-grafana_url: grafana.domain.com
+# grafana
+grafana_domain: grafana.{{ root_url }}
 grafana_username: admin
 grafana_password: password-to-change
 
-# Kubernetes dashboard
-kubernetes_dashboard_url: console.domain.com
+# kubernetes-dashboard
+kubernetes_dashboard_domain: console.{{ root_url }}
 kubernetes_dashboard_token: ""
 
-# Longhorn
-longhorn_url: longhorn.ohmlab.local
+# longhorn
+longhorn_domain: longhorn.{{ local_root_url }}
 
-# Metallb
+# metallb
 # metal_lb_ip_address_pool: 192.168.0.200-192.168.0.250
 
-# Minio
-minio_url: minio.domain.com
-minio_api_url: api.minio.domain.com
+# minio
+minio_domain: minio.{{ root_url }}
+minio_api_domain: api.minio.{{ root_url }}
 minio_username: admin
 minio_password: password-to-change
 
-
-# Registry
-registry_url: registry.domain.com
+# harbor
+harbor_domain: registry.{{ root_url }}
 harbor_username: admin
 harbor_password: password-to-change
 
-# Test deployment
-test_url: test.domain.com
+# test-deployment
+test_domain: test.{{ root_url }}
 
-# Traefik
-traefik_url: traefik.domain.local
+# traefik
+traefik_domain: traefik.{{ local_root_url }}

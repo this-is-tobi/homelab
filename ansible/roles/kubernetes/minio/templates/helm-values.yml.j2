@@ -10,8 +10,8 @@ ingress:
   enabled: true
   ingressClassName: traefik
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  hostname: {{ minio_url }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hostname: {{ minio_domain }}
   path: /
   tls: true
 
@@ -19,8 +19,8 @@ apiIngress:
   enabled: true
   ingressClassName: traefik
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  hostname: {{ minio_api_url }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hostname: {{ minio_api_domain }}
   path: /
   tls: true
 

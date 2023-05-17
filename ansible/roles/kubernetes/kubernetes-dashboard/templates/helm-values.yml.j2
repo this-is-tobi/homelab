@@ -18,13 +18,13 @@ ingress:
   enabled: true
   className: traefik
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   hosts:
-    - {{ kubernetes_dashboard_url }}
+    - {{ kubernetes_dashboard_domain }}
   paths:
     - /
     - /*
   tls:
     - hosts:
-        - {{ kubernetes_dashboard_url }}
+        - {{ kubernetes_dashboard_domain }}
       secretName: letsencrypt-prod-key

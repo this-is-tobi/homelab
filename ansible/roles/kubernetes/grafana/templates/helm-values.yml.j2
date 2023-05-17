@@ -30,7 +30,7 @@ ingress:
   enabled: true
   ingressClassName: traefik
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  hostname: {{ grafana_url }}
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hostname: {{ grafana_domain }}
   path: /
   tls: true

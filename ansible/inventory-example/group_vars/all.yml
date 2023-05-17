@@ -2,13 +2,17 @@
 # Ansible #
 #---------#
 
-# SSH
+# ssh
 ansible_user: devops
 ansible_port: 22
 
-# Bastion users
+# bastion users
 bastion_users:
   - name: tobi
     setup: true
   - name: anotherone
     setup: false
+
+# root domain
+root_url: domain.com
+local_root_url: domain.local

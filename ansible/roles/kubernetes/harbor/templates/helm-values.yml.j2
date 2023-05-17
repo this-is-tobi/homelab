@@ -49,20 +49,20 @@ exporter:
     node-type: worker
 
 exposureType: ingress
-externalURL: "https://{{ registry_url }}"
+externalURL: https://{{ harbor_domain }}
 
 ingress:
   core:
     ingressClassName: traefik
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    hostname: "{{ registry_url }}"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: {{ harbor_domain }}
     tls: true
   notary:
     ingressClassName: traefik
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    hostname: "notary.{{ registry_url }}"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: notary.{{ harbor_domain }}
     tls: true
 
 persistence:
