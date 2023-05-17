@@ -54,6 +54,11 @@ extra_storage_args: ""
 # Services #
 #----------#
 
+# argocd
+argocd_domain: argocd.{{ root_url }}
+argocd_username: admin
+argocd_password: password-to-change
+
 # cert-manager
 email: email-to-change@email.com
 

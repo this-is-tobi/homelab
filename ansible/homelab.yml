@@ -101,7 +101,7 @@
     - k3s
     - k3s-services
   roles:
-    # - kubernetes/metallb
+    - kubernetes/metallb
     - kubernetes/longhorn
     - kubernetes/cert-manager
     - kubernetes/test
@@ -111,3 +111,4 @@
     - kubernetes/grafana
     - kubernetes/minio
     - kubernetes/harbor
+    - kubernetes/argocd

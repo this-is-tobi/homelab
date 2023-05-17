@@ -1,0 +1,46 @@
+---
+- name: Add bitnami helm repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+    state: present
+
+- name: Deploy argocd helm chart
+  kubernetes.core.helm:
+    name: argocd
+    update_repo_cache: true
+    chart_ref: bitnami/argo-cd
+    chart_version: 4.7.2
+    create_namespace: true
+    namespace: argocd
+    wait: true
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Deploy argocd ingress
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 100-ingress.yml.j2
+
+- name: Get argocd admin password
+  kubernetes.core.k8s_info:
+    api: v1
+    kind: Secret
+    namespace: argocd
+    name: argocd-secret
+  register: argocd_secrets
+
+- name: Set facts for argocd admin password
+  set_fact:
+    argocd_password: '{{ item.data["clearPassword"] | b64decode }}'
+  with_items: "{{ argocd_secrets.resources }}"
+  no_log: true
+
+- name: Fetch argocd admin password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^argocd_password:"
+    line: "argocd_password: {{ argocd_password }}"
+  no_log: true

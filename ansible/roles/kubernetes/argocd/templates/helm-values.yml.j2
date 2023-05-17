@@ -1,0 +1,28 @@
+---
+global:
+  storageClass: longhorn
+
+applicationSet:
+  enabled: true
+
+server:
+  nodeSelector:
+    node-type: worker
+  url: https://{{ argocd_domain }}
+  insecure: true
+  ingress:
+    enabled: false
+#     ingressClassName: traefik
+#     annotations:
+#       cert-manager.io/cluster-issuer: letsencrypt-prod
+#     hostname: {{ argocd_domain }}
+#     tls: true
+#     extraPaths:
+#       - path: /*
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: argocd-argo-cd-server 
+#             port: 
+#               number: 80
+
