@@ -42,7 +42,8 @@ data:
       "panels": [
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -74,7 +75,7 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
+            "h": 7,
             "w": 13,
             "x": 0,
             "y": 0
@@ -102,12 +103,11 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "kube_node_info{exported_node=~\"^$Node$\"}",
+              "expr": "kube_node_info{node=~\"^$Node$\"}",
               "format": "table",
               "instant": true,
               "legendFormat": "{{ node }}",
@@ -173,7 +173,8 @@ data:
         },
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -229,7 +230,7 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
+            "h": 7,
             "w": 11,
             "x": 13,
             "y": 0
@@ -253,12 +254,11 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "editorMode": "code",
               "exemplar": false,
-              "expr": "node_hwmon_temp_celsius{node=~\"^$Node$\"}",
+              "expr": "node_thermal_zone_temp{node=~\"^$Node$\"}",
               "format": "time_series",
               "instant": false,
               "legendFormat": "{{ node }}",
@@ -290,15 +290,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 8
+            "y": 7
           },
           "id": 34,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -308,7 +307,8 @@ data:
         },
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -353,7 +353,7 @@ data:
             "h": 5,
             "w": 8,
             "x": 0,
-            "y": 9
+            "y": 8
           },
           "id": 4,
           "links": [],
@@ -375,15 +375,16 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
+              "editorMode": "code",
               "exemplar": true,
               "expr": "sum (container_memory_working_set_bytes{id=\"/\",node=~\"^$Node$\"}) / sum (machine_memory_bytes{node=~\"^$Node$\"}) * 100",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
               "legendFormat": "",
+              "range": true,
               "refId": "A",
               "step": 10
             }
@@ -393,7 +394,8 @@ data:
         },
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -439,7 +441,7 @@ data:
             "h": 5,
             "w": 8,
             "x": 8,
-            "y": 9
+            "y": 8
           },
           "id": 6,
           "links": [],
@@ -461,15 +463,16 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
+              "editorMode": "code",
               "exemplar": true,
               "expr": "sum (rate (container_cpu_usage_seconds_total{node=~\"^$Node$\"}[5m])) / sum (machine_cpu_cores{node=~\"^$Node$\"}) * 100",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
               "legendFormat": "",
+              "range": true,
               "refId": "A",
               "step": 10
             }
@@ -525,7 +528,7 @@ data:
             "h": 5,
             "w": 8,
             "x": 16,
-            "y": 9
+            "y": 8
           },
           "id": 7,
           "links": [],
@@ -547,8 +550,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "sum (container_fs_usage_bytes{id=\"/\",node=~\"^$Node$\"}) / sum (container_fs_limit_bytes{id=\"/\",node=~\"^$Node$\"}) * 100",
@@ -566,7 +568,8 @@ data:
         },
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -606,7 +609,7 @@ data:
             "h": 3,
             "w": 4,
             "x": 0,
-            "y": 14
+            "y": 13
           },
           "id": 9,
           "links": [],
@@ -630,12 +633,11 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "container_memory_usage_bytes",
+              "expr": "sum (container_memory_working_set_bytes{id=\"/\",node=~\"^$Node$\"})",
               "format": "table",
               "interval": "10s",
               "intervalFactor": 1,
@@ -650,7 +652,8 @@ data:
         },
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -690,7 +693,7 @@ data:
             "h": 3,
             "w": 4,
             "x": 4,
-            "y": 14
+            "y": 13
           },
           "id": 10,
           "links": [],
@@ -714,12 +717,11 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "machine_memory_bytes",
+              "expr": "sum (machine_memory_bytes{node=~\"^$Node$\"})",
               "format": "table",
               "instant": true,
               "interval": "10s",
@@ -734,7 +736,8 @@ data:
         },
         {
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "u9opiesVz"
           },
           "fieldConfig": {
             "defaults": {
@@ -774,7 +777,7 @@ data:
             "h": 3,
             "w": 4,
             "x": 8,
-            "y": 14
+            "y": 13
           },
           "id": 11,
           "links": [],
@@ -798,13 +801,14 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
-              "expr": "sum (rate (container_cpu_usage_seconds_total{id=\"/\",node=~\"^$Node$\"}[5m]))",
+              "editorMode": "code",
+              "expr": "sum (rate (container_cpu_usage_seconds_total{node=~\"^$Node$\"}[5m]))",
               "format": "time_series",
               "interval": "10s",
               "intervalFactor": 1,
+              "range": true,
               "refId": "A",
               "step": 10
             }
@@ -854,7 +858,7 @@ data:
             "h": 3,
             "w": 4,
             "x": 12,
-            "y": 14
+            "y": 13
           },
           "id": 12,
           "links": [],
@@ -878,8 +882,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "editorMode": "code",
               "exemplar": true,
@@ -938,7 +941,7 @@ data:
             "h": 3,
             "w": 4,
             "x": 16,
-            "y": 14
+            "y": 13
           },
           "id": 13,
           "links": [],
@@ -962,8 +965,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "editorMode": "code",
               "expr": "sum (container_fs_usage_bytes{id=\"/\",node=~\"^$Node$\"})",
@@ -1021,7 +1023,7 @@ data:
             "h": 3,
             "w": 4,
             "x": 20,
-            "y": 14
+            "y": 13
           },
           "id": 14,
           "links": [],
@@ -1045,8 +1047,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (container_fs_limit_bytes{id=\"/\",node=~\"^$Node$\"})",
               "format": "time_series",
@@ -1069,15 +1070,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 17
+            "y": 16
           },
           "id": 33,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -1146,7 +1146,7 @@ data:
             "h": 7,
             "w": 8,
             "x": 0,
-            "y": 18
+            "y": 17
           },
           "id": 32,
           "links": [],
@@ -1169,8 +1169,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_network_receive_bytes_total{node=~\"^$Node$\"}[5m]))",
               "format": "time_series",
@@ -1183,8 +1182,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "- sum (rate (container_network_transmit_bytes_total{node=~\"^$Node$\"}[5m]))",
               "format": "time_series",
@@ -1260,7 +1258,7 @@ data:
             "h": 7,
             "w": 8,
             "x": 8,
-            "y": 18
+            "y": 17
           },
           "id": 45,
           "links": [],
@@ -1283,8 +1281,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "sum (rate (container_cpu_usage_seconds_total{image!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (namespace)",
@@ -1361,7 +1358,7 @@ data:
             "h": 7,
             "w": 8,
             "x": 16,
-            "y": 18
+            "y": 17
           },
           "id": 46,
           "links": [],
@@ -1384,8 +1381,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "sum (container_memory_working_set_bytes{image!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (namespace)",
@@ -1410,15 +1406,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 25
+            "y": 24
           },
           "id": 35,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -1471,8 +1466,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1488,7 +1482,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 26
+            "y": 25
           },
           "id": 17,
           "links": [],
@@ -1511,8 +1505,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "sum (rate (container_cpu_usage_seconds_total{image!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (pod)",
@@ -1537,15 +1530,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 33
+            "y": 32
           },
           "id": 37,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -1598,8 +1590,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1615,7 +1606,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 34
+            "y": 33
           },
           "id": 24,
           "links": [],
@@ -1638,8 +1629,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_cpu_usage_seconds_total{image!=\"\",name=~\"^k8s_.*\",container_name!=\"POD\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (container_name, pod)",
               "format": "time_series",
@@ -1653,8 +1643,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_cpu_usage_seconds_total{image!=\"\",name!~\"^k8s_.*\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (node, name, image)",
               "format": "time_series",
@@ -1668,8 +1657,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_cpu_usage_seconds_total{rkt_container_name!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (node, rkt_container_name)",
               "format": "time_series",
@@ -1693,15 +1681,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 41
+            "y": 40
           },
           "id": 38,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -1770,7 +1757,7 @@ data:
             "h": 13,
             "w": 24,
             "x": 0,
-            "y": 42
+            "y": 41
           },
           "id": 20,
           "links": [],
@@ -1793,8 +1780,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_cpu_usage_seconds_total{id!=\"/\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (id)",
               "format": "time_series",
@@ -1819,15 +1805,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 55
+            "y": 54
           },
           "id": 39,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -1895,7 +1880,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 56
+            "y": 55
           },
           "id": 25,
           "links": [],
@@ -1918,8 +1903,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "sum (container_memory_working_set_bytes{image!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (pod)",
@@ -1944,15 +1928,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 63
+            "y": 62
           },
           "id": 41,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -2020,7 +2003,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 64
+            "y": 63
           },
           "id": 27,
           "links": [],
@@ -2043,8 +2026,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (container_memory_working_set_bytes{image!=\"\",name=~\"^k8s_.*\",container_name!=\"POD\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (container_name, pod)",
               "format": "time_series",
@@ -2057,8 +2039,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (container_memory_working_set_bytes{image!=\"\",name!~\"^k8s_.*\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (node, name, image)",
               "format": "time_series",
@@ -2071,8 +2052,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (container_memory_working_set_bytes{rkt_container_name!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (node, rkt_container_name)",
               "format": "time_series",
@@ -2096,15 +2076,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 71
+            "y": 70
           },
           "id": 42,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -2172,7 +2151,7 @@ data:
             "h": 13,
             "w": 24,
             "x": 0,
-            "y": 72
+            "y": 71
           },
           "id": 28,
           "links": [],
@@ -2195,8 +2174,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (container_memory_working_set_bytes{id!=\"/\",node=~\"^$Node$\",namespace=~\"$Namespace\"}) by (id)",
               "format": "time_series",
@@ -2220,15 +2198,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 85
+            "y": 84
           },
           "id": 43,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -2296,7 +2273,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 86
+            "y": 85
           },
           "id": 16,
           "links": [],
@@ -2319,8 +2296,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "sum (rate (container_network_receive_bytes_total{image!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (pod)",
@@ -2334,8 +2310,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "exemplar": true,
               "expr": "- sum (rate (container_network_transmit_bytes_total{image!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (pod)",
@@ -2360,15 +2335,14 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 93
+            "y": 92
           },
           "id": 44,
           "panels": [],
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "refId": "A"
             }
@@ -2436,7 +2410,7 @@ data:
             "h": 7,
             "w": 24,
             "x": 0,
-            "y": 94
+            "y": 93
           },
           "id": 30,
           "links": [],
@@ -2459,8 +2433,7 @@ data:
           "targets": [
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_network_receive_bytes_total{image!=\"\",name=~\"^k8s_.*\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (container_name, pod)",
               "format": "time_series",
@@ -2474,8 +2447,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "- sum (rate (container_network_transmit_bytes_total{image!=\"\",name=~\"^k8s_.*\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (container_name, pod)",
               "format": "time_series",
@@ -2489,8 +2461,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_network_receive_bytes_total{image!=\"\",name!~\"^k8s_.*\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (node, name, image)",
               "format": "time_series",
@@ -2504,8 +2475,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "- sum (rate (container_network_transmit_bytes_total{image!=\"\",name!~\"^k8s_.*\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (node, name, image)",
               "format": "time_series",
@@ -2519,8 +2489,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "sum (rate (container_network_transmit_bytes_total{rkt_container_name!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (node, rkt_container_name)",
               "format": "time_series",
@@ -2534,8 +2503,7 @@ data:
             },
             {
               "datasource": {
-                "type": "prometheus",
-                "uid": "u9opiesVz"
+                "type": "prometheus"
               },
               "expr": "- sum (rate (container_network_transmit_bytes_total{rkt_container_name!=\"\",node=~\"^$Node$\",namespace=~\"$Namespace\"}[5m])) by (node, rkt_container_name)",
               "format": "time_series",
@@ -2565,13 +2533,12 @@ data:
           {
             "allValue": ".*",
             "current": {
-              "selected": false,
+              "selected": true,
               "text": "All",
               "value": "$__all"
             },
             "datasource": {
-              "type": "prometheus",
-              "uid": "u9opiesVz"
+              "type": "prometheus"
             },
             "definition": "label_values(node)",
             "hide": 0,
@@ -2596,12 +2563,15 @@ data:
             "allValue": ".*",
             "current": {
               "selected": false,
-              "text": "All",
-              "value": "$__all"
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
             },
             "datasource": {
-              "type": "prometheus",
-              "uid": "u9opiesVz"
+              "type": "prometheus"
             },
             "definition": "",
             "hide": 0,
@@ -2656,6 +2626,6 @@ data:
       "timezone": "browser",
       "title": "K3S cluster monitoring",
       "uid": "1bI4P-xiz",
-      "version": 3,
+      "version": 11,
       "weekStart": ""
     }
