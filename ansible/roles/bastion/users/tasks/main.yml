@@ -40,6 +40,12 @@
   no_log: true
   loop: "{{ bastion_users }}"
 
+- name: Fetch bastion users ssh key
+  ansible.builtin.fetch:
+    src: "/home/{{ item.name }}/.ssh/id_rsa.pub"
+    dest: "{{ ssh_local_dir }}/{{ item.name }}-ohmlab.pub"
+    flat: yes
+
 - name: Add ssh key in authorized_keys
   ansible.posix.authorized_key:
     user: "{{ item.name }}"

@@ -1,0 +1,3 @@
+# Homelab :alembic:
+
+This projects aims to build a homelab for personnal tests on infrastructure, development, CI/CD, etc...
