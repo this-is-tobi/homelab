@@ -5,6 +5,10 @@ global:
 applicationSet:
   enabled: true
 
+config:
+  secret:
+    argocdServerAdminPassword: {{ argocd_password }}
+
 server:
   nodeSelector:
     node-type: worker

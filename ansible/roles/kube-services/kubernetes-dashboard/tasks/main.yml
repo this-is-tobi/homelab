@@ -35,7 +35,7 @@
   register: kubernetes_dashbord_secrets
 
 - name: Set facts for kubernetes-dashboard connection token
-  set_fact:
+  ansible.builtin.set_fact:
     kubernetes_dashboard_token: '{{ item.data["token"] | b64decode }}'
   with_items: "{{ kubernetes_dashbord_secrets.resources }}"
   no_log: true

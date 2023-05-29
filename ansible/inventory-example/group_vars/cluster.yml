@@ -56,7 +56,7 @@ extra_storage_args: ""
 # argocd
 argocd_domain: argocd.{{ root_url }}
 argocd_username: admin
-argocd_password: password-to-change
+argocd_password: ""
 
 # cert-manager
 email: email-to-change@email.com
@@ -64,7 +64,7 @@ email: email-to-change@email.com
 # grafana
 grafana_domain: grafana.{{ root_url }}
 grafana_username: admin
-grafana_password: password-to-change
+grafana_password: ""
 
 # kubernetes-dashboard
 kubernetes_dashboard_domain: console.{{ root_url }}
@@ -77,12 +77,12 @@ longhorn_domain: longhorn.{{ local_root_url }}
 minio_domain: minio.{{ root_url }}
 minio_api_domain: api.minio.{{ root_url }}
 minio_username: admin
-minio_password: password-to-change
+minio_password: ""
 
 # harbor
 harbor_domain: registry.{{ root_url }}
 harbor_username: admin
-harbor_password: password-to-change
+harbor_password: ""
 
 # test-deployment
 test_domain: test.{{ root_url }}

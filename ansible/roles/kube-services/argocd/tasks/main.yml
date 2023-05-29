@@ -1,4 +1,19 @@
 ---
+- name: Generate random password
+  ansible.builtin.set_fact:
+    argocd_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+  no_log: true
+  when: argocd_password == ""
+  register: generate_password
+
+- name: Fetch argocd admin password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^argocd_password:"
+    line: "argocd_password: {{ argocd_password }}"
+  no_log: true
+  when: "'skipped' not in generate_password"
+
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
     name: bitnami
@@ -33,7 +48,7 @@
   register: argocd_secrets
 
 - name: Set facts for argocd admin password
-  set_fact:
+  ansible.builtin.set_fact:
     argocd_password: '{{ item.data["clearPassword"] | b64decode }}'
   with_items: "{{ argocd_secrets.resources }}"
   no_log: true

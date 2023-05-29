@@ -1,4 +1,19 @@
 ---
+- name: Generate random password
+  ansible.builtin.set_fact:
+    minio_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+  no_log: true
+  when: minio_password == ""
+  register: generate_password
+
+- name: Fetch minio admin password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^minio_password:"
+    line: "minio_password: {{ minio_password }}"
+  no_log: true
+  when: "'skipped' not in generate_password"
+
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
     name: bitnami
