@@ -110,3 +110,4 @@
     - kube-services/minio
     - kube-services/harbor
     - kube-services/argocd
+    - kube-services/dashy

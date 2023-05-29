@@ -14,5 +14,5 @@ bastion_users:
     setup: false
 
 # root domain
-root_url: domain.com
-local_root_url: domain.local
+root_domain: domain.com
+local_root_domain: domain.local

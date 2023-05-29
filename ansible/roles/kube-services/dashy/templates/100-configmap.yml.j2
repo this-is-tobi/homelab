@@ -1,0 +1,75 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashy-config
+  namespace: dashy
+data:
+  conf.yml: |
+    pageInfo:
+      title: Homelab
+      navLinks:
+        - title: GitHub
+          path: https://github.com/this-is-tobi/homelab
+        - title: Documentation
+          path: https://{{ docs_domain }}
+    appConfig:
+      theme: adventure-basic
+      startingView: default
+      statusCheck: true
+      statusCheckInterval: 300
+      webSearch:
+        disableWebSearch: true
+      disableConfiguration: true
+      hideComponents:
+        hideNav: true
+        hideSearch: true
+        hideSettings: true
+        hideFooter: true
+    sections:
+      - name: Services
+        icon: fas fa-rocket
+        items:
+          - title: Argocd
+            description: Deploy apps using gitops
+            url: https://{{ argocd_domain }}
+            icon: hl-argocd
+          - title: Grafana
+            description: Watch cluster metrics & application logs
+            url: https://{{ grafana_domain }}
+            icon: hl-grafana
+          - title: Harbor
+            description: Container image registry & Helm chart registry
+            url: https://{{ harbor_domain }}
+            icon: hl-harbor
+          - title: Kubernetes 
+            description: Kubernetes dashboard to watch cluster ressources
+            url: https://{{ kubernetes_dashboard_domain }}
+            icon: hl-kubernetes-dashboard
+          - title: Minio
+            description: Store data with s3 standard
+            url: https://{{ minio_domain }}
+            icon: hl-minio
+        displayData:
+          sortBy: alphabetical
+          collapsed: false
+          rows: 5
+          cols: 2
+          itemSize: large
+      - name: Utils
+        icon: fas fa-wrench
+        items:
+          - title: Documentation
+            description: As the saying goes RTFM
+            url: https://{{ docs_domain }}
+            icon: fal fa-book
+          - title: Github
+            description: Code sources
+            url: https://github.com/this-is-tobi/homelab
+            icon: fab fa-github
+        displayData:
+          sortBy: alphabetical
+          collapsed: false
+          rows: 5
+          cols: 1
+          itemSize: large

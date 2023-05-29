@@ -1,0 +1,41 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashy
+  namespace: dashy
+  labels:
+    monitoring: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: dashy
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: dashy
+    spec:
+      containers:
+        - name: dashy
+          image: docker.io/lissy93/dashy:2.1.1
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: 512Mi
+            requests:
+              cpu: "0.1"
+              memory: 128Mi
+          volumeMounts:
+            - name: dashy-config
+              mountPath: /app/public
+              subpath: conf.yml
+      volumes:
+        - name: dashy-config
+          configMap:
+            name: dashy-config
+            items:
+              - key: conf.yml
+                path: conf.yml

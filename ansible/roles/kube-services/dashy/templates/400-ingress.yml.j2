@@ -2,24 +2,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: nginx
-  namespace: test
+  name: dashy
+  namespace: dashy
   annotations:
     kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-    - host: {{ test_domain }}
+    - host: {{ root_domain }}
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: test
+                name: dashy
                 port:
                   number: 80
   tls:
     - hosts:
-        - {{ test_domain }}
+        - {{ root_domain }}
       secretName: letsencrypt-prod-key
