@@ -101,14 +101,12 @@
     - k3s
     - k3s-services
   roles:
-    - kubernetes/metallb
-    - kubernetes/longhorn
-    - kubernetes/cert-manager
-    - kubernetes/test
-    - kubernetes/kubernetes-dashboard
-    - kubernetes/traefik
-    - kubernetes/kube-prometheus
-    - kubernetes/grafana
-    - kubernetes/minio
-    - kubernetes/harbor
-    - kubernetes/argocd
+    - kube-services/longhorn
+    - kube-services/cert-manager
+    - kube-services/kubernetes-dashboard
+    - kube-services/traefik
+    - kube-services/kube-prometheus
+    - kube-services/grafana
+    - kube-services/minio
+    - kube-services/harbor
+    - kube-services/argocd

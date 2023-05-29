@@ -39,7 +39,6 @@ extra_server_args: >-
   --write-kubeconfig-mode 644 
   --node-taint node-role.kubernetes.io/master=true:NoSchedule 
   --node-label node-type=master
-# --disable servicelb 
 
 # extra args to pass to worker nodes
 extra_agent_args: >-
@@ -73,9 +72,6 @@ kubernetes_dashboard_token: ""
 
 # longhorn
 longhorn_domain: longhorn.{{ local_root_url }}
-
-# metallb
-# metal_lb_ip_address_pool: 192.168.0.200-192.168.0.250
 
 # minio
 minio_domain: minio.{{ root_url }}
