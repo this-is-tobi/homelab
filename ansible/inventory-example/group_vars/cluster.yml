@@ -54,7 +54,7 @@ extra_storage_args: ""
 #----------#
 
 # argocd
-argocd_domain: argocd.{{ root_url }}
+argocd_domain: argocd.{{ root_domain }}
 argocd_username: admin
 argocd_password: ""
 
@@ -62,30 +62,45 @@ argocd_password: ""
 email: email-to-change@email.com
 
 # grafana
-grafana_domain: grafana.{{ root_url }}
+grafana_domain: grafana.{{ root_domain }}
 grafana_username: admin
 grafana_password: ""
 
-# kubernetes-dashboard
-kubernetes_dashboard_domain: console.{{ root_url }}
-kubernetes_dashboard_token: ""
-
-# longhorn
-longhorn_domain: longhorn.{{ local_root_url }}
-
-# minio
-minio_domain: minio.{{ root_url }}
-minio_api_domain: api.minio.{{ root_url }}
-minio_username: admin
-minio_password: ""
-
 # harbor
-harbor_domain: registry.{{ root_url }}
+harbor_domain: registry.{{ root_domain }}
 harbor_username: admin
 harbor_password: ""
 
-# test-deployment
-test_domain: test.{{ root_url }}
+# keycloak
+keycloak_domain: keycloak.{{ root_domain }}
+keycloak_username: admin
+keycloak_password: ""
+keycloak_realm: homelab
+harbor_client_id: harbor
+
+# kubernetes-dashboard
+kubernetes_dashboard_domain: console.{{ root_domain }}
+kubernetes_dashboard_token: ""
+
+# longhorn
+longhorn_domain: longhorn.{{ local_root_domain }}
+
+# minio
+minio_domain: minio.{{ root_domain }}
+minio_api_domain: api.minio.{{ root_domain }}
+minio_username: admin
+minio_password: ""
 
 # traefik
-traefik_domain: traefik.{{ local_root_url }}
+traefik_domain: traefik.{{ local_root_domain }}
+
+
+#---------------------#
+# Additional services #
+#---------------------#
+
+# docs
+docs_domain: github.com/this-is-tobi/homelab
+
+# test-deployment
+test_domain: test.{{ root_domain }}

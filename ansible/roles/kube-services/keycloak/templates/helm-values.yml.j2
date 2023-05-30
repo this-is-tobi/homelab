@@ -1,0 +1,20 @@
+---
+auth:
+  adminUser: {{ keycloak_username }}
+  adminPassword: {{ keycloak_password }}
+
+nodeSelector:
+  node-type: worker
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hostname: {{ keycloak_domain }}
+  path: /
+  tls: true
+  secrets: []
+
+global:
+  storageClass: longhorn

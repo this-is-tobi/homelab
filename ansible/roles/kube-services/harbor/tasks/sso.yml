@@ -1,0 +1,69 @@
+---
+- name: Get keycloak client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ harbor_client_id }}"
+    realm: "{{ keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+  register: harbor_client_secret
+  no_log: true
+
+- name: Get harbor config
+  ansible.builtin.uri:
+    url: https://{{ harbor_domain }}/api/v2.0/configurations
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    status_code: [200, 503]
+  until: get_harbor_config.status != 503
+  register: get_harbor_config
+  retries: 5
+
+- name: Set Harbor config
+  ansible.builtin.set_fact:
+    harbor_config:
+      "auth_mode": "oidc_auth"
+      "notification_enable": true
+      "oidc_admin_group": "/admin"
+      "oidc_auto_onboard": true
+      "oidc_client_id": "{{ harbor_client_id }}"
+      "oidc_endpoint": "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
+      "oidc_extra_redirect_parms": "{}"
+      "oidc_group_filter": "/harbor"
+      "oidc_groups_claim": "groups"
+      "oidc_name": "keycloak"
+      "oidc_scope": "openid"
+      "oidc_user_claim": "email"
+      "project_creation_restriction": "adminonly"
+      "quota_per_project_enable": true
+      "read_only": false
+      "robot_name_prefix": "robot$"
+      "robot_token_duration": 30
+      "self_registration": false
+      "oidc_client_secret": "{{ harbor_client_secret.clientsecret_info.value }}"
+
+- name: Assert configuration
+  ansible.builtin.assert:
+    that:
+      - harbor_config[item] == get_harbor_config.json[item].value
+    quiet: true
+  with_items:
+    - "{{ harbor_config | list }}"
+  ignore_errors: true
+  register: check_config
+
+- name: Update harbor config
+  ansible.builtin.uri:
+    method: PUT
+    url: https://{{ harbor_domain }}/api/v2.0/configurations
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    body: "{{ harbor_config }}"
+  when: check_config.failed is defined and check_config.failed
+  changed_when: true

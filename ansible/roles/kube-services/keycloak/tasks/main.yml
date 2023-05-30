@@ -1,0 +1,264 @@
+---
+- name: Generate random password
+  ansible.builtin.set_fact:
+    keycloak_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+  no_log: true
+  when: keycloak_password == ""
+  register: generate_password
+
+- name: Fetch keycloak admin password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^keycloak_password:"
+    line: "keycloak_password: {{ keycloak_password }}"
+  no_log: true
+  when: "'skipped' not in generate_password"
+
+- name: Add bitnami helm repo
+  kubernetes.core.helm_repository:
+    name: bitnami
+    repo_url: https://charts.bitnami.com/bitnami
+    state: present
+
+- name: Deploy keycloak helm chart
+  kubernetes.core.helm:
+    name: keycloak
+    update_repo_cache: true
+    chart_ref: bitnami/keycloak
+    chart_version: 15.1.2
+    create_namespace: true
+    namespace: keycloak
+    wait: true
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Create keycloak realm
+  community.general.keycloak_realm:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    id: "{{ keycloak_realm }}"
+    realm: "{{ keycloak_realm }}"
+    enabled: true
+    registration_allowed: false
+    registration_email_as_username: true
+    reset_password_allowed: false
+    user_managed_access_allowed: false
+    verify_email: false
+    brute_force_protected: true
+    display_name: Homelab
+    duplicate_emails_allowed: false
+    edit_username_allowed: true
+    client_scope_mappings:
+    state: present
+
+- name: Create keycloak groups
+  community.general.keycloak_group:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    name: "{{ item }}"
+    state: present
+  loop:
+    - admin
+    - argocd
+    - grafana
+    - harbor
+    - minio
+
+- name: Create keycloak client scope for groups
+  community.general.keycloak_clientscope:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    name: groups
+    realm: "{{ keycloak_realm }}"
+    description: Get user's groups
+    protocol: openid-connect
+    protocol_mappers:
+      - name: groups
+        protocol: openid-connect
+        protocolMapper: oidc-group-membership-mapper
+        config:
+          full.path: true
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: groups
+          userinfo.token.claim: true
+
+- name: Create generic keycloak client scope 
+  community.general.keycloak_clientscope:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    name: generic
+    realm: "{{ keycloak_realm }}"
+    description: Generic client scope
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: true
+      display.on.consent.screen: true
+    protocolMappers:
+      - name: family name
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-property-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: lastName
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: family_name
+          jsonType.label: String
+      - name: given name
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-property-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: firstName
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: given_name
+          jsonType.label: String
+      - name: name
+        protocol: openid-connect
+        protocolMapper: oidc-full-name-mapper
+        config:
+          id.token.claim: true
+          access.token.claim: true
+          userinfo.token.claim: true
+      - name: phone number
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: phoneNumber
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: phone_number
+          jsonType.label: String
+      - name: acr loa level
+        protocol: openid-connect
+        protocolMapper: oidc-acr-mapper
+        config:
+          id.token.claim: true
+          access.token.claim: true
+      - name: nickname
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: nickname
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: nickname
+          jsonType.label: String
+      - name: username
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-property-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: username
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: preferred_username
+          jsonType.label: String
+      - name: full name
+        protocol: openid-connect
+        protocolMapper: oidc-full-name-mapper
+        config:
+          id.token.claim: true
+          access.token.claim: true
+          userinfo.token.claim: true
+      - name: locale
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: locale
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: locale
+          jsonType.label: String
+      - name: email verified
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-property-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: emailVerified
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: email_verified
+          jsonType.label: boolean
+      - name: updated at
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: updatedAt
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: updated_at
+          jsonType.label: long
+      - name: middle name
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-attribute-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: middleName
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: middle_name
+          jsonType.label: String
+      - name: groups
+        protocol: openid-connect
+        protocolMapper: oidc-group-membership-mapper
+        config:
+          full.path: true
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: groups
+          userinfo.token.claim: true
+      - name: email
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-property-mapper
+        config:
+          userinfo.token.claim: true
+          user.attribute: email
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: email
+          jsonType.label: String
+
+- name: Create keycloak client [harbor]
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ harbor_client_id }}"
+    name: "{{ harbor_client_id }}"
+    enabled: true
+    redirect_uris:
+      - https://{{ harbor_domain }}/c/oidc/callback
+    web_origins:
+      - https://{{ harbor_domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: false
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    default_client_scopes:
+      - generic
+    state: present

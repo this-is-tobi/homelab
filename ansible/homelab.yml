@@ -105,6 +105,7 @@
     - kube-services/cert-manager
     - kube-services/kubernetes-dashboard
     - kube-services/traefik
+    - kube-services/keycloak
     - kube-services/kube-prometheus
     - kube-services/grafana
     - kube-services/minio

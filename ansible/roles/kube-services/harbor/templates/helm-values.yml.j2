@@ -5,10 +5,6 @@ global:
 adminPassword: {{ harbor_password }}
 
 registry:
-  credentials:
-    username: {{ registry_username }}
-    password: {{ registry_password }}
-    htpasswd: {{ registry_htpasswd }}
   nodeSelector:
     node-type: worker
 

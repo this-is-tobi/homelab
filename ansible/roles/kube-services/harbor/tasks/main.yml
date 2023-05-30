@@ -31,3 +31,6 @@
     wait: true
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Perform sso configuration
+  include_tasks: sso.yml
