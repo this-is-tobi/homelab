@@ -34,6 +34,7 @@ To create user access to the bastion, it is required to provide their informatio
 > - *argocd_password*
 > - *grafana_password*
 > - *harbor_password*
+> - *keycloak_password*
 > - *kubernetes_dashboard_token*
 > - *k3s_token*
 > - *minio_password*

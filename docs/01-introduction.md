@@ -1,3 +1,5 @@
 # Homelab :alembic:
 
-This projects aims to build a homelab for personnal tests on infrastructure, development, CI/CD, etc...
+This project aims to build a homelab for personal testing on infrastructure, development, CI/CD, etc...
+
+It provides a complete configuration with common web services using ansible as a deployment tool for both infrastructure and applications running mainly in Kubernetes.
