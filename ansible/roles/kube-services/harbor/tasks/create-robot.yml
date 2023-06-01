@@ -1,0 +1,34 @@
+---
+- name: Get robots
+  ansible.builtin.uri:
+    url: https://{{ harbor_domain }}/api/v2.0/robots?name={{ item.name }}
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    status_code: [200, 404]
+  register: get_harbor_robot
+
+- name: Create robot
+  ansible.builtin.uri:
+    method: POST
+    url: https://{{ harbor_domain }}/api/v2.0/robots
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    body: "{{ item | to_json }}"
+    status_code: [201]
+  when: get_harbor_robot.status == 404
+
+- name: Update robot
+  ansible.builtin.uri:
+    method: PUT
+    url: https://{{ harbor_domain }}/api/v2.0/robots/{{ get_harbor_robot.json[0].id }}
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    body: "{{ get_harbor_robot.json | ansible.builtin.combine(item | ansible.utils.remove_keys(target=['name', 'level'])) | to_json }}"
+    status_code: [200]
+  when: get_harbor_robot.status == 200

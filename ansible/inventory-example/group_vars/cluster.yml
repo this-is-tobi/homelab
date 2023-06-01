@@ -1,6 +1,6 @@
 ---
 #---------#
-# Cluster #
+# cluster #
 #---------#
 
 # k3s version
@@ -49,49 +49,138 @@ extra_agent_args: >-
 extra_storage_args: ""
 
 
-#----------#
-# Services #
-#----------#
+#--------#
+# argocd #
+#--------#
 
-# argocd
-argocd_domain: argocd.{{ root_domain }}
+argocd_domain: gitops.{{ root_domain }}
+
 argocd_username: admin
+
 argocd_password: ""
 
-# cert-manager
-email: email-to-change@email.com
 
-# grafana
-grafana_domain: grafana.{{ root_domain }}
+#--------------#
+# cert-manager #
+#--------------#
+
+email: your@email.com
+
+
+#---------#
+# grafana #
+#---------#
+
+grafana_domain: monitoring.{{ root_domain }}
+
 grafana_username: admin
+
 grafana_password: ""
 
-# harbor
+
+#--------#
+# harbor #
+#--------#
+
 harbor_domain: registry.{{ root_domain }}
+
 harbor_username: admin
+
 harbor_password: ""
 
-# keycloak
-keycloak_domain: keycloak.{{ root_domain }}
+harbor_projects:
+  - project_name: robots
+    metadata:
+      public: "true"
+      storage_limit: -1
+      auto_scan: "true"
+
+harbor_robots: 
+  - name: world
+    description: Robot that build the world
+    expires_at: -1
+    permissions:
+      - kind: project
+        namespace: robots
+        access:
+          - action: list
+            resource: repository
+          - action: pull
+            resource: repository
+          - action: push
+            resource: repository
+          - action: delete
+            resource: repository
+          - action: read
+            resource: artifact
+          - action: list
+            resource: artifact
+          - action: delete
+            resource: artifact
+          - action: create
+            resource: artifact-label
+          - action: delete
+            resource: artifact-label
+          - action: create
+            resource: tag
+          - action: delete
+            resource: tag
+          - action: list
+            resource: tag
+          - action: create
+            resource: scan
+          - action: stop
+            resource: scan
+
+
+#----------#
+# keycloak #
+#----------#
+
+keycloak_domain: sso.{{ root_domain }}
+
 keycloak_username: admin
+
 keycloak_password: ""
+
 keycloak_realm: homelab
+
 harbor_client_id: harbor
 
-# kubernetes-dashboard
+
+#----------------------#
+# kubernetes-dashboard #
+#----------------------#
+
 kubernetes_dashboard_domain: console.{{ root_domain }}
+
 kubernetes_dashboard_token: ""
 
-# longhorn
+
+#----------#
+# longhorn #
+#----------#
+
 longhorn_domain: longhorn.{{ local_root_domain }}
 
-# minio
-minio_domain: minio.{{ root_domain }}
-minio_api_domain: api.minio.{{ root_domain }}
+
+#-------#
+# minio #
+#-------#
+
+minio_domain: s3.{{ root_domain }}
+
+minio_api_domain: api.s3.{{ root_domain }}
+
 minio_username: admin
+
 minio_password: ""
 
-# traefik
+
+#---------#
+# traefik #
+#---------#
+
 traefik_domain: traefik.{{ local_root_domain }}
 
 

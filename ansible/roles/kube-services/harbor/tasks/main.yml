@@ -34,3 +34,11 @@
 
 - name: Perform sso configuration
   include_tasks: sso.yml
+
+- name: Create projects
+  include_tasks: create-project.yml
+  loop: "{{ harbor_projects }}"
+
+- name: Create robots
+  include_tasks: create-robot.yml
+  loop: "{{ harbor_robots }}"

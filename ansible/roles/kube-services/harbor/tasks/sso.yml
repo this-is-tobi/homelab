@@ -21,7 +21,6 @@
     status_code: [200, 503]
   until: get_harbor_config.status != 503
   register: get_harbor_config
-  retries: 5
 
 - name: Set Harbor config
   ansible.builtin.set_fact:
