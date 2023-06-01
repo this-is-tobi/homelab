@@ -1,0 +1,38 @@
+---
+- name: Create keycloak group [harbor]
+  community.general.keycloak_group:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    name: "{{ item }}"
+    state: present
+  loop:
+    - harbor
+
+- name: Create keycloak client [harbor]
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ harbor_client_id }}"
+    name: "{{ harbor_client_id }}"
+    enabled: true
+    redirect_uris:
+      - https://{{ harbor_domain }}/c/oidc/callback
+    web_origins:
+      - https://{{ harbor_domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: false
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    default_client_scopes:
+      - generic
+    state: present
