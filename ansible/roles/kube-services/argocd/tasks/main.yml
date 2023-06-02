@@ -32,12 +32,15 @@
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
+- name: Perform sso configuration
+  include_tasks: sso.yml
+
 - name: Deploy argocd ingress
   kubernetes.core.k8s:
     state: present
     template: "{{ item }}"
   with_items:
-    - 100-ingress.yml.j2
+    - 300-ingress.yml.j2
 
 - name: Get argocd admin password
   kubernetes.core.k8s_info:

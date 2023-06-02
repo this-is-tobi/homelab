@@ -1,0 +1,40 @@
+---
+- name: Create keycloak group [argocd]
+  community.general.keycloak_group:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    name: "{{ item }}"
+    state: present
+  loop:
+    - argocd
+
+- name: Create keycloak client [argocd]
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ argocd_client_id }}"
+    name: "{{ argocd_client_id }}"
+    always_display_in_console: true
+    frontchannel_logout: true
+    enabled: true
+    redirect_uris:
+      - https://{{ argocd_domain }}/*
+    web_origins:
+      - https://{{ argocd_domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: true
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    default_client_scopes:
+      - generic
+    state: present

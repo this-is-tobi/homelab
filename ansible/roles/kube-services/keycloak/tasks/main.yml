@@ -239,3 +239,6 @@
 
 - name: Create minio config
   include_tasks: minio.yml
+
+- name: Create argocd config
+  include_tasks: argocd.yml

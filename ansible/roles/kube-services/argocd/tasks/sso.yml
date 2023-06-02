@@ -1,0 +1,31 @@
+---
+- name: Get keycloak client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ argocd_client_id }}"
+    realm: "{{ keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+  register: argocd_client_secret
+  no_log: true
+
+- name: Set argocd client secret
+  ansible.builtin.set_fact:
+    argocd_client_secret: "{{ argocd_client_secret.clientsecret_info.value }}"
+
+- name: Create argocd namespace
+  kubernetes.core.k8s:
+    name: argocd
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy argocd secret and configmap
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 100-secret.yml.j2
+    - 200-configmap.yml.j2
