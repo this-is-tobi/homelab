@@ -23,6 +23,7 @@
     client_id: "{{ harbor_client_id }}"
     name: "{{ harbor_client_id }}"
     enabled: true
+    frontchannel_logout: true
     redirect_uris:
       - https://{{ harbor_domain }}/c/oidc/callback
     web_origins:

@@ -14,6 +14,9 @@
   no_log: true
   when: "'skipped' not in generate_password"
 
+- name: Perform sso configuration
+  include_tasks: sso.yml
+
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
     name: bitnami

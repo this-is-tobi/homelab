@@ -51,7 +51,7 @@
     display_name: Homelab
     duplicate_emails_allowed: false
     edit_username_allowed: true
-    client_scope_mappings:
+    access_token_lifespan: 3600
     state: present
 
 - name: Create keycloak admin group

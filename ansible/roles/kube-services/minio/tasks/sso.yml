@@ -1,0 +1,30 @@
+---
+- name: Get keycloak client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ minio_client_id }}"
+    realm: "{{ keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+  register: minio_client_secret
+  no_log: true
+
+- name: Set minio client secret
+  ansible.builtin.set_fact:
+    minio_client_secret: "{{ minio_client_secret.clientsecret_info.value }}"
+
+- name: Create minio namespace
+  kubernetes.core.k8s:
+    name: minio
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy minio configmap
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 100-configmap.yml.j2
