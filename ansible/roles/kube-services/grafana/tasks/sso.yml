@@ -1,0 +1,30 @@
+---
+- name: Get keycloak client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ grafana_client_id }}"
+    realm: "{{ keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+  register: grafana_client_secret
+  no_log: true
+
+- name: Set grafana client secret
+  ansible.builtin.set_fact:
+    grafana_client_secret: "{{ grafana_client_secret.clientsecret_info.value }}"
+
+- name: Create grafana namespace
+  kubernetes.core.k8s:
+    name: monitoring
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Deploy grafana configmap
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 300-configmap.yml.j2

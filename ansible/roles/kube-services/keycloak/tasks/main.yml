@@ -242,3 +242,6 @@
 
 - name: Create argocd config
   include_tasks: argocd.yml
+
+- name: Create grafana config
+  include_tasks: grafana.yml

@@ -1,5 +1,5 @@
 ---
-- name: Create keycloak group [harbor]
+- name: Create keycloak group
   community.general.keycloak_group:
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}
@@ -12,7 +12,7 @@
   loop:
     - harbor
 
-- name: Create keycloak client [harbor]
+- name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}

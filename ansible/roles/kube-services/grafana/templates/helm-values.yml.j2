@@ -34,3 +34,7 @@ ingress:
   hostname: {{ grafana_domain }}
   path: /
   tls: true
+
+config:
+  useGrafanaIniFile: true
+  grafanaIniConfigMap: grafana-conf

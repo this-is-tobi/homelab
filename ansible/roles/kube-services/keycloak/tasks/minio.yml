@@ -1,5 +1,5 @@
 ---
-- name: Create keycloak group [minio]
+- name: Create keycloak group
   community.general.keycloak_group:
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}
@@ -14,7 +14,7 @@
   loop:
     - minio
 
-- name: Create keycloak client scope [minio]
+- name: Create keycloak client scope
   community.general.keycloak_clientscope:
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}
@@ -39,7 +39,7 @@
           aggregate.attrs: true
           user.attribute: policy
 
-- name: Create keycloak client [minio]
+- name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}

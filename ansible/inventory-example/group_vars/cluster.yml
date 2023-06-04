@@ -167,6 +167,9 @@ harbor_client_id: harbor
 # keycloak client id for minio application
 minio_client_id: minio
 
+# keycloak client id for grafana application
+grafana_client_id: grafana
+
 
 #----------------------#
 # kubernetes-dashboard #

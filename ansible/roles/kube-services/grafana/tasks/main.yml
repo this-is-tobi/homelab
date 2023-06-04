@@ -25,6 +25,9 @@
     - 100-k3s-dashboard.yml.j2
     - 200-cert-manager-dashboard.yml.j2
 
+- name: Perform sso configuration
+  include_tasks: sso.yml
+
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
     name: bitnami
