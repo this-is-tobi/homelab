@@ -9,6 +9,10 @@
     status_code: [200, 404]
   register: get_harbor_robot
 
+- name: debug
+  debug:
+    var: get_harbor_robot
+
 - name: Create robot
   ansible.builtin.uri:
     method: POST
@@ -19,7 +23,7 @@
     body_format: json
     body: "{{ item | to_json }}"
     status_code: [201]
-  when: get_harbor_robot.status == 404
+  when: get_harbor_robot.json is defined and get_harbor_robot.json | length == 0
 
 - name: Update robot
   ansible.builtin.uri:
@@ -31,4 +35,4 @@
     body_format: json
     body: "{{ get_harbor_robot.json | ansible.builtin.combine(item | ansible.utils.remove_keys(target=['name', 'level'])) | to_json }}"
     status_code: [200]
-  when: get_harbor_robot.status == 200
+  when: get_harbor_robot.json is defined and get_harbor_robot.json | length > 0
