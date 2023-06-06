@@ -10,7 +10,7 @@
     name: kube-prometheus
     update_repo_cache: true
     chart_ref: bitnami/kube-prometheus
-    chart_version: 8.9.1
+    chart_version: 8.13.0
     create_namespace: true
     namespace: monitoring
     wait: true

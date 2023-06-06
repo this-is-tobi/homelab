@@ -10,7 +10,7 @@
     name: longhorn
     update_repo_cache: true
     chart_ref: longhorn/longhorn
-    chart_version: 1.4.1
+    chart_version: 1.4.2
     create_namespace: true
     namespace: longhorn-system
     wait: true

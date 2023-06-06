@@ -28,7 +28,7 @@
     name: minio
     update_repo_cache: true
     chart_ref: bitnami/minio
-    chart_version: 12.4.3
+    chart_version: 12.6.4
     create_namespace: true
     namespace: minio
     wait: true

@@ -25,7 +25,7 @@
     name: harbor
     update_repo_cache: true
     chart_ref: bitnami/harbor
-    chart_version: 16.5.2
+    chart_version: 16.6.6
     create_namespace: true
     namespace: harbor
     wait: true

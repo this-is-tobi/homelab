@@ -10,7 +10,7 @@
     name: kubernetes-dashboard
     update_repo_cache: true
     chart_ref: kubernetes-dashboard/kubernetes-dashboard
-    chart_version: 6.0.7
+    chart_version: 6.0.8
     create_namespace: true
     namespace: kubernetes-dashboard
     wait: true
