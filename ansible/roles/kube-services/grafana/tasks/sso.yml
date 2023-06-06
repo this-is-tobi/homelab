@@ -27,4 +27,4 @@
     state: present
     template: "{{ item }}"
   with_items:
-    - 300-configmap.yml.j2
+    - 200-configmap.yml.j2

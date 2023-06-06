@@ -22,4 +22,4 @@ data:
     token_url = https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/token
     api_url = https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/userinfo
     allow_assign_grafana_admin = true
-    groups_attribute_path = contains(groups[*], '/admin') && 'GrafanaAdmin' || contains(groups[*], '/grafana') && 'Editor' || 'Viewer'
+    groups_attribute_path = contains(groups[*], 'admin') && 'GrafanaAdmin' || contains(groups[*], 'grafana') && 'Editor' || 'Viewer'

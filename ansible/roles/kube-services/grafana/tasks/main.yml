@@ -23,7 +23,6 @@
       variable_end_string: ']]'
   with_items:
     - 100-k3s-dashboard.yml.j2
-    - 200-cert-manager-dashboard.yml.j2
 
 - name: Perform sso configuration
   include_tasks: sso.yml
