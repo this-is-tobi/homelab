@@ -6,6 +6,23 @@ admin:
   user: {{ grafana_username }}
   password: {{ grafana_password }}
 
+datasources:
+  secretDefinition: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        # Access mode - proxy (server in the UI) or direct (browser in the UI).
+        access: proxy
+        url: http://kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+        isDefault: true
+        jsonData:
+          httpMethod: POST
+          manageAlerts: true
+          # prometheusType: Prometheus
+          # prometheusVersion: 2.37.0
+          cacheLevel: 'High'
+
 dashboardsProvider:
   enabled: true
 
@@ -13,9 +30,6 @@ dashboardsConfigMaps:
   - configMapName: k3s-dashboard
     folderName: k3s
     fileName: k3s.json
-  - configMapName: cert-manager-dashboard
-    folderName: cert-manager
-    fileName: cert-manager.json
 
 grafana:
   nodeSelector:
