@@ -26,12 +26,15 @@ Some hosts are configrured to run [k3s](https://k3s.io) (*Lightweight Kubernetes
 
 The cluster comes with k3s integrated [klipper](https://github.com/k3s-io/klipper-lb) loadbalancer and [traefik](https://traefik.io/) ingressController.
 
+[Longhorn](https://longhorn.io/) is used to deliver distributed block storage accross kubernetes, it will enroll all servers tagged `additional_disk: true` in [inventory/hosts.yml](../ansible/inventory-example/hosts.yml).
+
 The following services are deployed in the cluster :
 
 | Name                                                            | Description                            | Helm chart                                                                                                    |
 | --------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)             | GitOps continuous delivery tool        | [bitnami/argo-cd](https://artifacthub.io/packages/helm/bitnami/argo-cd)                                       |
 | [Cert-manager](https://cert-manager.io/)                        | Cloud native certificate management    | [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager)                   |
+| [Dashy](https://github.com/Lissy93/dashy)                       | Home dashboard                         | -                                                                                                             |
 | [Grafana](https://grafana.com/)                                 | Observability dashboards               | [bitnami/grafana](https://artifacthub.io/packages/helm/bitnami/grafana)                                       |
 | [Harbor](https://goharbor.io/)                                  | Cloud native registry                  | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                         |
 | [Keycloak](https://keycloak.org)                                | Single Sign On service                 | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                     |
