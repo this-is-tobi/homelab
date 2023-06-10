@@ -41,25 +41,32 @@ To create user access to the bastion, it is required to provide their informatio
 
 ## Deploy
 
-Various tags are available in the [playbook](../ansible/inventory-example/hosts.yml), it allows to launch only some part of the installation, the main ones are :
+Two playbooks are available, one for [infrastructure](../ansible/infra.yml) installation and another one for [services](../ansible/services.yml) installation.
+Various tags are available in the playbooks (*for more details, take a look at the files*), it allows to launch only some part of the installation, the main ones are :
 
+__Infra :__
 ```sh
 # Deploy bastion
-./run.sh -p -t "bastion"
+./run.sh -p ./ansible/infra.yml -t bastion
 
 # Deploy gateway
-./run.sh -p -t "gateway"
+./run.sh -p ./ansible/infra.yml -t gateway
 
 # Deploy cluster
-./run.sh -p -t "k3s"
+./run.sh -p ./ansible/infra.yml -t k3s
+```
 
-# Deploy all
-./run.sh -p
+__Services :__
+
+```sh
+# Deploy kubernetes services
+./run.sh -p ./ansible/services.yml 
 ```
 
 > __*Notes*__: 
-> 
-> *Multiple tags can be passed as follows :* `./run.sh -p -t "gateway,k3s"`
+>
+> *By default tag `all` is used so every roles are played on playbooks launch.*
+> *Multiple tags can be passed as follows :* `./run.sh -p ./ansible/infra.yml -t gateway,k3s`
 > 
 > *First gateway init can take a long time to run because of openvpn key genereration (5-10min).*
 
@@ -69,5 +76,5 @@ It is possible to cleanly detroy the k3s cluster by running :
 
 ```sh
 # Destroy cluster
-./run.sh -p -t "k3s-destroy"
+./run.sh -p ./ansible/infra.yml -t k3s-destroy
 ```
