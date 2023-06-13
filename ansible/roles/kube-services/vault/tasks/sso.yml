@@ -1,0 +1,137 @@
+---
+- name: Get keycloak client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ vault_client_id }}"
+    realm: "{{ keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+  register: vault_client_secret
+  no_log: true
+
+- name: Set vault client secret
+  ansible.builtin.set_fact:
+    vault_client_secret: "{{ vault_client_secret.clientsecret_info.value }}"
+
+- name: Create vault namespace
+  kubernetes.core.k8s:
+    name: monitoring
+    api_version: v1
+    kind: Namespace
+    state: present
+
+- name: Set enable oidc config
+  ansible.builtin.set_fact:
+    enable_auth:
+      "type": "oidc"
+
+- name: Get auth methods
+  uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/auth/oidc"
+    method: GET
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: get_auth_method
+
+- name: Enable oidc auth method
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/auth/oidc"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body: "{{ enable_auth }}"
+    body_format: json
+  when: get_auth_method == 400
+
+- name: Configue oidc auth method
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/auth/oidc/config"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "oidc_discovery_url": "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
+      "oidc_client_id": "{{ vault_client_id }}"
+      "oidc_client_secret": "{{ vault_client_secret }}"
+      "default_role": "reader"
+      "bound_audiences": "{{ vault_client_id }}"
+      "allowed_redirect_ansible.builtin.uris":
+        - "https://{{ vault_domain }}/ui/vault/auth/oidc/oidc/callback"
+        - "https://{{ vault_domain }}/oidc/callback"
+      "user_claim": "sub"
+      "token_policies": 
+        - "reader"
+    body_format: json
+
+- name: Get kv engines
+  uri:
+    validate_certs: true
+    method: GET
+    url: "https://{{ vault_domain }}/v1/sys/mounts/homelab"
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: get_engines
+
+- name: Create kv engine
+  uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/mounts/homelab"
+    method: POST
+    status_code: [204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      type: kv
+      options:
+        version: 2
+    body_format: json
+  when: get_engines.status == 400
+
+- name: Create oidc role
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/auth/oidc/role/reader"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "oidc_scopes": 
+        - "openid"
+        - "generic"
+      "bound_audiences": 
+        - "{{ vault_client_id }}"
+      "claim_mappings":
+        "preferred_username": "username"
+        "email": "email"
+      "allowed_redirect_uris":
+        - "https://{{ vault_domain }}/ui/vault/auth/oidc/oidc/callback"
+        - "https://{{ vault_domain }}/oidc/callback"
+      "user_claim": "sub"
+      "token_policies": 
+        - "reader"
+    body_format: json
+
+- name: Create access policy
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/policy/reader"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body: 
+      policy: |
+        path "/homelab/*" {
+          capabilities = ["read", "list"]
+        }
+    body_format: json

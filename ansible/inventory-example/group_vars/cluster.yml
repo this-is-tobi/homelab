@@ -215,6 +215,22 @@ minio_password: ""
 traefik_domain: traefik.{{ local_root_domain }}
 
 
+#-------#
+# vault #
+#-------#
+
+# vault domain used as ingress
+vault_domain: vault.{{ root_domain }}
+
+# vault root access token
+vault_token: ""
+
+# vault unseal keys
+vault_unseal_key1: ""
+vault_unseal_key2: ""
+vault_unseal_key3: ""
+
+
 #---------------------#
 # Additional services #
 #---------------------#

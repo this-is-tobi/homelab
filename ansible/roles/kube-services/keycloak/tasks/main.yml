@@ -245,3 +245,6 @@
 
 - name: Create grafana config
   include_tasks: grafana.yml
+
+- name: Create vault config
+  include_tasks: vault.yml

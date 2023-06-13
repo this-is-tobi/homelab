@@ -25,6 +25,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | Minio *- api*        | <https://api.s3.domain.com>     |
 | Minio *- web*        | <https://s3.domain.com>         |
 | Traefik              | <http://traefik.domain.local>   |
+| Vault                | <http://vault.domain.com>       |
 
 ### Single sign on
 

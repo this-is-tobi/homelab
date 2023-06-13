@@ -1,0 +1,21 @@
+---
+- name: Set seal count
+  set_fact:
+    num: "{{ num | int +1 }}"
+
+- name: Unseal Vault
+  uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/unseal"
+    method: POST
+    status_code: [200]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      key: "{{ vault_keys.resources[0].data['key'+ (num)] | b64decode }}"
+    body_format: json
+  register: unseal_res
+
+- name: Rerun unseal if necessary
+  include_tasks: unseal.yml
+  when: (unseal_res.json.progress != unseal_res.json.t) and (num | int < unseal_res.json.n)

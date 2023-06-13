@@ -1,0 +1,142 @@
+---
+- name: Add hashicorp helm repo
+  kubernetes.core.helm_repository:
+    name: hashicorp
+    repo_url: https://helm.releases.hashicorp.com
+    state: present
+
+- name: Deploy vault helm chart
+  kubernetes.core.helm:
+    name: vault
+    update_repo_cache: true
+    chart_ref: hashicorp/vault
+    chart_version: 0.24.1
+    create_namespace: true
+    namespace: vault
+    wait: true
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Wait vault container
+  kubernetes.core.k8s:
+    kind: Pod
+    name: vault-0
+    namespace: vault
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 600
+    wait_condition:
+      reason:
+      type: Initialized
+      status: "True"
+
+- name: Find vault keys
+  kubernetes.core.k8s_info:
+    namespace: vault
+    kind: Secret
+    name: vault-keys
+  register: vault_keys
+
+- name: Check vault status
+  include_tasks: check.yml
+
+- name: Check if vault is coherent
+  assert:
+    that:
+      - ((vault_status in ['sealed', 'OK']) and (vault_keys.resources | length > 0)) or ((vault_status == 'not init') and (vault_keys.resources | length == 0))
+    fail_msg:
+      - "Warning !"
+      - "Vault isn't initialized but you got a vault-secret secret inside the vault namespace, delete it before restart deployment if you want to initialize."
+      - "or"
+      - "Vault is initialized but you have no vault-keys secret inside the vault namespace"
+
+- name: Init vault
+  kubernetes.core.k8s_exec:
+    container: vault
+    pod: vault-0
+    namespace: vault
+    command: vault operator init -key-shares=3 -key-threshold=2
+  when: vault_status == 'not init'
+  register: init
+  until: "init is not failed"
+  retries: 6
+  delay: 10
+
+- name: Set fact to unseal vault
+  set_fact:
+    num: "2"
+
+- name: Unseal vault
+  when: vault_status == 'not init'
+  include_tasks: unseal.yml
+
+- name: store vault keys
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        name: vault-keys
+        namespace: vault
+      data:
+        key1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
+        key2: "{{ init.stdout_lines[1] | regex_replace('^Unseal Key 2: (.*)$', '\\1', multiline=True) | b64encode }}"
+        key3: "{{ init.stdout_lines[2] | regex_replace('^Unseal Key 3: (.*)$', '\\1', multiline=True) | b64encode }}"
+        root_token: "{{ init.stdout_lines[4] | regex_replace('^Initial Root Token: (.*)$', '\\1', multiline=True) | b64encode }}"
+  when: vault_keys.resources | length == 0
+
+- name: find vault keys
+  kubernetes.core.k8s_info:
+    namespace: vault
+    kind: Secret
+    name: vault-keys
+  register: vault_keys
+
+- name: Set facts for vault root token
+  ansible.builtin.set_fact:
+    vault_token: '{{ vault_keys.resources[0].data.root_token | b64decode }}'
+    vault_unseal_key1: '{{ vault_keys.resources[0].data.key1 | b64decode }}'
+    vault_unseal_key2: '{{ vault_keys.resources[0].data.key2 | b64decode }}'
+    vault_unseal_key3: '{{ vault_keys.resources[0].data.key3 | b64decode }}'
+  no_log: true
+
+- name: Fetch vault root token
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^vault_token:"
+    line: "vault_token: {{ vault_token }}"
+  no_log: true
+
+- name: Fetch vault unseal key 1
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^vault_unseal_key1:"
+    line: "vault_unseal_key1: {{ vault_unseal_key1 }}"
+  no_log: true
+
+- name: Fetch vault unseal key 2
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^vault_unseal_key2:"
+    line: "vault_unseal_key2: {{ vault_unseal_key2 }}"
+  no_log: true
+
+- name: Fetch vault unseal key 3
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^vault_unseal_key3:"
+    line: "vault_unseal_key3: {{ vault_unseal_key3 }}"
+  no_log: true
+
+- name: Check vault status
+  include_tasks: check.yml
+
+- name: Set fact to unseal vault
+  set_fact:
+    num: "1"
+
+- name: Unseal vault
+  when: vault_status == 'sealed'
+  include_tasks: unseal.yml
+
+- name: Perform sso configuration
+  include_tasks: sso.yml

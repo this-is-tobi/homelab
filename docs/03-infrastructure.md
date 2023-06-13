@@ -42,3 +42,4 @@ The following services are deployed in the cluster :
 | [Longhorn](https://longhorn.io/)                                | Cloud native distributed block storage | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                   |
 | [Minio](https://min.io/)                                        | High Performance Object Storage        | [bitnami/minio](https://artifacthub.io/packages/helm/bitnami/minio)                                           |
 | [Prometheus](https://prometheus.io/)                            | Open-source monitoring solution        | [bitnami/kube-prometheus](https://artifacthub.io/packages/helm/bitnami/kube-prometheus)                       |
+| [Vault](https://www.vaultproject.io/)                           | Secret management service              | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                       |

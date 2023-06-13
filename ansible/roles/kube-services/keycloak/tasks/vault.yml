@@ -10,7 +10,7 @@
     name: "{{ item }}"
     state: present
   loop:
-    - argocd
+    - vault
 
 - name: Create keycloak client
   community.general.keycloak_client:
@@ -20,15 +20,16 @@
     auth_username: "{{ keycloak_username }}"
     auth_password: "{{ keycloak_password }}"
     realm: "{{ keycloak_realm }}"
-    client_id: "{{ argocd_client_id }}"
-    name: "{{ argocd_client_id }}"
+    client_id: "{{ vault_client_id }}"
+    name: "{{ vault_client_id }}"
     always_display_in_console: true
     frontchannel_logout: true
     enabled: true
     redirect_uris:
-      - https://{{ argocd_domain }}/*
+      - https://{{ vault_domain }}/oidc/oidc/callback
+      - https://{{ vault_domain }}/ui/vault/auth/oidc/oidc/callback
     web_origins:
-      - https://{{ argocd_domain }}
+      - https://{{ vault_domain }}
     standard_flow_enabled: true
     implicit_flow_enabled: false
     direct_access_grants_enabled: true

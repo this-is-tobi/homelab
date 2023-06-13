@@ -1,0 +1,29 @@
+---
+server:
+  ha:
+    enabled: false
+  standalone:
+    enabled: true
+  auditStorage:
+    enable: true
+    size: 10Gi
+    storageClass: longhorn
+  dataStorage:
+    enable: true
+    size: 25Gi
+    storageClass: longhorn
+  nodeSelector:
+    node-type: worker
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts: 
+      - host: {{ vault_domain }}
+        paths: 
+          - /
+    tls:
+      - hosts:
+          - {{ vault_domain }}
+        secretName: letsencrypt-prod-key

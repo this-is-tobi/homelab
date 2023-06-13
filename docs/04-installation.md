@@ -38,6 +38,10 @@ To create user access to the bastion, it is required to provide their informatio
 > - *kubernetes_dashboard_token*
 > - *k3s_token*
 > - *minio_password*
+> - *vault_token*
+> - *vault_unseal_key1*
+> - *vault_unseal_key2*
+> - *vault_unseal_key3*
 
 ## Deploy
 

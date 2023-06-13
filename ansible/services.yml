@@ -37,6 +37,9 @@
     - name: kube-services/argocd
       tags:
         - argocd
+    - name: kube-services/vault
+      tags:
+        - vault
     - name: kube-services/dashy
       tags:
         - dashy
