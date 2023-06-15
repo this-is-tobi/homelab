@@ -64,7 +64,10 @@ __Services :__
 
 ```sh
 # Deploy kubernetes services
-./run.sh -p ./ansible/services.yml 
+./run.sh -p ./ansible/services.yml
+
+# Deploy only keycloak
+./run.sh -p ./ansible/services.yml -t keycloak
 ```
 
 > __*Notes*__: 
