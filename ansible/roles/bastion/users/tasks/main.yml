@@ -40,16 +40,19 @@
   no_log: true
   loop: "{{ bastion_users }}"
 
-- name: Fetch bastion users ssh key
-  ansible.builtin.fetch:
-    src: "/home/{{ item.name }}/.ssh/id_rsa.pub"
-    dest: "{{ ssh_local_dir }}/{{ item.name }}-ohmlab.pub"
-    flat: yes
-
-- name: Add ssh key in authorized_keys
-  ansible.posix.authorized_key:
-    user: "{{ item.name }}"
-    state: present
-    key: "{{ lookup('file', '{{ ssh_local_dir }}/{{ item.name }}.pub') }}"
-  no_log: true
+- name: Manage ssh keys
+  include_tasks: ssh.yml
   loop: "{{ bastion_users }}"
+
+- block:
+  - name: Add openvpn users
+    include_tasks: openvpn.yml
+    loop: "{{ bastion_users }}"
+  delegate_to: pi.gateway
+
+- block:
+  - name: Add keycloak groups
+    include_tasks: keycloak.yml
+    loop: "{{ bastion_users }}"
+  delegate_to: localhost
+  become: false

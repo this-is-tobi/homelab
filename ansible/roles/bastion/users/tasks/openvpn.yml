@@ -1,4 +1,7 @@
 ---
+- name: Include gateway vars
+  ansible.builtin.include_vars: inventory/group_vars/gateway.yml
+
 - name: Check if user exists
   stat:
     path: "/services/openvpn/users/{{ item.name }}.ovpn"
@@ -11,7 +14,7 @@
     responses:
       (?i)Confirm request details: "yes"
       (?i)Enter pass phrase for: "{{ openvpn_root_passphrase }}"
-  no_log: true
+  # no_log: true
   when: not openvpn_profile.stat.exists
 
 - name: Retrieve openvpn profile
@@ -41,7 +44,7 @@
 - name: Fetch users conf
   ansible.builtin.fetch:
     src: "/services/openvpn/users/{{ item.name }}.ovpn"
-    dest: "{{ openvpn_local_dir }}/{{ item.name }}.ovpn"
+    dest: "{{ bastion_local_dir }}/{{ item.name }}/openvpn/{{ item.name }}.ovpn"
     flat: yes
   no_log: true
   when: not openvpn_profile.stat.exists

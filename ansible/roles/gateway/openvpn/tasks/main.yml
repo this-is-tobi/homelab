@@ -56,7 +56,3 @@
       (?i)Enter pass phrase for: "{{ openvpn_root_passphrase }}"
   no_log: true
   when: not openvpn_container.exists
-
-- name: Add openvpn users
-  include_tasks: add-users.yml
-  loop: "{{ bastion_users }}"

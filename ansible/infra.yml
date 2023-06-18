@@ -2,7 +2,7 @@
 # Gateway #
 #---------#
 
-# Init gateway
+# Common
 - hosts: gateway
   become: true
   tags: 
@@ -13,15 +13,34 @@
     - common/ssh
     - common/docker
 
-# Launch gateway services
+# Openvpn
 - hosts: gateway
   become: true
   tags: 
     - gateway
     - gateway-services
+    - gateway-openvpn
   roles:
     - gateway/openvpn
+
+# Crowdsec
+- hosts: gateway
+  become: true
+  tags: 
+    - gateway
+    - gateway-services
+    - gateway-crowdsec
+  roles:
     - gateway/crowdsec
+
+# Haproxy
+- hosts: gateway
+  become: true
+  tags: 
+    - gateway
+    - gateway-services
+    - gateway-haproxy
+  roles:
     - gateway/haproxy
 
 
@@ -29,7 +48,7 @@
 # Bastion #
 #---------#
 
-# Init bastion
+# Common
 - hosts: bastion
   become: true
   tags: 
@@ -38,6 +57,15 @@
   roles:
     - common/hostname
     - common/ssh
+    - common/docker
+
+# Users
+- hosts: bastion
+  become: true
+  tags: 
+    - bastion
+    - bastion-users
+  roles:
     - bastion/users
     - bastion/setup
 
@@ -46,7 +74,7 @@
 # K3S infra #
 #-----------#
 
-# Init cluster
+# Init
 - hosts: cluster
   become: true
   tags: 
@@ -60,7 +88,7 @@
     - k3s/storage
     - k3s/registry
 
-# Deploy cluster
+# Deploy
 - hosts: masters
   become: true
   serial: 1
@@ -79,7 +107,7 @@
   roles:
     - k3s/deploy/workers
 
-# Destroy cluster
+# Destroy
 - hosts: cluster
   become: true
   tags: 

@@ -4,8 +4,7 @@
 
 # openvpn
 openvpn_root_passphrase: password-to-change
-openvpn_server_hostname: vpn.domain.com
-openvpn_local_dir: secrets/openvpn
+openvpn_server_hostname: vpn.{{ root_domain }}
 
 # crowdsec
 crowdsec_bouncer_nftables_key: bouncer-key-to-change
