@@ -28,7 +28,6 @@
   ansible.builtin.user:
     name: "{{ item.name }}"
     state: present
-    shell: /bin/bash
     create_home: true
     group: "{{ item.name }}"
     groups: "admin,docker"
@@ -53,6 +52,13 @@
 - block:
   - name: Add keycloak groups
     include_tasks: keycloak.yml
+    loop: "{{ bastion_users }}"
+  delegate_to: localhost
+  become: false
+
+- block:
+  - name: Add kubernetes user
+    include_tasks: kubernetes.yml
     loop: "{{ bastion_users }}"
   delegate_to: localhost
   become: false

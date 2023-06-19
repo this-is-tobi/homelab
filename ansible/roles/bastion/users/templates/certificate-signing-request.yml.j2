@@ -1,0 +1,10 @@
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: user-request-{{ item.name }}
+spec:
+  request: {{ lookup('file', '{{ bastion_local_dir }}/{{ item.name }}/kubernetes/{{ item.name }}.csr') | b64encode }}
+  signerName: kubernetes.io/kube-apiserver-client
+  expirationSeconds: 31536000 # 1 year
+  usages:
+  - client auth
