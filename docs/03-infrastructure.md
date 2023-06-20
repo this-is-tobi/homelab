@@ -1,5 +1,7 @@
 # Infrastructure
 
+![architecture](images/home.drawio.png)
+
 ## Gateway
 
 A host is configured as the gateway to the local network (*i.e handle all incoming traffic*). It runs various services deployed via docker :
