@@ -1,0 +1,5 @@
+---
+- name: Deploy argocd app project
+  kubernetes.core.k8s:
+    state: present
+    template: app-project.yml.j2

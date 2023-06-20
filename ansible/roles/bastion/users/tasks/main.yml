@@ -62,3 +62,10 @@
     loop: "{{ bastion_users }}"
   delegate_to: localhost
   become: false
+
+- block:
+  - name: Add argocd user project
+    include_tasks: argocd.yml
+    loop: "{{ bastion_users }}"
+  delegate_to: localhost
+  become: false
