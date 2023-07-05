@@ -43,3 +43,4 @@ Following services are connected through sso :
 - Harbor
 - Grafana
 - Minio
+- Vault
