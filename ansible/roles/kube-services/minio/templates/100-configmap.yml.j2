@@ -11,7 +11,7 @@ data:
   MINIO_IDENTITY_OPENID_DISPLAY_NAME: "Keycloak"
   MINIO_IDENTITY_OPENID_SCOPES: "openid,generic,minio-authorization"
   MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC: "on"
-  MINIO_IDENTITY_OPENID_CLAIM_NAME: "policy"
+  MINIO_IDENTITY_OPENID_CLAIM_NAME: "groups"
   MINIO_IDENTITY_OPENID_CLAIM_USERINFO: "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/userinfo"
   MINIO_IDENTITY_OPENID_VENDOR: "keycloak"
   MINIO_IDENTITY_OPENID_KEYCLOAK_REALM: "{{ keycloak_realm }}"
