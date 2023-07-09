@@ -7,6 +7,10 @@
     - name: kube-services/longhorn
       tags:
         - longhorn
+    - name: kube-services/system-upgrade
+      tags:
+        - system-upgrade
+        - never
     - name: kube-services/cert-manager
       tags:
         - cert-manager

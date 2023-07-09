@@ -37,7 +37,6 @@ extra_server_args: >-
   --tls-san {{ apiserver_endpoint }}
   --disable local-storage 
   --write-kubeconfig-mode 644 
-  --node-taint node-role.kubernetes.io/master=true:NoSchedule 
   --node-label node-type=master
 
 # extra args to pass to worker nodes
