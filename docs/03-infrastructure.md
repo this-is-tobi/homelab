@@ -27,21 +27,23 @@ Some hosts are configrured to run [k3s](https://k3s.io) (*Lightweight Kubernetes
 - 5 x worker nodes
 
 The cluster comes with k3s integrated [klipper](https://github.com/k3s-io/klipper-lb) loadbalancer and [traefik](https://traefik.io/) ingressController.
+For convenience, [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed to perform an automatic k3s upgrade on each node by using two plans (one for masters and the other one for workers).
 
 [Longhorn](https://longhorn.io/) is used to deliver distributed block storage accross kubernetes, it will enroll all servers tagged `additional_disk: true` in [inventory/hosts.yml](../ansible/inventory-example/hosts.yml).
 
 The following services are deployed in the cluster :
 
-| Name                                                            | Description                            | Helm chart                                                                                                    |
-| --------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)             | GitOps continuous delivery tool        | [bitnami/argo-cd](https://artifacthub.io/packages/helm/bitnami/argo-cd)                                       |
-| [Cert-manager](https://cert-manager.io/)                        | Cloud native certificate management    | [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager)                   |
-| [Dashy](https://github.com/Lissy93/dashy)                       | Home dashboard                         | -                                                                                                             |
-| [Grafana](https://grafana.com/)                                 | Observability dashboards               | [bitnami/grafana](https://artifacthub.io/packages/helm/bitnami/grafana)                                       |
-| [Harbor](https://goharbor.io/)                                  | Cloud native registry                  | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                         |
-| [Keycloak](https://keycloak.org)                                | Single Sign On service                 | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                     |
-| [Kubernetes-dashboard](https://github.com/kubernetes/dashboard) | Kubernetes dashboard                   | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard) |
-| [Longhorn](https://longhorn.io/)                                | Cloud native distributed block storage | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                   |
-| [Minio](https://min.io/)                                        | High Performance Object Storage        | [bitnami/minio](https://artifacthub.io/packages/helm/bitnami/minio)                                           |
-| [Prometheus](https://prometheus.io/)                            | Open-source monitoring solution        | [bitnami/kube-prometheus](https://artifacthub.io/packages/helm/bitnami/kube-prometheus)                       |
-| [Vault](https://www.vaultproject.io/)                           | Secret management service              | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                       |
+| Name                                                                              | Description                            | Helm chart                                                                                                    |
+| --------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)                               | GitOps continuous delivery tool        | [bitnami/argo-cd](https://artifacthub.io/packages/helm/bitnami/argo-cd)                                       |
+| [Cert-manager](https://cert-manager.io/)                                          | Cloud native certificate management    | [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager)                   |
+| [Dashy](https://github.com/Lissy93/dashy)                                         | Home dashboard                         | -                                                                                                             |
+| [Grafana](https://grafana.com/)                                                   | Observability dashboards               | [bitnami/grafana](https://artifacthub.io/packages/helm/bitnami/grafana)                                       |
+| [Harbor](https://goharbor.io/)                                                    | Cloud native registry                  | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                         |
+| [Keycloak](https://keycloak.org)                                                  | Single Sign On service                 | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                     |
+| [Kubernetes-dashboard](https://github.com/kubernetes/dashboard)                   | Kubernetes dashboard                   | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard) |
+| [Longhorn](https://longhorn.io/)                                                  | Cloud native distributed block storage | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                   |
+| [Minio](https://min.io/)                                                          | High Performance Object Storage        | [bitnami/minio](https://artifacthub.io/packages/helm/bitnami/minio)                                           |
+| [Prometheus](https://prometheus.io/)                                              | Open-source monitoring solution        | [bitnami/kube-prometheus](https://artifacthub.io/packages/helm/bitnami/kube-prometheus)                       |
+| [System-upgrade-controller](https://github.com/rancher/system-upgrade-controller) | K3S upgrade controller                 | -                                                                                                             |
+| [Vault](https://www.vaultproject.io/)                                             | Secret management service              | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                       |
