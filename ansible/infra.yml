@@ -1,8 +1,22 @@
+#-----#
+# All #
+#-----#
+
+# OS upgrade
+- hosts: all
+  become: true
+  serial: 1
+  tags:
+    - os-upgrade
+    - never
+  roles:
+    - name: common/upgrade
+
 #---------#
 # Gateway #
 #---------#
 
-# Common
+# Init
 - hosts: gateway
   become: true
   tags: 
@@ -48,7 +62,7 @@
 # Bastion #
 #---------#
 
-# Common
+# Init
 - hosts: bastion
   become: true
   tags: 
