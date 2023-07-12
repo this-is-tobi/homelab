@@ -106,7 +106,7 @@
 
 - name: Copy bouncer config file
   ansible.builtin.template:
-    src: "crowdsec-firewall-bouncer.yal.j2"
+    src: "crowdsec-firewall-bouncer.yml.j2"
     dest: "/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yml"
 
 - name: Enable and start bouncer service
