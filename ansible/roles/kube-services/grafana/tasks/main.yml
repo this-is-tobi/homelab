@@ -38,7 +38,7 @@
     name: grafana
     update_repo_cache: true
     chart_ref: bitnami/grafana
-    chart_version: 8.4.4
+    chart_version: 9.0.3
     create_namespace: true
     namespace: monitoring
     wait: true
