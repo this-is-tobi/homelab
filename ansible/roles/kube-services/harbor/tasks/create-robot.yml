@@ -9,10 +9,6 @@
     status_code: [200, 404]
   register: get_harbor_robot
 
-- name: debug
-  debug:
-    var: get_harbor_robot
-
 - name: Create robot
   ansible.builtin.uri:
     method: POST
