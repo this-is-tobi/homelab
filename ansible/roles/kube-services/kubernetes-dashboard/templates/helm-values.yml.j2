@@ -1,30 +1,29 @@
 ---
-nodeSelector:
-  node-type: worker
+app:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    issuer:
+      name: letsencrypt-prod
+      scope: cluster
+    hosts:
+      - {{ kubernetes_dashboard_domain }}
+    paths:
+      web: /
+      api: /api
+    tls:
+      - hosts:
+          - {{ kubernetes_dashboard_domain }}
+        secretName: letsencrypt-prod-key
+  nodeSelector:
+    node-type: worker
+  settings:
+    global:
+      itemsPerPage: 25
 
-settings:
-  itemsPerPage: 25
 
-protocolHttp: true
+cert-manager:
+  enabled: false
 
-extraArgs:
-  - --enable-insecure-login
-  - --insecure-bind-address=0.0.0.0
-
-service:
-  externalPort: 8080
-
-ingress:
-  enabled: true
-  className: traefik
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  hosts:
-    - {{ kubernetes_dashboard_domain }}
-  paths:
-    - /
-    - /*
-  tls:
-    - hosts:
-        - {{ kubernetes_dashboard_domain }}
-      secretName: letsencrypt-prod-key
+nginx:
+  enabled: false

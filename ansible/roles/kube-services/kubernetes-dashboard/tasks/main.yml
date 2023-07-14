@@ -10,7 +10,7 @@
     name: kubernetes-dashboard
     update_repo_cache: true
     chart_ref: kubernetes-dashboard/kubernetes-dashboard
-    chart_version: 6.0.8
+    chart_version: 7.0.2
     create_namespace: true
     namespace: kubernetes-dashboard
     wait: true
@@ -22,9 +22,7 @@
     state: present
     template: "{{ item }}"
   with_items:
-    - 100-cluster-role.yml.j2
-    - 200-cluster-role-binding.yml.j2
-    - 300-service-account-token.yml.j2
+    - 100-service-account-token.yml.j2
 
 - name: Get kubernetes-dashboard connection token
   kubernetes.core.k8s_info:
