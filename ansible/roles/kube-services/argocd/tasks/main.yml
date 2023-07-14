@@ -25,7 +25,7 @@
     name: argocd
     update_repo_cache: true
     chart_ref: bitnami/argo-cd
-    chart_version: 4.7.5
+    chart_version: 4.7.15
     create_namespace: true
     namespace: argocd
     wait: true
