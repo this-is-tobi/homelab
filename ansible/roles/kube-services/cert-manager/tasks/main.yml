@@ -10,7 +10,7 @@
     name: cert-manager
     update_repo_cache: true
     chart_ref: jetstack/cert-manager
-    chart_version: 1.11.3
+    chart_version: 1.12.2
     create_namespace: true
     namespace: cert-manager
     wait: true
