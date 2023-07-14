@@ -25,7 +25,7 @@
     name: keycloak
     update_repo_cache: true
     chart_ref: bitnami/keycloak
-    chart_version: 15.1.2
+    chart_version: 15.1.6
     create_namespace: true
     namespace: keycloak
     wait: true
