@@ -10,7 +10,7 @@
     name: vault
     update_repo_cache: true
     chart_ref: hashicorp/vault
-    chart_version: 0.24.1
+    chart_version: 0.25.0
     create_namespace: true
     namespace: vault
     wait: true
@@ -36,6 +36,10 @@
     kind: Secret
     name: vault-keys
   register: vault_keys
+
+- name: debug
+  debug:
+    var: vault-keys
 
 - name: Check vault status
   include_tasks: check.yml
