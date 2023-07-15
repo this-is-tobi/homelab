@@ -28,7 +28,7 @@
       "type": "oidc"
 
 - name: Get auth methods
-  uri:
+  ansible.builtin.uri:
     validate_certs: true
     url: "https://{{ vault_domain }}/v1/sys/auth/oidc"
     method: GET
@@ -47,7 +47,7 @@
       "X-Vault-Token": "{{ vault_token }}"
     body: "{{ enable_auth }}"
     body_format: json
-  when: get_auth_method == 400
+  when: get_auth_method.status == 400
 
 - name: Configue oidc auth method
   ansible.builtin.uri:
@@ -72,7 +72,7 @@
     body_format: json
 
 - name: Get kv engines
-  uri:
+  ansible.builtin.uri:
     validate_certs: true
     method: GET
     url: "https://{{ vault_domain }}/v1/sys/mounts/homelab"
@@ -82,7 +82,7 @@
   register: get_engines
 
 - name: Create kv engine
-  uri:
+  ansible.builtin.uri:
     validate_certs: true
     url: "https://{{ vault_domain }}/v1/sys/mounts/homelab"
     method: POST

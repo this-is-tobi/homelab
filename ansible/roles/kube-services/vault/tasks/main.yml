@@ -38,15 +38,11 @@
     name: vault-keys
   register: vault_keys
 
-- name: debug
-  debug:
-    var: vault-keys
-
 - name: Check vault status
   include_tasks: check.yml
 
 - name: Check if vault is coherent
-  assert:
+  ansible.builtin.assert:
     that:
       - ((vault_status in ['sealed', 'OK']) and (vault_keys.resources | length > 0)) or ((vault_status == 'not init') and (vault_keys.resources | length == 0))
     fail_msg:
@@ -66,14 +62,6 @@
   until: "init is not failed"
   retries: 6
   delay: 10
-
-- name: Set fact to unseal vault
-  set_fact:
-    num: "2"
-
-- name: Unseal vault
-  when: vault_status == 'not init'
-  include_tasks: unseal.yml
 
 - name: store vault keys
   kubernetes.core.k8s:
@@ -132,16 +120,16 @@
     line: "vault_unseal_key3: {{ vault_unseal_key3 }}"
   no_log: true
 
-- name: Check vault status
-  include_tasks: check.yml
-
 - name: Set fact to unseal vault
-  set_fact:
-    num: "1"
+  ansible.builtin.set_fact:
+    num: "0"
 
 - name: Unseal vault
-  when: vault_status == 'sealed'
+  when: vault_status == 'not init' or vault_status == 'sealed'
   include_tasks: unseal.yml
+
+- name: Check vault status
+  include_tasks: check.yml
 
 - name: Perform sso configuration
   include_tasks: sso.yml
