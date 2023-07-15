@@ -11,6 +11,7 @@
     update_repo_cache: true
     chart_ref: kubernetes-dashboard/kubernetes-dashboard
     chart_version: 7.0.2
+    timeout: 10m0s
     create_namespace: true
     namespace: kubernetes-dashboard
     wait: true

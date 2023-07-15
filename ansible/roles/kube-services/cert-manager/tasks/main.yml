@@ -14,6 +14,7 @@
     create_namespace: true
     namespace: cert-manager
     wait: true
+    timeout: 10m0s
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
