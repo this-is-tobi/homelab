@@ -8,10 +8,12 @@ ansible_port: 22
 
 # bastion users
 bastion_users:
-  - name: tobi
+  - username: tobi
     setup: true
-  - name: anotherone
+    ssh_key: ""
+  - username: anotherone
     setup: false
+    ssh_key: ""
 
 # root domain
 root_domain: domain.com

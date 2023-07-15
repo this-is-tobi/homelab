@@ -2,23 +2,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: {{ item.name }}
-  namespace: {{ item.name }}
+  name: {{ item.username }}
+  namespace: {{ item.username }}
 spec:
   destinations:
     - name: 'in-cluster'
-      namespace: {{ item.name }}
+      namespace: {{ item.username }}
       server: 'https://kubernetes.default.svc'
   namespaceResourceWhitelist:
     - group: '*'
       kind: '*'
   roles:
-    - description: {{ item.name }}
+    - description: {{ item.username }}
       groups:
-        - /{{ item.name }}
-        - {{ item.name }}
-      name: {{ item.name }}
+        - /{{ item.username }}
+        - {{ item.username }}
+      name: {{ item.username }}
       policies:
-        - p, proj:{{ item.name }}:{{ item.name }}, applications, *, {{ item.name }}/*, allow
+        - p, proj:{{ item.username }}:{{ item.username }}, applications, *, {{ item.username }}/*, allow
   sourceRepos:
     - '*'

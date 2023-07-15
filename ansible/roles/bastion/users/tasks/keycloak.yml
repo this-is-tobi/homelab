@@ -10,5 +10,5 @@
     auth_username: "{{ keycloak_username }}"
     auth_password: "{{ keycloak_password }}"
     realm: "{{ keycloak_realm }}"
-    name: "{{ item.name }}"
+    name: "{{ item.username }}"
     state: present

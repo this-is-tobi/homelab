@@ -4,12 +4,12 @@
 
 - name: Check if user exists
   stat:
-    path: "/services/openvpn/users/{{ item.name }}.ovpn"
+    path: "/services/openvpn/users/{{ item.username }}.ovpn"
   register: openvpn_profile
 
-- name: Add openvpn profile for {{ item.name }}
+- name: Add openvpn profile for {{ item.username }}
   ansible.builtin.expect:
-    command: "sh ./openvpn.sh -a {{ item.name }}"
+    command: "sh ./openvpn.sh -a {{ item.username }}"
     chdir: "/services/openvpn"
     responses:
       (?i)Confirm request details: "yes"
@@ -19,14 +19,14 @@
 
 - name: Retrieve openvpn profile
   ansible.builtin.shell:
-    cmd: "sh openvpn.sh -g {{ item.name }}"
+    cmd: "sh openvpn.sh -g {{ item.username }}"
     chdir: "/services/openvpn"
   no_log: true
   when: not openvpn_profile.stat.exists
 
 - name: Update users conf with correct vpn server hostname
   ansible.builtin.lineinfile:
-    path: "/services/openvpn/users/{{ item.name }}.ovpn"
+    path: "/services/openvpn/users/{{ item.username }}.ovpn"
     regexp: "^remote "
     line: "remote {{ openvpn_server_hostname }} 1194 udp"
   no_log: true
@@ -34,7 +34,7 @@
 
 - name: Update users conf permissions
   ansible.builtin.file:
-    path: "/services/openvpn/users/{{ item.name }}.ovpn"
+    path: "/services/openvpn/users/{{ item.username }}.ovpn"
     owner: "root"
     group: "root"
     mode: 0751
@@ -43,8 +43,8 @@
 
 - name: Fetch users conf
   ansible.builtin.fetch:
-    src: "/services/openvpn/users/{{ item.name }}.ovpn"
-    dest: "{{ bastion_local_dir }}/{{ item.name }}/openvpn/{{ item.name }}.ovpn"
+    src: "/services/openvpn/users/{{ item.username }}.ovpn"
+    dest: "{{ bastion_local_dir }}/{{ item.username }}/openvpn/{{ item.username }}.ovpn"
     flat: yes
   no_log: true
   when: not openvpn_profile.stat.exists

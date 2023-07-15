@@ -1,20 +1,20 @@
 ---
 - name: Create local directory
   ansible.builtin.file:
-    path: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes"
+    path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes"
     state: directory
   delegate_to: localhost
 
 - name: Generate an OpenSSL private key
   community.crypto.openssl_privatekey:
-    path: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes/{{ item.name }}.key"
+    path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.key"
     size: 2048
 
 - name: Generate an OpenSSL Certificate Signing Request
   community.crypto.openssl_csr:
-    path: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes/{{ item.name }}.csr"
-    privatekey_path: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes/{{ item.name }}.key"
-    common_name: "{{ item.name }}"
+    path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.csr"
+    privatekey_path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.key"
+    common_name: "{{ item.username }}"
 
 - name: Create a k8s namespace
   kubernetes.core.k8s:
@@ -29,7 +29,7 @@
     template: certificate-signing-request.yml.j2
 
 - name: Approve k8s CertificateRequest
-  ansible.builtin.shell: kubectl certificate approve user-request-{{ item.name }}
+  ansible.builtin.shell: kubectl certificate approve user-request-{{ item.username }}
 
 - name: Deploy rbac
   kubernetes.core.k8s:
@@ -39,23 +39,23 @@
 - name: Find user certificate
   kubernetes.core.k8s_info:
     kind: CertificateSigningRequest
-    name: user-request-{{ item.name }}
+    name: user-request-{{ item.username }}
   register: "bastion_user_certificate"
 
 - name: Fetch user certificate
   ansible.builtin.copy:
     content: "{{ bastion_user_certificate.resources[0].status.certificate | b64decode }}"
-    dest: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes/{{ item.name }}.crt"
+    dest: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.crt"
 
 - name: Create kubeconfig
   ansible.builtin.template:
     src: kubeconfig.yml.j2
-    dest: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes/kubeconfig"
+    dest: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/kubeconfig"
     mode: 0644
 
 - name: Create a directory if it does not exist
   ansible.builtin.file:
-    path: /home/{{ item.name }}/.kube
+    path: /home/{{ item.username }}/.kube
     state: directory
     mode: '0755'
   delegate_to: pi.bastion
@@ -63,10 +63,10 @@
 
 - name: Copy kubeconfig on bastion user's home directory
   ansible.builtin.copy:
-    src: "{{ bastion_local_dir }}/{{ item.name }}/kubernetes/kubeconfig"
-    dest: "/home/{{ item.name }}/.kube/config"
-    owner: "{{ item.name }}"
-    group: "{{ item.name }}"
+    src: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/kubeconfig"
+    dest: "/home/{{ item.username }}/.kube/config"
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
     mode: 0600
   delegate_to: pi.bastion
   become: true

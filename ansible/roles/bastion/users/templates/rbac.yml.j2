@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ item.name }}
+  name: {{ item.username }}
 
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ item.name }}
-  namespace: {{ item.name }}
+  name: {{ item.username }}
+  namespace: {{ item.username }}
 rules:
 - apiGroups: ["", "apps", "networking.k8s.io", "autoscaling", "batch"]
   resources: ["*"]
@@ -19,13 +19,13 @@ rules:
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{ item.name }}
-  namespace: {{ item.name }}
+  name: {{ item.username }}
+  namespace: {{ item.username }}
 subjects:
 - kind: User
-  name: {{ item.name }}
+  name: {{ item.username }}
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: {{ item.name }}
+  name: {{ item.username }}
