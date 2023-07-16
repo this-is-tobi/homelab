@@ -100,3 +100,18 @@
     dest: "~/.kube/"
     flat: yes
   when: ansible_default_ipv4.address == master_ip
+
+- name: Get cluster CA data
+  ansible.builtin.shell:
+    cmd: |
+      kubectl config view --raw -o jsonpath='{ .clusters[0].cluster.certificate-authority-data }'
+  when: ansible_default_ipv4.address == master_ip
+  register: certificate_authority_data
+
+- name: Fetch cluster CA data
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^certificate_authority_data:"
+    line: "certificate_authority_data: {{ certificate_authority_data.stdout_lines }}"
+  when: ansible_default_ipv4.address == master_ip
+  no_log: true
