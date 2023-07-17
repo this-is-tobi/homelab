@@ -37,9 +37,13 @@
   include_tasks: sso.yml
 
 - name: Create projects
-  include_tasks: create-project.yml
+  include_tasks: project.yml
+  loop: "{{ harbor_projects }}"
+
+- name: Create projects quotas
+  include_tasks: quota.yml
   loop: "{{ harbor_projects }}"
 
 - name: Create robots
-  include_tasks: create-robot.yml
+  include_tasks: robot.yml
   loop: "{{ harbor_robots }}"

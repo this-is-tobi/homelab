@@ -1,0 +1,42 @@
+---
+- name: Get project
+  ansible.builtin.uri:
+    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ item.project_name }}
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    status_code: [200, 404]
+  register: get_harbor_project
+
+- name: Set project quota config
+  ansible.builtin.set_fact:
+    quota_config: |
+      { 
+        "hard": { 
+          "storage": {{ item.metadata.storage_limit | human_to_bytes | int }} 
+        } 
+      }
+
+- name: Get project quota
+  ansible.builtin.uri:
+    method: GET
+    url: https://{{ harbor_domain }}/api/v2.0/quotas/?reference_id={{ get_harbor_project.json.project_id }}
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    status_code: [200]
+  register: get_harbor_project_quota
+  when: get_harbor_project.status == 200
+
+- name: Update project quotas
+  ansible.builtin.uri:
+    method: PUT
+    url: https://{{ harbor_domain }}/api/v2.0/quotas/{{ get_harbor_project_quota.json[0].id }}
+    password: "{{ harbor_password }}"
+    user: admin
+    force_basic_auth: true
+    body_format: json
+    body: "{{ quota_config }}"
+    status_code: [200]
+  when: get_harbor_project_quota.status == 200

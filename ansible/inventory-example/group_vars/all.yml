@@ -15,6 +15,7 @@ bastion_users:
     setup: true
     admin: true
     minio_quota: 10Gi
+    harbor_quota: 10GB
     ssh_key: ""
 
 # root domain
