@@ -8,7 +8,7 @@
 - name: Create admin shared home directory
   ansible.builtin.file:
     state: directory
-    path: /home/admin
+    path: /home/shared
     owner: root
     group: admin
     mode: 0770
@@ -17,13 +17,13 @@
 - name: Clone setup repository
   ansible.builtin.git:
     repo: 'https://github.com/this-is-tobi/dotfiles'
-    dest: /home/admin/dotfiles
+    dest: /home/shared/dotfiles
     force: true
 
 - name: Set admin shared home directory permissions
   ansible.builtin.file:
     state: directory
-    path: /home/admin
+    path: /home/shared
     owner: root
     group: admin
     mode: 0770
@@ -31,15 +31,15 @@
 
 - name: Create .zshrc to skip newuser tool
   ansible.builtin.file:
-    path: "/home/{{ item.name }}/.zshrc"
+    path: "/home/{{ item.username }}/.zshrc"
     state: touch
-    owner: "{{ item.name }}"
-    group: "{{ item.name }}"
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
     mode: 0644
 
 - name: Launch setup script
-  become_user: "{{ item.name }}"
+  become_user: "{{ item.username }}"
   ansible.builtin.shell:
     cmd: |
       ./setup/setup-debian.sh -p "base,devops" -d
-    chdir: /home/admin/dotfiles
+    chdir: /home/shared/dotfiles

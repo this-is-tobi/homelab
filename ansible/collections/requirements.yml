@@ -4,3 +4,4 @@ collections:
   - name: community.crypto
   - name: ansible.utils
   - name: kubernetes.core
+  - name: amazon.aws

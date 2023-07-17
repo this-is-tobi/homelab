@@ -12,3 +12,57 @@
     realm: "{{ keycloak_realm }}"
     name: "{{ item.username }}"
     state: present
+
+- name: Create keycloak roles
+  community.general.keycloak_role:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    name: "{{ item }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ minio_client_id }}"
+    description: Role for minio
+    state: present
+  loop:
+    - "{{ item.username }}"
+
+- name: Map keycloak role to user group
+  community.general.keycloak_client_rolemapping:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ minio_client_id }}"
+    group_name: "{{ item.username }}"
+    roles:
+      - name: "{{ item.username }}"
+    state: present
+
+# - name: Create keycloak user
+#   community.general.keycloak_user:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     username: "{{ item.username }}"
+#     firstName: "{{ item.firstname }}"
+#     lastName: "{{ item.lastname }}"
+#     email: "{{ item.email }}"
+#     enabled: true
+#     emailVerified: true
+#     credentials:
+#       - type: password
+#         value: "{{ keycloak_default_password }}"
+#         temporary: true
+#     groups:
+#       - name: "{{ item.username }}"
+#         state: present
+#       - name: admin
+#         state: present
+#     state: present

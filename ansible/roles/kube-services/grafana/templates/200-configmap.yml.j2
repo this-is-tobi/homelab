@@ -22,4 +22,7 @@ data:
     token_url = https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/token
     api_url = https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/userinfo
     allow_assign_grafana_admin = true
-    groups_attribute_path = contains(groups[*], 'admin') && 'GrafanaAdmin' || contains(groups[*], 'grafana') && 'Editor' || 'Viewer'
+    role_attribute_path = contains(grafana-policy[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(grafana-policy[*], 'admin') && 'Admin' || contains(grafana-policy[*], 'editor') && 'Editor' || 'Viewer'
+    groups_attribute_path = contains(groups[*], '/admin') && 'GrafanaAdmin' || 'Viewer'
+    [dashboards]
+    default_home_dashboard_path: dashboards/k3s/k3s.json

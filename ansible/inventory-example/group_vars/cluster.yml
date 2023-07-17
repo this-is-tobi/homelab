@@ -160,6 +160,9 @@ keycloak_username: admin
 # keycloak admin password
 keycloak_password: ""
 
+# keycloak default password for users
+keycloak_default_password: password123!
+
 # keycloak realm used by the homelab sso system
 keycloak_realm: homelab
 

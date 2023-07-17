@@ -1,17 +1,4 @@
 ---
-- name: Create keycloak group
-  community.general.keycloak_group:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    name: "{{ item }}"
-    state: present
-  loop:
-    - grafana
-
 - name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
@@ -35,38 +22,56 @@
     clientAuthenticatorType: client-secret
     public_client: false
     protocol: openid-connect
+    protocol_mappers:
+      - name: grafana-policy-mapper
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-client-role-mapper
+        consentRequired: false
+        config:
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: grafana-policy
+          userinfo.token.claim: true
+          jsonType.label: String
+          aggregate.attrs: true
+          client_id: "{{ grafana_client_id }}"
+          multivalued: true
     default_client_scopes:
       - generic
+      - groups
     state: present
 
-# - name: Create keycloak roles
-#   community.general.keycloak_role:
-#     auth_client_id: admin-cli
-#     auth_keycloak_url: https://{{ keycloak_domain }}
-#     auth_realm: master
-#     auth_username: "{{ keycloak_username }}"
-#     auth_password: "{{ keycloak_password }}"
-#     name: "{{ item }}"
-#     realm: "{{ keycloak_realm }}"
-#     client_id: "{{ grafana_client_id }}"
-#     description: Role for grafana
-#     state: present
-#   loop:
-#     - grafanaadmin
-#     - admin
-#     - editor
+- name: Create keycloak roles
+  community.general.keycloak_role:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    name: "{{ item }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ grafana_client_id }}"
+    description: Role for grafana
+    state: present
+  loop:
+    - grafanaadmin
+    - admin
+    - editor
 
-# - name: Map keycloak role to admin group
-#   community.general.keycloak_client_rolemapping:
-#     auth_client_id: admin-cli
-#     auth_keycloak_url: https://{{ keycloak_domain }}
-#     auth_realm: master
-#     auth_username: "{{ keycloak_username }}"
-#     auth_password: "{{ keycloak_password }}"
-#     realm: "{{ keycloak_realm }}"
-#     client_id: "{{ grafana_client_id }}"
-#     group_name: admin
-#     roles:
-#       - name: grafanaadmin
-#         id: grafanaadmin
-#     state: present
+- name: Map keycloak role to admin group
+  community.general.keycloak_client_rolemapping:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ grafana_client_id }}"
+    group_name: admin
+    roles:
+      - name: "{{ item }}"
+    state: present
+  loop:
+    - grafanaadmin
+    - admin
+    - editor

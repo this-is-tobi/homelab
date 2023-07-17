@@ -6,7 +6,7 @@
 
 - name: Create personnal group for each admin user
   ansible.builtin.group:
-    name: "{{ item.name }}"
+    name: "{{ item.username }}"
     state: present
   no_log: true
   loop: "{{ bastion_users }}"
@@ -26,10 +26,10 @@
 
 - name: Create admin users
   ansible.builtin.user:
-    name: "{{ item.name }}"
+    name: "{{ item.username }}"
     state: present
     create_home: true
-    group: "{{ item.name }}"
+    group: "{{ item.username }}"
     groups: "admin,docker"
     append: true
     generate_ssh_key: true
@@ -57,7 +57,7 @@
   become: false
 
 - block:
-  - name: Add kubernetes user
+  - name: Add kubernetes users
     include_tasks: kubernetes.yml
     loop: "{{ bastion_users }}"
   delegate_to: localhost
@@ -66,6 +66,13 @@
 - block:
   - name: Add argocd user project
     include_tasks: argocd.yml
+    loop: "{{ bastion_users }}"
+  delegate_to: localhost
+  become: false
+
+- block:
+  - name: Add minio bucket
+    include_tasks: minio.yml
     loop: "{{ bastion_users }}"
   delegate_to: localhost
   become: false

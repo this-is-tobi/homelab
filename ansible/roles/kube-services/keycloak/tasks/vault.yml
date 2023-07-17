@@ -1,17 +1,4 @@
 ---
-- name: Create keycloak group
-  community.general.keycloak_group:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    name: "{{ item }}"
-    state: present
-  loop:
-    - vault
-
 - name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
@@ -38,4 +25,5 @@
     protocol: openid-connect
     default_client_scopes:
       - generic
+      - groups
     state: present

@@ -8,11 +8,13 @@ ansible_port: 22
 
 # bastion users
 bastion_users:
-  - username: tobi
+  - username: jdupond
+    firstname: Jean
+    lastname: DUPOND
+    email: jean.dupond@example.com
     setup: true
-    ssh_key: ""
-  - username: anotherone
-    setup: false
+    admin: true
+    minio_quota: 10Gi
     ssh_key: ""
 
 # root domain

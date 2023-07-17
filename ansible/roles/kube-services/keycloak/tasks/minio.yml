@@ -1,44 +1,4 @@
 ---
-- name: Create keycloak group
-  community.general.keycloak_group:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    name: "{{ item }}"
-    state: present
-    attributes:
-      policy: readwrite
-  loop:
-    - minio
-
-- name: Create keycloak client scope
-  community.general.keycloak_clientscope:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    name: minio-authorization
-    realm: "{{ keycloak_realm }}"
-    description: Get minio authorizations
-    protocol: openid-connect
-    protocol_mappers:
-      - name: minio-policy-mapper
-        protocol: openid-connect
-        protocolMapper: oidc-usermodel-attribute-mapper
-        config:
-          user.atribute: policy
-          id.token.claim: true
-          access.token.claim: true
-          claim.name: policy
-          userinfo.token.claim: true
-          jsonType.label: String
-          aggregate.attrs: true
-          user.attribute: policy
-
 - name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
@@ -64,10 +24,63 @@
     admin_url: "https://{{ keycloak_domain }}/admin"
     public_client: false
     protocol: openid-connect
+    protocol_mappers:
+      - name: minio-policy-mapper
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-client-role-mapper
+        consentRequired: false
+        config:
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: minio-policy
+          userinfo.token.claim: true
+          jsonType.label: String
+          aggregate.attrs: true
+          client_id: "{{ minio_client_id }}"
+          multivalued: true
     default_client_scopes:
       - generic
-      - minio-authorization
+      - groups
     attributes:
       use.jwks.url: true
       jwks.url: https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/certs
     state: present
+
+- name: Create keycloak roles
+  community.general.keycloak_role:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    name: "{{ item }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ minio_client_id }}"
+    description: Role for minio
+    state: present
+  loop:
+    - consoleAdmin
+    - diagnostics
+    - readonly
+    - readwrite
+    - writeonly
+
+- name: Map keycloak role to admin group
+  community.general.keycloak_client_rolemapping:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ minio_client_id }}"
+    group_name: admin
+    roles:
+      - name: "{{ item }}"
+    state: present
+  loop:
+    - consoleAdmin
+    - diagnostics
+    - readonly
+    - readwrite
+    - writeonly
