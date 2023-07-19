@@ -1,0 +1,25 @@
+---
+- name: Get kv engines
+  ansible.builtin.uri:
+    validate_certs: true
+    method: GET
+    url: "https://{{ vault_domain }}/v1/sys/mounts/{{ item.kv_path }}"
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: get_engines
+
+- name: Create kv engine
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/mounts/{{ item.kv_path }}"
+    method: POST
+    status_code: [204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      type: kv
+      options:
+        version: 2
+    body_format: json
+  when: get_engines.status == 400

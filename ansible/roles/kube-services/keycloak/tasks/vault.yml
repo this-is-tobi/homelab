@@ -13,7 +13,7 @@
     frontchannel_logout: true
     enabled: true
     redirect_uris:
-      - https://{{ vault_domain }}/oidc/oidc/callback
+      - https://{{ vault_domain }}/oidc/callback
       - https://{{ vault_domain }}/ui/vault/auth/oidc/oidc/callback
     web_origins:
       - https://{{ vault_domain }}

@@ -133,3 +133,19 @@
 
 - name: Perform sso configuration
   include_tasks: sso.yml
+
+- name: Create default 'secret/' kv engine
+  include_tasks: kv-engine.yml
+  with_items: 
+    - kv_path: secret
+
+- name: Create policies
+  include_tasks: policy.yml
+  with_items: 
+    - policy_name: admin
+      policy: "{{ lookup('ansible.builtin.template', 'superadmin-policy.json.j2') }}"
+
+- name: Create admin group
+  include_tasks: group.yml
+  with_items: 
+    - username: admin
