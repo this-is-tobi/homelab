@@ -17,6 +17,17 @@
           "storage": {{ item.metadata.storage_limit | human_to_bytes | int }} 
         } 
       }
+  when: item.metadata.storage_limit != -1
+
+- name: Set project quota config
+  ansible.builtin.set_fact:
+    quota_config: |
+      { 
+        "hard": { 
+          "storage": {{ item.metadata.storage_limit | int }} 
+        } 
+      }
+  when: item.metadata.storage_limit == -1
 
 - name: Get project quota
   ansible.builtin.uri:
