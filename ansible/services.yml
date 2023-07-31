@@ -44,6 +44,9 @@
     - name: kube-services/vault
       tags:
         - vault
+    - name: kube-services/postgres-operator
+      tags:
+        - postgres
     - name: kube-services/dashy
       tags:
         - dashy
