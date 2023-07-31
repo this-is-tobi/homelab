@@ -27,7 +27,7 @@
     harbor_config:
       "auth_mode": "oidc_auth"
       "notification_enable": true
-      "oidc_admin_group": "/admin"
+      "oidc_admin_group": "admin"
       "oidc_auto_onboard": true
       "oidc_client_id": "{{ harbor_client_id }}"
       "oidc_endpoint": "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
