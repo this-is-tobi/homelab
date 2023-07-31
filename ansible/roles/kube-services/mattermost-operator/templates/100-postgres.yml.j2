@@ -1,0 +1,56 @@
+---
+apiVersion: v1
+data:
+  username: {{ mattermost_postgres_admin_username | b64encode }}
+  password: {{ mattermost_postgres_admin_password | b64encode }}
+kind: Secret
+metadata:
+  name: mattermost-postgres-admin
+  namespace: mattermost
+type: kubernetes.io/basic-auth
+
+---
+apiVersion: v1
+data:
+  username: {{ mattermost_postgres_app_username | b64encode }}
+  password: {{ mattermost_postgres_app_password | b64encode }}
+kind: Secret
+metadata:
+  name: mattermost-postgres-user
+  namespace: mattermost
+type: kubernetes.io/basic-auth
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: mattermost-postgres-cluster
+  namespace: mattermost
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.3
+  instances: 3
+  primaryUpdateStrategy: unsupervised
+  bootstrap:
+    initdb:
+      database: mattermost
+      owner: mattermost
+      secret:
+        name: mattermost-postgres-user
+    # Alternative bootstrap method: start from a backup
+    #recovery:
+    #  backup:
+    #    name: backup-example
+  superuserSecret:
+    name: mattermost-postgres-admin
+  storage:
+    storageClass: longhorn
+    size: 10Gi
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "1"
+    limits:
+      memory: "1Gi"
+      cpu: "2"
+  affinity:
+    enablePodAntiAffinity: true

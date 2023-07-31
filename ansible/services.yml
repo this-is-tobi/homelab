@@ -47,6 +47,9 @@
     - name: kube-services/postgres-operator
       tags:
         - postgres
+    - name: kube-services/mattermost-operator
+      tags:
+        - mattermost
     - name: kube-services/dashy
       tags:
         - dashy

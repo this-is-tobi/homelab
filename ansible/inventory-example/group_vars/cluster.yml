@@ -195,6 +195,38 @@ kubernetes_dashboard_token: ""
 longhorn_domain: longhorn.{{ local_root_domain }}
 
 
+#------------#
+# mattermost #
+#------------#
+
+# mattermost domain used as ingress (web interface)
+mattermost_domain: mattermost.{{ root_domain }}
+
+# mattermost admin username
+mattermost_username: admin
+
+# mattermost admin password
+mattermost_password: ""
+
+# mattermost database admin username
+mattermost_postgres_admin_username: admin
+
+# mattermost database admin password
+mattermost_postgres_admin_password: ""
+
+# mattermost database app username
+mattermost_postgres_app_username: mattermost
+
+# mattermost database app password
+mattermost_postgres_app_password: ""
+
+# mattermost s3 bucket access key
+mattermost_s3_accesskey: ""
+
+# mattermost s3 bucket secret key
+mattermost_s3_secretkey: ""
+
+
 #-------#
 # minio #
 #-------#

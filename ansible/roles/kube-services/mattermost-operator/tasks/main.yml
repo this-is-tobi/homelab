@@ -1,0 +1,72 @@
+---
+- name: Generate random password for mattermost
+  ansible.builtin.set_fact:
+    mattermost_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+  no_log: true
+  when: mattermost_password == ""
+  register: generate_password_mattermost
+
+- name: Fetch mattermost admin password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^mattermost_password:"
+    line: "mattermost_password: {{ mattermost_password }}"
+  no_log: true
+  when: "'skipped' not in generate_password_mattermost"
+
+- name: Generate random password for mattermost postgres admin
+  ansible.builtin.set_fact:
+    mattermost_postgres_admin_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+  no_log: true
+  when: mattermost_postgres_admin_password == ""
+  register: generate_password_mattermost_postgres_admin
+
+- name: Fetch mattermost postgres admin password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^mattermost_postgres_admin_password:"
+    line: "mattermost_postgres_admin_password: {{ mattermost_postgres_admin_password }}"
+  no_log: true
+  when: "'skipped' not in generate_password_mattermost_postgres_admin"
+
+- name: Generate random password for mattermost postgres app
+  ansible.builtin.set_fact:
+    mattermost_postgres_app_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+  no_log: true
+  when: mattermost_postgres_app_password == ""
+  register: generate_password_mattermost_postgres_app
+
+- name: Fetch mattermost postgres app password
+  ansible.builtin.lineinfile:
+    path: "inventory/group_vars/cluster.yml"
+    regexp: "^mattermost_postgres_app_password:"
+    line: "mattermost_postgres_app_password: {{ mattermost_postgres_app_password }}"
+  no_log: true
+  when: "'skipped' not in generate_password_mattermost_postgres_app"
+
+- name: Add mattermost helm repo
+  kubernetes.core.helm_repository:
+    name: mattermost
+    repo_url: https://helm.mattermost.com
+    state: present
+
+- name: Deploy mattermost-operator helm chart
+  kubernetes.core.helm:
+    name: mattermost-operator
+    update_repo_cache: true
+    chart_ref: mattermost/mattermost-operator
+    chart_version: 0.3.5
+    create_namespace: true
+    namespace: mattermost
+    wait: true
+    timeout: 10m0s
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Deploy mattermost application
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 100-postgres.yml.j2
+    - 200-mattermost.yml.j2
