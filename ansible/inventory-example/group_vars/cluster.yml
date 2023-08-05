@@ -4,7 +4,7 @@
 #---------#
 
 # k3s version
-k3s_version: v1.27.3+k3s1
+k3s_version: v1.27.4+k3s1
 
 # k3s_token is required for masters to talk together securely this token should be alpha numeric only
 k3s_token: ""
