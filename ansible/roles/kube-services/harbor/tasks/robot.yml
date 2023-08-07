@@ -1,8 +1,8 @@
 ---
 - name: Get robots
   ansible.builtin.uri:
-    url: https://{{ harbor_domain }}/api/v2.0/robots?name={{ item.name }}
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/robots?name={{ item.name }}
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json
@@ -12,8 +12,8 @@
 - name: Create robot
   ansible.builtin.uri:
     method: POST
-    url: https://{{ harbor_domain }}/api/v2.0/robots
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/robots
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json
@@ -24,8 +24,8 @@
 - name: Update robot
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor_domain }}/api/v2.0/robots/{{ get_harbor_robot.json[0].id }}
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/robots/{{ get_harbor_robot.json[0].id }}
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json

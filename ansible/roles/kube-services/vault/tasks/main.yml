@@ -63,7 +63,7 @@
   retries: 6
   delay: 10
 
-- name: store vault keys
+- name: Store vault keys
   kubernetes.core.k8s:
     definition:
       kind: Secret
@@ -71,54 +71,46 @@
         name: vault-keys
         namespace: vault
       data:
-        key1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
-        key2: "{{ init.stdout_lines[1] | regex_replace('^Unseal Key 2: (.*)$', '\\1', multiline=True) | b64encode }}"
-        key3: "{{ init.stdout_lines[2] | regex_replace('^Unseal Key 3: (.*)$', '\\1', multiline=True) | b64encode }}"
-        root_token: "{{ init.stdout_lines[4] | regex_replace('^Initial Root Token: (.*)$', '\\1', multiline=True) | b64encode }}"
+        unsealKey1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
+        unsealKey2: "{{ init.stdout_lines[1] | regex_replace('^Unseal Key 2: (.*)$', '\\1', multiline=True) | b64encode }}"
+        unsealKey3: "{{ init.stdout_lines[2] | regex_replace('^Unseal Key 3: (.*)$', '\\1', multiline=True) | b64encode }}"
+        rootToken: "{{ init.stdout_lines[4] | regex_replace('^Initial Root Token: (.*)$', '\\1', multiline=True) | b64encode }}"
   when: vault_keys.resources | length == 0
 
-- name: find vault keys
+- name: Find vault keys
   kubernetes.core.k8s_info:
     namespace: vault
     kind: Secret
     name: vault-keys
   register: vault_keys
 
-- name: Set facts for vault root token
-  ansible.builtin.set_fact:
-    vault_token: '{{ vault_keys.resources[0].data.root_token | b64decode }}'
-    vault_unseal_key1: '{{ vault_keys.resources[0].data.key1 | b64decode }}'
-    vault_unseal_key2: '{{ vault_keys.resources[0].data.key2 | b64decode }}'
-    vault_unseal_key3: '{{ vault_keys.resources[0].data.key3 | b64decode }}'
-  no_log: true
-
 - name: Fetch vault root token
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^vault_token:"
-    line: "vault_token: {{ vault_token }}"
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.vault.token = "{{ vault_keys.resources[0].data.root_token }}"' inventory/group_vars/cluster.yml
   no_log: true
+  when: services.vault.token == ""
 
 - name: Fetch vault unseal key 1
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^vault_unseal_key1:"
-    line: "vault_unseal_key1: {{ vault_unseal_key1 }}"
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.vault.unsealKey1 = "{{ vault_keys.resources[0].data.unsealKey1 }}"' inventory/group_vars/cluster.yml
   no_log: true
+  when: services.vault.unsealKey1 == ""
 
 - name: Fetch vault unseal key 2
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^vault_unseal_key2:"
-    line: "vault_unseal_key2: {{ vault_unseal_key2 }}"
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.vault.unsealKey2 = "{{ vault_keys.resources[0].data.unsealKey2 }}"' inventory/group_vars/cluster.yml
   no_log: true
+  when: services.vault.unsealKey2 == ""
 
 - name: Fetch vault unseal key 3
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^vault_unseal_key3:"
-    line: "vault_unseal_key3: {{ vault_unseal_key3 }}"
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.vault.unsealKey3 = "{{ vault_keys.resources[0].data.unsealKey3 }}"' inventory/group_vars/cluster.yml
   no_log: true
+  when: services.vault.unsealKey3 == ""
 
 - name: Set fact to unseal vault
   ansible.builtin.set_fact:

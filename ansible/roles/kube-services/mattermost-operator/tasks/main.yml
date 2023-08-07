@@ -1,48 +1,24 @@
 ---
-- name: Generate random password for mattermost
-  ansible.builtin.set_fact:
-    mattermost_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+- name: Generate mattermost random admin password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.mattermost.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: mattermost_password == ""
-  register: generate_password_mattermost
+  when: services.mattermost.password == ""
 
-- name: Fetch mattermost admin password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^mattermost_password:"
-    line: "mattermost_password: {{ mattermost_password }}"
+- name: Generate mattermost random postgres admin password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.mattermost.postgres.admin.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: "'skipped' not in generate_password_mattermost"
+  when: services.mattermost.postgres.admin.password == ""
 
-- name: Generate random password for mattermost postgres admin
-  ansible.builtin.set_fact:
-    mattermost_postgres_admin_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+- name: Generate mattermost random postgres app password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.mattermost.postgres.app.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: mattermost_postgres_admin_password == ""
-  register: generate_password_mattermost_postgres_admin
-
-- name: Fetch mattermost postgres admin password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^mattermost_postgres_admin_password:"
-    line: "mattermost_postgres_admin_password: {{ mattermost_postgres_admin_password }}"
-  no_log: true
-  when: "'skipped' not in generate_password_mattermost_postgres_admin"
-
-- name: Generate random password for mattermost postgres app
-  ansible.builtin.set_fact:
-    mattermost_postgres_app_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
-  no_log: true
-  when: mattermost_postgres_app_password == ""
-  register: generate_password_mattermost_postgres_app
-
-- name: Fetch mattermost postgres app password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^mattermost_postgres_app_password:"
-    line: "mattermost_postgres_app_password: {{ mattermost_postgres_app_password }}"
-  no_log: true
-  when: "'skipped' not in generate_password_mattermost_postgres_app"
+  when: services.mattermost.postgres.app.password == ""
 
 - name: Add mattermost helm repo
   kubernetes.core.helm_repository:

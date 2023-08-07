@@ -1,18 +1,10 @@
 ---
-- name: Generate random password
-  ansible.builtin.set_fact:
-    keycloak_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+- name: Generate keycloak random admin password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.keycloak.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: keycloak_password == ""
-  register: generate_password
-
-- name: Fetch keycloak admin password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^keycloak_password:"
-    line: "keycloak_password: {{ keycloak_password }}"
-  no_log: true
-  when: "'skipped' not in generate_password"
+  when: services.keycloak.password == ""
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
@@ -36,12 +28,12 @@
 - name: Create keycloak realm
   community.general.keycloak_realm:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    id: "{{ keycloak_realm }}"
-    realm: "{{ keycloak_realm }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
+    id: "{{ services.keycloak.realm }}"
+    realm: "{{ services.keycloak.realm }}"
     enabled: true
     registration_allowed: false
     registration_email_as_username: true
@@ -58,11 +50,11 @@
 - name: Create keycloak admin group
   community.general.keycloak_group:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
+    realm: "{{ services.keycloak.realm }}"
     name: "{{ item }}"
     state: present
   loop:
@@ -71,12 +63,12 @@
 - name: Create keycloak client scope for groups
   community.general.keycloak_clientscope:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
     name: groups
-    realm: "{{ keycloak_realm }}"
+    realm: "{{ services.keycloak.realm }}"
     description: Get user's groups
     protocol: openid-connect
     protocol_mappers:
@@ -93,12 +85,12 @@
 - name: Create generic keycloak client scope 
   community.general.keycloak_clientscope:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
     name: generic
-    realm: "{{ keycloak_realm }}"
+    realm: "{{ services.keycloak.realm }}"
     description: Generic client scope
     protocol: openid-connect
     attributes:

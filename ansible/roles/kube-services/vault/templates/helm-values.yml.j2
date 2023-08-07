@@ -20,10 +20,10 @@ server:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts: 
-      - host: {{ vault_domain }}
+      - host: {{ services.vault.domain }}
         paths: 
           - /
     tls:
       - hosts:
-          - {{ vault_domain }}
+          - {{ services.vault.domain }}
         secretName: letsencrypt-prod-key

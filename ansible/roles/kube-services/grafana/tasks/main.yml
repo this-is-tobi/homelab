@@ -1,18 +1,10 @@
 ---
-- name: Generate random password
-  ansible.builtin.set_fact:
-    grafana_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+- name: Generate grafana random admin password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.grafana.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: grafana_password == ""
-  register: generate_password
-
-- name: Fetch grafana admin password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^grafana_password:"
-    line: "grafana_password: {{ grafana_password }}"
-  no_log: true
-  when: "'skipped' not in generate_password"
+  when: services.grafana.password == ""
 
 - name: Deploy grafana dashboards
   kubernetes.core.k8s:

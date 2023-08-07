@@ -1,7 +1,7 @@
 ---
 auth:
-  rootUser: {{ minio_username }}
-  rootPassword: {{ minio_password }}
+  rootUser: {{ services.minio.username }}
+  rootPassword: {{ services.minio.password }}
 
 nodeSelector:
   node-type: worker
@@ -11,7 +11,7 @@ ingress:
   ingressClassName: traefik
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  hostname: {{ minio_domain }}
+  hostname: {{ services.minio.domain }}
   path: /
   tls: true
 
@@ -20,7 +20,7 @@ apiIngress:
   ingressClassName: traefik
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  hostname: {{ minio_api_domain }}
+  hostname: {{ services.minio.apiDomain }}
   path: /
   tls: true
 

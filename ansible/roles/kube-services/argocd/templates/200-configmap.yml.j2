@@ -5,11 +5,11 @@ metadata:
   name: argocd-cm
   namespace: argocd
 data:
-  url: https://{{ argocd_domain }}
+  url: https://{{ services.argocd.domain }}
   oidc.config: |
     name: Keycloak
-    issuer: https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}
-    clientID: {{ argocd_client_id }}
+    issuer: https://{{ services.keycloak.domain }}/realms/{{ services.keycloak.realm }}
+    clientID: {{ services.keycloak.clientIds.argocd }}
     clientSecret: $oidc.keycloak.clientSecret
     requestedScopes: ["openid", "generic"]
 

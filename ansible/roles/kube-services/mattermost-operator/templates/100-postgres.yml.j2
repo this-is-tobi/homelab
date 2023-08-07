@@ -1,8 +1,8 @@
 ---
 apiVersion: v1
 data:
-  username: {{ mattermost_postgres_admin_username | b64encode }}
-  password: {{ mattermost_postgres_admin_password | b64encode }}
+  username: {{ services.mattermost.postgres.admin.username | b64encode }}
+  password: {{ services.mattermost.postgres.admin.password | b64encode }}
 kind: Secret
 metadata:
   name: mattermost-postgres-admin
@@ -12,8 +12,8 @@ type: kubernetes.io/basic-auth
 ---
 apiVersion: v1
 data:
-  username: {{ mattermost_postgres_app_username | b64encode }}
-  password: {{ mattermost_postgres_app_password | b64encode }}
+  username: {{ services.mattermost.postgres.app.username | b64encode }}
+  password: {{ services.mattermost.postgres.app.password | b64encode }}
 kind: Secret
 metadata:
   name: mattermost-postgres-user

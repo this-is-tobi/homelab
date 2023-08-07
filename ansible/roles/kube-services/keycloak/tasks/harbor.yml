@@ -2,19 +2,19 @@
 - name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ harbor_client_id }}"
-    name: "{{ harbor_client_id }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
+    realm: "{{ services.keycloak.realm }}"
+    client_id: "{{ services.keycloak.clientIds.harbor }}"
+    name: "{{ services.keycloak.clientIds.harbor }}"
     enabled: true
     frontchannel_logout: true
     redirect_uris:
-      - https://{{ harbor_domain }}/c/oidc/callback
+      - https://{{ services.harbor.domain }}/c/oidc/callback
     web_origins:
-      - https://{{ harbor_domain }}
+      - https://{{ services.harbor.domain }}
     standard_flow_enabled: true
     implicit_flow_enabled: false
     direct_access_grants_enabled: false

@@ -1,8 +1,8 @@
 ---
 - name: Get memberships
   ansible.builtin.uri:
-    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ item.project_name }}/members
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.project_name }}/members
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json
@@ -20,8 +20,8 @@
 - name: Create project membership
   ansible.builtin.uri:
     method: POST
-    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ item.project_name }}/members
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.project_name }}/members
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json
@@ -32,8 +32,8 @@
 - name: Update project membership
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ item.project_name }}/members/{{ get_harbor_membership_id }}
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.project_name }}/members/{{ get_harbor_membership_id }}
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json

@@ -3,8 +3,8 @@ global:
   storageClass: longhorn
 
 admin:
-  user: {{ grafana_username }}
-  password: {{ grafana_password }}
+  user: {{ services.grafana.username }}
+  password: {{ services.grafana.password }}
 
 datasources:
   secretDefinition: |
@@ -45,7 +45,7 @@ ingress:
   ingressClassName: traefik
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  hostname: {{ grafana_domain }}
+  hostname: {{ services.grafana.domain }}
   path: /
   tls: true
 

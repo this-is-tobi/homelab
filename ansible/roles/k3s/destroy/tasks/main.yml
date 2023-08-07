@@ -37,8 +37,8 @@
     force: true
   with_items:
     - /usr/local/bin/k3s
-    - "{{ systemd_dir }}/k3s.service"
-    - "{{ systemd_dir }}/k3s-node.service"
+    - "{{ k3s.systemdDir }}/k3s.service"
+    - "{{ k3s.systemdDir }}/k3s-node.service"
     - /etc/rancher/k3s
     - /run/k3s
     - /run/flannel

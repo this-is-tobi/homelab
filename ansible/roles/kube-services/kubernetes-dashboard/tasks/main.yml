@@ -31,17 +31,11 @@
     kind: Secret
     namespace: kubernetes-dashboard
     name: kubernetes-dashboard-token
-  register: kubernetes_dashbord_secrets
+  register: kube_dashbord_secrets
 
-- name: Set facts for kubernetes-dashboard connection token
-  ansible.builtin.set_fact:
-    kubernetes_dashboard_token: '{{ item.data["token"] | b64decode }}'
-  with_items: "{{ kubernetes_dashbord_secrets.resources }}"
+- name: Fetch kubernetes-dashboard admin token
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.kubeDashboard.token = "{{ kube_dashbord_secrets.resources[0].data.token | b64decode }}"' inventory/group_vars/cluster.yml
   no_log: true
-
-- name: Fetch kubernetes-dashboard connection token
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^kubernetes_dashboard_token:"
-    line: "kubernetes_dashboard_token: {{ kubernetes_dashboard_token }}"
-  no_log: true
+  when: services.kubeDashboard.token == ""

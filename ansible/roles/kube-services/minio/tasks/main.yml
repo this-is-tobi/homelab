@@ -1,18 +1,10 @@
 ---
-- name: Generate random password
-  ansible.builtin.set_fact:
-    minio_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+- name: Generate minio random admin password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.minio.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: minio_password == ""
-  register: generate_password
-
-- name: Fetch minio admin password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^minio_password:"
-    line: "minio_password: {{ minio_password }}"
-  no_log: true
-  when: "'skipped' not in generate_password"
+  when: services.minio.password == ""
 
 - name: Perform sso configuration
   include_tasks: sso.yml

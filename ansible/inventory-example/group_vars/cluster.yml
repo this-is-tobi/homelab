@@ -2,278 +2,191 @@
 #---------#
 # cluster #
 #---------#
-
-# k3s version
-k3s_version: v1.27.4+k3s1
-
-# k3s_token is required for masters to talk together securely this token should be alpha numeric only
-k3s_token: ""
-
-# k3s CA data
-certificate_authority_data: ""
-
-# systemd directory
-systemd_dir: /etc/systemd/system
-
-# interface which will be used for flannel
-flannel_iface: eth0
-
-# apiserver_endpoint is haproxy loadbalancer ip-address which will be configured on each master
-apiserver_endpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
-
-# master node ip address
-master_ip: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
-
-# node ip address
-node_ip: "{{ ansible_facts[flannel_iface]['ipv4']['address'] }}"
-
-# extra args to pass to both master and worker nodes
-extra_args: >-
-  --node-name {{ inventory_hostname }} 
-  --node-ip={{ node_ip }}
-  --prefer-bundled-bin 
-  --flannel-iface {{ flannel_iface }}
-
-# extra args to pass to master nodes
-extra_server_args: >-
-  {{ extra_args }} 
-  --tls-san {{ apiserver_endpoint }}
-  --disable local-storage 
-  --write-kubeconfig-mode 644 
-  --node-label node-type=master
-
-# extra args to pass to worker nodes
-extra_agent_args: >-
-  {{ extra_args }} 
-  --node-label node-type=worker
-
-# extra args to pass if longhorn need to create disk (cf. inventory hosts)
-extra_storage_args: ""
-
-
-#--------#
-# argocd #
-#--------#
-
-# argocd domain used as ingress
-argocd_domain: gitops.{{ root_domain }}
-
-# argocd admin username
-argocd_username: admin
-
-# argocd admin password
-argocd_password: ""
-
-
-#--------------#
-# cert-manager #
-#--------------#
-
-# email used for letsencrypt
-email: your@email.com
-
-
-#---------#
-# grafana #
-#---------#
-
-# grafana domain used as ingress
-grafana_domain: monitoring.{{ root_domain }}
-
-# grafana admin username
-grafana_username: admin
-
-# grafana admin password
-grafana_password: ""
-
-
-#--------#
-# harbor #
-#--------#
-
-# harbor domain used as ingress
-harbor_domain: registry.{{ root_domain }}
-
-# harbor admin username
-harbor_username: admin
-
-# harbor admin password
-harbor_password: ""
-
-# harbor projects that will be created or updated
-harbor_projects:
-  - project_name: robots
-    metadata:
-      public: "true"
-      storage_limit: -1
-      auto_scan: "true"
-
-# harbor robots that will be created or updated
-harbor_robots: 
-  - name: world
-    description: Robot that build the world
-    expires_at: -1
-    permissions:
-      - kind: project
-        namespace: robots
-        access:
-          - action: list
-            resource: repository
-          - action: pull
-            resource: repository
-          - action: push
-            resource: repository
-          - action: delete
-            resource: repository
-          - action: read
-            resource: artifact
-          - action: list
-            resource: artifact
-          - action: delete
-            resource: artifact
-          - action: create
-            resource: artifact-label
-          - action: delete
-            resource: artifact-label
-          - action: create
-            resource: tag
-          - action: delete
-            resource: tag
-          - action: list
-            resource: tag
-          - action: create
-            resource: scan
-          - action: stop
-            resource: scan
-
-
+k3s:
+  # k3s version
+  version: v1.27.4+k3s1
+  # k3s_token is required for masters to talk together securely this token should be alpha numeric only
+  token: ""
+  # k3s CA data
+  caData: ""
+  # systemd directory
+  systemdDir: /etc/systemd/system
+  # interface which will be used for flannel
+  flanneliface: eth0
+  # apiServerEndpoint is haproxy loadbalancer ip-address which will be configured on each master
+  apiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+  # master node ip address
+  masterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
+  # node ip address
+  nodeIP: "{{ ansible_facts[k3s.flanneliface]['ipv4']['address'] }}"
+  # extra args to pass to both master and worker nodes
+  extraArgs: >-
+    --node-name {{ inventory_hostname }} 
+    --node-ip={{ k3s.nodeIP }} 
+    --prefer-bundled-bin 
+    --flannel-iface {{ k3s.flanneliface }}
+  # extra args to pass to master nodes
+  extraServerArgs: >-
+    {{ k3s.extraArgs }} 
+    --tls-san {{ k3s.apiServerEndpoint }} 
+    --disable local-storage 
+    --write-kubeconfig-mode 644 
+    --node-label node-type=master
+  # extra args to pass to worker nodes
+  extraAgentArgs: >-
+    {{ k3s.extraArgs }} 
+    --node-label node-type=worker
+  # extra args to pass if longhorn need to create disk (cf. inventory hosts)
+  extraStorageArgs: ""
 #----------#
-# keycloak #
+# services #
 #----------#
-
-# keycloak domain used as ingress
-keycloak_domain: sso.{{ root_domain }}
-
-# keycloak admin username
-keycloak_username: admin
-
-# keycloak admin password
-keycloak_password: ""
-
-# keycloak default password for users
-keycloak_default_password: password123!
-
-# keycloak realm used by the homelab sso system
-keycloak_realm: homelab
-
-# keycloak client id for harbor application
-harbor_client_id: harbor
-
-# keycloak client id for minio application
-minio_client_id: minio
-
-# keycloak client id for grafana application
-grafana_client_id: grafana
-
-
-#----------------------#
-# kubernetes-dashboard #
-#----------------------#
-
-# kubernetes-dashboard domain used as ingress
-kubernetes_dashboard_domain: console.{{ root_domain }}
-
-# kubernetes-dashboard admin token
-kubernetes_dashboard_token: ""
-
-
-#----------#
-# longhorn #
-#----------#
-
-# longhorn domain used as ingress
-longhorn_domain: longhorn.{{ local_root_domain }}
-
-
-#------------#
-# mattermost #
-#------------#
-
-# mattermost domain used as ingress (web interface)
-mattermost_domain: mattermost.{{ root_domain }}
-
-# mattermost admin username
-mattermost_username: admin
-
-# mattermost admin password
-mattermost_password: ""
-
-# mattermost database admin username
-mattermost_postgres_admin_username: admin
-
-# mattermost database admin password
-mattermost_postgres_admin_password: ""
-
-# mattermost database app username
-mattermost_postgres_app_username: mattermost
-
-# mattermost database app password
-mattermost_postgres_app_password: ""
-
-# mattermost s3 bucket access key
-mattermost_s3_accesskey: ""
-
-# mattermost s3 bucket secret key
-mattermost_s3_secretkey: ""
-
-
-#-------#
-# minio #
-#-------#
-
-# minio domain used as ingress (web interface)
-minio_domain: s3.{{ root_domain }}
-
-# minio domain used as ingress (api)
-minio_api_domain: api.s3.{{ root_domain }}
-
-# minio admin username
-minio_username: admin
-
-# minio admin password
-minio_password: ""
-
-
-#---------#
-# traefik #
-#---------#
-
-# traefik domain used as ingress
-traefik_domain: traefik.{{ local_root_domain }}
-
-
-#-------#
-# vault #
-#-------#
-
-# vault domain used as ingress
-vault_domain: vault.{{ root_domain }}
-
-# vault root access token
-vault_token: ""
-
-# vault unseal keys
-vault_unseal_key1: ""
-vault_unseal_key2: ""
-vault_unseal_key3: ""
-
-
-#---------------------#
-# Additional services #
-#---------------------#
-
-# docs
-docs_domain: github.com/this-is-tobi/homelab
-
-# test-deployment
-test_domain: test.{{ root_domain }}
+services:
+  argocd:
+    # argocd domain used as ingress
+    domain: gitops.{{ root_domain }}
+    # argocd admin username
+    username: admin
+    # argocd admin password
+    password: ""
+  certManager:
+    # email used for letsencrypt
+    email: your@email.com
+  docs:
+    # docs domain used as ingress
+    domain: docs.{{ root_domain }}
+  grafana:
+    # grafana domain used as ingress
+    domain: monitoring.{{ root_domain }}
+    # grafana admin username
+    username: admin
+    # grafana admin password
+    password: ""
+  harbor:
+    # harbor domain used as ingress
+    domain: registry.{{ root_domain }}
+    # harbor admin username
+    username: admin
+    # harbor admin password
+    password: ""
+    # harbor projects that will be created or updated
+    projects:
+      - project_name: robots
+        metadata:
+          public: "true"
+          storage_limit: -1
+          auto_scan: "true"
+    # harbor robots that will be created or updated
+    robots:
+      - name: docs
+        description: Robot that build documentation
+        level: system
+        duration: -1
+        permissions:
+          - kind: project
+            namespace: robots
+            access:
+              - action: list
+                resource: repository
+              - action: pull
+                resource: repository
+              - action: push
+                resource: repository
+              - action: delete
+                resource: repository
+              - action: read
+                resource: artifact
+              - action: list
+                resource: artifact
+              - action: delete
+                resource: artifact
+              - action: create
+                resource: artifact-label
+              - action: delete
+                resource: artifact-label
+              - action: create
+                resource: tag
+              - action: delete
+                resource: tag
+              - action: list
+                resource: tag
+              - action: create
+                resource: scan
+              - action: stop
+                resource: scan
+  keycloak:
+    # keycloak domain used as ingress
+    domain: sso.{{ root_domain }}
+    # keycloak admin username
+    username: admin
+    # keycloak admin password
+    password: ""
+    # keycloak default password for users
+    defaultPassword: Password123!
+    # keycloak realm used by the homelab sso system
+    realm: homelab
+    clientIds:
+      # keycloak client id for argocd application
+      argocd: argocd
+      # keycloak client id for grafana application
+      grafana: grafana
+      # keycloak client id for harbor application
+      harbor: harbor
+      # keycloak client id for minio application
+      minio: minio
+      # keycloak client id for vault application
+      vault: vault
+  kubeDashboard:
+    # kubernetes-dashboard domain used as ingress
+    domain: console.{{ root_domain }}
+    # kubernetes-dashboard admin token
+    token: ""
+  longhorn:
+    # longhorn domain used as ingress
+    domain: longhorn.{{ local_root_domain }}
+  mattermost:
+    # mattermost domain used as ingress (web interface)
+    domain: beta.mattermost.{{ root_domain }}
+    # mattermost admin username
+    username: admin
+    # mattermost admin password
+    password: ""
+    postgres:
+      admin:
+        # mattermost database admin username
+        username: admin
+        # mattermost database admin password
+        password: ""
+      app:
+        # mattermost database app username
+        username: mattermost
+        # mattermost database app password
+        password: ""
+    s3:
+      # mattermost s3 bucket access key
+      accessKey: ""
+      # mattermost s3 bucket secret key
+      secretKey: ""
+  minio:
+    # minio domain used as ingress (web interface)
+    domain: s3.{{ root_domain }}
+    # minio domain used as ingress (api)
+    apiDomain: api.s3.{{ root_domain }}
+    # minio admin username
+    username: admin
+    # minio admin password
+    password: ""
+  test:
+    domain: test.{{ root_domain }}
+  traefik:
+    # traefik domain used as ingress
+    domain: traefik.{{ local_root_domain }}
+  vault:
+    # vault domain used as ingress
+    domain: vault.{{ root_domain }}
+    # vault root access token
+    token: ""
+    # vault unseal keys
+    unsealKey1: ""
+    unsealKey2: ""
+    unsealKey3: ""

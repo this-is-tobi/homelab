@@ -9,7 +9,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`{{ traefik_domain }}`)
+    - match: Host(`{{ services.traefik.domain }}`)
       kind: Rule
       services:
         - name: api@internal

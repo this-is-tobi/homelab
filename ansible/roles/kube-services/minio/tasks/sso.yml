@@ -1,13 +1,13 @@
 ---
 - name: Get keycloak client secret
   community.general.keycloak_clientsecret_info:
-    client_id: "{{ minio_client_id }}"
-    realm: "{{ keycloak_realm }}"
+    client_id: "{{ services.keycloak.clientIds.minio }}"
+    realm: "{{ services.keycloak.realm }}"
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
   register: minio_client_secret
   no_log: true
 

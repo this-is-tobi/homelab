@@ -5,7 +5,7 @@
 - name: Set minio alias fact
   ansible.builtin.shell:
     cmd: |
-      mc alias ls --json | jq -r 'select(.URL == "https://{{ minio_api_domain }}").alias'
+      mc alias ls --json | jq -r 'select(.URL == "https://{{ services.minio.apiDomain }}").alias'
   register: mc_alias
 
 - name: Create a directory if it does not exist
@@ -23,9 +23,9 @@
 - name: Create minio bucket
   amazon.aws.s3_bucket:
     name: "{{ item.username }}"
-    endpoint_url: "https://{{ minio_api_domain }}"
-    aws_access_key: "{{ minio_username }}"
-    aws_secret_key: "{{ minio_password }}"
+    endpoint_url: "https://{{ services.minio.apiDomain }}"
+    aws_access_key: "{{ services.minio.username }}"
+    aws_secret_key: "{{ services.minio.password }}"
     state: present
 
 - name: Create minio policy

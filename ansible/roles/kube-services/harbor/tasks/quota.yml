@@ -1,8 +1,8 @@
 ---
 - name: Get project
   ansible.builtin.uri:
-    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ item.project_name }}
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.project_name }}
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json
@@ -32,8 +32,8 @@
 - name: Get project quota
   ansible.builtin.uri:
     method: GET
-    url: https://{{ harbor_domain }}/api/v2.0/quotas/?reference_id={{ get_harbor_project.json.project_id }}
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/quotas/?reference_id={{ get_harbor_project.json.project_id }}
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     status_code: [200]
@@ -43,8 +43,8 @@
 - name: Update project quotas
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor_domain }}/api/v2.0/quotas/{{ get_harbor_project_quota.json[0].id }}
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/quotas/{{ get_harbor_project_quota.json[0].id }}
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json

@@ -7,13 +7,13 @@ app:
       name: letsencrypt-prod
       scope: cluster
     hosts:
-      - {{ kubernetes_dashboard_domain }}
+      - {{ services.kubeDashboard.domain }}
     paths:
       web: /
       api: /api
     tls:
       - hosts:
-          - {{ kubernetes_dashboard_domain }}
+          - {{ services.kubeDashboard.domain }}
         secretName: letsencrypt-prod-key
   nodeSelector:
     node-type: worker

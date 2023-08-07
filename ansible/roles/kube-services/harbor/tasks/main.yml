@@ -1,18 +1,10 @@
 ---
-- name: Generate random password
-  ansible.builtin.set_fact:
-    harbor_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"
+- name: Generate harbor random admin password
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.services.harbor.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: harbor_password == ""
-  register: generate_password
-
-- name: Fetch harbor admin password
-  ansible.builtin.lineinfile:
-    path: "inventory/group_vars/cluster.yml"
-    regexp: "^harbor_password:"
-    line: "harbor_password: {{ harbor_password }}"
-  no_log: true
-  when: "'skipped' not in generate_password"
+  when: services.harbor.password == ""
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
@@ -38,12 +30,12 @@
 
 - name: Create projects
   include_tasks: project.yml
-  loop: "{{ harbor_projects }}"
+  loop: "{{ services.harbor.projects }}"
 
 - name: Create projects quotas
   include_tasks: quota.yml
-  loop: "{{ harbor_projects }}"
+  loop: "{{ services.harbor.projects }}"
 
 - name: Create robots
   include_tasks: robot.yml
-  loop: "{{ harbor_robots }}"
+  loop: "{{ services.harbor.robots }}"

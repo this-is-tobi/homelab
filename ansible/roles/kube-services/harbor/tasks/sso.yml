@@ -1,20 +1,20 @@
 ---
 - name: Get keycloak client secret
   community.general.keycloak_clientsecret_info:
-    client_id: "{{ harbor_client_id }}"
-    realm: "{{ keycloak_realm }}"
+    client_id: "{{ services.keycloak.clientIds.harbor }}"
+    realm: "{{ services.keycloak.realm }}"
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_keycloak_url: https://{{ services.keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
+    auth_username: "{{ services.keycloak.username }}"
+    auth_password: "{{ services.keycloak.password }}"
   register: harbor_client_secret
   no_log: true
 
 - name: Get harbor config
   ansible.builtin.uri:
-    url: https://{{ harbor_domain }}/api/v2.0/configurations
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/configurations
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json
@@ -29,8 +29,8 @@
       "notification_enable": true
       "oidc_admin_group": "admin"
       "oidc_auto_onboard": true
-      "oidc_client_id": "{{ harbor_client_id }}"
-      "oidc_endpoint": "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
+      "oidc_client_id": "{{ services.keycloak.clientIds.harbor }}"
+      "oidc_endpoint": "https://{{ services.keycloak.domain }}/realms/{{ services.keycloak.realm }}"
       "oidc_extra_redirect_parms": "{}"
       "oidc_group_filter": ""
       "oidc_groups_claim": "groups"
@@ -58,8 +58,8 @@
 - name: Update harbor config
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor_domain }}/api/v2.0/configurations
-    password: "{{ harbor_password }}"
+    url: https://{{ services.harbor.domain }}/api/v2.0/configurations
+    password: "{{ services.harbor.password }}"
     user: admin
     force_basic_auth: true
     body_format: json

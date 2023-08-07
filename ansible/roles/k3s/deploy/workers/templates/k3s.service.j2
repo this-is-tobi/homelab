@@ -8,7 +8,7 @@ Type=notify
 ExecStartPre=/bin/sh -xc '! /usr/bin/systemctl is-enabled --quiet nm-cloud-setup.service'
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/local/bin/k3s agent --server https://{{ apiserver_endpoint }}:6443 --token {{ hostvars[groups['masters'][0]]['token'] }} {{ extra_agent_args | default("") }} {{ extra_storage_args | default("") }}
+ExecStart=/usr/local/bin/k3s agent --server https://{{ k3s.apiServerEndpoint }}:6443 --token {{ hostvars[groups['masters'][0]]['token'] }} {{ k3s.extraAgentArgs | default("") }} {{ k3s.extraStorageArgs | default("") }}
 KillMode=process
 Delegate=yes
 # Having non-zero Limit*s causes performance problems due to accounting overhead
