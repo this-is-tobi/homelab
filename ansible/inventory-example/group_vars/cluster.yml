@@ -43,6 +43,12 @@ k3s:
 #----------#
 services:
   argocd:
+    helm:
+      repoUrl: https://charts.bitnami.com/bitnami
+      repoName: bitnami
+      chartRef: bitnami/argo-cd
+      chartVersion: 4.7.15
+    namespace: argocd
     # argocd domain used as ingress
     domain: gitops.{{ root_domain }}
     # argocd admin username
@@ -50,12 +56,32 @@ services:
     # argocd admin password
     password: ""
   certManager:
+    helm:
+      repoUrl: https://charts.jetstack.io
+      repoName: jetstack
+      chartRef: jetstack/cert-manager
+      chartVersion: 1.12.2
+    namespace: cert-manager
     # email used for letsencrypt
     email: your@email.com
-  docs:
-    # docs domain used as ingress
-    domain: docs.{{ root_domain }}
+  cloudNativePostgres:
+    helm:
+      repoUrl: https://cloudnative-pg.github.io/charts
+      repoName: cnpg
+      chartRef: cnpg/cloudnative-pg
+      chartVersion: 0.18.2
+    namespace: cnpg-system
+  dashy:
+    namespace: dashy
+    image: docker.io/lissy93/dashy:2.1.1
+    docsDomain: docs.{{ root_domain }}
   grafana:
+    helm:
+      repoUrl: https://charts.bitnami.com/bitnami
+      repoName: bitnami
+      chartRef: bitnami/grafana
+      chartVersion: 9.0.3
+    namespace: monitoring
     # grafana domain used as ingress
     domain: monitoring.{{ root_domain }}
     # grafana admin username
@@ -63,6 +89,12 @@ services:
     # grafana admin password
     password: ""
   harbor:
+    helm:
+      repoUrl: https://charts.bitnami.com/bitnami
+      repoName: bitnami
+      chartRef: bitnami/harbor
+      chartVersion: 16.7.0
+    namespace: harbor
     # harbor domain used as ingress
     domain: registry.{{ root_domain }}
     # harbor admin username
@@ -71,11 +103,11 @@ services:
     password: ""
     # harbor projects that will be created or updated
     projects:
-      - project_name: robots
+      - projectName: robots
         metadata:
           public: "true"
-          storage_limit: -1
-          auto_scan: "true"
+          storageLimit: -1
+          autoScan: "true"
     # harbor robots that will be created or updated
     robots:
       - name: docs
@@ -115,6 +147,12 @@ services:
               - action: stop
                 resource: scan
   keycloak:
+    helm:
+      repoUrl: https://charts.bitnami.com/bitnami
+      repoName: bitnami
+      chartRef: bitnami/keycloak
+      chartVersion: 15.1.6
+    namespace: keycloak
     # keycloak domain used as ingress
     domain: sso.{{ root_domain }}
     # keycloak admin username
@@ -136,17 +174,42 @@ services:
       minio: minio
       # keycloak client id for vault application
       vault: vault
+  kubePrometheus:
+    helm:
+      repoUrl: https://charts.bitnami.com/bitnami
+      repoName: bitnami
+      chartRef: bitnami/kube-prometheus
+      chartVersion: 8.15.1
+    namespace: monitoring
   kubeDashboard:
+    helm:
+      repoUrl: https://kubernetes.github.io/dashboard
+      repoName: kubernetes-dashboard
+      chartRef: kubernetes-dashboard/kubernetes-dashboard
+      chartVersion: 7.0.2
+    namespace: kubernetes-dashboard
     # kubernetes-dashboard domain used as ingress
     domain: console.{{ root_domain }}
     # kubernetes-dashboard admin token
     token: ""
   longhorn:
+    helm:
+      repoUrl: https://charts.longhorn.io
+      repoName: longhorn
+      chartRef: longhorn/longhorn
+      chartVersion: 1.5.0
+    namespace: longhorn-system
     # longhorn domain used as ingress
     domain: longhorn.{{ local_root_domain }}
   mattermost:
+    helm:
+      repoUrl: https://helm.mattermost.com
+      repoName: mattermost
+      chartRef: mattermost/mattermost-operator
+      chartVersion: 0.3.5
+    namespace: mattermost
     # mattermost domain used as ingress (web interface)
-    domain: beta.mattermost.{{ root_domain }}
+    domain: mattermost.{{ root_domain }}
     # mattermost admin username
     username: admin
     # mattermost admin password
@@ -168,6 +231,12 @@ services:
       # mattermost s3 bucket secret key
       secretKey: ""
   minio:
+    helm:
+      repoUrl: https://charts.bitnami.com/bitnami
+      repoName: bitnami
+      chartRef: bitnami/minio
+      chartVersion: 12.6.9
+    namespace: minio
     # minio domain used as ingress (web interface)
     domain: s3.{{ root_domain }}
     # minio domain used as ingress (api)
@@ -177,11 +246,18 @@ services:
     # minio admin password
     password: ""
   test:
+    namespace: test
     domain: test.{{ root_domain }}
   traefik:
     # traefik domain used as ingress
     domain: traefik.{{ local_root_domain }}
   vault:
+    helm:
+      repoUrl: https://helm.releases.hashicorp.com
+      repoName: hashicorp
+      chartRef: hashicorp/vault
+      chartVersion: 0.25.0
+    namespace: vault
     # vault domain used as ingress
     domain: vault.{{ root_domain }}
     # vault root access token

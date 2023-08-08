@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: minio-sso
-  namespace: minio
+  namespace: {{ services.minio.namespace }}
 data:
   MINIO_IDENTITY_OPENID_CONFIG_URL: "https://{{ services.keycloak.domain }}/realms/{{ services.keycloak.realm }}/.well-known/openid-configuration"
   MINIO_IDENTITY_OPENID_CLIENT_ID: "{{ services.keycloak.clientIds.minio }}"

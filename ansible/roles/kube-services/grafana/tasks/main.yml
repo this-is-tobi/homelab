@@ -21,18 +21,18 @@
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: bitnami
-    repo_url: https://charts.bitnami.com/bitnami
+    name: "{{ services.grafana.helm.repoName }}"
+    repo_url: "{{ services.grafana.helm.repoUrl }}"
     state: present
 
 - name: Deploy grafana helm chart
   kubernetes.core.helm:
     name: grafana
     update_repo_cache: true
-    chart_ref: bitnami/grafana
-    chart_version: 9.0.3
+    chart_ref: "{{ services.grafana.helm.chartRef }}"
+    chart_version: "{{ services.grafana.helm.chartVersion }}"
     create_namespace: true
-    namespace: monitoring
+    namespace: "{{ services.grafana.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

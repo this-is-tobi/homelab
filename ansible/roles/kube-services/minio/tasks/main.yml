@@ -11,18 +11,18 @@
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: bitnami
-    repo_url: https://charts.bitnami.com/bitnami
+    name: "{{ services.minio.helm.repoName }}"
+    repo_url: "{{ services.minio.helm.repoUrl }}"
     state: present
 
 - name: Deploy minio helm chart
   kubernetes.core.helm:
     name: minio
     update_repo_cache: true
-    chart_ref: bitnami/minio
-    chart_version: 12.6.9
+    chart_ref: "{{ services.minio.helm.chartRef }}"
+    chart_version: "{{ services.minio.helm.chartVersion }}"
     create_namespace: true
-    namespace: minio
+    namespace: "{{ services.minio.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

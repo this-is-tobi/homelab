@@ -6,7 +6,7 @@ data:
 kind: Secret
 metadata:
   name: mattermost-postgres-admin
-  namespace: mattermost
+  namespace: {{ services.mattermost.namespace }}
 type: kubernetes.io/basic-auth
 
 ---
@@ -17,7 +17,7 @@ data:
 kind: Secret
 metadata:
   name: mattermost-postgres-user
-  namespace: mattermost
+  namespace: {{ services.mattermost.namespace }}
 type: kubernetes.io/basic-auth
 
 ---
@@ -25,7 +25,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: mattermost-postgres-cluster
-  namespace: mattermost
+  namespace: {{ services.mattermost.namespace }}
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:15.3
   instances: 3

@@ -4,55 +4,52 @@
   vars_files:
     - inventory/group_vars/cluster.yml
   roles:
-    # - name: kube-services/longhorn
-    #   tags:
-    #     - longhorn
-    # - name: kube-services/system-upgrade
-    #   tags:
-    #     - system-upgrade
-    #     - never
-    # - name: kube-services/cert-manager
-    #   tags:
-    #     - cert-manager
+    - name: kube-services/longhorn
+      tags:
+        - longhorn
+    - name: kube-services/system-upgrade
+      tags:
+        - system-upgrade
+        - never
+    - name: kube-services/cert-manager
+      tags:
+        - cert-manager
     - name: kube-services/kubernetes-dashboard
       tags:
         - kubernetes-dashboard
-    # - name: kube-services/traefik
-    #   tags:
-    #     - traefik
-    # - name: kube-services/keycloak
-    #   tags:
-    #     - keycloak
-    # - name: kube-services/kube-prometheus
-    #   tags:
-    #     - kube-prometheus
-    # - name: kube-services/grafana
-    #   tags:
-    #     - grafana
-    # - name: kube-services/grafana
-    #   tags:
-    #     - grafana
-    # - name: kube-services/minio
-    #   tags:
-    #     - minio
-    # - name: kube-services/harbor
-    #   tags:
-    #     - harbor
-    # - name: kube-services/argocd
-    #   tags:
-    #     - argocd
-    # - name: kube-services/vault
-    #   tags:
-    #     - vault
-    # - name: kube-services/postgres-operator
-    #   tags:
-    #     - postgres
-    # - name: kube-services/mattermost-operator
-    #   tags:
-    #     - mattermost
-    # - name: kube-services/dashy
-    #   tags:
-    #     - dashy
-    - name: kube-services/actions-runner-controller
+    - name: kube-services/traefik
       tags:
-        - arc
+        - traefik
+    - name: kube-services/keycloak
+      tags:
+        - keycloak
+    - name: kube-services/kube-prometheus
+      tags:
+        - kube-prometheus
+    - name: kube-services/grafana
+      tags:
+        - grafana
+    - name: kube-services/grafana
+      tags:
+        - grafana
+    - name: kube-services/minio
+      tags:
+        - minio
+    - name: kube-services/harbor
+      tags:
+        - harbor
+    - name: kube-services/argocd
+      tags:
+        - argocd
+    - name: kube-services/vault
+      tags:
+        - vault
+    - name: kube-services/postgres-operator
+      tags:
+        - postgres
+    - name: kube-services/mattermost-operator
+      tags:
+        - mattermost
+    - name: kube-services/dashy
+      tags:
+        - dashy

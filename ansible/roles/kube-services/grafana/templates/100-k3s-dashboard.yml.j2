@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  namespace: monitoring
+  namespace: "{{ services.grafana.namespace }}"
   name: k3s-dashboard
   labels:
     grafana_dashboard: "1"

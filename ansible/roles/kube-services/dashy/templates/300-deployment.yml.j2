@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dashy
-  namespace: dashy
+  namespace: {{ services.dashy.namespace }}
   labels:
     monitoring: prometheus
 spec:
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: dashy
-          image: docker.io/lissy93/dashy:2.1.1
+          image: {{ services.dashy.image }}
           ports:
             - containerPort: 80
           resources:

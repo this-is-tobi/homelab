@@ -1,18 +1,18 @@
 ---
 - name: Add hashicorp helm repo
   kubernetes.core.helm_repository:
-    name: hashicorp
-    repo_url: https://helm.releases.hashicorp.com
+    name: "{{ services.vault.helm.repoName }}"
+    repo_url: "{{ services.vault.helm.repoUrl }}"
     state: present
 
 - name: Deploy vault helm chart
   kubernetes.core.helm:
     name: vault
     update_repo_cache: true
-    chart_ref: hashicorp/vault
-    chart_version: 0.25.0
+    chart_ref: "{{ services.vault.helm.chartRef }}"
+    chart_version: "{{ services.vault.helm.chartVersion }}"
     create_namespace: true
-    namespace: vault
+    namespace: "{{ services.vault.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

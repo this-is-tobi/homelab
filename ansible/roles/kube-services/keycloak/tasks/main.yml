@@ -8,18 +8,18 @@
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: bitnami
-    repo_url: https://charts.bitnami.com/bitnami
+    name: "{{ services.keycloak.helm.repoName }}"
+    repo_url: "{{ services.keycloak.helm.repoUrl }}"
     state: present
 
 - name: Deploy keycloak helm chart
   kubernetes.core.helm:
     name: keycloak
     update_repo_cache: true
-    chart_ref: bitnami/keycloak
-    chart_version: 15.1.6
+    chart_ref: "{{ services.keycloak.helm.chartRef }}"
+    chart_version: "{{ services.keycloak.helm.chartversion }}"
     create_namespace: true
-    namespace: keycloak
+    namespace: "{{ services.keycloak.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

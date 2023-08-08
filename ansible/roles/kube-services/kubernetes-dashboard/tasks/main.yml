@@ -1,19 +1,19 @@
 ---
 - name: Add kubernetes-dashboard helm repo
   kubernetes.core.helm_repository:
-    name: kubernetes-dashboard
-    repo_url: https://kubernetes.github.io/dashboard
+    name: "{{ services.kubeDashboard.helm.repoName }}"
+    repo_url: "{{ services.kubeDashboard.helm.repoUrl }}"
     state: present
 
 - name: Deploy kubernetes-dashboard helm chart
   kubernetes.core.helm:
     name: kubernetes-dashboard
     update_repo_cache: true
-    chart_ref: kubernetes-dashboard/kubernetes-dashboard
-    chart_version: 7.0.2
+    chart_ref: "{{ services.kubeDashboard.helm.chartRef }}"
+    chart_version: "{{ services.kubeDashboard.helm.chartVersion }}"
     timeout: 10m0s
     create_namespace: true
-    namespace: kubernetes-dashboard
+    namespace: "{{ services.kubeDashboard.namespace }}"
     wait: true
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"

@@ -22,18 +22,18 @@
 
 - name: Add mattermost helm repo
   kubernetes.core.helm_repository:
-    name: mattermost
-    repo_url: https://helm.mattermost.com
+    name: "{{ services.mattermost.helm.repoName }}"
+    repo_url: "{{ services.mattermost.helm.repoUrl }}"
     state: present
 
 - name: Deploy mattermost-operator helm chart
   kubernetes.core.helm:
     name: mattermost-operator
     update_repo_cache: true
-    chart_ref: mattermost/mattermost-operator
-    chart_version: 0.3.5
+    chart_ref: "{{ services.mattermost.helm.chartRef }}"
+    chart_version: "{{ services.mattermost.helm.chartVersion }}"
     create_namespace: true
-    namespace: mattermost
+    namespace: "{{ services.mattermost.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

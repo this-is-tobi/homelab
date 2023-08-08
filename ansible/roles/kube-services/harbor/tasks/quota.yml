@@ -1,53 +1,53 @@
 ---
 - name: Get project
   ansible.builtin.uri:
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.project_name }}
+    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.projectName }}
     password: "{{ services.harbor.password }}"
-    user: admin
+    user: "{{ services.harbor.username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
-  register: get_harbor_project
+  register: harbor_project
 
 - name: Set project quota config
   ansible.builtin.set_fact:
     quota_config: |
       { 
         "hard": { 
-          "storage": {{ item.metadata.storage_limit | human_to_bytes | int }} 
+          "storage": {{ item.metadata.storageLimit | human_to_bytes | int }} 
         } 
       }
-  when: item.metadata.storage_limit != -1
+  when: item.metadata.storageLimit != -1
 
 - name: Set project quota config
   ansible.builtin.set_fact:
     quota_config: |
       { 
         "hard": { 
-          "storage": {{ item.metadata.storage_limit | int }} 
+          "storage": {{ item.metadata.storageLimit | int }} 
         } 
       }
-  when: item.metadata.storage_limit == -1
+  when: item.metadata.storageLimit == -1
 
 - name: Get project quota
   ansible.builtin.uri:
     method: GET
-    url: https://{{ services.harbor.domain }}/api/v2.0/quotas/?reference_id={{ get_harbor_project.json.project_id }}
+    url: https://{{ services.harbor.domain }}/api/v2.0/quotas/?reference_id={{ harbor_project.json.project_id }}
     password: "{{ services.harbor.password }}"
-    user: admin
+    user: "{{ services.harbor.username }}"
     force_basic_auth: true
     status_code: [200]
-  register: get_harbor_project_quota
-  when: get_harbor_project.status == 200
+  register: harbor_project_quota
+  when: harbor_project.status == 200
 
 - name: Update project quotas
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ services.harbor.domain }}/api/v2.0/quotas/{{ get_harbor_project_quota.json[0].id }}
+    url: https://{{ services.harbor.domain }}/api/v2.0/quotas/{{ harbor_project_quota.json[0].id }}
     password: "{{ services.harbor.password }}"
-    user: admin
+    user: "{{ services.harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ quota_config }}"
     status_code: [200]
-  when: get_harbor_project_quota.status == 200
+  when: harbor_project_quota.status == 200

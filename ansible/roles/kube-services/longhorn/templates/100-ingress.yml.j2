@@ -3,7 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: longhorn
-  namespace: longhorn-system
+  namespace: "{{ services.longhorn.namespace }}"
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:

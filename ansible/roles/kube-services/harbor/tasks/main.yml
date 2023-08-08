@@ -8,18 +8,18 @@
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: bitnami
-    repo_url: https://charts.bitnami.com/bitnami
+    name: "{{ services.harbor.helm.repoName }}"
+    repo_url: "{{ services.harbor.helm.repoUrl }}"
     state: present
 
 - name: Deploy harbor helm chart
   kubernetes.core.helm:
     name: harbor
     update_repo_cache: true
-    chart_ref: bitnami/harbor
-    chart_version: 16.7.0
+    chart_ref: "{{ services.harbor.helm.chartRef }}"
+    chart_version: "{{ services.harbor.helm.chartVersion }}"
     create_namespace: true
-    namespace: harbor
+    namespace: "{{ services.harbor.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

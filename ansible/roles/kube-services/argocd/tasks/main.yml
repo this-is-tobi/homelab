@@ -8,18 +8,18 @@
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: bitnami
-    repo_url: https://charts.bitnami.com/bitnami
+    name: "{{ services.argocd.helm.repoName }}"
+    repo_url: "{{ services.argocd.helm.repoUrl }}"
     state: present
 
 - name: Deploy argocd helm chart
   kubernetes.core.helm:
     name: argocd
     update_repo_cache: true
-    chart_ref: bitnami/argo-cd
-    chart_version: 4.7.15
+    chart_ref: "{{ services.argocd.helm.chartRef }}"
+    chart_version: "{{ services.argocd.helm.chartVersion }}"
     create_namespace: true
-    namespace: argocd
+    namespace: "{{ services.argocd.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

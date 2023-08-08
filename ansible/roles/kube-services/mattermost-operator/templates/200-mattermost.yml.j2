@@ -6,7 +6,7 @@ data:
 kind: Secret
 metadata:
   name: db-credentials
-  namespace: mattermost
+  namespace: {{ services.mattermost.namespace }}
 type: Opaque
 
 ---
@@ -18,7 +18,7 @@ data:
 kind: Secret
 metadata:
   name: file-store-credentials
-  namespace: mattermost
+  namespace: {{ services.mattermost.namespace }}
 type: Opaque
 
 ---
@@ -26,7 +26,7 @@ apiVersion: installation.mattermost.com/v1beta1
 kind: Mattermost
 metadata:
   name: mattermost
-  namespace: mattermost
+  namespace: {{ services.mattermost.namespace }}
 spec:
   image: docker.io/mattermost/mattermost-team-edition
   imagePullPolicy: IfNotPresent
