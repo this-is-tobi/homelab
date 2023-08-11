@@ -72,7 +72,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/argo-cd
-      chartVersion: 4.7.15
+      chartVersion: 4.7.21
     namespace: argocd
     # argocd domain used as ingress
     domain: gitops.{{ root_domain }}
@@ -85,7 +85,7 @@ services:
       repoUrl: https://charts.jetstack.io
       repoName: jetstack
       chartRef: jetstack/cert-manager
-      chartVersion: 1.12.2
+      chartVersion: 1.12.3
     namespace: cert-manager
     # email used for letsencrypt
     email: your@email.com
@@ -105,7 +105,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/grafana
-      chartVersion: 9.0.3
+      chartVersion: 9.0.5
     namespace: monitoring
     # grafana domain used as ingress
     domain: monitoring.{{ root_domain }}
@@ -118,7 +118,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/harbor
-      chartVersion: 16.7.0
+      chartVersion: 16.7.4
     namespace: harbor
     # harbor domain used as ingress
     domain: registry.{{ root_domain }}
@@ -128,55 +128,55 @@ services:
     password: ""
     # harbor projects that will be created or updated
     projects:
-      - projectName: robots
-        metadata:
-          public: "true"
-          storageLimit: -1
-          autoScan: "true"
+      # - projectName: robots
+      #   metadata:
+      #     public: "true"
+      #     storageLimit: -1
+      #     autoScan: "true"
     # harbor robots that will be created or updated
     robots:
-      - name: docs
-        description: Robot that build documentation
-        level: system
-        duration: -1
-        permissions:
-          - kind: project
-            namespace: robots
-            access:
-              - action: list
-                resource: repository
-              - action: pull
-                resource: repository
-              - action: push
-                resource: repository
-              - action: delete
-                resource: repository
-              - action: read
-                resource: artifact
-              - action: list
-                resource: artifact
-              - action: delete
-                resource: artifact
-              - action: create
-                resource: artifact-label
-              - action: delete
-                resource: artifact-label
-              - action: create
-                resource: tag
-              - action: delete
-                resource: tag
-              - action: list
-                resource: tag
-              - action: create
-                resource: scan
-              - action: stop
-                resource: scan
+      # - name: docs
+      #   description: Robot that build documentation
+      #   level: system
+      #   duration: -1
+      #   permissions:
+      #     - kind: project
+      #       namespace: robots
+      #       access:
+      #         - action: list
+      #           resource: repository
+      #         - action: pull
+      #           resource: repository
+      #         - action: push
+      #           resource: repository
+      #         - action: delete
+      #           resource: repository
+      #         - action: read
+      #           resource: artifact
+      #         - action: list
+      #           resource: artifact
+      #         - action: delete
+      #           resource: artifact
+      #         - action: create
+      #           resource: artifact-label
+      #         - action: delete
+      #           resource: artifact-label
+      #         - action: create
+      #           resource: tag
+      #         - action: delete
+      #           resource: tag
+      #         - action: list
+      #           resource: tag
+      #         - action: create
+      #           resource: scan
+      #         - action: stop
+      #           resource: scan
   keycloak:
     helm:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/keycloak
-      chartVersion: 15.1.6
+      chartVersion: 16.0.3
     namespace: keycloak
     # keycloak domain used as ingress
     domain: sso.{{ root_domain }}
@@ -204,14 +204,14 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/kube-prometheus
-      chartVersion: 8.15.1
+      chartVersion: 8.16.2
     namespace: monitoring
   kubeDashboard:
     helm:
       repoUrl: https://kubernetes.github.io/dashboard
       repoName: kubernetes-dashboard
       chartRef: kubernetes-dashboard/kubernetes-dashboard
-      chartVersion: 7.0.2
+      chartVersion: 7.0.3
     namespace: kubernetes-dashboard
     # kubernetes-dashboard domain used as ingress
     domain: console.{{ root_domain }}
@@ -260,7 +260,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/minio
-      chartVersion: 12.6.9
+      chartVersion: 12.7.0
     namespace: minio
     # minio domain used as ingress (web interface)
     domain: s3.{{ root_domain }}

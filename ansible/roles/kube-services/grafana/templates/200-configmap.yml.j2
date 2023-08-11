@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-conf
-  namespace: "{{ services.grafana.namespace }}"
+  namespace: {{ services.grafana.namespace }}
 data:
   grafana.ini: |-
     [server]

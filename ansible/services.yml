@@ -17,36 +17,43 @@
     - name: kube-services/kubernetes-dashboard
       tags:
         - kubernetes-dashboard
+        - kube-dashboard
     - name: kube-services/traefik
       tags:
         - traefik
     - name: kube-services/keycloak
       tags:
         - keycloak
+        - sso
     - name: kube-services/kube-prometheus
       tags:
         - kube-prometheus
+        - prometheus
+        - monitoring
     - name: kube-services/grafana
       tags:
         - grafana
-    - name: kube-services/grafana
-      tags:
-        - grafana
+        - monitoring
     - name: kube-services/minio
       tags:
         - minio
+        - s3
     - name: kube-services/harbor
       tags:
         - harbor
+        - registry
     - name: kube-services/argocd
       tags:
         - argocd
+        - argo
     - name: kube-services/vault
       tags:
         - vault
     - name: kube-services/postgres-operator
       tags:
+        - postgres-operator
         - postgres
+        - cnpg
     - name: kube-services/mattermost-operator
       tags:
         - mattermost
