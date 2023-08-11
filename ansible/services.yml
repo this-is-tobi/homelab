@@ -53,3 +53,7 @@
     - name: kube-services/dashy
       tags:
         - dashy
+    - name: kube-services/actions-runner-controller
+      tags:
+        - actions-runner-controller
+        - arc

@@ -1,0 +1,25 @@
+---
+- name: Add actions-runner-controller helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ services.actionsRunnerController.helm.repoName }}"
+    repo_url: "{{ services.actionsRunnerController.helm.repoUrl }}"
+    state: present
+
+- name: Deploy actions-runner-controller helm chart
+  kubernetes.core.helm:
+    name: actions-runner-controller
+    update_repo_cache: true
+    chart_ref: "{{ services.actionsRunnerController.helm.chartRef }}"
+    chart_version: "{{ services.actionsRunnerController.helm.chartVersion }}"
+    create_namespace: true
+    namespace: "{{ services.actionsRunnerController.namespace }}"
+    wait: true
+    timeout: 10m0s
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+- name: Deploy runners
+  kubernetes.core.k8s:
+    state: present
+    template: runner.yml.j2
+  with_items: "{{ services.actionsRunnerController.runners }}"

@@ -42,6 +42,31 @@ k3s:
 # services #
 #----------#
 services:
+  actionsRunnerController:
+    helm:
+      repoUrl: https://actions-runner-controller.github.io/actions-runner-controller
+      repoName: actions-runner-controller
+      chartRef: actions-runner-controller/actions-runner-controller
+      chartVersion: 0.23.3
+    namespace: actions-runner-system
+    # Use 'githubToken' OR 'githubApp...'
+    githubToken: ""
+    # githubAppId: ""
+    # githubAppInstallId: ""
+    # githubAppKey: ""
+    runners:
+      # - name: docs-runner
+      #   namespace: runners
+      #   type: repository
+      #   target: this-is-tobi/docs
+      #   minRunners: 1
+      #   maxRunners: 5
+      # - name: tobi-runner
+      #   namespace: runners
+      #   type: organization
+      #   target: this-is-tobi
+      #   minRunners: 1
+      #   maxRunners: 5
   argocd:
     helm:
       repoUrl: https://charts.bitnami.com/bitnami
