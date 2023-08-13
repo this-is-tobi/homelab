@@ -52,13 +52,13 @@ Kubernetes services that are available through user interfaces are centralized o
 | Minio *- api*        | <https://api.s3.domain.com>     |
 | Minio *- web*        | <https://s3.domain.com>         |
 | Traefik              | <http://traefik.domain.local>   |
-| Vault                | <http://vault.domain.com>       |
+| Vault                | <https://vault.domain.com>      |
 
 > *__Notes:__ Replace `domain.com` by your own domain.*
 
 ### Single sign on
 
-[Keycloak](http://keycloak.org/) is deployed as the cluster single sign on tool, it give access to various services accross the same account (*i.e: username / password pair*) to improve user experience.
+[Keycloak](https://keycloak.org/) is deployed as the cluster single sign on tool, it give access to various services accross the same account (*i.e: username / password pair*) to improve user experience.
 On the other hand, keycloak can pass user groups and roles to control access level to theese services.
 
 It is also usefull for admins to have a better control over homelab users and access, users can be manage connecting the keycloak interface (*cf: [keycloak service url](#kubernetes)*) with admin credentials (`services.keycloak.username` and `services.keycloak.password` can be found in [group_vars/cluster.yml](../ansible/inventory-example/group_vars/cluster.yml) file).
