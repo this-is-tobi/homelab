@@ -72,7 +72,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/argo-cd
-      chartVersion: 4.7.21
+      chartVersion: 4.7.23
     namespace: argocd
     # argocd domain used as ingress
     domain: gitops.{{ root_domain }}
@@ -105,7 +105,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/grafana
-      chartVersion: 9.0.5
+      chartVersion: 9.0.6
     namespace: monitoring
     # grafana domain used as ingress
     domain: monitoring.{{ root_domain }}
@@ -176,7 +176,7 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/keycloak
-      chartVersion: 16.0.3
+      chartVersion: 15.1.8
     namespace: keycloak
     # keycloak domain used as ingress
     domain: sso.{{ root_domain }}
@@ -204,14 +204,14 @@ services:
       repoUrl: https://charts.bitnami.com/bitnami
       repoName: bitnami
       chartRef: bitnami/kube-prometheus
-      chartVersion: 8.16.2
+      chartVersion: 8.17.0
     namespace: monitoring
   kubeDashboard:
     helm:
       repoUrl: https://kubernetes.github.io/dashboard
       repoName: kubernetes-dashboard
       chartRef: kubernetes-dashboard/kubernetes-dashboard
-      chartVersion: 7.0.3
+      chartVersion: 7.0.0-alpha0
     namespace: kubernetes-dashboard
     # kubernetes-dashboard domain used as ingress
     domain: console.{{ root_domain }}
@@ -222,7 +222,7 @@ services:
       repoUrl: https://charts.longhorn.io
       repoName: longhorn
       chartRef: longhorn/longhorn
-      chartVersion: 1.5.0
+      chartVersion: 1.5.1
     namespace: longhorn-system
     # longhorn domain used as ingress
     domain: longhorn.{{ local_root_domain }}
