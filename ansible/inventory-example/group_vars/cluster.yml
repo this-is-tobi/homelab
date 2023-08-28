@@ -99,7 +99,7 @@ services:
   dashy:
     namespace: dashy
     image: docker.io/lissy93/dashy:2.1.1
-    docsDomain: docs.{{ root_domain }}
+    docsDomain: docs.this-is-tobi.com
   grafana:
     helm:
       repoUrl: https://charts.bitnami.com/bitnami
