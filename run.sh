@@ -50,6 +50,12 @@ while getopts hk:p:t: flag; do
 done
 
 
+if [ "$PLAYBOOK" = "false" ] && [ "$KUBECONFIG" == "false" ]; then
+  printf "\n\n${red}Error.${no_color} Argument missing\n\n"
+  print_help
+fi
+
+
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
   printf "\n\n${red}${i}.${no_color} Update ansible collections\n\n"
