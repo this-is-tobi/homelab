@@ -1,9 +1,15 @@
 ---
+- name: Check if file exists
+  stat:
+    path: "{{ playbook_dir }}/roles/kube-services/system-upgrade/templates/000-system-upgrade-controller.yml.j2"
+  register: file
+
 - name: Download system-upgrade-controller manifest to the cluster
   ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/rancher/system-upgrade-controller/master/manifests/system-upgrade-controller.yaml
+    url: https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
     dest: "{{ playbook_dir }}/roles/kube-services/system-upgrade/templates/000-system-upgrade-controller.yml.j2"
     mode: 0664
+  when: not file.stat.exists
 
 - name: Apply system-upgrade-controller manifest to the cluster
   kubernetes.core.k8s:
