@@ -1,13 +1,13 @@
 ---
 - name: Define masters init args
   ansible.builtin.set_fact:
-    init_server_args: "{{ '--cluster-init' if (ansible_default_ipv4.address == k3s.masterIP) else '--server https://' + k3s.apiServerEndpoint + ':6443 --token ' + hostvars[groups['masters'][0]]['token'] }}"
+    init_server_args: "{{ '--cluster-init' if (ansible_default_ipv4.address == k3sMasterIP) else '--server https://' + k3sApiServerEndpoint + ':6443 --token ' + hostvars[groups['masters'][0]]['token'] }}"
 
 - name: Copy k3s service file
   register: k3s_service
   ansible.builtin.template:
     src: "k3s.service.j2"
-    dest: "{{ k3s.systemdDir }}/k3s.service"
+    dest: "{{ k3sSystemdDir }}/k3s.service"
     owner: root
     group: root
     mode: 0644
@@ -45,14 +45,14 @@
   ansible.builtin.set_fact:
     token: "{{ node_token.content | b64decode | regex_replace('\n', '') }}"
 
-- name: Fetch k3s.token
+- name: Fetch k3sToken
   delegate_to: localhost
   become: false
   ansible.builtin.shell:
     cmd: |
-      yq -i '.k3s.token = "{{ token }}"' inventory/group_vars/cluster.yml
+      yq -i '.k3sToken = "{{ token }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: ansible_default_ipv4.address == k3s.masterIP
+  when: ansible_default_ipv4.address == k3sMasterIP
 
 - name: Restore node-token file access
   ansible.builtin.file:
@@ -77,7 +77,7 @@
 - name: Configure kubectl cluster to {{ endpoint_url }}
   ansible.builtin.command: >-
     k3s kubectl config set-cluster default
-      --server https://{{ k3s.apiServerEndpoint }}:6443
+      --server https://{{ k3sApiServerEndpoint }}:6443
       --kubeconfig {{ ansible_user_dir }}/.kube/config
   changed_when: true
 
@@ -98,18 +98,18 @@
     src: "{{ ansible_user_dir }}/.kube/config"
     dest: "~/.kube/"
     flat: yes
-  when: ansible_default_ipv4.address == k3s.masterIP
+  when: ansible_default_ipv4.address == k3sMasterIP
 
 - name: Get cluster CA data
   ansible.builtin.shell:
     cmd: |
       kubectl config view --raw -o jsonpath='{ .clusters[0].cluster.certificate-authority-data }'
-  when: ansible_default_ipv4.address == k3s.masterIP
-  register: k3s.caData
+  when: ansible_default_ipv4.address == k3sMasterIP
+  register: k3sCaData
 
 - name: Fetch cluster CA data
   ansible.builtin.shell:
     cmd: |
-      yq -i '.k3s.caData = "{{ k3s.caData.stdout_lines }}"' inventory/group_vars/cluster.yml
+      yq -i '.k3sCaData = "{{ k3sCaData.stdout_lines }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: ansible_default_ipv4.address == k3s.masterIP
+  when: ansible_default_ipv4.address == k3sMasterIP

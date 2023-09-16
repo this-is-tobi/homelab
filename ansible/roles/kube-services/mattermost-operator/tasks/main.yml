@@ -2,38 +2,38 @@
 - name: Generate mattermost random admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.mattermost.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.mattermost.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.mattermost.password == ""
+  when: mattermost.password == ""
 
 - name: Generate mattermost random postgres admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.mattermost.postgres.admin.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.mattermost.postgres.admin.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.mattermost.postgres.admin.password == ""
+  when: mattermost.postgres.admin.password == ""
 
 - name: Generate mattermost random postgres app password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.mattermost.postgres.app.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.mattermost.postgres.app.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.mattermost.postgres.app.password == ""
+  when: mattermost.postgres.app.password == ""
 
 - name: Add mattermost helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.mattermost.helm.repoName }}"
-    repo_url: "{{ services.mattermost.helm.repoUrl }}"
+    name: "{{ mattermost.helm.repoName }}"
+    repo_url: "{{ mattermost.helm.repoUrl }}"
     state: present
 
 - name: Deploy mattermost-operator helm chart
   kubernetes.core.helm:
     name: mattermost-operator
     update_repo_cache: true
-    chart_ref: "{{ services.mattermost.helm.chartRef }}"
-    chart_version: "{{ services.mattermost.helm.chartVersion }}"
+    chart_ref: "{{ mattermost.helm.chartRef }}"
+    chart_version: "{{ mattermost.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.mattermost.namespace }}"
+    namespace: "{{ mattermost.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

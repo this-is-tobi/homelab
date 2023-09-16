@@ -6,7 +6,7 @@ authSecret:
   enabled: true
   create: true
   name: "controller-manager"
-  github_token: "{{ services.actionsRunnerController.githubToken }}"
+  github_token: "{{ actionsRunnerController.githubToken }}"
 
 image:
   actionsRunnerRepositoryAndTag: "summerwind/actions-runner:latest"

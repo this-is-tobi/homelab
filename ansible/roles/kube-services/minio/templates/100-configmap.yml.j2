@@ -3,10 +3,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: minio-sso
-  namespace: {{ services.minio.namespace }}
+  namespace: {{ minio.namespace }}
 data:
-  MINIO_IDENTITY_OPENID_CONFIG_URL: "https://{{ services.keycloak.domain }}/realms/{{ services.keycloak.realm }}/.well-known/openid-configuration"
-  MINIO_IDENTITY_OPENID_CLIENT_ID: "{{ services.keycloak.clientIds.minio }}"
+  MINIO_IDENTITY_OPENID_CONFIG_URL: "https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}/.well-known/openid-configuration"
+  MINIO_IDENTITY_OPENID_CLIENT_ID: "{{ keycloak.clientIds.minio }}"
   MINIO_IDENTITY_OPENID_CLIENT_SECRET: "{{ minio_client_secret }}"
   MINIO_IDENTITY_OPENID_DISPLAY_NAME: "Keycloak"
   MINIO_IDENTITY_OPENID_SCOPES: "openid,generic"
@@ -14,6 +14,6 @@ data:
   MINIO_IDENTITY_OPENID_CLAIM_NAME: "minio-policy"
   MINIO_IDENTITY_OPENID_CLAIM_USERINFO: "on"
   MINIO_IDENTITY_OPENID_VENDOR: "keycloak"
-  MINIO_IDENTITY_OPENID_KEYCLOAK_REALM: "{{ services.keycloak.realm }}"
-  MINIO_IDENTITY_OPENID_KEYCLOAK_ADMIN_URL: "https://{{ services.keycloak.domain }}/admin"
-  MINIO_BROWSER_REDIRECT_URL: "https://{{ services.minio.domain }}/oauth_callback"
+  MINIO_IDENTITY_OPENID_KEYCLOAK_REALM: "{{ keycloak.realm }}"
+  MINIO_IDENTITY_OPENID_KEYCLOAK_ADMIN_URL: "https://{{ keycloak.domain }}/admin"
+  MINIO_BROWSER_REDIRECT_URL: "https://{{ minio.domain }}/oauth_callback"

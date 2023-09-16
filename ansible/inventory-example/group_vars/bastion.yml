@@ -3,4 +3,4 @@
 #---------#
 
 # SSH
-bastion_local_dir: secrets
+bastionLocalDir: secrets

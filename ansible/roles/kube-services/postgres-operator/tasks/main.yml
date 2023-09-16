@@ -1,18 +1,18 @@
 ---
 - name: Add cloud native postgres helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.cloudNativePostgres.helm.repoName }}"
-    repo_url: "{{ services.cloudNativePostgres.helm.repoUrl }}"
+    name: "{{ cloudNativePostgres.helm.repoName }}"
+    repo_url: "{{ cloudNativePostgres.helm.repoUrl }}"
     state: present
 
 - name: Deploy cloud native postgres helm chart
   kubernetes.core.helm:
     name: cnpg
     update_repo_cache: true
-    chart_ref: "{{ services.cloudNativePostgres.helm.chartRef }}"
-    chart_version: "{{ services.cloudNativePostgres.helm.chartVersion }}"
+    chart_ref: "{{ cloudNativePostgres.helm.chartRef }}"
+    chart_version: "{{ cloudNativePostgres.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.cloudNativePostgres.namespace }}"
+    namespace: "{{ cloudNativePostgres.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

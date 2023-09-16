@@ -1,18 +1,18 @@
 ---
 - name: Add longhorn helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.longhorn.helm.repoName }}"
-    repo_url: "{{ services.longhorn.helm.repoUrl }}"
+    name: "{{ longhorn.helm.repoName }}"
+    repo_url: "{{ longhorn.helm.repoUrl }}"
     state: present
 
 - name: Deploy longhorn helm chart
   kubernetes.core.helm:
     name: longhorn
     update_repo_cache: true
-    chart_ref: "{{ services.longhorn.helm.chartref }}"
-    chart_version: "{{ services.longhorn.helm.chartVersion }}"
+    chart_ref: "{{ longhorn.helm.chartref }}"
+    chart_version: "{{ longhorn.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.longhorn.hnamespace }}"
+    namespace: "{{ longhorn.hnamespace }}"
     wait: true
     timeout: 10m0s
     state: present

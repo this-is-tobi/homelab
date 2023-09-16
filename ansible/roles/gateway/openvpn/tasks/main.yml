@@ -49,10 +49,10 @@
     responses:
       (?i)Confirm removal: "yes"
       (?i)Remove current 'vars' file: "yes"
-      (?i)Enter New CA Key Passphrase: "{{ openvpn_root_passphrase }}"
-      (?i)Confirm New CA Key Passphrase: "{{ openvpn_root_passphrase }}"
+      (?i)Enter New CA Key Passphrase: "{{ openvpnRootPassphrase }}"
+      (?i)Confirm New CA Key Passphrase: "{{ openvpnRootPassphrase }}"
       (?i)Common Name: "openvpn-ca"
       (?i)Confirm request details: "yes"
-      (?i)Enter pass phrase for: "{{ openvpn_root_passphrase }}"
+      (?i)Enter pass phrase for: "{{ openvpnRootPassphrase }}"
   no_log: true
   when: not openvpn_container.exists

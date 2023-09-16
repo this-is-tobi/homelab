@@ -2,24 +2,24 @@
 - name: Generate harbor random admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.harbor.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.harbor.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.harbor.password == ""
+  when: harbor.password == ""
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.harbor.helm.repoName }}"
-    repo_url: "{{ services.harbor.helm.repoUrl }}"
+    name: "{{ harbor.helm.repoName }}"
+    repo_url: "{{ harbor.helm.repoUrl }}"
     state: present
 
 - name: Deploy harbor helm chart
   kubernetes.core.helm:
     name: harbor
     update_repo_cache: true
-    chart_ref: "{{ services.harbor.helm.chartRef }}"
-    chart_version: "{{ services.harbor.helm.chartVersion }}"
+    chart_ref: "{{ harbor.helm.chartRef }}"
+    chart_version: "{{ harbor.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.harbor.namespace }}"
+    namespace: "{{ harbor.namespace }}"
     wait: true
     timeout: 10m0s
     state: present
@@ -30,12 +30,12 @@
 
 - name: Create projects
   include_tasks: project.yml
-  loop: "{{ services.harbor.projects }}"
+  loop: "{{ harbor.projects }}"
 
 - name: Create projects quotas
   include_tasks: quota.yml
-  loop: "{{ services.harbor.projects }}"
+  loop: "{{ harbor.projects }}"
 
 - name: Create robots
   include_tasks: robot.yml
-  loop: "{{ services.harbor.robots }}"
+  loop: "{{ harbor.robots }}"

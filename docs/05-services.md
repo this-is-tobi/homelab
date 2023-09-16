@@ -61,7 +61,7 @@ Kubernetes services that are available through user interfaces are centralized o
 [Keycloak](https://keycloak.org/) is deployed as the cluster single sign on tool, it give access to various services accross the same account (*i.e: username / password pair*) to improve user experience.
 On the other hand, keycloak can pass user groups and roles to control access level to theese services.
 
-It is also usefull for admins to have a better control over homelab users and access, users can be manage connecting the keycloak interface (*cf: [keycloak service url](#kubernetes)*) with admin credentials (`services.keycloak.username` and `services.keycloak.password` can be found in [group_vars/cluster.yml](../ansible/inventory-example/group_vars/cluster.yml) file).
+It is also usefull for admins to have a better control over homelab users and access, users can be manage connecting the keycloak interface (*cf: [keycloak service url](#kubernetes)*) with admin credentials (`keycloak.username` and `keycloak.password` can be found in [group_vars/cluster.yml](../ansible/inventory-example/group_vars/cluster.yml) file).
 
 > Don't forget to select 'homelab' realm
 

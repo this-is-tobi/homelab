@@ -5,24 +5,24 @@
 - name: Create keycloak group
   community.general.keycloak_group:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ services.keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ services.keycloak.username }}"
-    auth_password: "{{ services.keycloak.password }}"
-    realm: "{{ services.keycloak.realm }}"
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
+    realm: "{{ keycloak.realm }}"
     name: "{{ item.username }}"
     state: present
 
 - name: Create keycloak roles
   community.general.keycloak_role:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ services.keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ services.keycloak.username }}"
-    auth_password: "{{ services.keycloak.password }}"
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
     name: "{{ item }}"
-    realm: "{{ services.keycloak.realm }}"
-    client_id: "{{ services.keycloak.clientIds.minio }}"
+    realm: "{{ keycloak.realm }}"
+    client_id: "{{ keycloak.clientIds.minio }}"
     description: Role for minio
     state: present
   loop:
@@ -31,12 +31,12 @@
 - name: Map keycloak role to user group
   community.general.keycloak_client_rolemapping:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ services.keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ services.keycloak.username }}"
-    auth_password: "{{ services.keycloak.password }}"
-    realm: "{{ services.keycloak.realm }}"
-    client_id: "{{ services.keycloak.clientIds.minio }}"
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
+    realm: "{{ keycloak.realm }}"
+    client_id: "{{ keycloak.clientIds.minio }}"
     group_name: "{{ item.username }}"
     roles:
       - name: "{{ item.username }}"
@@ -45,11 +45,11 @@
 # - name: Create keycloak user
 #   community.general.keycloak_user:
 #     auth_client_id: admin-cli
-#     auth_keycloak_url: https://{{ services.keycloak.domain }}
+#     auth_keycloak_url: https://{{ keycloak.domain }}
 #     auth_realm: master
-#     auth_username: "{{ services.keycloak.username }}"
-#     auth_password: "{{ services.keycloak.password }}"
-#     realm: "{{ services.keycloak.realm }}"
+#     auth_username: "{{ keycloak.username }}"
+#     auth_password: "{{ keycloak.password }}"
+#     realm: "{{ keycloak.realm }}"
 #     username: "{{ item.username }}"
 #     firstName: "{{ item.firstname }}"
 #     lastName: "{{ item.lastname }}"
@@ -58,7 +58,7 @@
 #     emailVerified: true
 #     credentials:
 #       - type: password
-#         value: "{{ services.keycloak.defaultPassword }}"
+#         value: "{{ keycloak.defaultPassword }}"
 #         temporary: true
 #     groups:
 #       - name: "{{ item.username }}"

@@ -2,7 +2,7 @@
 - name: Get vaulth health
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/sys/health"
+    url: "https://{{ vault.domain }}/v1/sys/health"
     status_code: [200, 503, 501, 404]
   register: vault_health
   retries: 5

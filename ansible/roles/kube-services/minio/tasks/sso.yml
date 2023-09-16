@@ -1,13 +1,13 @@
 ---
 - name: Get keycloak client secret
   community.general.keycloak_clientsecret_info:
-    client_id: "{{ services.keycloak.clientIds.minio }}"
-    realm: "{{ services.keycloak.realm }}"
+    client_id: "{{ keycloak.clientIds.minio }}"
+    realm: "{{ keycloak.realm }}"
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ services.keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ services.keycloak.username }}"
-    auth_password: "{{ services.keycloak.password }}"
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
   register: minio_client_secret
   no_log: true
 
@@ -17,7 +17,7 @@
 
 - name: Create minio namespace
   kubernetes.core.k8s:
-    name: "{{ services.minio.namespace }}"
+    name: "{{ minio.namespace }}"
     api_version: v1
     kind: Namespace
     state: present

@@ -1,7 +1,7 @@
 ---
 auth:
-  adminUser: {{ services.keycloak.username }}
-  adminPassword: {{ services.keycloak.password }}
+  adminUser: {{ keycloak.username }}
+  adminPassword: {{ keycloak.password }}
 
 nodeSelector:
   node-type: worker
@@ -11,7 +11,7 @@ ingress:
   ingressClassName: traefik
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-  hostname: {{ services.keycloak.domain }}
+  hostname: {{ keycloak.domain }}
   path: /
   tls: true
   secrets: []

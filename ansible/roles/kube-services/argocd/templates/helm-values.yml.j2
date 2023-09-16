@@ -7,12 +7,12 @@ applicationSet:
 
 config:
   secret:
-    argocdServerAdminPassword: {{ services.argocd.password }}
+    argocdServerAdminPassword: {{ argocd.password }}
 
 server:
   nodeSelector:
     node-type: worker
-  url: https://{{ services.argocd.domain }}
+  url: https://{{ argocd.domain }}
   insecure: true
   ingress:
     enabled: false

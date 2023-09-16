@@ -1,9 +1,9 @@
 ---
 - name: Get memberships
   ansible.builtin.uri:
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.projectName }}/members
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ item.projectName }}/members
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
@@ -16,9 +16,9 @@
 - name: Create project membership
   ansible.builtin.uri:
     method: POST
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.projectName }}/members
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ item.projectName }}/members
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ item.membership | to_json }}"
@@ -28,9 +28,9 @@
 - name: Update project membership
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.projectName }}/members/{{ harbor_membership_id }}
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ item.projectName }}/members/{{ harbor_membership_id }}
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ item.membership | to_json }}"

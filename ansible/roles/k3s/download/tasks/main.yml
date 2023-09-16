@@ -1,8 +1,8 @@
 ---
 - name: Download k3s binary x64
   ansible.builtin.get_url:
-    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/k3s
-    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/sha256sum-amd64.txt
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/k3s
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/sha256sum-amd64.txt
     dest: /usr/local/bin/k3s
     owner: root
     group: root
@@ -11,8 +11,8 @@
 
 - name: Download k3s binary arm64
   ansible.builtin.get_url:
-    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/k3s-arm64
-    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/sha256sum-arm64.txt
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/k3s-arm64
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/sha256sum-arm64.txt
     dest: /usr/local/bin/k3s
     owner: root
     group: root
@@ -24,8 +24,8 @@
 
 - name: Download k3s binary armhf
   ansible.builtin.get_url:
-    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/k3s-armhf
-    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s.version }}/sha256sum-arm.txt
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/k3s-armhf
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/sha256sum-arm.txt
     dest: /usr/local/bin/k3s
     owner: root
     group: root

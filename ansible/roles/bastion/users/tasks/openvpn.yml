@@ -13,7 +13,7 @@
     chdir: "/services/openvpn"
     responses:
       (?i)Confirm request details: "yes"
-      (?i)Enter pass phrase for: "{{ openvpn_root_passphrase }}"
+      (?i)Enter pass phrase for: "{{ openvpnRootPassphrase }}"
   # no_log: true
   when: not openvpn_profile.stat.exists
 
@@ -28,7 +28,7 @@
   ansible.builtin.lineinfile:
     path: "/services/openvpn/users/{{ item.username }}.ovpn"
     regexp: "^remote "
-    line: "remote {{ openvpn_server_hostname }} 1194 udp"
+    line: "remote {{ openvpnServerHostname }} 1194 udp"
   no_log: true
   when: not openvpn_profile.stat.exists
 
@@ -44,7 +44,7 @@
 - name: Fetch users conf
   ansible.builtin.fetch:
     src: "/services/openvpn/users/{{ item.username }}.ovpn"
-    dest: "{{ bastion_local_dir }}/{{ item.username }}/openvpn/{{ item.username }}.ovpn"
+    dest: "{{ bastionLocalDir }}/{{ item.username }}/openvpn/{{ item.username }}.ovpn"
     flat: yes
   no_log: true
   when: not openvpn_profile.stat.exists

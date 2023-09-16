@@ -1,12 +1,12 @@
 mirrors:
-  {{ services.harbor.domain }}:
+  {{ harbor.domain }}:
     endpoint:
-      - "https://{{ services.harbor.domain }}"
+      - "https://{{ harbor.domain }}"
 configs:
-  "https://{{ services.harbor.domain }}":
+  "https://{{ harbor.domain }}":
     auth:
-      username: {{ services.harbor.username }}
-      password: {{ services.harbor.password }}
+      username: {{ harbor.username }}
+      password: {{ harbor.password }}
 #    tls:
 #      cert_file: # path to the cert file used in the registry
 #      key_file:  # path to the key file used in the registry

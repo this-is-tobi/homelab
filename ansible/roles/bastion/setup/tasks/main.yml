@@ -1,5 +1,5 @@
 ---
 - name: Setup users environment
   include_tasks: setup.yml
-  loop: "{{ bastion_users }}"
+  loop: "{{ bastionUsers }}"
   when: item.setup == true

@@ -1,18 +1,18 @@
 ---
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.kubePrometheus.helm.repoName }}"
-    repo_url: "{{ services.kubePrometheus.helm.repoUrl }}"
+    name: "{{ kubePrometheus.helm.repoName }}"
+    repo_url: "{{ kubePrometheus.helm.repoUrl }}"
     state: present
 
 - name: Deploy kube-prometheus helm chart
   kubernetes.core.helm:
     name: kube-prometheus
     update_repo_cache: true
-    chart_ref: "{{ services.kubePrometheus.helm.chartRef }}"
-    chart_version: "{{ services.kubePrometheus.helm.chartVersion }}"
+    chart_ref: "{{ kubePrometheus.helm.chartRef }}"
+    chart_version: "{{ kubePrometheus.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.kubePrometheus.namespace }}"
+    namespace: "{{ kubePrometheus.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

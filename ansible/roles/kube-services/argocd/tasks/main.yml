@@ -2,24 +2,24 @@
 - name: Generate argocd random admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.argocd.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.argocd.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.argocd.password == ""
+  when: argocd.password == ""
 
 - name: Add bitnami helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.argocd.helm.repoName }}"
-    repo_url: "{{ services.argocd.helm.repoUrl }}"
+    name: "{{ argocd.helm.repoName }}"
+    repo_url: "{{ argocd.helm.repoUrl }}"
     state: present
 
 - name: Deploy argocd helm chart
   kubernetes.core.helm:
     name: argocd
     update_repo_cache: true
-    chart_ref: "{{ services.argocd.helm.chartRef }}"
-    chart_version: "{{ services.argocd.helm.chartVersion }}"
+    chart_ref: "{{ argocd.helm.chartRef }}"
+    chart_version: "{{ argocd.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.argocd.namespace }}"
+    namespace: "{{ argocd.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

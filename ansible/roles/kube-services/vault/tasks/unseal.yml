@@ -6,11 +6,11 @@
 - name: Unseal Vault
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/sys/unseal"
+    url: "https://{{ vault.domain }}/v1/sys/unseal"
     method: POST
     status_code: [200]
     headers:
-      "X-Vault-Token": "{{ services.vault.token }}"
+      "X-Vault-Token": "{{ vault.token }}"
     body:
       key: "{{ vault_keys.resources[0].data['key'+ (num)] | b64decode }}"
     body_format: json

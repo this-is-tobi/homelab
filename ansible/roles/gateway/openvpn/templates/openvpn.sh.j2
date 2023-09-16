@@ -29,7 +29,7 @@ init () {
   printf "\n${red}${i}.${no_color} Initialize the configuration files and certificates\n"
   i=$(($i + 1))
   
-  docker compose run --rm openvpn ovpn_genconfig -u udp://{{ openvpn_server_hostname }}
+  docker compose run --rm openvpn ovpn_genconfig -u udp://{{ openvpnServerHostname }}
   docker compose run --rm openvpn ovpn_initpki
 
 

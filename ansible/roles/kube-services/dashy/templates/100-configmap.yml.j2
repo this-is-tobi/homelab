@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: dashy-config
-  namespace: {{ services.dashy.namespace }}
+  namespace: {{ dashy.namespace }}
 data:
   conf.yml: |
     pageInfo:
@@ -12,7 +12,7 @@ data:
         - title: GitHub
           path: https://github.com/this-is-tobi/homelab
         - title: Documentation
-          path: https://{{ services.dashy.docsDomain }}
+          path: https://{{ dashy.docsDomain }}
     appConfig:
       theme: adventure-basic
       startingView: default
@@ -32,31 +32,31 @@ data:
         items:
           - title: Argocd
             description: Deploy apps using gitops
-            url: https://{{ services.argocd.domain }}
+            url: https://{{ argocd.domain }}
             icon: hl-argocd
           - title: Grafana
             description: Watch cluster metrics & application logs
-            url: https://{{ services.grafana.domain }}
+            url: https://{{ grafana.domain }}
             icon: hl-grafana
           - title: Harbor
             description: Container image registry & Helm chart registry
-            url: https://{{ services.harbor.domain }}
+            url: https://{{ harbor.domain }}
             icon: hl-harbor
           - title: Keycloak
             description: Single Sign On managment 
-            url: https://{{ services.keycloak.domain }}
+            url: https://{{ keycloak.domain }}
             icon: hl-keycloak
           - title: Kubernetes 
             description: Kubernetes dashboard to watch cluster ressources
-            url: https://{{ services.kubeDashboard.domain }}
+            url: https://{{ kubeDashboard.domain }}
             icon: hl-kubernetes-dashboard
           - title: Minio
             description: Store data with s3 standard
-            url: https://{{ services.minio.domain }}
+            url: https://{{ minio.domain }}
             icon: hl-minio
           - title: Vault
             description: Store & retrieve secrets safely
-            url: https://{{ services.vault.domain }}
+            url: https://{{ vault.domain }}
             icon: hl-vault
         displayData:
           sortBy: alphabetical
@@ -69,7 +69,7 @@ data:
         items:
           - title: Documentation
             description: As the saying goes RTFM
-            url: https://{{ services.dashy.docsDomain }}
+            url: https://{{ dashy.docsDomain }}
             icon: fal fa-book
             statusCheck: false
           - title: Github

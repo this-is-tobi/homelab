@@ -2,10 +2,10 @@
 - name: Create access policy
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/sys/policies/acl/{{ item.policy_name }}"
+    url: "https://{{ vault.domain }}/v1/sys/policies/acl/{{ item.policy_name }}"
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ services.vault.token }}"
+      "X-Vault-Token": "{{ vault.token }}"
     body: "{{ item.policy }}"
     body_format: json

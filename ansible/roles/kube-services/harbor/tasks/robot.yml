@@ -1,9 +1,9 @@
 ---
 - name: Get robots
   ansible.builtin.uri:
-    url: https://{{ services.harbor.domain }}/api/v2.0/robots?name={{ item.name }}
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/robots?name={{ item.name }}
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
@@ -12,9 +12,9 @@
 - name: Create robot
   ansible.builtin.uri:
     method: POST
-    url: https://{{ services.harbor.domain }}/api/v2.0/robots
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/robots
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ item | to_json }}"
@@ -24,9 +24,9 @@
 - name: Update robot
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ services.harbor.domain }}/api/v2.0/robots/{{ harbor_robot.json[0].id }}
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/robots/{{ harbor_robot.json[0].id }}
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ harbor_robot.json | ansible.builtin.combine(item | ansible.utils.remove_keys(target=['name', 'level'])) | to_json }}"

@@ -1,18 +1,18 @@
 ---
 - name: Add hashicorp helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.vault.helm.repoName }}"
-    repo_url: "{{ services.vault.helm.repoUrl }}"
+    name: "{{ vault.helm.repoName }}"
+    repo_url: "{{ vault.helm.repoUrl }}"
     state: present
 
 - name: Deploy vault helm chart
   kubernetes.core.helm:
     name: vault
     update_repo_cache: true
-    chart_ref: "{{ services.vault.helm.chartRef }}"
-    chart_version: "{{ services.vault.helm.chartVersion }}"
+    chart_ref: "{{ vault.helm.chartRef }}"
+    chart_version: "{{ vault.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.vault.namespace }}"
+    namespace: "{{ vault.namespace }}"
     wait: true
     timeout: 10m0s
     state: present
@@ -87,30 +87,30 @@
 - name: Fetch vault root token
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.vault.token = "{{ vault_keys.resources[0].data.root_token }}"' inventory/group_vars/cluster.yml
+      yq -i '.vault.token = "{{ vault_keys.resources[0].data.root_token }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.vault.token == ""
+  when: vault.token == ""
 
 - name: Fetch vault unseal key 1
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.vault.unsealKey1 = "{{ vault_keys.resources[0].data.unsealKey1 }}"' inventory/group_vars/cluster.yml
+      yq -i '.vault.unsealKey1 = "{{ vault_keys.resources[0].data.unsealKey1 }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.vault.unsealKey1 == ""
+  when: vault.unsealKey1 == ""
 
 - name: Fetch vault unseal key 2
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.vault.unsealKey2 = "{{ vault_keys.resources[0].data.unsealKey2 }}"' inventory/group_vars/cluster.yml
+      yq -i '.vault.unsealKey2 = "{{ vault_keys.resources[0].data.unsealKey2 }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.vault.unsealKey2 == ""
+  when: vault.unsealKey2 == ""
 
 - name: Fetch vault unseal key 3
   ansible.builtin.shell:
     cmd: |
-      yq -i '.services.vault.unsealKey3 = "{{ vault_keys.resources[0].data.unsealKey3 }}"' inventory/group_vars/cluster.yml
+      yq -i '.vault.unsealKey3 = "{{ vault_keys.resources[0].data.unsealKey3 }}"' inventory/group_vars/cluster.yml
   no_log: true
-  when: services.vault.unsealKey3 == ""
+  when: vault.unsealKey3 == ""
 
 - name: Set fact to unseal vault
   ansible.builtin.set_fact:

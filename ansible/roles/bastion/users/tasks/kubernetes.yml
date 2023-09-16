@@ -1,19 +1,19 @@
 ---
 - name: Create local directory
   ansible.builtin.file:
-    path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes"
+    path: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes"
     state: directory
   delegate_to: localhost
 
 - name: Generate an OpenSSL private key
   community.crypto.openssl_privatekey:
-    path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.key"
+    path: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes/{{ item.username }}.key"
     size: 2048
 
 - name: Generate an OpenSSL Certificate Signing Request
   community.crypto.openssl_csr:
-    path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.csr"
-    privatekey_path: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.key"
+    path: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes/{{ item.username }}.csr"
+    privatekey_path: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes/{{ item.username }}.key"
     common_name: "{{ item.username }}"
 
 - name: Create a k8s namespace
@@ -45,12 +45,12 @@
 - name: Fetch user certificate
   ansible.builtin.copy:
     content: "{{ bastion_user_certificate.resources[0].status.certificate | b64decode }}"
-    dest: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.crt"
+    dest: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes/{{ item.username }}.crt"
 
 - name: Create kubeconfig
   ansible.builtin.template:
     src: kubeconfig.yml.j2
-    dest: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/kubeconfig"
+    dest: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes/kubeconfig"
     mode: 0644
 
 - name: Create a directory if it does not exist
@@ -63,7 +63,7 @@
 
 - name: Copy kubeconfig on bastion user's home directory
   ansible.builtin.copy:
-    src: "{{ bastion_local_dir }}/{{ item.username }}/kubernetes/kubeconfig"
+    src: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes/kubeconfig"
     dest: "/home/{{ item.username }}/.kube/config"
     owner: "{{ item.username }}"
     group: "{{ item.username }}"

@@ -1,18 +1,18 @@
 ---
 - name: Add jetstack helm repo
   kubernetes.core.helm_repository:
-    name: "{{ services.certManager.helm.repoName }}"
-    repo_url: "{{ services.certManager.helm.repoUrl }}"
+    name: "{{ certManager.helm.repoName }}"
+    repo_url: "{{ certManager.helm.repoUrl }}"
     state: present
 
 - name: Deploy cert-manager helm chart
   kubernetes.core.helm:
     name: cert-manager
     update_repo_cache: true
-    chart_ref: "{{ services.certManager.helm.chartRef }}"
-    chart_version: "{{ services.certManager.helm.chartVersion }}"
+    chart_ref: "{{ certManager.helm.chartRef }}"
+    chart_version: "{{ certManager.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ services.certManager.namespace }}"
+    namespace: "{{ certManager.namespace }}"
     wait: true
     timeout: 10m0s
     state: present

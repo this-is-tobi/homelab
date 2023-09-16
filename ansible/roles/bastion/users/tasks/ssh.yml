@@ -2,9 +2,9 @@
 - name: Fetch bastion users ssh key
   ansible.builtin.fetch:
     src: "/home/{{ item.username }}/.ssh/id_rsa.pub"
-    dest: "{{ bastion_local_dir }}/{{ item.username }}/ssh/{{ item.username }}.pub"
+    dest: "{{ bastionLocalDir }}/{{ item.username }}/ssh/{{ item.username }}.pub"
     flat: yes
-  loop: "{{ bastion_users }}"
+  loop: "{{ bastionUsers }}"
 
 - name: Add ssh key in authorized_keys
   ansible.posix.authorized_key:
@@ -12,4 +12,4 @@
     state: present
     key: "{{ item.ssh_key }}"
   no_log: true
-  loop: "{{ bastion_users }}"
+  loop: "{{ bastionUsers }}"

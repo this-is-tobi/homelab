@@ -2,21 +2,21 @@
 - name: Create keycloak client
   community.general.keycloak_client:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ services.keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ services.keycloak.username }}"
-    auth_password: "{{ services.keycloak.password }}"
-    realm: "{{ services.keycloak.realm }}"
-    client_id: "{{ services.keycloak.clientIds.vault }}"
-    name: "{{ services.keycloak.clientIds.vault }}"
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
+    realm: "{{ keycloak.realm }}"
+    client_id: "{{ keycloak.clientIds.vault }}"
+    name: "{{ keycloak.clientIds.vault }}"
     always_display_in_console: true
     frontchannel_logout: true
     enabled: true
     redirect_uris:
-      - https://{{ services.vault.domain }}/oidc/callback
-      - https://{{ services.vault.domain }}/ui/vault/auth/oidc/oidc/callback
+      - https://{{ vault.domain }}/oidc/callback
+      - https://{{ vault.domain }}/ui/vault/auth/oidc/oidc/callback
     web_origins:
-      - https://{{ services.vault.domain }}
+      - https://{{ vault.domain }}
     standard_flow_enabled: true
     implicit_flow_enabled: false
     direct_access_grants_enabled: true

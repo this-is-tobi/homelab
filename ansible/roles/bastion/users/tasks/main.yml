@@ -9,7 +9,7 @@
     name: "{{ item.username }}"
     state: present
   no_log: true
-  loop: "{{ bastion_users }}"
+  loop: "{{ bastionUsers }}"
 
 - name: Create admin group
   ansible.builtin.group:
@@ -37,49 +37,49 @@
     ssh_key_type: rsa
     password: '*'
   no_log: true
-  loop: "{{ bastion_users }}"
+  loop: "{{ bastionUsers }}"
 
 - name: Manage ssh keys
   include_tasks: ssh.yml
-  loop: "{{ bastion_users }}"
+  loop: "{{ bastionUsers }}"
 
 - block:
   - name: Add openvpn users
     include_tasks: openvpn.yml
-    loop: "{{ bastion_users }}"
+    loop: "{{ bastionUsers }}"
   delegate_to: pi.gateway
 
 - block:
   - name: Add keycloak groups
     include_tasks: keycloak.yml
-    loop: "{{ bastion_users }}"
+    loop: "{{ bastionUsers }}"
   delegate_to: localhost
   become: false
 
 - block:
   - name: Add kubernetes users
     include_tasks: kubernetes.yml
-    loop: "{{ bastion_users }}"
+    loop: "{{ bastionUsers }}"
   delegate_to: localhost
   become: false
 
 - block:
   - name: Add argocd users projects
     include_tasks: argocd.yml
-    loop: "{{ bastion_users }}"
+    loop: "{{ bastionUsers }}"
   delegate_to: localhost
   become: false
 
 - block:
   - name: Add minio users buckets
     include_tasks: minio.yml
-    loop: "{{ bastion_users }}"
+    loop: "{{ bastionUsers }}"
   delegate_to: localhost
   become: false
 
 - block:
   - name: Add harbor users projects
     include_tasks: harbor.yml
-    loop: "{{ bastion_users }}"
+    loop: "{{ bastionUsers }}"
   delegate_to: localhost
   become: false

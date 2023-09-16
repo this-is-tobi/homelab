@@ -2,7 +2,7 @@
 global:
   storageClass: longhorn
 
-adminPassword: {{ services.harbor.password }}
+adminPassword: {{ harbor.password }}
 
 registry:
   nodeSelector:
@@ -45,20 +45,20 @@ exporter:
     node-type: worker
 
 exposureType: ingress
-externalURL: https://{{ services.harbor.domain }}
+externalURL: https://{{ harbor.domain }}
 
 ingress:
   core:
     ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: {{ services.harbor.domain }}
+    hostname: {{ harbor.domain }}
     tls: true
   notary:
     ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: notary.{{ services.harbor.domain }}
+    hostname: notary.{{ harbor.domain }}
     tls: true
 
 persistence:

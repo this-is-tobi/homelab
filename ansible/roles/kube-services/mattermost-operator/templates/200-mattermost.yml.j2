@@ -2,23 +2,23 @@
 # This is an example of secret containing configuration of external database.
 apiVersion: v1
 data:
-  DB_CONNECTION_STRING: "{{ ('postgres://' + services.mattermost.postgres.app.username + ':' + services.mattermost.postgres.app.password + 'mattermost-postgres-cluster-rw:5432/mattermost') | b64encode }}"
+  DB_CONNECTION_STRING: "{{ ('postgres://' + mattermost.postgres.app.username + ':' + mattermost.postgres.app.password + 'mattermost-postgres-cluster-rw:5432/mattermost') | b64encode }}"
 kind: Secret
 metadata:
   name: db-credentials
-  namespace: {{ services.mattermost.namespace }}
+  namespace: {{ mattermost.namespace }}
 type: Opaque
 
 ---
 # This is an example of secret containing credentials for an external file storage.
 apiVersion: v1
 data:
-  accesskey: "{{ services.mattermost.s3.accessKey | b64encode }}"
-  secretkey: "{{ services.mattermost.s3.secretKey | b64encode }}"
+  accesskey: "{{ mattermost.s3.accessKey | b64encode }}"
+  secretkey: "{{ mattermost.s3.secretKey | b64encode }}"
 kind: Secret
 metadata:
   name: file-store-credentials
-  namespace: {{ services.mattermost.namespace }}
+  namespace: {{ mattermost.namespace }}
 type: Opaque
 
 ---
@@ -26,7 +26,7 @@ apiVersion: installation.mattermost.com/v1beta1
 kind: Mattermost
 metadata:
   name: mattermost
-  namespace: {{ services.mattermost.namespace }}
+  namespace: {{ mattermost.namespace }}
 spec:
   image: docker.io/mattermost/mattermost-team-edition
   imagePullPolicy: IfNotPresent
@@ -35,7 +35,7 @@ spec:
   useServiceLoadBalancer: false
   ingress:
     enabled: true
-    host: {{ services.mattermost.domain }}
+    host: {{ mattermost.domain }}
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     tlsSecret: letsencrypt-prod-key
@@ -49,7 +49,7 @@ spec:
       secret: db-credentials
   fileStore:
     external:
-      url: {{ services.minio.apiDomain }}
+      url: {{ minio.apiDomain }}
       bucket: mattermost
       secret: file-store-credentials
   scheduling:

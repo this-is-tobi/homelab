@@ -3,7 +3,7 @@ kind: CertificateSigningRequest
 metadata:
   name: user-request-{{ item.username }}
 spec:
-  request: {{ lookup('file', '{{ bastion_local_dir }}/{{ item.username }}/kubernetes/{{ item.username }}.csr') | b64encode }}
+  request: {{ lookup('file', '{{ bastionLocalDir }}/{{ item.username }}/kubernetes/{{ item.username }}.csr') | b64encode }}
   signerName: kubernetes.io/kube-apiserver-client
   expirationSeconds: 31536000 # 1 year
   usages:

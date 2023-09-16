@@ -1,13 +1,13 @@
 ---
 - name: Get keycloak client secret
   community.general.keycloak_clientsecret_info:
-    client_id: "{{ services.keycloak.clientIds.vault }}"
-    realm: "{{ services.keycloak.realm }}"
+    client_id: "{{ keycloak.clientIds.vault }}"
+    realm: "{{ keycloak.realm }}"
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ services.keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak.domain }}
     auth_realm: master
-    auth_username: "{{ services.keycloak.username }}"
-    auth_password: "{{ services.keycloak.password }}"
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
   register: vault_client_secret
   no_log: true
 
@@ -17,7 +17,7 @@
 
 - name: Create vault namespace
   kubernetes.core.k8s:
-    name: "{{ services.vault.namespace }}"
+    name: "{{ vault.namespace }}"
     api_version: v1
     kind: Namespace
     state: present
@@ -25,21 +25,21 @@
 - name: Get auth methods
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/sys/auth/oidc"
+    url: "https://{{ vault.domain }}/v1/sys/auth/oidc"
     method: GET
     status_code: [200, 400]
     headers:
-      "X-Vault-Token": "{{ services.vault.token }}"
+      "X-Vault-Token": "{{ vault.token }}"
   register: get_auth_method
 
 - name: Enable oidc auth method
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/sys/auth/oidc"
+    url: "https://{{ vault.domain }}/v1/sys/auth/oidc"
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ services.vault.token }}"
+      "X-Vault-Token": "{{ vault.token }}"
     body: 
       "type": "oidc"
     body_format: json
@@ -48,43 +48,43 @@
 - name: Configue oidc auth method
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/auth/oidc/config"
+    url: "https://{{ vault.domain }}/v1/auth/oidc/config"
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ services.vault.token }}"
+      "X-Vault-Token": "{{ vault.token }}"
     body:
-      "oidc_discovery_url": "https://{{ services.keycloak.domain }}/realms/{{ services.keycloak.realm }}"
-      "oidc_client_id": "{{ services.keycloak.clientIds.vault }}"
+      "oidc_discovery_url": "https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}"
+      "oidc_client_id": "{{ keycloak.clientIds.vault }}"
       "oidc_client_secret": "{{ vault_client_secret }}"
       "default_role": "default"
       "type": "oidc"
       "allowed_redirect_uris":
-        - "https://{{ services.vault.domain }}/ui/vault/auth/oidc/oidc/callback"
-        - "https://{{ services.vault.domain }}/oidc/callback"
+        - "https://{{ vault.domain }}/ui/vault/auth/oidc/oidc/callback"
+        - "https://{{ vault.domain }}/oidc/callback"
     body_format: json
 
 - name: Create oidc role
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ services.vault.domain }}/v1/auth/oidc/role/default"
+    url: "https://{{ vault.domain }}/v1/auth/oidc/role/default"
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ services.vault.token }}"
+      "X-Vault-Token": "{{ vault.token }}"
     body:
       "oidc_scopes": 
         - "openid"
         - "generic"
       "bound_audiences":
-        - "{{ services.keycloak.clientIds.vault }}"
+        - "{{ keycloak.clientIds.vault }}"
       "claim_mappings":
         "prefered_username": "username"
         "email": "email"
       "groups_claim": "groups"
       "allowed_redirect_uris":
-        - "https://{{ services.vault.domain }}/ui/vault/auth/oidc/oidc/callback"
-        - "https://{{ services.vault.domain }}/oidc/callback"
+        - "https://{{ vault.domain }}/ui/vault/auth/oidc/oidc/callback"
+        - "https://{{ vault.domain }}/oidc/callback"
       "user_claim": "sub"
       "token_policies": 
         - "default"

@@ -1,9 +1,9 @@
 ---
 - name: Get project
   ansible.builtin.uri:
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ item.projectName }}
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ item.projectName }}
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
@@ -12,9 +12,9 @@
 - name: Create project
   ansible.builtin.uri:
     method: POST
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/projects
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ item | to_json }}"
@@ -24,9 +24,9 @@
 - name: Update project
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ services.harbor.domain }}/api/v2.0/projects/{{ harbor_project.json.project_id }}
-    password: "{{ services.harbor.password }}"
-    user: "{{ services.harbor.username }}"
+    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ harbor_project.json.project_id }}
+    password: "{{ harbor.password }}"
+    user: "{{ harbor.username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ item | to_json }}"

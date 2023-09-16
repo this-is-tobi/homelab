@@ -3,10 +3,10 @@
 #---------#
 
 # openvpn
-openvpn_root_passphrase: password-to-change
-openvpn_server_hostname: vpn.{{ root_domain }}
+openvpnRootPassphrase: password-to-change
+openvpnServerHostname: vpn.{{ rootDomain }}
 
 # crowdsec
-crowdsec_bouncer_nftables_key: bouncer-key-to-change
-crowdsec_enroll_key: enroll-key-to-change
-crowdsec_enroll_instance_name: homelab
+crowdsecBouncerNftablesKey: bouncer-key-to-change
+crowdsecEnrollKey: enroll-key-to-change
+crowdsecEnrollInstanceName: homelab

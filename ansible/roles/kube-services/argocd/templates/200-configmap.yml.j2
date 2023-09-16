@@ -3,13 +3,13 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: argocd-cm
-  namespace: {{ services.argocd.namespace }}
+  namespace: {{ argocd.namespace }}
 data:
-  url: https://{{ services.argocd.domain }}
+  url: https://{{ argocd.domain }}
   oidc.config: |
     name: Keycloak
-    issuer: https://{{ services.keycloak.domain }}/realms/{{ services.keycloak.realm }}
-    clientID: {{ services.keycloak.clientIds.argocd }}
+    issuer: https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}
+    clientID: {{ keycloak.clientIds.argocd }}
     clientSecret: $oidc.keycloak.clientSecret
     requestedScopes: ["openid", "generic"]
 

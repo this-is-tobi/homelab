@@ -3,12 +3,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: longhorn
-  namespace: "{{ services.longhorn.namespace }}"
+  namespace: "{{ longhorn.namespace }}"
   annotations:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-    - host: {{ services.longhorn.domain }}
+    - host: {{ longhorn.domain }}
       http:
         paths:
           - path: "/"

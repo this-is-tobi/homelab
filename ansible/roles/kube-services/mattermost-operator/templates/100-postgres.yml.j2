@@ -1,23 +1,23 @@
 ---
 apiVersion: v1
 data:
-  username: {{ services.mattermost.postgres.admin.username | b64encode }}
-  password: {{ services.mattermost.postgres.admin.password | b64encode }}
+  username: {{ mattermost.postgres.admin.username | b64encode }}
+  password: {{ mattermost.postgres.admin.password | b64encode }}
 kind: Secret
 metadata:
   name: mattermost-postgres-admin
-  namespace: {{ services.mattermost.namespace }}
+  namespace: {{ mattermost.namespace }}
 type: kubernetes.io/basic-auth
 
 ---
 apiVersion: v1
 data:
-  username: {{ services.mattermost.postgres.app.username | b64encode }}
-  password: {{ services.mattermost.postgres.app.password | b64encode }}
+  username: {{ mattermost.postgres.app.username | b64encode }}
+  password: {{ mattermost.postgres.app.password | b64encode }}
 kind: Secret
 metadata:
   name: mattermost-postgres-user
-  namespace: {{ services.mattermost.namespace }}
+  namespace: {{ mattermost.namespace }}
 type: kubernetes.io/basic-auth
 
 ---
@@ -25,7 +25,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: mattermost-postgres-cluster
-  namespace: {{ services.mattermost.namespace }}
+  namespace: {{ mattermost.namespace }}
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:15.3
   instances: 3
