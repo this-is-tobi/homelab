@@ -1,4 +1,12 @@
 ---
+- name: Deploy longhorn s3 secret
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - 100-secret-s3.yml.j2
+  when: longhorn.s3.enabled == true
+
 - name: Add longhorn helm repo
   kubernetes.core.helm_repository:
     name: "{{ longhorn.helm.repoName }}"
@@ -9,10 +17,10 @@
   kubernetes.core.helm:
     name: longhorn
     update_repo_cache: true
-    chart_ref: "{{ longhorn.helm.chartref }}"
+    chart_ref: "{{ longhorn.helm.chartRef }}"
     chart_version: "{{ longhorn.helm.chartVersion }}"
     create_namespace: true
-    namespace: "{{ longhorn.hnamespace }}"
+    namespace: "{{ longhorn.namespace }}"
     wait: true
     timeout: 10m0s
     state: present
@@ -23,4 +31,4 @@
     state: present
     template: "{{ item }}"
   with_items:
-    - 100-ingress.yml.j2
+    - 200-ingress.yml.j2

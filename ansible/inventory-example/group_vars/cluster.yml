@@ -224,6 +224,12 @@ longhorn:
   namespace: longhorn-system
   # longhorn domain used as ingress
   domain: longhorn.{{ localRootDomain }}
+  s3:
+    enabled: false
+    httpsEndpoint: ""
+    s3Endpoint: ""
+    accessKey: ""
+    secretKey: ""
 mattermost:
   helm:
     repoUrl: https://helm.mattermost.com

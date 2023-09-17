@@ -10,3 +10,8 @@ defaultSettings:
   storageMinimalAvailablePercentage: 25
   storageOverProvisioningPercentage: 200
   storageReservedPercentageForDefaultDisk: 10
+{% if longhorn.s3.enabled == true %}
+  backupTarget: {{ longhorn.s3.s3Endpoint }}
+  backupTargetCredentialSecret: longhorn-s3
+{% endif %}
+
