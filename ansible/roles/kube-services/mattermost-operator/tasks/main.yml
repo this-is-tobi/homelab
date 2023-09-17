@@ -2,21 +2,21 @@
 - name: Generate mattermost random admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.mattermost.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.mattermost.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
   when: mattermost.password == ""
 
 - name: Generate mattermost random postgres admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.mattermost.postgres.admin.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.mattermost.postgres.admin.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
   when: mattermost.postgres.admin.password == ""
 
 - name: Generate mattermost random postgres app password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.mattermost.postgres.app.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.mattermost.postgres.app.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
   when: mattermost.postgres.app.password == ""
 

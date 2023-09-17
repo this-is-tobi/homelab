@@ -2,7 +2,7 @@
 - name: Generate argocd random admin password
   ansible.builtin.shell:
     cmd: |
-      yq -i '.argocd.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
+      yq -i '.argocd.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
   no_log: true
   when: argocd.password == ""
 
