@@ -1,6 +1,8 @@
 # Deploy kubernetes services
 - hosts: localhost
   become: false
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ lookup('env', 'HOME') }}/.kube/config"
   vars_files:
     - inventory/group_vars/cluster.yml
   roles:

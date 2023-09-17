@@ -2,7 +2,7 @@
 # This is an example of secret containing configuration of external database.
 apiVersion: v1
 data:
-  DB_CONNECTION_STRING: "{{ ('postgres://' + mattermost.postgres.app.username + ':' + mattermost.postgres.app.password + 'mattermost-postgres-cluster-rw:5432/mattermost') | b64encode }}"
+  DB_CONNECTION_STRING: "{{ ('postgres://' + mattermost.postgres.app.username + ':' + mattermost.postgres.app.password + '@mattermost-postgres-cluster-rw:5432/mattermost') | b64encode }}"
 kind: Secret
 metadata:
   name: db-credentials
