@@ -3,7 +3,7 @@
 # cluster #
 #---------#
 # k3s version
-k3sVersion: v1.27.5+k3s1
+k3sVersion: v1.28.2+k3s1
 # k3s_token is required for masters to talk together securely this token should be alpha numeric only
 k3sToken: ""
 # k3s CA data
