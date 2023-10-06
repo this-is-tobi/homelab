@@ -83,7 +83,7 @@ certManager:
     repoUrl: https://charts.jetstack.io
     repoName: jetstack
     chartRef: jetstack/cert-manager
-    chartVersion: 1.12.3
+    chartVersion: 1.13.1
   namespace: cert-manager
   # email used for letsencrypt
   email: your@email.com
