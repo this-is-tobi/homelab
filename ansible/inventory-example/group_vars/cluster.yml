@@ -103,7 +103,7 @@ grafana:
     repoUrl: https://charts.bitnami.com/bitnami
     repoName: bitnami
     chartRef: bitnami/grafana
-    chartVersion: 9.0.6
+    chartVersion: 9.2.3
   namespace: monitoring
   # grafana domain used as ingress
   domain: monitoring.{{ rootDomain }}
