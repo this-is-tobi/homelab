@@ -116,7 +116,7 @@ harbor:
     repoUrl: https://charts.bitnami.com/bitnami
     repoName: bitnami
     chartRef: bitnami/harbor
-    chartVersion: 16.7.4
+    chartVersion: 19.0.0
   namespace: harbor
   # harbor domain used as ingress
   domain: registry.{{ rootDomain }}

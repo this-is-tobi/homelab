@@ -24,18 +24,6 @@ jobservice:
   nodeSelector:
     node-type: worker
 
-chartmuseum:
-  nodeSelector:
-    node-type: worker
-
-notary:
-  server:
-    nodeSelector:
-      node-type: worker
-  signer:
-    nodeSelector:
-      node-type: worker
-
 trivy:
   nodeSelector:
     node-type: worker
@@ -54,12 +42,6 @@ ingress:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hostname: {{ harbor.domain }}
     tls: true
-  notary:
-    ingressClassName: traefik
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: notary.{{ harbor.domain }}
-    tls: true
 
 persistence:
   enabled: true
@@ -74,7 +56,3 @@ persistence:
       size: 25Gi
       scanData:
         size: 25Gi
-    chartmuseum:
-      size: 25Gi
-    trivy:
-      size: 25Gi
