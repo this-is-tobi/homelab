@@ -202,7 +202,7 @@ kubePrometheus:
     repoUrl: https://charts.bitnami.com/bitnami
     repoName: bitnami
     chartRef: bitnami/kube-prometheus
-    chartVersion: 8.17.0
+    chartVersion: 8.21.2
   namespace: monitoring
 kubeDashboard:
   helm:
