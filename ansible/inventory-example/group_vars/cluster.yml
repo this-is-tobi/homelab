@@ -45,7 +45,7 @@ actionsRunnerController:
     repoUrl: https://actions-runner-controller.github.io/actions-runner-controller
     repoName: actions-runner-controller
     chartRef: actions-runner-controller/actions-runner-controller
-    chartVersion: 0.23.3
+    chartVersion: 0.23.5
   namespace: actions-runner-system
   # Use 'githubToken' OR 'githubApp...'
   githubToken: ""
@@ -54,13 +54,13 @@ actionsRunnerController:
   # githubAppKey: ""
   runners:
     # - name: docs-runner
-    #   namespace: runners
+    #   namespace: runners-docs
     #   type: repository
     #   target: this-is-tobi/docs
     #   minRunners: 1
     #   maxRunners: 5
     # - name: tobi-runner
-    #   namespace: runners
+    #   namespace: runners-tobi
     #   type: organization
     #   target: this-is-tobi
     #   minRunners: 1
