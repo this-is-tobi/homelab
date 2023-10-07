@@ -264,7 +264,7 @@ minio:
     repoUrl: https://charts.bitnami.com/bitnami
     repoName: bitnami
     chartRef: bitnami/minio
-    chartVersion: 12.7.0
+    chartVersion: 12.8.12
   namespace: minio
   # minio domain used as ingress (web interface)
   domain: s3.{{ rootDomain }}

@@ -6,6 +6,10 @@ auth:
 nodeSelector:
   node-type: worker
 
+mode: distributed
+statefulset:
+  replicaCount: 4
+
 ingress:
   enabled: true
   ingressClassName: traefik
