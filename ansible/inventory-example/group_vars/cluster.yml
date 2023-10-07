@@ -70,7 +70,7 @@ argocd:
     repoUrl: https://charts.bitnami.com/bitnami
     repoName: bitnami
     chartRef: bitnami/argo-cd
-    chartVersion: 4.7.23
+    chartVersion: 5.1.7
   namespace: argocd
   # argocd domain used as ingress
   domain: gitops.{{ rootDomain }}
