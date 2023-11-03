@@ -1,6 +1,0 @@
-#---------#
-# Bastion #
-#---------#
-
-# SSH
-bastionLocalDir: secrets

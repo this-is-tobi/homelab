@@ -1,0 +1,50 @@
+- name: Create keycloak client
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak.domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
+    realm: "{{ keycloak.realm }}"
+    client_id: "{{ sonarqube.keycloak.clientId }}"
+    name: "{{ sonarqube.keycloak.clientId }}"
+    always_display_in_console: true
+    frontchannel_logout: true
+    enabled: true
+    redirect_uris:
+      - https://{{ sonarqube.domain }}/*
+    web_origins:
+      - https://{{ sonarqube.domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: true
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    attributes:
+      include.in.token.scope: true
+      display.on.consent.screen: true
+    default_client_scopes:
+      - profile
+      - email
+      - groups
+      - roles
+    state: present
+
+- name: Get keycloak client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ sonarqube.keycloak.clientId }}"
+    realm: "{{ keycloak.realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak.domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
+  register: sonarqube_client_secret
+  no_log: true
+
+- name: Set keycloak client secret
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.sonarqube.keycloak.clientSecret = "{{ sonarqube_client_secret.clientsecret_info.value }}"' ../inventory/group_vars/kube-services/sonarqube.yml
+  when: not sonarqube.keycloak.clientSecret == "{{ sonarqube_client_secret.clientsecret_info.value }}"

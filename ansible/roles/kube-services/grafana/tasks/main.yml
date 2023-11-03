@@ -1,39 +1,11 @@
----
-- name: Generate grafana random admin password
-  ansible.builtin.shell:
-    cmd: |
-      yq -i '.grafana.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
-  no_log: true
-  when: grafana.password == ""
+- name: Setup secrets
+  include_tasks: secrets.yml
 
-- name: Deploy grafana dashboards
-  kubernetes.core.k8s:
-    state: present
-    template:
-      path: "{{ item }}"
-      variable_start_string: '[['
-      variable_end_string: ']]'
-  with_items:
-    - 100-k3s-dashboard.yml.j2
+- name: Pre-install
+  include_tasks: pre-install.yml
 
-- name: Perform sso configuration
+- name: Setup sso
   include_tasks: sso.yml
 
-- name: Add bitnami helm repo
-  kubernetes.core.helm_repository:
-    name: "{{ grafana.helm.repoName }}"
-    repo_url: "{{ grafana.helm.repoUrl }}"
-    state: present
-
-- name: Deploy grafana helm chart
-  kubernetes.core.helm:
-    name: grafana
-    update_repo_cache: true
-    chart_ref: "{{ grafana.helm.chartRef }}"
-    chart_version: "{{ grafana.helm.chartVersion }}"
-    create_namespace: true
-    namespace: "{{ grafana.namespace }}"
-    wait: true
-    timeout: 10m0s
-    state: present
-    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+- name: Install
+  include_tasks: install.yml

@@ -1,0 +1,33 @@
+ingressClass:
+  enabled: true
+  isDefaultClass: false
+  name: traefik
+ports:
+  metrics:
+    expose: false
+    exposedPort: 9100
+    port: 9100
+    protocol: TCP
+  traefik:
+    expose: false
+    exposedPort: 9000
+    port: 9000
+    protocol: TCP
+  web:
+    expose: true
+    exposedPort: 80
+    port: 8000
+    protocol: TCP
+  websecure:
+    expose: true
+    exposedPort: 443
+    http3:
+      enabled: false
+    middlewares: []
+    port: 8443
+    protocol: TCP
+    tls:
+      certResolver: ""
+      domains: []
+      enabled: true
+      options: ""

@@ -1,0 +1,4 @@
+- name: Create namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ certManager.namespace }}"

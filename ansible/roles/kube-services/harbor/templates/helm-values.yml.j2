@@ -1,40 +1,27 @@
----
-global:
-  storageClass: longhorn
-
 adminPassword: {{ harbor.password }}
-
 registry:
   nodeSelector:
     node-type: worker
-
 nginx:
   nodeSelector:
     node-type: worker
-
 portal:
   nodeSelector:
     node-type: worker
-
 core:
   nodeSelector:
     node-type: worker
-
 jobservice:
   nodeSelector:
     node-type: worker
-
 trivy:
   nodeSelector:
     node-type: worker
-
 exporter:
   nodeSelector:
     node-type: worker
-
 exposureType: ingress
 externalURL: https://{{ harbor.domain }}
-
 ingress:
   core:
     ingressClassName: traefik
@@ -42,16 +29,20 @@ ingress:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hostname: {{ harbor.domain }}
     tls: true
-
+externalDatabase:
+  host: pg-cluster-harbor-rw
+  port: 5432
+  user: {{ harbor.postgres.app.username }}
+  password: {{ harbor.postgres.app.password }}
+  coreDatabase: {{ harbor.postgres.dbName }}
 persistence:
   enabled: true
-  storageClass: longhorn
   mountPath: /data
   accessModes:
     - ReadWriteOnce
   persistentVolumeClaim:
     registry:
-      size: 500Gi
+      size: 100Gi
     jobservice:
       size: 25Gi
       scanData:

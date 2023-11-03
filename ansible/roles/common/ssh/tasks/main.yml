@@ -1,4 +1,3 @@
----
 - name: Remove /etc/ssh/sshd_config.d/rename_user.conf
   ansible.builtin.file:
     state: absent

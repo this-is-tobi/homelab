@@ -1,0 +1,23 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: actions-runner-controller-github-webhook-server
+  namespace: "{{ actionsRunnerController.namespace }}"
+  annotations:
+    "cert-manager.io/cluster-issuer": letsencrypt-prod
+spec:
+  ingressClassName: "{{ ingressClassName }}"
+  rules:
+  - http:
+      paths:
+      - path: /actions-runner-controller-github-webhook-server
+        pathType: Prefix
+        backend:
+          service:
+            name: actions-runner-controller-github-webhook-server
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - "{{ actionsRunnerController.domain }}"
+    secretName: "{{ actionsRunnerController.domain }}"

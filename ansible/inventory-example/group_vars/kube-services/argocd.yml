@@ -1,0 +1,22 @@
+argocd:
+  helm:
+    repoUrl: "https://argoproj.github.io/argo-helm"
+    repoName: "argo"
+    chartName: "argo-cd"
+    chartVersion: "5.46.7"
+  namespace: "argocd"
+  domain: "argocd.{{ rootDomain }}"
+  username: "admin"
+  password: ""
+  keycloak:
+    clientId: "argocd"
+    clientSecret: ""
+  githubApp:
+    - name: ""
+      owner: ""
+      appId: ""
+      clientId: ""
+      clientSecret: ""
+      installationId: ""
+      privateKey: |
+        ""

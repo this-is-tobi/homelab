@@ -1,11 +1,9 @@
----
 source: journalctl
 journalctl_filter:
   - "_SYSTEMD_UNIT=ssh.service"
 labels:
   type: journald
 
----
 source: file
 filenames:
   - /var/log/auth.log
@@ -13,7 +11,6 @@ filenames:
 labels:
   type: syslog
 
----
 source: docker
 container_name:
   - haproxy

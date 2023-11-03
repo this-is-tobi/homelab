@@ -1,4 +1,3 @@
----
 - name: Set seal count
   ansible.builtin.set_fact:
     num: "{{ num | int +1 }}"

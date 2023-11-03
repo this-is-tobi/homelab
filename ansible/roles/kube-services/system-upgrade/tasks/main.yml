@@ -1,33 +1,5 @@
----
-- name: Check if file exists
-  stat:
-    path: "{{ playbook_dir }}/roles/kube-services/system-upgrade/templates/000-system-upgrade-controller.yml.j2"
-  register: file
+- name: Pre-install
+  include_tasks: pre-install.yml
 
-- name: Download system-upgrade-controller manifest to the cluster
-  ansible.builtin.get_url:
-    url: https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
-    dest: "{{ playbook_dir }}/roles/kube-services/system-upgrade/templates/000-system-upgrade-controller.yml.j2"
-    mode: 0664
-  when: not file.stat.exists
-
-- name: Apply system-upgrade-controller manifest to the cluster
-  kubernetes.core.k8s:
-    state: present
-    src: "{{ playbook_dir }}/roles/kube-services/system-upgrade/templates/000-system-upgrade-controller.yml.j2"
-
-- name: Wait until system-upgrade-controller is up
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Pod
-    namespace: system-upgrade
-  register: pod_list
-  until: pod_list | json_query('resources[*].status.phase') | unique == ["Running"]
-
-- name: Deploy upgrade plan
-  kubernetes.core.k8s:
-    state: present
-    template: "{{ item }}"
-  with_items:
-    - 100-master-plan.yml.j2
-    - 200-worker-plan.yml.j2
+- name: Install
+  include_tasks: install.yml

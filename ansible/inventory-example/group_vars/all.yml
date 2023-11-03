@@ -1,23 +1,2 @@
-#---------#
-# Ansible #
-#---------#
-
-# ssh
-ansible_user: devops
-ansible_port: 22
-
-# bastion users
-bastionUsers:
-  - username: jdupond
-    firstname: Jean
-    lastname: DUPOND
-    email: jean.dupond@example.com
-    setup: true
-    admin: true
-    minio_quota: 10Gi
-    harbor_quota: 10GB
-    ssh_key: ""
-
-# root domain
-rootDomain: domain.com
-localRootDomain: domain.local
+rootDomain: "domain.com"
+ingressClassName: "traefik"

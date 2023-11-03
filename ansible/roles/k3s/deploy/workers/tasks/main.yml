@@ -1,4 +1,3 @@
----
 - name: Copy k3s service file
   ansible.builtin.template:
     src: "k3s.service.j2"

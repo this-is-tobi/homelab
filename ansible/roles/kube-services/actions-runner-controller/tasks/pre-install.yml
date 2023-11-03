@@ -1,0 +1,6 @@
+- name: Create namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ actionsRunnerController.namespace }}-{{ item.name }}"
+  with_items: 
+    - "{{ actionsRunnerController.githubApp }}"

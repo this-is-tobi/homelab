@@ -1,0 +1,34 @@
+- name: Set project fact
+  ansible.builtin.set_fact:
+    current_project: "{{ (projects | selectattr('name', 'search', 'transversal-doc') | list)[0] }}"
+
+- name: Deploy Transversal Doc
+  kubernetes.core.k8s:
+    state: present
+    template: argocd-app.yml.j2
+  with_items: 
+    - "{{ current_project }}"
+
+- name: Get Argocd api token
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/session"
+    method: POST
+    body_format: json
+    body:
+      "username": "{{ argocd.username }}"
+      "password": "{{ argocd.password }}"
+    status_code: 200
+  register: argocd_token
+
+- name: Synchronize argocd application
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ current_project.name }}/sync"
+    method: POST
+    body_format: json
+    body:
+      "project": "{{ current_project.name }}"
+      "appNamespace": "{{ argocd.namespace }}"
+    headers:
+      Authorization: Bearer {{ argocd_token.json.token }}
+    status_code: 200
+  register: argocd_token

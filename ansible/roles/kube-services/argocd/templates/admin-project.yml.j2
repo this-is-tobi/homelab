@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: infra
+  namespace: {{ argocd.namespace }}
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - name: '*'
+    namespace: '*'
+    server: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  roles:
+  - description: Keycloak group
+    groups:
+    - admin
+    name: admin
+    policies:
+    - p, proj:infra:admin, applications, *, infra/*, allow
+  sourceRepos:
+  - '*'

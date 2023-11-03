@@ -1,0 +1,8 @@
+certManager:
+  helm:
+    repoUrl: "https://charts.jetstack.io"
+    repoName: "jetstack"
+    chartName: "cert-manager"
+    chartVersion: "1.13.1"
+  namespace: "cert-manager"
+  email: "email@domain.com"

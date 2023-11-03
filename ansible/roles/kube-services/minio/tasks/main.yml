@@ -1,29 +1,14 @@
----
-- name: Generate minio random admin password
-  ansible.builtin.shell:
-    cmd: |
-      yq -i '.minio.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
-  no_log: true
-  when: minio.password == ""
+- name: Setup secrets
+  include_tasks: secrets.yml
 
-- name: Perform sso configuration
+- name: Pre-install
+  include_tasks: pre-install.yml
+
+- name: Setup sso
   include_tasks: sso.yml
 
-- name: Add bitnami helm repo
-  kubernetes.core.helm_repository:
-    name: "{{ minio.helm.repoName }}"
-    repo_url: "{{ minio.helm.repoUrl }}"
-    state: present
+- name: Install
+  include_tasks: install.yml
 
-- name: Deploy minio helm chart
-  kubernetes.core.helm:
-    name: minio
-    update_repo_cache: true
-    chart_ref: "{{ minio.helm.chartRef }}"
-    chart_version: "{{ minio.helm.chartVersion }}"
-    create_namespace: true
-    namespace: "{{ minio.namespace }}"
-    wait: true
-    timeout: 10m0s
-    state: present
-    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+- name: Post-install
+  include_tasks: post-install.yml

@@ -1,0 +1,57 @@
+persistence:
+  ## This volume persists generated data from users, like images, attachments...
+  data:
+    enabled: false
+    size: 10Gi
+  plugins:
+    enabled: true
+    size: 5Gi
+ingress:
+  enabled: true
+  ingressClassName: {{ ingressClassName }}
+  annotations:
+    "cert-manager.io/cluster-issuer": le-fabnum-prod
+  hosts:
+    - {{ mattermost.domain }}
+  tls:
+    - hosts:
+        - {{ mattermost.domain }}
+      secretName: {{ mattermost.domain }}
+mysql:
+  enabled: false
+externalDB:
+  enabled: true
+  externalDriverType: postgres
+  externalConnectionString: "{{ mattermost.postgres.app.username }}:{{ mattermost.postgres.app.password }}@pg-cluster-mattermost-rw:5432/{{ mattermost.postgres.dbName }}?sslmode=disable&connect_timeout=10"
+securityContext:
+  fsGroup: 2000
+  fsGroupChangePolicy: "OnRootMismatch"
+serviceAccount:
+  create: true
+  name: mattermost
+config:
+  MATTERMOST_EDITION: "team"
+  MM_SERVICESETTINGS_SITEURL: "https://{{ mattermost.domain }}"
+  MM_LOCALIZATIONSETTINGS_DEFAULTCLIENTLOCALE: "fr"
+  MM_PLUGINSETTINGS_CLIENTDIRECTORY: "./client/plugins"
+  MM_PLUGINSETTINGS_ENABLEUPLOADS: "true"
+  MM_PLUGINSETTINGS_PLUGINSTATES: "{\"com.mattermost.apps\":{\"Enable\":true},\"focalboard\":{\"Enable\":true},\"github\":{\"Enable\":true},\"com.github.manland.mattermost-plugin-gitlab\":{\"Enable\":true},\"com.github.matterpoll.matterpoll\":{\"Enable\":true},\"com.github.scottleedavis.mattermost-plugin-remind\":{\"Enable\":true},\"com.github.moussetc.mattermost-plugin-giphy\":{\"Enable\":true},\"com.mattermost.agenda\":{\"Enable\":true},\"alertmanager\":{\"Enable\":true},\"com.github.moussetc.mattermost.plugin.giphy\":{\"Enable\":true},\"jitsi\":{\"Enable\":true},\"com.cpanato.broadcast\":{\"Enable\":true},\"com.mattermost.plugin-todo\":{\"Enable\":true}}"
+  MM_FEATUREFLAGS_STREAMLINEDMARKETPLACE: "false"
+  MM_EMAILSETTINGS_ENABLESMTPAUTH: "true"
+  MM_EMAILSETTINGS_SMTPSERVER: "{{ mattermost.smtp.server }}"
+  MM_EMAILSETTINGS_SMTPPORT: "{{ mattermost.smtp.port }}"
+  MM_EMAILSETTINGS_SMTPUSERNAME: "{{ mattermost.smtp.username }}"
+  MM_EMAILSETTINGS_SMTPPASSWORD: "{{ mattermost.smtp.password }}"
+  MM_EMAILSETTINGS_FEEDBACKEMAIL: "{{ mattermost.smtp.email }}"
+  MM_LOGSETTINGS_CONSOLELEVEL: "INFO"
+  MM_SERVICESETTINGS_COLLAPSEDTHREAD: "default_on"
+  MM_SERVICESETTINGS_THREADAUTOFOLLOW: "true"
+  MM_FILESETTINGS_DRIVERNAME: "amazons3"
+  MM_FILESETTINGS_MAXFILESIZE: "26214400000"
+  MM_FILESETTINGS_AMAZONS3BUCKET: "{{ mattermost.s3.bucketName }}"
+  MM_FILESETTINGS_AMAZONS3REGION: "{{ mattermost.s3.region }}"
+  MM_FILESETTINGS_AMAZONS3ENDPOINT: "{{ mattermost.s3.endpoint }}"
+  MM_FILESETTINGS_AMAZONS3PATHPREFIX: "files/"
+  MM_FILESETTINGS_AMAZONS3ACCESSKEYID: "{{ mattermost.s3.accessKey }}"
+  MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY: "{{ mattermost.s3.secretKey }}"
+  MM_FILESETTINGS_AMAZONS3SSE: "false"

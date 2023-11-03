@@ -1,4 +1,3 @@
----
 - name: Create local directory
   ansible.builtin.file:
     path: "{{ bastionLocalDir }}/{{ item.username }}/kubernetes"

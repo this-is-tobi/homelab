@@ -1,4 +1,3 @@
----
 - name: Ensure "/etc/rancher/k3s" directory exists
   ansible.builtin.file:
     path: "/etc/rancher/k3s"

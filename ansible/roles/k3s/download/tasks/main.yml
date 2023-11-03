@@ -1,4 +1,3 @@
----
 - name: Download k3s binary x64
   ansible.builtin.get_url:
     url: https://github.com/k3s-io/k3s/releases/download/{{ k3sVersion }}/k3s

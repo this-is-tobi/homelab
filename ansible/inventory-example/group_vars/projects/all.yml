@@ -1,0 +1,33 @@
+users:
+  - username: "tobi"
+    firstName: "Thibault"
+    lastName: "COLIN"
+    email: "this-is-tobi@proton.me"
+    groups:
+      - admin
+      - example
+projects:
+  - name: example
+    namespaces:
+      - example
+    actionsRunnerController:
+      enabled: false
+      runners:
+        - name: "example"
+          secretName: "this-is-tobi-arc"
+          target: "this-is-tobi/example"
+          minRunners: 2
+          maxRunners: 5
+    argocd:
+      enabled: false
+    harbor:
+      enabled: false
+      public: "false"
+      quota: -1
+    minio:
+      enabled: false
+    sonarqube:
+      enabled: false
+      projectKey: ""
+    vault:
+      enabled: false

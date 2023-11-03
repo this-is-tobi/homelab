@@ -1,0 +1,40 @@
+ingress:
+  enabled: true
+  ingressClassName: {{ ingressClassName }}
+  annotations:
+    "cert-manager.io/cluster-issuer": le-fabnum-prod
+    "nginx.ingress.kubernetes.io/proxy-body-size":
+    ingressClassName: {{ ingressClassName }}
+  hosts:
+    - name: {{ sonarqube.domain }}
+      path: /
+  tls:
+    - hosts:
+        - {{ sonarqube.domain }}
+      secretName: {{ sonarqube.domain }}
+plugins:
+  install:
+    - "https://github.com/iSergio/sonarqube-community-branch-plugin/releases/download/1.16.1/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar"
+    - "https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar"
+resources:
+  limits:
+    cpu: 800m
+    memory: 4Gi
+  requests:
+    cpu: 400m
+    memory: 1Gi
+postgresql:
+  enabled: false
+jdbcOverwrite:
+  enable: true
+  jdbcUrl: jdbc:postgresql://pg-cluster-sonar-rw/sonarqube?socketTimeout=1500
+  jdbcUsername: {{ sonarqube.postgres.app.username }}
+  jdbcSecretName: pg-cluster-sonar-user
+  jdbcSecretPasswordKey: password
+account:
+  adminPasswordSecretName: sonarqube-admin
+monitoringPasscodeSecretName: sonarqube-monitoring-admin
+monitoringPasscodeSecretKey: password
+jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar=web"
+jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar=ce"
+sonarProperties: {}

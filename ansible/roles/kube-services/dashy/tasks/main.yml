@@ -1,11 +1,10 @@
----
 - name: Deploy dashy application
   kubernetes.core.k8s:
     state: present
     template: "{{ item }}"
   with_items:
-    - 000-namespace.yml.j2
-    - 100-configmap.yml.j2
-    - 200-service.yml.j2
-    - 300-deployment.yml.j2
-    - 400-ingress.yml.j2
+    - namespace.yml.j2
+    - configmap.yml.j2
+    - service.yml.j2
+    - deployment.yml.j2
+    - ingress.yml.j2

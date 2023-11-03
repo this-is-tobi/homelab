@@ -7,10 +7,10 @@ services:
     restart: always
     environment:
       COLLECTIONS: crowdsecurity/haproxy crowdsecurity/sshd
-      BOUNCER_KEY_crowdsec-firewall-bouncer: {{ crowdsecBouncerNftablesKey }}
+      BOUNCER_KEY_crowdsec-firewall-bouncer: {{ crowdsec.bouncerNftablesKey }}
       GID: ${GID-1000}
-      ENROLL_KEY: {{ crowdsecEnrollKey }}
-      ENROLL_INSTANCE_NAME: {{ crowdsecEnrollInstanceName }}
+      ENROLL_KEY: {{ crowdsec.enrollKey }}
+      ENROLL_INSTANCE_NAME: {{ crowdsec.enrollInstanceName }}
     volumes:
       - /var/log/auth.log:/var/log/auth.log:ro
       - /var/log/syslog:/var/log/syslog:ro

@@ -1,26 +1,8 @@
----
-- name: Add jetstack helm repo
-  kubernetes.core.helm_repository:
-    name: "{{ certManager.helm.repoName }}"
-    repo_url: "{{ certManager.helm.repoUrl }}"
-    state: present
+- name: Pre-install
+  include_tasks: pre-install.yml
 
-- name: Deploy cert-manager helm chart
-  kubernetes.core.helm:
-    name: cert-manager
-    update_repo_cache: true
-    chart_ref: "{{ certManager.helm.chartRef }}"
-    chart_version: "{{ certManager.helm.chartVersion }}"
-    create_namespace: true
-    namespace: "{{ certManager.namespace }}"
-    wait: true
-    timeout: 10m0s
-    state: present
-    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+- name: Install
+  include_tasks: install.yml
 
-- name: Deploy cert-manager cluster issuers
-  kubernetes.core.k8s:
-    state: present
-    template: "{{ item }}"
-  with_items:
-    - 100-letsencrypt.yml.j2
+- name: Post-install
+  include_tasks: post-install.yml

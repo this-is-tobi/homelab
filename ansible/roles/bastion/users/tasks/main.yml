@@ -1,4 +1,3 @@
----
 - name: Remove /etc/ssh/sshd_config.d/rename_user.conf
   ansible.builtin.file:
     state: absent
@@ -48,38 +47,3 @@
     include_tasks: openvpn.yml
     loop: "{{ bastionUsers }}"
   delegate_to: pi.gateway
-
-- block:
-  - name: Add keycloak groups
-    include_tasks: keycloak.yml
-    loop: "{{ bastionUsers }}"
-  delegate_to: localhost
-  become: false
-
-- block:
-  - name: Add kubernetes users
-    include_tasks: kubernetes.yml
-    loop: "{{ bastionUsers }}"
-  delegate_to: localhost
-  become: false
-
-- block:
-  - name: Add argocd users projects
-    include_tasks: argocd.yml
-    loop: "{{ bastionUsers }}"
-  delegate_to: localhost
-  become: false
-
-- block:
-  - name: Add minio users buckets
-    include_tasks: minio.yml
-    loop: "{{ bastionUsers }}"
-  delegate_to: localhost
-  become: false
-
-- block:
-  - name: Add harbor users projects
-    include_tasks: harbor.yml
-    loop: "{{ bastionUsers }}"
-  delegate_to: localhost
-  become: false

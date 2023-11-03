@@ -1,0 +1,11 @@
+- name: Create namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ sonarqube.namespace }}"
+
+- name: Deploy admin secrets
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - secret-admin.yml.j2

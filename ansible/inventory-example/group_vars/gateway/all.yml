@@ -1,0 +1,10 @@
+# openvpn
+openvpn:
+  serverHostname: "vpn.{{ rootDomain }}"
+  rootPassphrase: ""
+
+# crowdsec
+crowdsec:
+  bouncerNftablesKey: ""
+  enrollKey: ""
+  enrollInstanceName: ""

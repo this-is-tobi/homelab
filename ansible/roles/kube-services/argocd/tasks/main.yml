@@ -1,36 +1,14 @@
----
-- name: Generate argocd random admin password
-  ansible.builtin.shell:
-    cmd: |
-      yq -i '.argocd.password = "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"' inventory/group_vars/cluster.yml
-  no_log: true
-  when: argocd.password == ""
+- name: Setup secrets
+  include_tasks: secrets.yml
 
-- name: Add bitnami helm repo
-  kubernetes.core.helm_repository:
-    name: "{{ argocd.helm.repoName }}"
-    repo_url: "{{ argocd.helm.repoUrl }}"
-    state: present
+- name: Pre-install
+  include_tasks: pre-install.yml
 
-- name: Deploy argocd helm chart
-  kubernetes.core.helm:
-    name: argocd
-    update_repo_cache: true
-    chart_ref: "{{ argocd.helm.chartRef }}"
-    chart_version: "{{ argocd.helm.chartVersion }}"
-    create_namespace: true
-    namespace: "{{ argocd.namespace }}"
-    wait: true
-    timeout: 10m0s
-    state: present
-    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
-
-- name: Perform sso configuration
+- name: Setup sso
   include_tasks: sso.yml
 
-- name: Deploy argocd ingress
-  kubernetes.core.k8s:
-    state: present
-    template: "{{ item }}"
-  with_items:
-    - 300-ingress.yml.j2
+- name: Install
+  include_tasks: install.yml
+
+- name: Post-install
+  include_tasks: post-install.yml

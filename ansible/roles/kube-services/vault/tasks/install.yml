@@ -1,0 +1,18 @@
+- name: Add helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ vault.helm.repoName }}"
+    repo_url: "{{ vault.helm.repoUrl }}"
+    state: present
+
+- name: Deploy helm chart
+  kubernetes.core.helm:
+    name: "{{ vault.helm.chartName }}"
+    update_repo_cache: true
+    chart_ref: "{{ vault.helm.repoName }}/{{ vault.helm.chartName }}"
+    chart_version: "{{ vault.helm.chartVersion }}"
+    create_namespace: true
+    namespace: "{{ vault.namespace }}"
+    wait: true
+    timeout: 10m0s
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"

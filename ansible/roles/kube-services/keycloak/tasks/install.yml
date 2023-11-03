@@ -1,0 +1,22 @@
+- name: Create namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ keycloak.namespace }}"
+
+- name: Add helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ keycloak.helm.repoName }}"
+    repo_url: "{{ keycloak.helm.repoUrl }}"
+    state: present
+
+- name: Deploy helm chart
+  kubernetes.core.helm:
+    name: "{{ keycloak.helm.chartName }}"
+    update_repo_cache: true
+    chart_ref: "{{ keycloak.helm.repoName }}/{{ keycloak.helm.chartName }}"
+    chart_version: "{{ keycloak.helm.chartVersion }}"
+    create_namespace: true
+    namespace: "{{ keycloak.namespace }}"
+    wait: true
+    timeout: 10m0s
+    state: present

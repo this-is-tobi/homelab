@@ -1,17 +1,15 @@
----
 server:
   ha:
     enabled: false
+    replicas: 3
   standalone:
     enabled: true
   auditStorage:
     enable: true
     size: 10Gi
-    storageClass: longhorn
   dataStorage:
     enable: true
     size: 25Gi
-    storageClass: longhorn
   nodeSelector:
     node-type: worker
   ingress:
@@ -26,4 +24,4 @@ server:
     tls:
       - hosts:
           - {{ vault.domain }}
-        secretName: letsencrypt-prod-key
+        secretName: {{ vault.domain }}

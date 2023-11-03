@@ -1,0 +1,13 @@
+minio:
+  helm:
+    repoUrl: "https://charts.bitnami.com/bitnami"
+    repoName: "bitnami"
+    chartName: "minio"
+    chartVersion: "12.8.18"
+  namespace: "minio"
+  domain: "minio.{{ rootDomain }}"
+  username: "admin"
+  password: ""
+  keycloak:
+    clientId: "minio"
+    clientSecret: ""

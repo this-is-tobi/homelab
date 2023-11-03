@@ -1,4 +1,3 @@
----
 - name: Update all packages on a Debian/Ubuntu
   ansible.builtin.apt:
     update_cache: yes

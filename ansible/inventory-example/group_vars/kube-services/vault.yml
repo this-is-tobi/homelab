@@ -1,0 +1,16 @@
+vault:
+  helm:
+    repoUrl: "https://helm.releases.hashicorp.com"
+    repoName: "hashicorp"
+    chartName: "vault"
+    chartVersion: "0.25.0"
+  namespace: "vault"
+  domain: "vault.{{ rootDomain }}"
+  token: ""
+  keycloak:
+    clientId: "vault"
+    clientSecret: ""
+  unseal:
+    key1: ""
+    key2: ""
+    key3: ""

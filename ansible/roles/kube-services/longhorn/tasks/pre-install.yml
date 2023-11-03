@@ -1,0 +1,12 @@
+- name: Create namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ longhorn.namespace }}"
+
+- name: Deploy longhorn s3 secret
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - s3.yml.j2
+  when: longhorn.s3.enabled == true

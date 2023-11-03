@@ -1,0 +1,4 @@
+- name: Create traefik namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ traefik.namespace }}"

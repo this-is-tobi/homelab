@@ -1,4 +1,3 @@
----
 - name: Define masters init args
   ansible.builtin.set_fact:
     init_server_args: "{{ '--cluster-init' if (ansible_default_ipv4.address == k3sMasterIP) else '--server https://' + k3sApiServerEndpoint + ':6443 --token ' + hostvars[groups['masters'][0]]['token'] }}"

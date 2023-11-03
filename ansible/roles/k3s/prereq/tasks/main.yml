@@ -1,4 +1,3 @@
----
 - name: Enable IPv4 forwarding
   ansible.builtin.sysctl:
     name: net.ipv4.ip_forward

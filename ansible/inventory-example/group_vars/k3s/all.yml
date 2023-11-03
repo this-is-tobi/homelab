@@ -1,0 +1,27 @@
+# k3s version
+k3sVersion: "v1.28.2+k3s1"
+# k3s_token is required for masters to talk together securely this token should be alpha numeric only
+k3sToken: ""
+# k3s CA data
+k3sCaData: ""
+# systemd directory
+k3sSystemdDir: "/etc/systemd/system"
+# interface which will be used for flannel
+k3sFlanneliface: "eth0"
+# apiServerEndpoint is haproxy loadbalancer ip-address which will be configured on each master
+k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+# master node ip address
+k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
+# node ip address
+k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
+# extra args to pass to both master and worker nodes
+k3sExtraArgs: >-
+  --node-name {{ inventory_hostname }}  --node-ip={{ k3sNodeIP }}  --prefer-bundled-bin  --flannel-iface {{ k3sFlanneliface }}
+# extra args to pass to master nodes
+k3sExtraServerArgs: >-
+  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --write-kubeconfig-mode 644  --node-label node-type=master
+# extra args to pass to worker nodes
+k3sExtraAgentArgs: >-
+  {{ k3sExtraArgs }}  --node-label node-type=worker
+# extra args to pass if longhorn need to create disk (cf. inventory hosts)
+k3sExtraStorageArgs: ""

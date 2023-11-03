@@ -1,0 +1,10 @@
+- name: Create project Keycloak group
+  community.general.keycloak_group:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak.domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak.username }}"
+    auth_password: "{{ keycloak.password }}"
+    realm: "{{ keycloak.realm }}"
+    name: "{{ item.name }}"
+    state: present

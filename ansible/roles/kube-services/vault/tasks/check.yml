@@ -1,4 +1,3 @@
----
 - name: Get vaulth health
   ansible.builtin.uri:
     validate_certs: true

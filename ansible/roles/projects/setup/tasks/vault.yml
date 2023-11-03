@@ -1,0 +1,59 @@
+- name: Create access policy
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/policies/acl/{{ item.policy_name }}"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+    body: "{{ lookup('ansible.builtin.template', 'project-policy.json.j2') }}"
+    body_format: json
+
+- name: Create group
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+    body:
+      "name": "{{ item.name }}"
+      "type": "external"
+      "policies":
+        - "{{ item.name }}"
+    body_format: json
+
+- name: Get oidc accessor
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/auth"
+    method: GET
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+  register: oidc_auth
+
+- name: Get group id
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group/name/{{ item.name }}"
+    method: GET
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+  register: user_group
+
+- name: Create group alias
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group-alias"
+    method: POST
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+    body:
+      "name": "{{ item.name }}"
+      "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
+      "canonical_id": "{{ user_group.json.data.id }}"
+    body_format: json

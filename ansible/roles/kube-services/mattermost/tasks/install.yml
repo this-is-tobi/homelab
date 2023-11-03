@@ -1,0 +1,18 @@
+- name: Add helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ mattermost.helm.repoName }}"
+    repo_url: "{{ mattermost.helm.repoUrl }}"
+    state: present
+
+- name: Deploy helm chart
+  kubernetes.core.helm:
+    name: "{{ mattermost.helm.chartName }}"
+    update_repo_cache: true
+    chart_ref: "{{ mattermost.helm.repoName }}/{{ mattermost.helm.chartName }}"
+    chart_version: "{{ mattermost.helm.chartVersion }}"
+    create_namespace: true
+    namespace: "{{ mattermost.namespace }}"
+    wait: true
+    timeout: 10m0s
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"

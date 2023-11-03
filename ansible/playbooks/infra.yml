@@ -1,0 +1,156 @@
+#-----#
+# All #
+#-----#
+# OS upgrade
+- hosts: all
+  become: true
+  serial: 1
+  roles:
+    - name: common/upgrade
+  tags:
+    - os-upgrade
+    - never
+
+#---------#
+# Gateway #
+#---------#
+# Init
+- hosts: gateway
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/gateway/all.yml
+  roles:
+    - common/hostname
+    - common/ssh
+    - common/docker
+  tags: 
+    - gateway
+    - gateway-init
+
+# Openvpn
+- hosts: gateway
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/gateway/all.yml
+  roles:
+    - gateway/openvpn
+  tags: 
+    - gateway
+    - gateway-services
+    - gateway-openvpn
+
+# Crowdsec
+- hosts: gateway
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/gateway/all.yml
+  roles:
+    - gateway/crowdsec
+  tags: 
+    - gateway
+    - gateway-services
+    - gateway-crowdsec
+
+# Haproxy
+- hosts: gateway
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/gateway/all.yml
+  roles:
+    - gateway/haproxy
+  tags: 
+    - gateway
+    - gateway-services
+    - gateway-haproxy
+
+
+#---------#
+# Bastion #
+#---------#
+# Init
+- hosts: bastion
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/bastion/all.yml
+  roles:
+    - common/hostname
+    - common/ssh
+    - common/docker
+  tags: 
+    - bastion
+    - bastion-init
+
+# Users
+- hosts: bastion
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/bastion/all.yml
+  roles:
+    - bastion/users
+    - bastion/setup
+  tags: 
+    - bastion
+    - bastion-users
+
+
+#-----------#
+# K3S infra #
+#-----------#
+# Init
+- hosts: k3s
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/k3s/all.yml
+  roles:
+    - common/hostname
+    - common/ssh
+    - k3s/prereq
+    - k3s/download
+    - k3s/storage
+    - k3s/registry
+  tags: 
+    - k3s
+    - k3s-init
+
+# Deploy
+- hosts: masters
+  become: true
+  serial: 1
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/k3s/all.yml
+  roles:
+    - k3s/deploy/masters
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-deploy-masters
+- hosts: workers
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/k3s/all.yml
+  roles:
+    - k3s/deploy/workers
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-deploy-workers
+
+# Destroy
+- hosts: k3s
+  become: true
+  vars_files:
+    - ../inventory/group_vars/all.yml
+    - ../inventory/group_vars/k3s/all.yml
+  roles:
+    - k3s/destroy
+  tags: 
+    - k3s-destroy

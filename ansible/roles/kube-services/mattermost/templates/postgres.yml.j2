@@ -1,0 +1,99 @@
+kind: Secret
+apiVersion: v1
+type: kubernetes.io/basic-auth
+metadata:
+  name: pg-cluster-mattermost-admin
+  namespace: {{ mattermost.namespace }}
+data:
+  username: {{ 'postgres' | b64encode }}
+  password: {{ mattermost.postgres.admin.password | b64encode }}
+
+kind: Secret
+apiVersion: v1
+type: kubernetes.io/basic-auth
+metadata:
+  name: pg-cluster-mattermost-app
+  namespace: {{ mattermost.namespace }}
+data:
+  username: {{ mattermost.postgres.app.username | b64encode }}
+  password: {{ mattermost.postgres.app.password | b64encode }}
+
+kind: Cluster
+apiVersion: postgresql.cnpg.io/v1
+metadata:
+  name: pg-cluster-mattermost
+  namespace: {{ mattermost.namespace }}
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  instances: 2
+  primaryUpdateStrategy: unsupervised
+  bootstrap:
+    initdb:
+      database: {{ mattermost.postgres.dbName }}
+      owner: {{ mattermost.postgres.app.username }}
+      secret:
+        name: pg-cluster-mattermost-app
+    # recovery:
+    #   backup:
+    #     name: backup-example
+  superuserSecret:
+    name: pg-cluster-mattermost-admin
+  storage:
+    size: 5Gi
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 2Gi
+      cpu: 2
+  affinity:
+    enablePodAntiAffinity: true
+
+kind: Secret
+apiVersion: v1
+metadata:
+  name: pg-cluster-mattermost-backup
+  namespace: {{ mattermost.namespace }}
+data:
+  DB_HOST: "{{ 'pg-cluster-mattermost-rw' | b64encode }}"
+  DB_PORT: "{{ '5432' | b64encode }}"
+  DB_NAME: "{{ mattermost.postgres.dbName | b64encode }}"
+  DB_USER: "{{ mattermost.postgres.app.username | b64encode }}"
+  DB_PASS: "{{ mattermost.postgres.app.password | b64encode }}"
+  S3_ENDPOINT: "{{ ('https://' + mattermost.s3.endpoint) | b64encode }}"
+  S3_ACCESS_KEY: "{{ mattermost.s3.accessKey | b64encode }}"
+  S3_SECRET_KEY: "{{ mattermost.s3.secretKey | b64encode }}"
+  S3_BUCKET_NAME: "{{ mattermost.s3.bucketName | b64encode }}"
+  S3_BUCKET_PREFIX: "{{ 'backups' | b64encode }}"
+  RETENTION_DAYS: "{{ '30' | b64encode }}"
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pg-cluster-mattermost-backup
+  namespace: {{ mattermost.namespace }}
+  labels:
+    jobgroup: pg-cluster-mattermost-backup
+spec:
+  schedule: "0 1 * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    metadata:
+      name: pg-cluster-mattermost-backup
+      labels:
+        jobgroup: pg-cluster-mattermost-backup
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          containers:
+          - name: pg-cluster-mattermost-backup
+            image: ghcr.io/this-is-tobi/tools/pg-backup:latest
+            imagePullPolicy: Always
+            envFrom:
+            - secretRef:
+                name: pg-cluster-mattermost-backup
+          restartPolicy: Never

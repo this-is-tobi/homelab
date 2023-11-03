@@ -1,0 +1,11 @@
+- name: Setup secrets
+  include_tasks: secrets.yml
+
+- name: Pre-install
+  include_tasks: pre-install.yml
+
+- name: Setup database
+  include_tasks: postgres.yml
+
+- name: Install
+  include_tasks: install.yml

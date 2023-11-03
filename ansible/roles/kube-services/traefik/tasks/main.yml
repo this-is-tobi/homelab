@@ -1,14 +1,5 @@
----
-- name: Create traefik namespace
-  kubernetes.core.k8s:
-    name: "{{ traefik.namespace }}"
-    api_version: v1
-    kind: Namespace
-    state: present
+- name: Pre-install
+  include_tasks: pre-install.yml
 
-- name: Deploy traefik dashbord ingress
-  kubernetes.core.k8s:
-    state: present
-    template: "{{ item }}"
-  with_items:
-    - 100-ingress.yml.j2
+- name: Install
+  include_tasks: install.yml

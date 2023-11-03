@@ -1,4 +1,3 @@
----
 - name: Install required system packages
   ansible.builtin.apt:
     name: acl

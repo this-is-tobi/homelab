@@ -1,0 +1,4 @@
+bastionLocalDir: "secrets"
+admins:
+  - username: ""
+    sshKey: ""

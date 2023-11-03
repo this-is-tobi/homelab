@@ -1,11 +1,6 @@
----
-global:
-  storageClass: longhorn
-
 admin:
   user: {{ grafana.username }}
   password: {{ grafana.password }}
-
 datasources:
   secretDefinition: |
     apiVersion: 1
@@ -22,24 +17,18 @@ datasources:
           # prometheusType: Prometheus
           # prometheusVersion: 2.37.0
           cacheLevel: 'High'
-
 dashboardsProvider:
   enabled: true
-
 dashboardsConfigMaps:
   - configMapName: k3s-dashboard
     folderName: k3s
     fileName: k3s.json
-
 grafana:
   nodeSelector:
     node-type: worker
-
 persistence:
   enabled: true
-  storageClass: longhorn
   size: 25Gi
-
 ingress:
   enabled: true
   ingressClassName: traefik
@@ -48,7 +37,6 @@ ingress:
   hostname: {{ grafana.domain }}
   path: /
   tls: true
-
 config:
   useGrafanaIniFile: true
   grafanaIniConfigMap: grafana-conf

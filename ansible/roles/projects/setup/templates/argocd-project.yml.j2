@@ -1,0 +1,25 @@
+kind: AppProject
+apiVersion: argoproj.io/v1alpha1
+metadata:
+  name: {{ item.name }}
+  namespace: {{ argocd.namespace }}
+spec:
+  destinations:
+{% for namespace in item.namespaces %}
+    - name: 'in-cluster'
+      namespace: {{ namespace }}
+      server: 'https://kubernetes.default.svc'
+{% endfor %}
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - description: "Keycloak group"
+      groups:
+        - /{{ item.name }}
+        - {{ item.name }}
+      name: {{ item.name }}
+      policies:
+        - p, proj:{{ item.name }}:{{ item.name }}, applications, *, {{ item.name }}/*, allow
+  sourceRepos:
+    - '*'
