@@ -8,6 +8,7 @@ data:
   username: {{ 'postgres' | b64encode }}
   password: {{ sonarqube.postgres.admin.password | b64encode }}
 
+---
 kind: Secret
 apiVersion: v1
 type: kubernetes.io/basic-auth
@@ -18,6 +19,7 @@ data:
   username: {{ sonarqube.postgres.app.username | b64encode }}
   password: {{ sonarqube.postgres.app.password | b64encode }}
 
+---
 kind: Cluster
 apiVersion: postgresql.cnpg.io/v1
 metadata:
