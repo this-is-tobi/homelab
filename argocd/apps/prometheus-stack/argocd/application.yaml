@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-stack
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - path: argocd/apps/prometheus-stack/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: develop
+  - chart: kube-prometheus-stack
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 54.0.1
+    helm:
+      releaseName: prometheus-stack
+      valuesObject:
+        grafana:
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            annotations:
+              "cert-manager.io/cluster-issuer": letsencrypt-staging
+            hosts:
+              - monitoring.alpha.ohmlab.fr
+            tls:
+              - hosts:
+                  - monitoring.alpha.ohmlab.fr
+                secretName: monitoring.alpha.ohmlab.fr
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring-test
+  syncPolicy:
+    # automated:
+    #   selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

@@ -1,0 +1,25 @@
+# Setup
+- name: Create traefik namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ traefik.namespace }}"
+
+# Install
+- name: Add traefik helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ traefik.helm.repoName }}"
+    repo_url: "{{ traefik.helm.repoUrl }}"
+    state: present
+
+- name: Deploy traefik helm chart
+  kubernetes.core.helm:
+    name: "{{ traefik.helm.chartName }}"
+    update_repo_cache: true
+    chart_ref: "{{ traefik.helm.repoName }}/{{ traefik.helm.chartName }}"
+    chart_version: "{{ traefik.helm.chartVersion }}"
+    create_namespace: true
+    namespace: "{{ traefik.namespace }}"
+    wait: true
+    timeout: 10m0s
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"

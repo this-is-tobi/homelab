@@ -1,7 +1,0 @@
-traefik:
-  helm:
-    repoUrl: "https://traefik.github.io/charts"
-    repoName: "traefik"
-    chartName: "traefik"
-    chartVersion: "24.0.0"
-  namespace: "traefik"

@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sonarqube
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - path: argocd/apps/sonarqube/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: develop
+  - chart: sonarqube
+    repoURL: https://SonarSource.github.io/helm-chart-sonarqube
+    targetRevision: 10.2.1+800
+    helm:
+      releaseName: sonarqube
+      valuesObject:
+        ingress:
+          enabled: true
+          ingressClassName: traefik
+          annotations:
+            "cert-manager.io/cluster-issuer": letsencrypt-staging
+            "nginx.ingress.kubernetes.io/proxy-body-size":
+            ingressClassName: traefik
+          hosts:
+            - name: sonarqube.alpha.ohmlab.fr
+              path: /
+          tls:
+            - hosts:
+                - sonarqube.alpha.ohmlab.fr
+              secretName: sonarqube.alpha.ohmlab.fr
+        plugins:
+          install:
+            - https://github.com/iSergio/sonarqube-community-branch-plugin/releases/download/1.16.1/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar
+            - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
+        resources:
+          limits:
+            cpu: 800m
+            memory: 4Gi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        postgresql:
+          enabled: false
+        jdbcOverwrite:
+          enable: true
+          jdbcUrl: jdbc:postgresql://sonarqube-pg-cluster-rw/sonarqube?socketTimeout=1500
+          jdbcUsername: sonarqube
+          jdbcSecretName: sonarqube-pg-cluster-app
+          jdbcSecretPasswordKey: password
+        account:
+          adminPasswordSecretName: sonarqube-admin
+        monitoringPasscodeSecretName: sonarqube-monitoring-admin
+        monitoringPasscodeSecretKey: password
+        jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar=web"
+        jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar=ce"
+        sonarProperties: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sonarqube-test
+  syncPolicy:
+    # automated:
+    #   selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

@@ -1,0 +1,117 @@
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/basic-auth
+metadata:
+  name: mattermost-pg-cluster-admin
+  annotations:
+    avp.kubernetes.io/remove-missing: "true"
+data:
+  username: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.admin.username} | base64encode>
+  password: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.admin.password} | base64encode>
+
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/basic-auth
+metadata:
+  name: mattermost-pg-cluster-app
+  annotations:
+    avp.kubernetes.io/remove-missing: "true"
+data:
+  username: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.app.username} | base64encode>
+  password: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.app.password} | base64encode>
+
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: mattermost-pg-cluster-infos
+  annotations:
+    avp.kubernetes.io/remove-missing: "true"
+data:
+  host: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.host} | base64encode>
+  port: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.port} | base64encode>
+  database: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.database} | base64encode>
+  username: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.app.username} | base64encode>
+  password: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.app.password} | base64encode>
+
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: mattermost-pg-cluster
+spec:
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  instances: 2
+  primaryUpdateStrategy: unsupervised
+  bootstrap:
+    initdb:
+      database: mattermost
+      owner: mattermost
+      secret:
+        name: mattermost-pg-cluster-app
+  superuserSecret:
+    name: mattermost-pg-cluster-admin
+  storage:
+    size: 3Gi
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 2Gi
+      cpu: '2'
+  affinity:
+    enablePodAntiAffinity: true
+
+# ---
+# apiVersion: v1
+# kind: Secret
+# type: Opaque
+# metadata:
+#   name: mattermost-pg-cluster-backup
+#   annotations:
+#     avp.kubernetes.io/remove-missing: "true"
+# data:
+#   DB_HOST: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.host} | base64encode>
+#   DB_PORT: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.port} | base64encode>
+#   DB_NAME: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.database} | base64encode>
+#   DB_USER: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.app.username} | base64encode>
+#   DB_PASS: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.app.password} | base64encode>
+#   S3_ENDPOINT: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.s3.endpoint} | base64encode>
+#   S3_ACCESS_KEY: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.s3.accessKey} | base64encode>
+#   S3_SECRET_KEY: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.s3.secretKey} | base64encode>
+#   S3_BUCKET_NAME: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.s3.bucketName} | base64encode>
+#   S3_BUCKET_PREFIX: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.s3.bucketPrefix} | base64encode>
+#   RETENTION_DAYS: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.s3.retentionDay} | base64encode>
+
+# ---
+# apiVersion: batch/v1
+# kind: CronJob
+# metadata:
+#   name: mattermost-pg-cluster-backup
+#   labels:
+#     jobgroup: mattermost-pg-cluster-backup
+# spec:
+#   schedule: "0 1 * * *"
+#   successfulJobsHistoryLimit: 1
+#   failedJobsHistoryLimit: 3
+#   concurrencyPolicy: Forbid
+#   jobTemplate:
+#     metadata:
+#       name: mattermost-pg-cluster-backup
+#       labels:
+#         jobgroup: mattermost-pg-cluster-backup
+#     spec:
+#       backoffLimit: 0
+#       template:
+#         spec:
+#           containers:
+#           - name: mattermost-pg-cluster-backup
+#             image: ghcr.io/this-is-tobi/tools/pg-backup:latest
+#             imagePullPolicy: Always
+#             envFrom:
+#             - secretRef:
+#                 name: mattermost-pg-cluster-backup
+#           restartPolicy: Never

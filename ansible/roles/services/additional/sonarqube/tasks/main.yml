@@ -1,0 +1,39 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: sonarqube
+    vault_values:
+      domain: "sonarqube.alpha.{{ rootDomain }}"
+      admin:
+        username: "admin"
+        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+        initialPassword: "admin"
+        monitoringPassword: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+      postgres:
+        host: "sonarqube-pg-cluster-rw"
+        port: "5432"
+        database: "sonarqube"
+        admin:
+          username: "postgres"
+          password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+        app:
+          username: "sonarqube"
+          password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+
+# Install
+- name: Sync application
+  ansible.builtin.include_role:
+    name: services/utils/synchronize
+  vars:
+    argocd_app: sonarqube
+
+# Post install
+- name: Post install
+  include_tasks: post-install.yml

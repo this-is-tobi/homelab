@@ -1,0 +1,165 @@
+- name: Wait vault container
+  kubernetes.core.k8s:
+    kind: Pod
+    name: vault-0
+    namespace: vault
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 600
+    wait_condition:
+      reason:
+      type: Initialized
+      status: "True"
+
+- name: Find vault keys
+  kubernetes.core.k8s_info:
+    namespace: vault
+    kind: Secret
+    name: vault-keys
+  register: vault_keys
+
+- name: Check vault status
+  include_tasks: check.yml
+
+- name: Check if vault is coherent
+  ansible.builtin.assert:
+    that:
+      - ((vault_status in ['sealed', 'OK']) and (vault_keys.resources | length > 0)) or ((vault_status == 'not init') and (vault_keys.resources | length == 0))
+    fail_msg:
+      - "Warning !"
+      - "Vault isn't initialized but you got a vault-secret secret inside the vault namespace, delete it before restart deployment if you want to initialize."
+      - "or"
+      - "Vault is initialized but you have no vault-keys secret inside the vault namespace"
+
+- name: Init vault
+  kubernetes.core.k8s_exec:
+    container: vault
+    pod: vault-0
+    namespace: vault
+    command: vault operator init -key-shares=3 -key-threshold=2
+  register: init
+  until: "init is not failed"
+  retries: 6
+  delay: 10
+  when: vault_status == 'not init'
+
+- name: Store vault keys
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        name: vault-keys
+        namespace: vault
+      data:
+        unsealKey1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
+        unsealKey2: "{{ init.stdout_lines[1] | regex_replace('^Unseal Key 2: (.*)$', '\\1', multiline=True) | b64encode }}"
+        unsealKey3: "{{ init.stdout_lines[2] | regex_replace('^Unseal Key 3: (.*)$', '\\1', multiline=True) | b64encode }}"
+        rootToken: "{{ init.stdout_lines[4] | regex_replace('^Initial Root Token: (.*)$', '\\1', multiline=True) | b64encode }}"
+  when: vault_keys.resources | length == 0
+
+- name: Find vault keys
+  kubernetes.core.k8s_info:
+    namespace: "{{ vault.namespace }}"
+    kind: Secret
+    name: vault-keys
+  register: vault_keys
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    vault_token: vault_keys.resources[0].data.root_token
+
+- name: Set fact to unseal vault
+  ansible.builtin.set_fact:
+    num: "0"
+
+- name: Unseal vault
+  when: vault_status == 'not init' or vault_status == 'sealed'
+  include_tasks: unseal.yml
+
+- name: Check vault status
+  include_tasks: check.yml
+
+- name: Get kv engines
+  ansible.builtin.uri:
+    validate_certs: true
+    method: GET
+    url: "https://{{ vault.domain }}/v1/sys/mounts/secret"
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: get_engines
+
+- name: Create default 'secret/' kv engine
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/mounts/secret"
+    method: POST
+    status_code: [204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      type: kv
+      options:
+        version: 2
+    body_format: json
+  when: get_engines.status == 400
+
+- name: Create admin access policy
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/policies/acl/admin"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body: "{{ lookup('ansible.builtin.template', 'superadmin-policy.json.j2') }}"
+    body_format: json
+
+- name: Create admin group
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "name": "admin"
+      "type": "external"
+      "policies":
+        - "{{ item.admin }}"
+    body_format: json
+
+- name: Get oidc accessor
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/auth"
+    method: GET
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: oidc_auth
+
+- name: Get admin group id
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group/name/admin"
+    method: GET
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: user_group
+
+- name: Create admin group alias
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group-alias"
+    method: POST
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "name": "admin"
+      "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
+      "canonical_id": "{{ user_group.json.data.id }}"
+    body_format: json

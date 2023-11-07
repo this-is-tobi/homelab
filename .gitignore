@@ -13,3 +13,6 @@ secrets/
 
 # Common
 .DS_Store
+
+# Sops
+*.sops.yaml

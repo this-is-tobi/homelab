@@ -1,4 +1,0 @@
-dashy:
-  namespace: "dashy"
-  image: "docker.io/lissy93/dashy:2.1.1"
-  docsDomain: "docs.this-is-tobi.com"

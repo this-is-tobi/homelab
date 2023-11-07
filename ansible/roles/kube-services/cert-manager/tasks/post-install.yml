@@ -1,6 +1,0 @@
-- name: Deploy cluster issuers
-  kubernetes.core.k8s:
-    state: present
-    template: "{{ item }}"
-  with_items:
-    - cluster-issuers.yml.j2

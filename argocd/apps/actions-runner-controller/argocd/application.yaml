@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: actions-runner-controller
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - path: argocd/apps/actions-runner-controller/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: develop
+  - chart: actions-runner-controller
+    repoURL: https://actions-runner-controller.github.io/actions-runner-controller
+    targetRevision: 0.23.3
+    helm:
+      releaseName: actions-runner-controller
+      valuesObject:
+        replicaCount: 1
+        syncPeriod: 1m
+        authSecret:
+          enabled: false
+        image:
+          actionsRunnerRepositoryAndTag: "summerwind/actions-runner:latest"
+          dindSidecarRepositoryAndTag: "docker:dind"
+          pullPolicy: IfNotPresent
+          actionsRunnerImagePullSecrets: []
+        imagePullSecrets: []
+        nodeSelector: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: actions-runner-controller-test
+  syncPolicy:
+    # automated:
+    #   selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

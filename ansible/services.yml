@@ -1,0 +1,98 @@
+# Deploy kubernetes services
+- hosts: localhost
+  become: false
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/services.yml
+  roles:
+    - name: ./roles/services/core/longhorn
+      tags:
+        - longhorn
+        - storage
+
+    - name: ./roles/services/core/traefik
+      tags:
+        - traefik
+        - ingress-controller
+
+    - name: ./roles/services/core/cert-manager
+      tags:
+        - cert-manager
+        - certmanager
+
+    - name: ./roles/services/core/vault
+      tags:
+        - vault
+
+    - name: ./roles/services/core/argocd
+      tags:
+        - argocd
+        - argo
+        - gitops
+
+    - name: ./roles/services/additional/system-upgrade
+      tags:
+        - never
+        - system-upgrade
+        - upgrade
+
+    - name: ./roles/services/additional/cloudnative-pg
+      tags:
+        - postgres-operator
+        - cnpg
+
+    - name: ./roles/services/additional/keycloak
+      tags:
+        - keycloak
+        - sso
+
+    - name: ./roles/services/additional/kubernetes-dashboard
+      tags:
+        - dashboard
+        - kubernetes-dashboard
+        - kube-dashboard
+
+    - name: ./roles/services/additional/prometheus-stack
+      tags:
+        - prometheus
+        - grafana
+        - monitoring
+
+    - name: ./roles/services/additional/sops
+      tags:
+        - sops
+        - secrets
+
+    - name: ./roles/services/additional/minio
+      tags:
+        - minio
+        - s3
+
+    - name: ./roles/services/additional/harbor
+      tags:
+        - harbor
+        - registry
+
+    - name: ./roles/services/additional/sonarqube
+      tags:
+        - sonarqube
+        - sonar
+
+    - name: ./roles/services/additional/mattermost
+      tags:
+        - never # Not arm64 compatible
+        - mattermost
+        - mm
+
+    - name: ./roles/services/additional/actions-runner-controller
+      tags:
+        - actions-runner-controller
+        - arc
+        - runners
+
+    - name: ./roles/services/additional/dashy
+      tags:
+        - dashy
+        - dashboard

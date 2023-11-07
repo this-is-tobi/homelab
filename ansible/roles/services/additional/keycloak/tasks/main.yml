@@ -1,0 +1,44 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: keycloak
+
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: keycloak
+    vault_values:
+      domain: keycloak.alpha.ohmlab.fr
+      extras:
+        realm: homelab
+      admin:
+        username: "admin"
+        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+      postgres:
+        host: "keycloak-pg-cluster-rw"
+        port: "5432"
+        database: "keycloak"
+        admin:
+          username: "postgres"
+          password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+        app:
+          username: "keycloak"
+          password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+
+# Install
+- name: Sync application
+  ansible.builtin.include_role:
+    name: services/utils/synchronize
+  vars:
+    argocd_app: keycloak
+
+# Post install
+- name: Post install
+  include_tasks: post-install.yml

@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - path: argocd/apps/minio/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: develop
+  - chart: minio
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 12.10.0
+    helm:
+      releaseName: minio
+      valuesObject:
+        auth:
+          existingSecret: minio-admin
+        nodeSelector:
+          node-type: worker
+        mode: distributed
+        statefulset:
+          replicaCount: 4
+        ingress:
+          enabled: true
+          ingressClassName: traefik
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-staging
+          hostname: minio.alpha.ohmlab.fr
+          path: /
+          tls: true
+        apiIngress:
+          enabled: true
+          ingressClassName: traefik
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-staging
+          hostname: s3.alpha.ohmlab.fr
+          path: /
+          tls: true
+        persistence:
+          enabled: true
+          mountPath: /data
+          accessModes:
+            - ReadWriteOnce
+          size: 500Gi
+        extraEnvVarsCM: minio-sso
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minio-test
+  syncPolicy:
+    # automated:
+    #   selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

@@ -1,2 +1,3 @@
-rootDomain: "domain.com"
+rootDomain: "example.domain.com"
+localRootDomain: "example.domain.local"
 ingressClassName: "traefik"

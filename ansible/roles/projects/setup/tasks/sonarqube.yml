@@ -32,7 +32,7 @@
 - name: Create Sonarqube project key
   ansible.builtin.shell:
     cmd: |
-      yq -i '(.projects[] | select(.name == "{{ item.name }}") | .sonarqube.projectKey) = "{{ item.name }}-{{ lookup('ansible.builtin.password', '/dev/null', length=12, chars=['ascii_letters', 'digits']) }}"' ../inventory/group_vars/all.yml
+      yq -i '(.projects[] | select(.name == "{{ item.name }}") | .sonarqube.projectKey) = "{{ item.name }}-{{ lookup('ansible.builtin.password', '/dev/null', length=12, chars=['ascii_letters', 'digits']) }}"' ./inventory/group_vars/all.yml
   when: sonar_project_key == ''
 
 - name: Create Sonarqube project

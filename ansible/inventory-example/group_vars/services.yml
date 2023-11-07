@@ -1,0 +1,44 @@
+argocd:
+  helm:
+    repoUrl: "https://argoproj.github.io/argo-helm"
+    repoName: "argo"
+    chartName: "argo-cd"
+    chartVersion: "5.51.4"
+  namespace: "argocd-system"
+  domain: "argocd.{{ rootDomain }}"
+certManager:
+  helm:
+    repoUrl: "https://charts.jetstack.io"
+    repoName: "jetstack"
+    chartName: "cert-manager"
+    chartVersion: "1.13.2"
+  namespace: "cert-manager-system"
+  email: "example@domain.com"
+longhorn:
+  helm:
+    repoUrl: "https://charts.longhorn.io"
+    repoName: "longhorn"
+    chartName: "longhorn"
+    chartVersion: "1.5.3"
+  namespace: "longhorn-system"
+  domain: "longhorn.{{ localRootDomain }}"
+  s3:
+    enabled: false
+    endpoint: ""
+    accessKey: ""
+    secretKey: ""
+traefik:
+  helm:
+    repoUrl: "https://traefik.github.io/charts"
+    repoName: "traefik"
+    chartName: "traefik"
+    chartVersion: "25.0.0"
+  namespace: "traefik-system"
+vault:
+  helm:
+    repoUrl: "https://helm.releases.hashicorp.com"
+    repoName: "hashicorp"
+    chartName: "vault"
+    chartVersion: "0.27.0"
+  namespace: "vault-system"
+  domain: "vault.{{ rootDomain }}"

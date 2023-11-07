@@ -1,7 +1,0 @@
-cloudNativePostgres:
-  helm:
-    repoUrl: "https://cloudnative-pg.github.io/charts"
-    repoName: "cnpg"
-    chartName: "cloudnative-pg"
-    chartVersion: "0.18.2"
-  namespace: "cnpg-system"

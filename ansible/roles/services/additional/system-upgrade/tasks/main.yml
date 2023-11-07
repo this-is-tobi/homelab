@@ -1,0 +1,11 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
+# Install
+- name: Sync application
+  ansible.builtin.include_role:
+    name: services/utils/synchronize
+  vars:
+    argocd_app: system-upgrade

@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashy-config
+data:
+  conf.yml: |
+    pageInfo:
+      title: Homelab
+      navLinks:
+        - title: GitHub
+          path: https://github.com/this-is-tobi/homelab
+        - title: Documentation
+          path: https://alpha.ohmlab.fr
+    appConfig:
+      theme: adventure-basic
+      startingView: default
+      statusCheck: true
+      statusCheckInterval: 300
+      webSearch:
+        disableWebSearch: true
+      disableConfiguration: true
+      hideComponents:
+        hideNav: true
+        hideSearch: true
+        hideSettings: true
+        hideFooter: true
+    sections:
+      - name: Services
+        icon: fas fa-rocket
+        items:
+          - title: Argocd
+            description: Deploy apps using gitops
+            url: https://argocd.alpha.ohmlab.fr
+            icon: hl-argocd
+          - title: Grafana
+            description: Watch cluster metrics & application logs
+            url: https://monitoring.alpha.ohmlab.fr
+            icon: hl-grafana
+          - title: Harbor
+            description: Container image registry & Helm chart registry
+            url: https://registry.alpha.ohmlab.fr
+            icon: hl-harbor
+          - title: Keycloak
+            description: Single Sign On managment
+            url: https://sso.alpha.ohmlab.fr
+            icon: hl-keycloak
+          - title: Kubernetes
+            description: Kubernetes dashboard to watch cluster ressources
+            url: https://kube.alpha.ohmlab.fr
+            icon: hl-kubernetes-dashboard
+          - title: Minio
+            description: Store data with s3 standard
+            url: https://minio.alpha.ohmlab.fr
+            icon: hl-minio
+          - title: Vault
+            description: Store & retrieve secrets safely
+            url: https://vault.alpha.ohmlab.fr
+            icon: hl-vault
+        displayData:
+          sortBy: alphabetical
+          collapsed: false
+          rows: 5
+          cols: 2
+          itemSize: large
+      - name: Utils
+        icon: fas fa-wrench
+        items:
+          - title: Documentation
+            description: As the saying goes RTFM
+            url: https://docs.this-is-tobi.com
+            icon: fal fa-book
+            statusCheck: false
+          - title: Github
+            description: Code sources
+            url: https://github.com/this-is-tobi/homelab
+            icon: fab fa-github
+            statusCheck: false
+        displayData:
+          sortBy: alphabetical
+          collapsed: false
+          rows: 5
+          cols: 1
+          itemSize: large

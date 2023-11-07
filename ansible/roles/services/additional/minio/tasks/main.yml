@@ -1,0 +1,22 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: minio
+    vault_values:
+      admin:
+        username: "admin"
+        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+
+# Install
+- name: Sync application
+  ansible.builtin.include_role:
+    name: services/utils/synchronize
+  vars:
+    argocd_app: minio

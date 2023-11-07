@@ -1,0 +1,69 @@
+# All
+- hosts: all
+  become: true
+  serial: 1
+  roles:
+    - name: common/upgrade
+  tags:
+    - os-upgrade
+    - never
+
+# Gateway
+- hosts: gateway
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/gateway.yml
+  roles:
+    - common/hostname
+    - common/ssh
+    - common/docker
+    - gateway/openvpn
+    - gateway/crowdsec
+    - gateway/haproxy
+  tags:
+    - gateway
+
+# Bastion
+- hosts: bastion
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/bastion.yml
+  roles:
+    - common/hostname
+    - common/ssh
+    - common/docker
+    - bastion/users
+    - bastion/setup
+  tags:
+    - bastion
+
+# K3S - Deploy
+- hosts: k3s
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - common/hostname
+    - common/ssh
+    - k3s/prereq
+    - k3s/download
+    - k3s/storage
+    - k3s/registry
+    - k3s/deploy/masters
+    - k3s/deploy/workers
+  tags:
+    - k3s
+
+# K3S - Destroy
+- hosts: k3s
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - k3s/destroy
+  tags:
+    - k3s-destroy

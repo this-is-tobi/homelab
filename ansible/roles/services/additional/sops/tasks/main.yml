@@ -1,0 +1,26 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
+# Setup
+- name: Generate age keys
+  ansible.builtin.command:
+    cmd: age-keygen
+  register: age_keys
+
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: sops
+    vault_values:
+      extras:
+        keys: "{{ age_keys.stdout | b64encode }}"
+
+# Install
+- name: Sync application
+  ansible.builtin.include_role:
+    name: services/utils/synchronize
+  vars:
+    argocd_app: sops

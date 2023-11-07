@@ -1,4 +1,4 @@
-- name: Setup users environment
+- name: Get vault secrets
   include_tasks: setup.yml
   loop: "{{ bastionUsers }}"
   when: item.setup == true

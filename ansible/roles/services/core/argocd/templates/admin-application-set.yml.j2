@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-addons
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+  - git:
+      repoURL: https://github.com/this-is-tobi/homelab.git
+      revision: develop
+      directories:
+      - path: "argocd/envs/**"
+  template:
+    metadata:
+      name: 'cluster-addons-{{.path.basename}}'
+      namespace: argocd
+    spec:
+      project: admin
+      revisionHistoryLimit: 5
+      source:
+        path: '{{.path.path}}'
+        repoURL: https://github.com/this-is-tobi/homelab.git
+        targetRevision: develop
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: admin
+      syncPolicy:
+        # automated:
+        #   selfHeal: false
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+

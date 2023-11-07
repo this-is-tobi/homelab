@@ -1,0 +1,102 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: harbor
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - path: argocd/apps/harbor/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: develop
+  - chart: harbor
+    repoURL: https://helm.goharbor.io
+    targetRevision: 1.13.1
+    helm:
+      releaseName: harbor
+      valuesObject:
+        expose:
+          type: ingress
+          tls:
+            enabled: true
+            certSource: secret
+            secret:
+              secretName: registry.alpha.ohmlab.fr
+          ingress:
+            hosts:
+              core: registry.alpha.ohmlab.fr
+            className: traefik
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-staging
+        externalURL:  https://registry.alpha.ohmlab.fr
+        persistence:
+          enabled: true
+          resourcePolicy: keep
+          persistentVolumeClaim:
+            registry:
+              size: 100Gi
+            jobservice:
+              jobLog:
+                size: 5Gi
+            database:
+              size: 5Gi
+            redis:
+              size: 5Gi
+            trivy:
+              size: 5Gi
+        existingSecretAdminPassword: harbor-admin
+        existingSecretAdminPasswordKey: password
+        existingSecretSecretKey: harbor-admin
+        enableMigrateHelmHook: false
+        portal:
+          replicas: 1
+          revisionHistoryLimit: 5
+          nodeSelector:
+            node-type: worker
+        core:
+          replicas: 1
+          revisionHistoryLimit: 5
+          nodeSelector:
+            node-type: worker
+        jobservice:
+          replicas: 1
+          revisionHistoryLimit: 5
+          nodeSelector:
+            node-type: worker
+        registry:
+          replicas: 1
+          revisionHistoryLimit: 5
+          nodeSelector:
+            node-type: worker
+        trivy:
+          enabled: true
+          replicas: 1
+          nodeSelector:
+            node-type: worker
+          vulnType: os,library
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          securityCheck: vuln,config,secret
+          ignoreUnfixed: false
+        database:
+          type: external
+          external:
+            host: harbor-pg-cluster-rw
+            port: 5432
+            username: harbor
+            coreDatabase: harbor
+            existingSecret: harbor-pg-cluster-app
+            sslmode: disable
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: harbor-test
+  syncPolicy:
+    # automated:
+    #   selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

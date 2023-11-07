@@ -1,0 +1,77 @@
+# - name: Find vault keys
+#   kubernetes.core.k8s_info:
+#     namespace: "{{ vault.namespace }}"
+#     kind: Secret
+#     name: vault-keys
+#   register: vault_keys
+
+# - name: Set fact for vault secrets
+#   ansible.builtin.set_fact:
+#     vault_token: "{{ vault_keys.resources[0].data.root_token | b64decode }}"
+
+# - name: Setup secrets
+#   include_tasks: secrets.yml
+
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: argocd
+    vault_values:
+      admin:
+        username: "admin"
+        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+
+- name: Create namespace
+  kubernetes.core.k8s:
+    kind: Namespace
+    name: "{{ argocd.namespace }}"
+
+- name: Deploy argocd plugins config
+  kubernetes.core.k8s:
+    template: "{{ item }}"
+    state: present
+  with_items:
+    - vault-plugin-cm.yml.j2
+    - vault-plugin-secret.yml.j2
+
+# Install
+- name: Add helm repo
+  kubernetes.core.helm_repository:
+    name: "{{ argocd.helm.repoName }}"
+    repo_url: "{{ argocd.helm.repoUrl }}"
+    state: present
+
+- name: Deploy helm chart
+  kubernetes.core.helm:
+    name: "{{ argocd.helm.chartName }}"
+    update_repo_cache: true
+    chart_ref: "{{ argocd.helm.repoName }}/{{ argocd.helm.chartName }}"
+    chart_version: "{{ argocd.helm.chartVersion }}"
+    create_namespace: true
+    namespace: "{{ argocd.namespace }}"
+    wait: true
+    timeout: 10m0s
+    state: present
+    values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
+
+# Post install
+- name: Deploy argocd admin application set
+  kubernetes.core.k8s:
+    template:
+      path: "admin-project.yml.j2"
+    state: present
+
+- name: Deploy argocd admin application set
+  kubernetes.core.k8s:
+    template:
+      path: "admin-application-set.yml.j2"
+      variable_start_string: "[["
+      variable_end_string: "]]"
+    state: present

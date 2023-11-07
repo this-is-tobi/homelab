@@ -1,6 +1,0 @@
-- name: Deploy argocd manifests
-  kubernetes.core.k8s:
-    template: "{{ item }}"
-    state: present
-  with_items:
-    - admin-project.yml.j2

@@ -8,13 +8,20 @@ no_color='\033[0m'
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Default
+export ANSIBLE_CONFIG="$SCRIPT_PATH/ansible/ansible.cfg"
 FETCH_KUBECONFIG="false"
 PLAYBOOK="false"
 TAGS="all"
+DECRYPT="false"
+ENCRYPT="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to install a full homelab with gateway, bastion and k3s cluster.
 Following flags are available:
+
+  -d    Decrypt data using Sops.
+
+  -e    Encrypt data using Sops.
 
   -k    Copy kubeconfig locally, default is '$FETCH_KUBECONFIG'.
         Directory output should be passed as arg.
@@ -32,8 +39,12 @@ print_help() {
 }
 
 # Parse options
-while getopts hk:p:t: flag; do
+while getopts hdek:p:t: flag; do
   case "${flag}" in
+    d)
+      DECRYPT="true";;
+    e)
+      ENCRYPT="true";;
     k)
       FETCH_KUBECONFIG="true";;
     p)
@@ -47,9 +58,15 @@ while getopts hk:p:t: flag; do
 done
 
 
-if [ "$PLAYBOOK" = "false" ] && [ "$FETCH_KUBECONFIG" == "false" ]; then
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Error: Argument missing\n\n"
-  print_help
+if [ "$DECRYPT" = "true" ]; then
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Decrypt data using Sops\n\n"
+  sops -d -i ./argocd/applications/keycloak/manifests/secrets.sops.yaml
+fi
+
+
+if [ "$ENCRYPT" = "true" ]; then
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Encrypt data using Sops\n\n"
+  sops -e -i ./argocd/applications/keycloak/manifests/secrets.sops.yaml
 fi
 
 
@@ -70,6 +87,7 @@ if [ ! "$PLAYBOOK" = "false" ]; then
     ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$HOME/.kube/config"
   fi
 fi
+
 
 # Copy kube config to local machine
 if [ ! "$FETCH_KUBECONFIG" = "false" ]; then

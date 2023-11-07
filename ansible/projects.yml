@@ -1,0 +1,21 @@
+# Deploy projects
+- hosts: localhost
+  become: false
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/projects/all.yml
+  roles:
+    - name: ./roles/projects/setup
+      tags:
+        - setup
+        - access
+        - projects
+        - users
+
+    - name: ./roles/projects/docs
+      tags:
+        - never
+        - docs
+        - doc

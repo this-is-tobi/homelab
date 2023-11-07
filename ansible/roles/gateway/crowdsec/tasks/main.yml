@@ -77,7 +77,7 @@
   community.docker.docker_compose:
     state: present
     project_src: "/services/crowdsec"
-    files: 
+    files:
       - "docker-compose.yml"
 
 - name: Register crowdsec bouncer key
@@ -97,7 +97,7 @@
 - name: Set keycloak client secret
   ansible.builtin.shell:
     cmd: |
-      yq -i '.crowdsec.bouncerNftablesKey = "{{ argocd_client_secret.clientsecret_info.value }}"' ../inventory/group_vars/gateway/all.yml
+      yq -i '.crowdsec.bouncerNftablesKey = "{{ argocd_client_secret.clientsecret_info.value }}"' ./inventory/group_vars/gateway/all.yml
   when: not crowdsec.bouncerNftablesKey == "{{ argocd_client_secret.clientsecret_info.value }}"
 
 - name: Get infos on crowdsec container
