@@ -6,7 +6,7 @@
 
 - name: Deploy traefik helm chart
   kubernetes.core.helm:
-    name: traefik
+    name: "{{ traefik.helm.chartName }}"
     update_repo_cache: true
     chart_ref: "{{ traefik.helm.repoName }}/{{ traefik.helm.chartName }}"
     chart_version: "{{ traefik.helm.chartVersion }}"

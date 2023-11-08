@@ -6,7 +6,7 @@
 
 - name: Deploy helm chart
   kubernetes.core.helm:
-    name: "{{ certManager.helm.repoName }}"
+    name: "{{ certManager.helm.chartName }}"
     update_repo_cache: true
     chart_ref: "{{ certManager.helm.repoName }}/{{ certManager.helm.chartName }}"
     chart_version: "{{ certManager.helm.chartVersion }}"
