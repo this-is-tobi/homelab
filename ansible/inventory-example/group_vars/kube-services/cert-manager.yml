@@ -3,6 +3,6 @@ certManager:
     repoUrl: "https://charts.jetstack.io"
     repoName: "jetstack"
     chartName: "cert-manager"
-    chartVersion: "1.13.1"
+    chartVersion: "1.13.2"
   namespace: "cert-manager"
   email: "email@domain.com"
