@@ -4,14 +4,11 @@
 red='\e[0;31m'
 no_color='\033[0m'
 
-# Console step increment
-i=1
-
 
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Default
-KUBECONFIG="false"
+FETCH_KUBECONFIG="false"
 PLAYBOOK="false"
 TAGS="all"
 
@@ -19,7 +16,7 @@ TAGS="all"
 TEXT_HELPER="\nThis script aims to install a full homelab with gateway, bastion and k3s cluster.
 Following flags are available:
 
-  -k    Copy kubeconfig locally, default is '$KUBECONFIG'.
+  -k    Copy kubeconfig locally, default is '$FETCH_KUBECONFIG'.
         Directory output should be passed as arg.
 
   -p    Run ansible playbook, default is '$PLAYBOOK'.
@@ -38,7 +35,7 @@ print_help() {
 while getopts hk:p:t: flag; do
   case "${flag}" in
     k)
-      KUBECONFIG="${OPTARG}";;
+      FETCH_KUBECONFIG="true";;
     p)
       PLAYBOOK="$(readlink -f ${OPTARG})";;
     t)
@@ -50,30 +47,33 @@ while getopts hk:p:t: flag; do
 done
 
 
-if [ "$PLAYBOOK" = "false" ] && [ "$KUBECONFIG" == "false" ]; then
-  printf "\n\n${red}Error.${no_color} Argument missing\n\n"
+if [ "$PLAYBOOK" = "false" ] && [ "$FETCH_KUBECONFIG" == "false" ]; then
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Error: Argument missing\n\n"
   print_help
 fi
 
 
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
-  printf "\n\n${red}${i}.${no_color} Update ansible collections\n\n"
-  i=$(($i + 1))
-
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
   ansible-galaxy collection install -r $SCRIPT_PATH/ansible/collections/requirements.yml --upgrade
 
-
-  printf "\n\n${red}${i}.${no_color} Run ansible playbook\n\n"
-  i=$(($i + 1))
-
-  ansible-playbook $PLAYBOOK --inventory $SCRIPT_PATH/ansible/inventory/hosts.yml --tag "$TAGS"
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Run ansible playbook\n\n"
+  if [ ! -z "$KUBECONFIG_PATH" ]; then
+    echo "$KUBECONFIG_PATH"
+    ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$KUBECONFIG_PATH"
+  elif [ ! -z "$KUBECONFIG" ]; then
+    echo "$KUBECONFIG"
+    ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$KUBECONFIG"
+  else
+    echo "$HOME/.kube/config"
+    ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$HOME/.kube/config"
+  fi
 fi
 
 # Copy kube config to local machine
-if [ ! "$KUBECONFIG" = "false" ]; then
-  printf "\n\n${red}${i}.${no_color} Copy kube config locally\n\n"
-  i=$(($i + 1))
+if [ ! "$FETCH_KUBECONFIG" = "false" ]; then
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Copy kube config locally\n\n"
 
   GATEWAY_IP=$(cat ansible/inventory/hosts.yml | yq '[.all.children.gateway.hosts[][]][0]')
   MASTER_IP=$(cat ansible/inventory/hosts.yml | yq '[.all.children.cluster.children.masters.hosts[][]][0]')
