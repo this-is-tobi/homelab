@@ -36,7 +36,7 @@ server:
       - {{ argocd.domain }}
     https: false
     annotations:
-      "cert-manager.io/cluster-issuer": le-fabnum-prod
+      "cert-manager.io/cluster-issuer": letsencrypt-prod
     tls:
       - hosts:
           - {{ argocd.domain }}

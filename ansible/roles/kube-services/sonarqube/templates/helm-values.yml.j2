@@ -2,7 +2,7 @@ ingress:
   enabled: true
   ingressClassName: {{ ingressClassName }}
   annotations:
-    "cert-manager.io/cluster-issuer": le-fabnum-prod
+    "cert-manager.io/cluster-issuer": letsencrypt-prod
     "nginx.ingress.kubernetes.io/proxy-body-size":
     ingressClassName: {{ ingressClassName }}
   hosts:

@@ -1,13 +1,13 @@
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: le-fabnum-staging
+  name: letsencrypt-staging
 spec:
   acme:
     email: {{ certManager.email }}
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: le-fabnum-staging-key
+      name: letsencrypt-staging-key
     solvers:
       - http01:
           ingress:
@@ -17,13 +17,13 @@ spec:
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: le-fabnum-prod
+  name: letsencrypt-prod
 spec:
   acme:
     email: {{ certManager.email }}
     server: https://acme-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
-      name: le-fabnum-prod-key
+      name: letsencrypt-prod-key
     solvers:
       - http01:
           ingress:
