@@ -222,7 +222,7 @@ spec:
         }
   destination:
     server: https://kubernetes.default.svc
-    namespace: mattermost-test
+    namespace: mattermost
   syncPolicy:
     # automated:
     #   selfHeal: false

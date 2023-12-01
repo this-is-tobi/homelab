@@ -33,7 +33,7 @@ spec:
         nodeSelector: {}
   destination:
     server: https://kubernetes.default.svc
-    namespace: actions-runner-controller-test
+    namespace: actions-runner-controller
   syncPolicy:
     # automated:
     #   selfHeal: false

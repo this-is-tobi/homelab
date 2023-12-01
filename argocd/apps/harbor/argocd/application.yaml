@@ -93,7 +93,7 @@ spec:
             sslmode: disable
   destination:
     server: https://kubernetes.default.svc
-    namespace: harbor-test
+    namespace: harbor
   syncPolicy:
     # automated:
     #   selfHeal: false

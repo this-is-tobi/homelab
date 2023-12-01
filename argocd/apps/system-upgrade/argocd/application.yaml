@@ -16,7 +16,7 @@ spec:
     targetRevision: develop
   destination:
     server: https://kubernetes.default.svc
-    namespace: system-upgrade-test
+    namespace: system-upgrade
   syncPolicy:
     # automated:
     #   selfHeal: false

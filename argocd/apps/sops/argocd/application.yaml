@@ -31,7 +31,7 @@ spec:
             secretName: sops-age-key-file
   destination:
     server: https://kubernetes.default.svc
-    namespace: sops-test
+    namespace: sops
   syncPolicy:
     # automated:
     #   selfHeal: false

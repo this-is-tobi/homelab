@@ -34,7 +34,7 @@ spec:
                 secretName: monitoring.alpha.ohmlab.fr
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring-test
+    namespace: monitoring
   syncPolicy:
     # automated:
     #   selfHeal: false

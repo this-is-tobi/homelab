@@ -16,7 +16,7 @@ spec:
     targetRevision: develop
   destination:
     server: https://kubernetes.default.svc
-    namespace: dashy-test
+    namespace: dashy
   syncPolicy:
     # automated:
     #   selfHeal: false

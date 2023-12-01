@@ -84,7 +84,7 @@ spec:
           enabled: false
   destination:
     server: https://kubernetes.default.svc
-    namespace: kubernetes-dashboard-test
+    namespace: kubernetes-dashboard
   syncPolicy:
     # automated:
     #   selfHeal: false

@@ -62,7 +62,7 @@ spec:
         sonarProperties: {}
   destination:
     server: https://kubernetes.default.svc
-    namespace: sonarqube-test
+    namespace: sonarqube
   syncPolicy:
     # automated:
     #   selfHeal: false

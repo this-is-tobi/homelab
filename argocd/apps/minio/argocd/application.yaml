@@ -52,7 +52,7 @@ spec:
         extraEnvVarsCM: minio-sso
   destination:
     server: https://kubernetes.default.svc
-    namespace: minio-test
+    namespace: minio
   syncPolicy:
     # automated:
     #   selfHeal: false
