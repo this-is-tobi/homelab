@@ -1,17 +1,3 @@
-# - name: Find vault keys
-#   kubernetes.core.k8s_info:
-#     namespace: "{{ vault.namespace }}"
-#     kind: Secret
-#     name: vault-keys
-#   register: vault_keys
-
-# - name: Set fact for vault secrets
-#   ansible.builtin.set_fact:
-#     vault_token: "{{ vault_keys.resources[0].data.root_token | b64decode }}"
-
-# - name: Setup secrets
-#   include_tasks: secrets.yml
-
 # Init
 - name: Init
   ansible.builtin.include_role:
