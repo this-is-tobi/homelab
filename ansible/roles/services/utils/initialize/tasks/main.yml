@@ -7,7 +7,7 @@
 
 - name: Set vault token
   ansible.builtin.set_fact:
-    vault_token: "{{ vault_keys.resources[0].data.root_token | b64decode }}"
+    vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
 
 - name: Retrieve argocd creadentials
   community.hashi_vault.vault_kv2_get:
