@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: actions-runner-controller-github-webhook-server
   annotations:
-    "cert-manager.io/cluster-issuer": letsencrypt-staging
+    "cert-manager.io/cluster-issuer": letsencrypt-prod
 spec:
   ingressClassName: traefik
   rules:

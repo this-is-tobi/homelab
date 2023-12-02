@@ -32,7 +32,7 @@ spec:
               core: registry.alpha.ohmlab.fr
             className: traefik
             annotations:
-              cert-manager.io/cluster-issuer: letsencrypt-staging
+              cert-manager.io/cluster-issuer: letsencrypt-prod
         externalURL:  https://registry.alpha.ohmlab.fr
         persistence:
           enabled: true

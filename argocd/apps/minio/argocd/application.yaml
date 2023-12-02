@@ -31,7 +31,7 @@ spec:
           enabled: true
           ingressClassName: traefik
           annotations:
-            cert-manager.io/cluster-issuer: letsencrypt-staging
+            cert-manager.io/cluster-issuer: letsencrypt-prod
           hostname: minio.alpha.ohmlab.fr
           path: /
           tls: true
@@ -39,7 +39,7 @@ spec:
           enabled: true
           ingressClassName: traefik
           annotations:
-            cert-manager.io/cluster-issuer: letsencrypt-staging
+            cert-manager.io/cluster-issuer: letsencrypt-prod
           hostname: s3.alpha.ohmlab.fr
           path: /
           tls: true

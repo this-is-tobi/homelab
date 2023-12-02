@@ -24,7 +24,7 @@ spec:
           enabled: true
           ingressClassName: traefik
           annotations:
-            "cert-manager.io/cluster-issuer": letsencrypt-staging
+            "cert-manager.io/cluster-issuer": letsencrypt-prod
             "nginx.ingress.kubernetes.io/proxy-body-size":
             ingressClassName: traefik
           hosts:

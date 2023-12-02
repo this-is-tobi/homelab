@@ -22,7 +22,7 @@ spec:
             enabled: true
             ingressClassName: traefik
             issuer:
-              name: letsencrypt-staging
+              name: letsencrypt-prod
               scope: cluster
             hosts:
             - kube.alpha.ohmlab.fr
