@@ -17,6 +17,7 @@
     vault_values:
       extras:
         keys: "{{ age_keys.stdout | b64encode }}"
+        publicKey: "{{ age_keys.stdout | regex_search('public key: (.+)', '\\1', multiline=True) | first }}"
 
 # Install
 - name: Sync application
