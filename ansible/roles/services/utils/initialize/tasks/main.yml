@@ -2,20 +2,19 @@
   kubernetes.core.k8s_info:
     namespace: "{{ vault.namespace }}"
     kind: Secret
-    name: vault-keys
+    name: vault-admin
   register: vault_keys
 
 - name: Set vault token
   ansible.builtin.set_fact:
     vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
 
-- name: Retrieve argocd creadentials
-  community.hashi_vault.vault_kv2_get:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: admin/apps/argocd
-  register: vault_argocd
+- name: Retrieve argocd credentials
+  kubernetes.core.k8s_info:
+    namespace: "{{ argocd.namespace }}"
+    kind: Secret
+    name: argocd-admin
+  register: argocd_secret
 
 - name: Get argocd api token
   ansible.builtin.uri:
@@ -23,8 +22,8 @@
     method: POST
     body_format: json
     body:
-      "username": "{{ vault_argocd.secret.admin.username }}"
-      "password": "{{ vault_argocd.secret.admin.password }}"
+      "username": "{{ argocd_secret.resources[0].data.username | b64decode }}"
+      "password": "{{ argocd_secret.resources[0].data.password | b64decode }}"
     status_code: 200
   register: argocd_token_call
 

@@ -1,23 +1,50 @@
-# Init
-- name: Init
-  ansible.builtin.include_role:
-    name: services/utils/initialize
-
 # Setup
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: argocd
-    vault_values:
-      admin:
-        username: "admin"
-        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
-
 - name: Create namespace
   kubernetes.core.k8s:
     kind: Namespace
     name: "{{ argocd.namespace }}"
+
+- name: Retrieve argocd admin secret
+  kubernetes.core.k8s_info:
+    namespace: "{{ argocd.namespace }}"
+    kind: Secret
+    name: argocd-admin
+  register: argocd_admin_secret
+
+- block:
+    - name: Set argocd admin hashed password
+      ansible.builtin.set_fact:
+        argocd_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) | b64encode }}"
+
+    - name: Hash argocd password
+      ansible.builtin.shell:
+        cmd: |
+          htpasswd -nbBC 10 "" {{ argocd_password }} | tr -d ':\n' | sed 's/$2y/$2a/'
+      register: hash_argocd_password
+
+    - name: Set argocd admin hashed password
+      ansible.builtin.set_fact:
+        argocd_hashed_password: "{{ hash_argocd_password.stdout_lines[0] }}"
+
+    - name: Deploy argocd admin secret
+      kubernetes.core.k8s:
+        template: "{{ item }}"
+        state: present
+      with_items:
+        - secret-admin.yml.j2
+  when: argocd_admin_secret.resources[0].data.password is undefined
+
+- name: Retrieve argocd admin secret
+  kubernetes.core.k8s_info:
+    namespace: "{{ argocd.namespace }}"
+    kind: Secret
+    name: argocd-admin
+  register: argocd_admin_secret
+
+- name: Set argocd admin hashed password
+  ansible.builtin.set_fact:
+    argocd_password: "{{ argocd_admin_secret.resources[0].data.password | b64decode }}"
+    argocd_hashed_password: "{{ argocd_admin_secret.resources[0].data.passwordHash | b64decode }}"
 
 - name: Deploy argocd plugins config
   kubernetes.core.k8s:

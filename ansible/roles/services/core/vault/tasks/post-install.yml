@@ -15,7 +15,7 @@
   kubernetes.core.k8s_info:
     namespace: vault
     kind: Secret
-    name: vault-keys
+    name: vault-admin
   register: vault_keys
 
 - name: Check vault status
@@ -29,7 +29,7 @@
       - "Warning !"
       - "Vault isn't initialized but you got a vault-secret secret inside the vault namespace, delete it before restart deployment if you want to initialize."
       - "or"
-      - "Vault is initialized but you have no vault-keys secret inside the vault namespace"
+      - "Vault is initialized but you have no vault-admin secret inside the vault namespace"
 
 - name: Init vault
   kubernetes.core.k8s_exec:
@@ -48,7 +48,7 @@
     definition:
       kind: Secret
       metadata:
-        name: vault-keys
+        name: vault-admin
         namespace: vault
       data:
         unsealKey1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
@@ -61,7 +61,7 @@
   kubernetes.core.k8s_info:
     namespace: "{{ vault.namespace }}"
     kind: Secret
-    name: vault-keys
+    name: vault-admin
   register: vault_keys
 
 - name: Set fact for vault secrets
@@ -103,63 +103,3 @@
         version: 2
     body_format: json
   when: get_engines.status == 400
-
-- name: Create admin access policy
-  ansible.builtin.uri:
-    validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/policies/acl/admin"
-    method: POST
-    status_code: [200, 204]
-    headers:
-      "X-Vault-Token": "{{ vault_token }}"
-    body: "{{ lookup('ansible.builtin.template', 'superadmin-policy.json.j2') }}"
-    body_format: json
-
-- name: Create admin group
-  ansible.builtin.uri:
-    validate_certs: true
-    url: "https://{{ vault.domain }}/v1/identity/group"
-    method: POST
-    status_code: [200, 204]
-    headers:
-      "X-Vault-Token": "{{ vault_token }}"
-    body:
-      "name": "admin"
-      "type": "external"
-      "policies":
-        - "{{ item.admin }}"
-    body_format: json
-
-- name: Get oidc accessor
-  ansible.builtin.uri:
-    validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/auth"
-    method: GET
-    status_code: [200, 204]
-    headers:
-      "X-Vault-Token": "{{ vault_token }}"
-  register: oidc_auth
-
-- name: Get admin group id
-  ansible.builtin.uri:
-    validate_certs: true
-    url: "https://{{ vault.domain }}/v1/identity/group/name/admin"
-    method: GET
-    status_code: [200, 204]
-    headers:
-      "X-Vault-Token": "{{ vault_token }}"
-  register: user_group
-
-- name: Create admin group alias
-  ansible.builtin.uri:
-    validate_certs: true
-    url: "https://{{ vault.domain }}/v1/identity/group-alias"
-    method: POST
-    status_code: [200, 400]
-    headers:
-      "X-Vault-Token": "{{ vault_token }}"
-    body:
-      "name": "admin"
-      "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
-      "canonical_id": "{{ user_group.json.data.id }}"
-    body_format: json

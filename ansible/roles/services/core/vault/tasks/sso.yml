@@ -1,0 +1,127 @@
+- name: Get auth methods
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/auth/oidc"
+    method: GET
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+  register: get_auth_method
+
+- name: Enable oidc auth method
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/auth/oidc"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+    body:
+      "type": "oidc"
+    body_format: json
+  when: get_auth_method.status == 400
+
+- name: Configue oidc auth method
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/auth/oidc/config"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+    body:
+      "oidc_discovery_url": "https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}"
+      "oidc_client_id": "{{ keycloak.clientIds.vault }}"
+      "oidc_client_secret": "{{ vault_client_secret }}"
+      "default_role": "default"
+      "type": "oidc"
+      "allowed_redirect_uris":
+        - "https://{{ vault.domain }}/ui/vault/auth/oidc/oidc/callback"
+        - "https://{{ vault.domain }}/oidc/callback"
+    body_format: json
+
+- name: Create oidc role
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/auth/oidc/role/default"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault.token }}"
+    body:
+      "oidc_scopes":
+        - "openid"
+        - "generic"
+      "bound_audiences":
+        - "{{ keycloak.clientIds.vault }}"
+      "claim_mappings":
+        "prefered_username": "username"
+        "email": "email"
+      "groups_claim": "groups"
+      "allowed_redirect_uris":
+        - "https://{{ vault.domain }}/ui/vault/auth/oidc/oidc/callback"
+        - "https://{{ vault.domain }}/oidc/callback"
+      "user_claim": "sub"
+      "token_policies":
+        - "default"
+    body_format: json
+
+- name: Create admin access policy
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/policies/acl/admin"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body: "{{ lookup('ansible.builtin.template', 'superadmin-policy.json.j2') }}"
+    body_format: json
+
+- name: Create admin group
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group"
+    method: POST
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "name": "admin"
+      "type": "external"
+      "policies":
+        - "{{ item.admin }}"
+    body_format: json
+
+- name: Get oidc accessor
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/sys/auth"
+    method: GET
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: oidc_auth
+
+- name: Get admin group id
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group/name/admin"
+    method: GET
+    status_code: [200, 204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: user_group
+
+- name: Create admin group alias
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault.domain }}/v1/identity/group-alias"
+    method: POST
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "name": "admin"
+      "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
+      "canonical_id": "{{ user_group.json.data.id }}"
+    body_format: json

@@ -16,3 +16,6 @@ secrets/
 
 # Sops
 *.sops.yaml
+
+# Appls
+argocd/apps/argocd

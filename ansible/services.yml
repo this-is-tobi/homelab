@@ -32,6 +32,11 @@
         - argo
         - gitops
 
+    - name: ./roles/services/additional/sops
+      tags:
+        - sops
+        - secrets
+
     - name: ./roles/services/additional/system-upgrade
       tags:
         - never
@@ -59,11 +64,6 @@
         - prometheus
         - grafana
         - monitoring
-
-    - name: ./roles/services/additional/sops
-      tags:
-        - sops
-        - secrets
 
     - name: ./roles/services/additional/minio
       tags:
