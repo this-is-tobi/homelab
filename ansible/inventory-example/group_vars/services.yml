@@ -5,7 +5,7 @@ argocd:
     chartName: "argo-cd"
     chartVersion: "5.51.4"
   namespace: "argocd-system"
-  domain: "argocd.{{ rootDomain }}"
+  domain: "argocd.admin.{{ rootDomain }}"
 certManager:
   helm:
     repoUrl: "https://charts.jetstack.io"
@@ -21,7 +21,7 @@ longhorn:
     chartName: "longhorn"
     chartVersion: "1.5.3"
   namespace: "longhorn-system"
-  domain: "longhorn.{{ localRootDomain }}"
+  domain: "longhorn.admin.{{ localRootDomain }}"
   s3:
     enabled: false
     endpoint: ""
@@ -41,4 +41,4 @@ vault:
     chartName: "vault"
     chartVersion: "0.27.0"
   namespace: "vault-system"
-  domain: "vault.{{ rootDomain }}"
+  domain: "vault.admin.{{ rootDomain }}"
