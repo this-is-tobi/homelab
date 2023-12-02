@@ -13,7 +13,7 @@ spec:
   sources:
   - path: argocd/apps/harbor/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: develop
+    targetRevision: main
   - chart: harbor
     repoURL: https://helm.goharbor.io
     targetRevision: 1.13.1

@@ -13,7 +13,7 @@ spec:
   sources:
   - path: argocd/apps/mattermost/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: develop
+    targetRevision: main
     ref: repo
   - chart: mattermost-team-edition
     repoURL: https://helm.mattermost.com

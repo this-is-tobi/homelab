@@ -13,7 +13,7 @@ spec:
   sources:
   - path: argocd/apps/sops/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: develop
+    targetRevision: main
   - chart: sops-secrets-operator
     repoURL: https://isindir.github.io/sops-secrets-operator
     targetRevision: 0.17.2

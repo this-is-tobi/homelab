@@ -13,7 +13,7 @@ spec:
   sources:
   - path: argocd/apps/sonarqube/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: develop
+    targetRevision: main
   - chart: sonarqube
     repoURL: https://SonarSource.github.io/helm-chart-sonarqube
     targetRevision: 10.2.1+800

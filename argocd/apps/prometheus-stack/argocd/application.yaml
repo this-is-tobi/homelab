@@ -13,7 +13,7 @@ spec:
   sources:
   - path: argocd/apps/prometheus-stack/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: develop
+    targetRevision: main
   - chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
     targetRevision: 54.0.1
