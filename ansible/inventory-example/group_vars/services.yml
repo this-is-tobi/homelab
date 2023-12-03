@@ -1,3 +1,4 @@
+ingressClassName: "traefik"
 argocd:
   helm:
     repoUrl: "https://argoproj.github.io/argo-helm"

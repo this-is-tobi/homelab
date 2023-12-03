@@ -1,3 +1,5 @@
+ansible_user: devops
+ansible_port: 22
+
 rootDomain: "example.domain.com"
 localRootDomain: "example.domain.local"
-ingressClassName: "traefik"

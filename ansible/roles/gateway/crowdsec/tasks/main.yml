@@ -95,6 +95,8 @@
   register: bouncer_key
 
 - name: Set keycloak client secret
+  delegate_to: localhost
+  become: false
   ansible.builtin.shell:
     cmd: |
       yq -i '.crowdsec.bouncerNftablesKey = "{{ argocd_client_secret.clientsecret_info.value }}"' ./inventory/group_vars/gateway/all.yml

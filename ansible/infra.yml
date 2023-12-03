@@ -51,11 +51,35 @@
     - k3s/prereq
     - k3s/download
     - k3s/storage
-    - k3s/registry
+    # - k3s/registry
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-init
+- hosts: masters
+  become: true
+  serial: 1
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
     - k3s/deploy/masters
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-masters
+- hosts: workers
+  become: true
+  serial: 1
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
     - k3s/deploy/workers
   tags:
     - k3s
+    - k3s-deploy
+    - k3s-workers
 
 # K3S - Destroy
 - hosts: k3s

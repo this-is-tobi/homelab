@@ -12,14 +12,14 @@
     mode: 0644
 
 - name: Enable and check k3s service
-  timeout: 60
-  retries: 3
-  delay: 10
   ansible.builtin.systemd:
     name: k3s
     daemon_reload: yes
     state: restarted
     enabled: yes
+  timeout: 300
+  retries: 3
+  delay: 10
 
 - name: Wait for node-token
   ansible.builtin.wait_for:
@@ -49,8 +49,7 @@
   become: false
   ansible.builtin.shell:
     cmd: |
-      yq -i '.k3sToken = "{{ token }}"' inventory/group_vars/cluster.yml
-  no_log: true
+      yq -i '.k3sToken = "{{ token }}"' inventory/group_vars/k3s.yml
   when: ansible_default_ipv4.address == k3sMasterIP
 
 - name: Restore node-token file access
@@ -73,7 +72,7 @@
     owner: "{{ ansible_user }}"
     mode: "u=rw,g=,o="
 
-- name: Configure kubectl cluster to {{ endpoint_url }}
+- name: Configure kubectl cluster to primary master
   ansible.builtin.command: >-
     k3s kubectl config set-cluster default
       --server https://{{ k3sApiServerEndpoint }}:6443
@@ -107,8 +106,9 @@
   register: k3sCaData
 
 - name: Fetch cluster CA data
+  delegate_to: localhost
+  become: false
   ansible.builtin.shell:
     cmd: |
-      yq -i '.k3sCaData = "{{ k3sCaData.stdout_lines }}"' inventory/group_vars/cluster.yml
-  no_log: true
+      yq -i '.k3sCaData = "{{ k3sCaData.stdout }}"' inventory/group_vars/k3s.yml
   when: ansible_default_ipv4.address == k3sMasterIP
