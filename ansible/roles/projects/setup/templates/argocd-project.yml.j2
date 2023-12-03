@@ -6,20 +6,20 @@ metadata:
 spec:
   destinations:
 {% for namespace in item.namespaces %}
-    - name: 'in-cluster'
-      namespace: {{ namespace }}
-      server: 'https://kubernetes.default.svc'
+  - name: 'in-cluster'
+    namespace: {{ namespace }}
+    server: 'https://kubernetes.default.svc'
 {% endfor %}
   namespaceResourceWhitelist:
-    - group: '*'
-      kind: '*'
+  - group: '*'
+    kind: '*'
   roles:
-    - description: "Keycloak group"
-      groups:
-        - /{{ item.name }}
-        - {{ item.name }}
-      name: {{ item.name }}
-      policies:
-        - p, proj:{{ item.name }}:{{ item.name }}, applications, *, {{ item.name }}/*, allow
+  - description: "Keycloak group"
+    groups:
+    - /{{ item.name }}
+    - {{ item.name }}
+    name: {{ item.name }}
+    policies:
+    - p, proj:{{ item.name }}:{{ item.name }}, applications, *, {{ item.name }}/*, allow
   sourceRepos:
-    - '*'
+  - '*'

@@ -11,31 +11,37 @@
       tags:
         - longhorn
         - storage
+        - core
 
     - name: ./roles/services/core/traefik
       tags:
         - traefik
         - ingress-controller
+        - core
 
     - name: ./roles/services/core/cert-manager
       tags:
         - cert-manager
         - certmanager
+        - core
 
     - name: ./roles/services/core/vault
       tags:
         - vault
+        - core
 
     - name: ./roles/services/core/argocd
       tags:
         - argocd
         - argo
         - gitops
+        - core
 
     - name: ./roles/services/additional/sops
       tags:
         - sops
         - secrets
+        - additional
 
     - name: ./roles/services/additional/system-upgrade
       tags:
@@ -47,52 +53,60 @@
       tags:
         - postgres-operator
         - cnpg
+        - additional
 
     - name: ./roles/services/additional/keycloak
       tags:
         - keycloak
         - sso
+        - additional
 
     - name: ./roles/services/additional/kubernetes-dashboard
       tags:
         - dashboard
         - kubernetes-dashboard
         - kube-dashboard
+        - additional
 
     - name: ./roles/services/additional/prometheus-stack
       tags:
         - prometheus
         - grafana
         - monitoring
+        - additional
 
     - name: ./roles/services/additional/minio
       tags:
         - minio
         - s3
+        - additional
 
     - name: ./roles/services/additional/harbor
       tags:
         - harbor
         - registry
+        - additional
 
     - name: ./roles/services/additional/sonarqube
       tags:
         - sonarqube
         - sonar
+        - additional
 
     - name: ./roles/services/additional/mattermost
       tags:
         - never # Not arm64 compatible
         - mattermost
-        - mm
 
     - name: ./roles/services/additional/actions-runner-controller
       tags:
         - actions-runner-controller
         - arc
         - runners
+        - additional
 
     - name: ./roles/services/additional/dashy
       tags:
         - dashy
         - dashboard
+        - additional
