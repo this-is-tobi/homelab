@@ -2,7 +2,7 @@
   kubernetes.core.k8s:
     kind: Pod
     name: vault-0
-    namespace: vault
+    namespace: vault-system
     wait: true
     wait_sleep: 10
     wait_timeout: 600
@@ -13,7 +13,7 @@
 
 - name: Find vault keys
   kubernetes.core.k8s_info:
-    namespace: vault
+    namespace: vault-system
     kind: Secret
     name: vault-admin
   register: vault_keys
@@ -35,7 +35,7 @@
   kubernetes.core.k8s_exec:
     container: vault
     pod: vault-0
-    namespace: vault
+    namespace: vault-system
     command: vault operator init -key-shares=3 -key-threshold=2
   register: init
   until: "init is not failed"
@@ -49,7 +49,7 @@
       kind: Secret
       metadata:
         name: vault-admin
-        namespace: vault
+        namespace: vault-system
       data:
         unsealKey1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
         unsealKey2: "{{ init.stdout_lines[1] | regex_replace('^Unseal Key 2: (.*)$', '\\1', multiline=True) | b64encode }}"

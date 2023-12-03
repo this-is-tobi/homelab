@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: cluster-addons
-  namespace: argocd
+  namespace: argocd-system
 spec:
   goTemplate: true
   generators:
@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       name: 'cluster-addons-{{.path.basename}}'
-      namespace: argocd
+      namespace: argocd-system
     spec:
       project: admin
       revisionHistoryLimit: 5

@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   name: {{ item.username }}
-  namespace: argocd
+  namespace: argocd-system
 spec:
   destinations:
     - name: 'in-cluster'

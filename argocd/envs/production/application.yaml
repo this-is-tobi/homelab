@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: platform
-  namespace: argocd
+  namespace: argocd-system
 spec:
   project: admin
   revisionHistoryLimit: 3
@@ -45,7 +45,7 @@ spec:
   #   targetRevision: main
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: argocd-system
   syncPolicy:
     automated:
       selfHeal: false
