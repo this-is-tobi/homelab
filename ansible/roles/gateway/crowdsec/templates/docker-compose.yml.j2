@@ -2,7 +2,7 @@ version: '3'
 
 services:
   crowdsec:
-    image: docker.io/crowdsecurity/crowdsec:v1.5.2
+    image: docker.io/crowdsecurity/crowdsec:v1.5.5
     container_name: crowdsec
     restart: always
     environment:
@@ -20,7 +20,7 @@ services:
       - ./crowdsec-config:/etc/crowdsec/
     networks:
       - homelab
-  
+
 #   crowdsec-dashboard:
 #     build: ./dashboard
 #     restart: always
