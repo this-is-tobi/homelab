@@ -113,7 +113,7 @@
     sonar.auth.oidc.groupsSync.claimName: "groups"
     sonar.auth.oidc.loginStrategy: "Email"
     sonar.auth.oidc.groupsSync: "true"
-    sonar.auth.oidc.scopes: "openid profile email groups"
+    sonar.auth.oidc.scopes: "openid profile email roles groups"
     sonar.auth.oidc.issuerUri: "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
     sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
     sonar.auth.oidc.clientId.secured: "{{ sonarqube.keycloak.clientId }}"

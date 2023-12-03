@@ -9,5 +9,5 @@
           issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
           clientID: <path:secret/data/admin/apps/argocd#keycloak | jsonPath {.clientId}>
           clientSecret: <path:secret/data/admin/apps/argocd#keycloak | jsonPath {.clientSecret}>
-          requestedScopes: ["openid", "profile", "email", "groups"]
+          requestedScopes: ["openid", "profile", "email", "roles", "groups"]
     state: patched

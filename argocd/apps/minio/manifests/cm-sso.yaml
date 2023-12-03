@@ -9,7 +9,7 @@ data:
   MINIO_IDENTITY_OPENID_CLIENT_ID: <path:secret/data/admin/apps/minio#keycloak | jsonPath {.clientId}>
   MINIO_IDENTITY_OPENID_CLIENT_SECRET: <path:secret/data/admin/apps/minio#keycloak | jsonPath {.clientSecret}>
   MINIO_IDENTITY_OPENID_DISPLAY_NAME: Keycloak
-  MINIO_IDENTITY_OPENID_SCOPES: openid,generic
+  MINIO_IDENTITY_OPENID_SCOPES: openid,profile,email,roles,groups
   MINIO_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC: on
   MINIO_IDENTITY_OPENID_CLAIM_NAME: minio-policy
   MINIO_IDENTITY_OPENID_CLAIM_USERINFO: on

@@ -51,7 +51,10 @@
     body:
       "oidc_scopes":
         - "openid"
-        - "generic"
+        - "profile"
+        - "email"
+        - "roles"
+        - "groups"
       "bound_audiences":
         - "{{ keycloak.clientIds.vault }}"
       "claim_mappings":
