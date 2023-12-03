@@ -24,4 +24,4 @@ k3sExtraServerArgs: >-
 k3sExtraAgentArgs: >-
   {{ k3sExtraArgs }}  --node-label node-type=worker
 # extra args to pass if longhorn need to create disk (cf. inventory hosts)
-k3sExtraStorageArgs: ""
+# k3sExtraStorageArgs: ""

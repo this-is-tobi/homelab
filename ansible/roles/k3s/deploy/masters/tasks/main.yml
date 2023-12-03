@@ -94,7 +94,7 @@
 - name: Fetch kube config
   ansible.builtin.fetch:
     src: "{{ ansible_user_dir }}/.kube/config"
-    dest: "~/.kube/"
+    dest: "~/.kube/config.d/homelab"
     flat: yes
   when: ansible_default_ipv4.address == k3sMasterIP
 

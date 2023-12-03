@@ -7,16 +7,16 @@
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/services.yml
   roles:
-    - name: ./roles/services/core/longhorn
-      tags:
-        - longhorn
-        - storage
-        - core
-
     - name: ./roles/services/core/traefik
       tags:
         - traefik
         - ingress-controller
+        - never
+
+    - name: ./roles/services/core/longhorn
+      tags:
+        - longhorn
+        - storage
         - core
 
     - name: ./roles/services/core/cert-manager

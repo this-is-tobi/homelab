@@ -10,10 +10,12 @@ projects:
   - name: example
     namespaces:
       - example
+      - example-runners
     actionsRunnerController:
       enabled: false
       runners:
         - name: "example"
+          namespace: example-runners
           secretName: "this-is-tobi-arc"
           target: "this-is-tobi/example"
           minRunners: 2
