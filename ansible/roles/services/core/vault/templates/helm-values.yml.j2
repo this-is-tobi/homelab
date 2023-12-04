@@ -2,6 +2,9 @@ server:
   ha:
     enabled: true
     replicas: 3
+    apiAddr: "https://{{ vault.domain }}"
+    raft:
+      enabled: true
   standalone:
     enabled: false
   auditStorage:

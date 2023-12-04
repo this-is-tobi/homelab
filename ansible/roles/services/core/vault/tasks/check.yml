@@ -1,27 +1,23 @@
-- name: Get vaulth health
-  ansible.builtin.uri:
-    validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/health"
-    status_code: [200, 503, 501, 404]
+- name: Get vault status
+  kubernetes.core.k8s_exec:
+    container: vault
+    pod: "{{ vault_pod }}"
+    namespace: "{{ vault.namespace }}"
+    command: vault status -format=json
   register: vault_health
-  retries: 5
-
-- name: Set vault_status to OK
-  ansible.builtin.set_fact:
-    vault_status: OK
-  when: vault_health.status == 200
+  ignore_errors: true
 
 - name: Set vault_status to "not init"
   ansible.builtin.set_fact:
     vault_status: not init
-  when: vault_health.status == 501 or vault_health.status == 404
-
-- name: Set vault_status to unavailable
-  ansible.builtin.set_fact:
-    vault_status: unavailable
-  when: vault_health.status == 503
+  when: vault_health.stdout | from_json | json_query('initialized') == false
 
 - name: Set vault_status to sealed
   ansible.builtin.set_fact:
     vault_status: sealed
-  when: vault_health.status == 503 and vault_health.json is defined and vault_health.json.sealed
+  when: (vault_health.stdout | from_json | json_query('initialized') == true) and (vault_health.stdout | from_json | json_query('sealed') == true)
+
+- name: Set vault_status to OK
+  ansible.builtin.set_fact:
+    vault_status: OK
+  when: (vault_health.stdout | from_json | json_query('initialized') == true) and (vault_health.stdout | from_json | json_query('sealed') == false)

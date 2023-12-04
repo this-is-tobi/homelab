@@ -2,7 +2,7 @@
   kubernetes.core.k8s:
     kind: Pod
     name: vault-0
-    namespace: vault-system
+    namespace: "{{ vault.namespace }}"
     wait: true
     wait_sleep: 10
     wait_timeout: 600
@@ -13,13 +13,16 @@
 
 - name: Find vault keys
   kubernetes.core.k8s_info:
-    namespace: vault-system
+    namespace: "{{ vault.namespace }}"
     kind: Secret
     name: vault-admin
   register: vault_keys
 
-- name: Check vault status
-  include_tasks: check.yml
+# Check vault status
+- name: Check vault status - node 1
+  ansible.builtin.include_tasks: check.yml
+  vars:
+    vault_pod: vault-0
 
 - name: Check if vault is coherent
   ansible.builtin.assert:
@@ -31,16 +34,17 @@
       - "or"
       - "Vault is initialized but you have no vault-admin secret inside the vault namespace"
 
-- name: Init vault
+# Init vault node 1
+- name: Init vault node - node 1
   kubernetes.core.k8s_exec:
     container: vault
     pod: vault-0
-    namespace: vault-system
-    command: vault operator init -key-shares=3 -key-threshold=2
+    namespace: "{{ vault.namespace }}"
+    command: vault operator init -key-shares=3 -key-threshold=2 -format=json
   register: init
   until: "init is not failed"
-  retries: 6
-  delay: 10
+  retries: 3
+  delay: 20
   when: vault_status == 'not init'
 
 - name: Store vault keys
@@ -49,12 +53,13 @@
       kind: Secret
       metadata:
         name: vault-admin
-        namespace: vault-system
+        namespace: "{{ vault.namespace }}"
       data:
-        unsealKey1: "{{ init.stdout_lines[0] | regex_replace('^Unseal Key 1: (.*)$', '\\1', multiline=True) | b64encode }}"
-        unsealKey2: "{{ init.stdout_lines[1] | regex_replace('^Unseal Key 2: (.*)$', '\\1', multiline=True) | b64encode }}"
-        unsealKey3: "{{ init.stdout_lines[2] | regex_replace('^Unseal Key 3: (.*)$', '\\1', multiline=True) | b64encode }}"
-        rootToken: "{{ init.stdout_lines[4] | regex_replace('^Initial Root Token: (.*)$', '\\1', multiline=True) | b64encode }}"
+        unsealKey1: "{{ init.stdout | from_json | json_query('unseal_keys_b64[0]') | b64encode }}"
+        unsealKey2: "{{ init.stdout | from_json | json_query('unseal_keys_b64[1]') | b64encode }}"
+        unsealKey3: "{{ init.stdout | from_json | json_query('unseal_keys_b64[2]') | b64encode }}"
+        rootToken: "{{ init.stdout | from_json | json_query('root_token') | b64encode }}"
+        initConfig: "{{ init.stdout | from_json | b64encode }}"
   when: vault_keys.resources | length == 0
 
 - name: Find vault keys
@@ -66,18 +71,85 @@
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
-    vault_token: vault_keys.resources[0].data.rootToken
+    vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
 
-- name: Set fact to unseal vault
+# Unseal vault node 1
+- name: Set seal count - node 1
   ansible.builtin.set_fact:
-    num: "0"
+    vault_pod: "vault-0"
+    unsealKeyNb: "0"
 
-- name: Unseal vault
+- name: Unseal vault primary - node 1
+  ansible.builtin.include_tasks: unseal.yml
+  # vars:
+  #   vault_pod: vault-0
   when: vault_status == 'not init' or vault_status == 'sealed'
-  include_tasks: unseal.yml
 
-- name: Check vault status
-  include_tasks: check.yml
+# Init vault node 2
+- name: Check vault status - node 2
+  ansible.builtin.include_tasks: check.yml
+  vars:
+    vault_pod: vault-1
+
+- name: Init vault node - node 2
+  kubernetes.core.k8s_exec:
+    container: vault
+    pod: "vault-1"
+    namespace: "{{ vault.namespace }}"
+    command: vault operator raft join http://vault-0.vault-internal:8200
+  retries: 3
+  delay: 20
+  when: vault_status == 'not init'
+
+# Init node 3
+- name: Check vault status - node 3
+  ansible.builtin.include_tasks: check.yml
+  vars:
+    vault_pod: vault-2
+
+- name: Init vault node - node 3
+  kubernetes.core.k8s_exec:
+    container: vault
+    pod: "vault-2"
+    namespace: "{{ vault.namespace }}"
+    command: vault operator raft join http://vault-0.vault-internal:8200
+  retries: 3
+  delay: 20
+  when: vault_status == 'not init'
+
+# Unseal node 2
+- name: Check vault status - node 2
+  ansible.builtin.include_tasks: check.yml
+  vars:
+    vault_pod: vault-1
+
+- name: Set seal count - node 2
+  ansible.builtin.set_fact:
+    vault_pod: "vault-1"
+    unsealKeyNb: "0"
+
+- name: Unseal vault node - node 2
+  ansible.builtin.include_tasks: unseal.yml
+  # vars:
+  #   vault_pod: vault-2
+  when: vault_status == 'not init' or vault_status == 'sealed'
+
+# Unseal node 3
+- name: Check vault status - node 2
+  ansible.builtin.include_tasks: check.yml
+  vars:
+    vault_pod: vault-2
+
+- name: Set seal count - node 3
+  ansible.builtin.set_fact:
+    vault_pod: "vault-2"
+    unsealKeyNb: "0"
+
+- name: Unseal vault node - node 3
+  ansible.builtin.include_tasks: unseal.yml
+  vars:
+    vault_pod: vault-2
+  when: vault_status == 'not init' or vault_status == 'sealed'
 
 - name: Get kv engines
   ansible.builtin.uri:
