@@ -46,6 +46,17 @@
     argocd_password: "{{ argocd_admin_secret.resources[0].data.password | b64decode }}"
     argocd_hashed_password: "{{ argocd_admin_secret.resources[0].data.passwordHash | b64decode }}"
 
+- name: Find vault keys
+  kubernetes.core.k8s_info:
+    namespace: "{{ vault.namespace }}"
+    kind: Secret
+    name: vault-admin
+  register: vault_keys
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
+
 - name: Deploy argocd plugins config
   kubernetes.core.k8s:
     template: "{{ item }}"
