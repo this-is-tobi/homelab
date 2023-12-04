@@ -22,7 +22,7 @@ spec:
       releaseName: keycloak
       valuesObject:
         auth:
-          adminUser: <path:secret/data/admin/apps/keycloak#helmValues | jsonPath {.auth.adminUser}>
+          adminUser: admin # <path:secret/data/admin/apps/keycloak#helmValues | jsonPath {.auth.adminUser}>
           existingSecret: keycloak-admin
           passwordSecretKey: password
         ingress:
