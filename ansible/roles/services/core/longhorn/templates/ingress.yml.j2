@@ -3,9 +3,8 @@ kind: Ingress
 metadata:
   name: longhorn
   namespace: "{{ longhorn.namespace }}"
-  annotations:
-    kubernetes.io/ingress.class: traefik
 spec:
+  ingressClass: traefik
   rules:
     - host: {{ longhorn.domain }}
       http:
