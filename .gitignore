@@ -15,7 +15,7 @@ secrets/
 .DS_Store
 
 # Sops
-*.sops.yaml
+argocd/**/*.sops.yaml
 
 # Appls
 argocd/apps/argocd

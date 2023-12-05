@@ -23,12 +23,16 @@ spec:
         replicaCount: 1
         syncPeriod: 1m
         authSecret:
-          enabled: false
+          enabled: true
+          create: false
+          name: "arc-admin"
         image:
-          actionsRunnerRepositoryAndTag: "summerwind/actions-runner:latest"
-          dindSidecarRepositoryAndTag: "docker:dind"
-          pullPolicy: IfNotPresent
+          actionsRunnerRepositoryAndTag: "docker.io/summerwind/actions-runner:latest"
+          dindSidecarRepositoryAndTag: "docker.io/docker:dind"
+          pullPolicy: Always
           actionsRunnerImagePullSecrets: []
+        githubWebhookServer:
+          enabled: true
         imagePullSecrets: []
         nodeSelector: {}
   destination:

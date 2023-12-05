@@ -1,0 +1,5 @@
+creation_rules:
+  - path_regex: \.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: "age1d9lrfutpyxqvz76jcl3x2n6syvrgyn7ulxgc7z8k09edjrqs4vvq3mwzpa"
+    pgp: "EF4D23A9BE3E070D57340251FA12163158563AE1" # this-is-tobi
