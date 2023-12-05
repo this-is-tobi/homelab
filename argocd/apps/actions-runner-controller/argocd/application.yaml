@@ -16,7 +16,7 @@ spec:
     targetRevision: main
   - chart: actions-runner-controller
     repoURL: https://actions-runner-controller.github.io/actions-runner-controller
-    targetRevision: 0.23.3
+    targetRevision: 0.23.7
     helm:
       releaseName: actions-runner-controller
       valuesObject:
