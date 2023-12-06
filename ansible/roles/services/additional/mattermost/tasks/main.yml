@@ -14,7 +14,7 @@
   vars:
     argocd_app: mattermost
     vault_values:
-      domain: "mattermost.alpha.{{ rootDomain }}"
+      domain: "mattermost.{{ rootDomain }}"
       admin:
         username: "admin"
         password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"

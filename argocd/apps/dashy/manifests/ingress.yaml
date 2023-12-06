@@ -7,7 +7,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-    - host: alpha.ohmlab.fr
+    - host: ohmlab.fr
       http:
         paths:
           - path: /
@@ -19,5 +19,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - alpha.ohmlab.fr
-      secretName: alpha.ohmlab.fr
+        - ohmlab.fr
+      secretName: ohmlab.fr

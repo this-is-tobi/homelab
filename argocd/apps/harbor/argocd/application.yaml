@@ -26,14 +26,14 @@ spec:
             enabled: true
             certSource: secret
             secret:
-              secretName: registry.alpha.ohmlab.fr
+              secretName: registry.ohmlab.fr
           ingress:
             hosts:
-              core: registry.alpha.ohmlab.fr
+              core: registry.ohmlab.fr
             className: traefik
             annotations:
               cert-manager.io/cluster-issuer: letsencrypt-prod
-        externalURL:  https://registry.alpha.ohmlab.fr
+        externalURL:  https://registry.ohmlab.fr
         persistence:
           enabled: true
           resourcePolicy: keep

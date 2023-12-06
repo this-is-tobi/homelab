@@ -10,7 +10,7 @@ data:
         - title: GitHub
           path: https://github.com/this-is-tobi/homelab
         - title: Documentation
-          path: https://alpha.ohmlab.fr
+          path: https://ohmlab.fr
     appConfig:
       theme: adventure-basic
       startingView: default
@@ -30,31 +30,31 @@ data:
         items:
           - title: Argocd
             description: Deploy apps using gitops
-            url: https://argocd.alpha.ohmlab.fr
+            url: https://argocd.ohmlab.fr
             icon: hl-argocd
           - title: Grafana
             description: Watch cluster metrics & application logs
-            url: https://monitoring.alpha.ohmlab.fr
+            url: https://monitoring.ohmlab.fr
             icon: hl-grafana
           - title: Harbor
             description: Container image registry & Helm chart registry
-            url: https://registry.alpha.ohmlab.fr
+            url: https://registry.ohmlab.fr
             icon: hl-harbor
           - title: Keycloak
             description: Single Sign On managment
-            url: https://sso.alpha.ohmlab.fr
+            url: https://sso.ohmlab.fr
             icon: hl-keycloak
           - title: Kubernetes
             description: Kubernetes dashboard to watch cluster ressources
-            url: https://kube.alpha.ohmlab.fr
+            url: https://kube.ohmlab.fr
             icon: hl-kubernetes-dashboard
           - title: Minio
             description: Store data with s3 standard
-            url: https://minio.alpha.ohmlab.fr
+            url: https://minio.ohmlab.fr
             icon: hl-minio
           - title: Vault
             description: Store & retrieve secrets safely
-            url: https://vault.alpha.ohmlab.fr
+            url: https://vault.ohmlab.fr
             icon: hl-vault
         displayData:
           sortBy: alphabetical

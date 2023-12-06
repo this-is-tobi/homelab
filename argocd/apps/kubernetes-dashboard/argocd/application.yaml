@@ -25,14 +25,14 @@ spec:
               name: letsencrypt-prod
               scope: cluster
             hosts:
-            - kube.alpha.ohmlab.fr
+            - kube.ohmlab.fr
             paths:
               web: /
               api: /api
             tls:
             - hosts:
-              - kube.alpha.ohmlab.fr
-              secretName: kube.alpha.ohmlab.fr
+              - kube.ohmlab.fr
+              secretName: kube.ohmlab.fr
           nodeSelector:
             node-type: worker
           settings:

@@ -18,5 +18,5 @@ spec:
               number: 80
   tls:
   - hosts:
-    - arc.alpha.ohmlab.fr
-    secretName: arc.alpha.ohmlab.fr
+    - arc.ohmlab.fr
+    secretName: arc.ohmlab.fr

@@ -13,11 +13,11 @@
   ansible.builtin.include_role:
     name: services/utils/secrets
   vars:
-    argocd_app: keycloak
+    argocd_app: "keycloak"
     vault_values:
-      domain: keycloak.alpha.ohmlab.fr
+      domain: "keycloak.ohmlab.fr"
       extras:
-        realm: homelab
+        realm: "homelab"
       admin:
         username: "admin"
         password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"

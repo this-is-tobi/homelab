@@ -27,11 +27,11 @@ spec:
             annotations:
               "cert-manager.io/cluster-issuer": letsencrypt-prod
             hosts:
-            - monitoring.alpha.ohmlab.fr
+            - monitoring.ohmlab.fr
             tls:
             - hosts:
-              - monitoring.alpha.ohmlab.fr
-              secretName: monitoring.alpha.ohmlab.fr
+              - monitoring.ohmlab.fr
+              secretName: monitoring.ohmlab.fr
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

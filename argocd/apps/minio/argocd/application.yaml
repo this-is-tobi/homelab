@@ -32,7 +32,7 @@ spec:
           ingressClassName: traefik
           annotations:
             cert-manager.io/cluster-issuer: letsencrypt-prod
-          hostname: minio.alpha.ohmlab.fr
+          hostname: minio.ohmlab.fr
           path: /
           tls: true
         apiIngress:
@@ -40,7 +40,7 @@ spec:
           ingressClassName: traefik
           annotations:
             cert-manager.io/cluster-issuer: letsencrypt-prod
-          hostname: s3.alpha.ohmlab.fr
+          hostname: s3.ohmlab.fr
           path: /
           tls: true
         persistence:

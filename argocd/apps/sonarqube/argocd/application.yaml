@@ -28,12 +28,12 @@ spec:
             "nginx.ingress.kubernetes.io/proxy-body-size":
             ingressClassName: traefik
           hosts:
-            - name: sonarqube.alpha.ohmlab.fr
+            - name: sonarqube.ohmlab.fr
               path: /
           tls:
             - hosts:
-                - sonarqube.alpha.ohmlab.fr
-              secretName: sonarqube.alpha.ohmlab.fr
+                - sonarqube.ohmlab.fr
+              secretName: sonarqube.ohmlab.fr
         plugins:
           install:
             - https://github.com/iSergio/sonarqube-community-branch-plugin/releases/download/1.16.1/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar
