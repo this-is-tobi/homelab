@@ -35,6 +35,6 @@
       Authorization: Bearer {{ argocd_token }}
     status_code: 200
   register: argocd_app_status
-  until: argocd_app_status.json.status.sync.status == 'Synced'
+  until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
   retries: 30
   delay: 10
