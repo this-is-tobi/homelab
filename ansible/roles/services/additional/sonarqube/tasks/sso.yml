@@ -1,0 +1,73 @@
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: keycloak
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    keycloak_username: "{{ current_vault_values.secret.admin.username }}"
+    keycloak_password: "{{ current_vault_values.secret.admin.password }}"
+    keycloak_domain: "{{ current_vault_values.secret.domain }}"
+    keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
+
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: sonarqube
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    sonarqube_domain: "{{ current_vault_values.secret.domain }}"
+    sonarqube_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
+
+- name: Create sonarqube client
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ sonarqube_client_id }}"
+    name: "{{ sonarqube_client_id }}"
+    always_display_in_console: true
+    frontchannel_logout: true
+    enabled: true
+    redirect_uris:
+      - https://{{ sonarqube_domain }}/*
+    web_origins:
+      - https://{{ sonarqube_domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: true
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    default_client_scopes:
+      - profile
+      - email
+      - groups
+      - roles
+    state: present
+
+- name: Get sonarqube client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ sonarqube_client_id }}"
+    realm: "{{ keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+  register: sonarqube_client_secret
+  no_log: true
+
+- name: Create vault secret
+  community.hashi_vault.vault_kv2_write:
+    url: https://{{ vault.domain }}
+    auth_method: token
+    token: "{{ vault_token }}"
+    path: secret/admin/apps/sonarqube
+    data:
+      keycloak:
+        clientSecret: "{{ sonarqube_client_secret.clientsecret_info.value }}"

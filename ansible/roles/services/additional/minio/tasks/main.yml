@@ -13,6 +13,12 @@
       admin:
         username: "admin"
         password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+      keycloak:
+        clientId: "minio"
+
+# Setup sso
+- name: Setup SSO
+  include_tasks: sso.yml
 
 # Install
 - name: Sync application
