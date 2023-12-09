@@ -1,15 +1,15 @@
 # Get vault secrets
 - name: Get vault secrets
-  include_tasks: roles/services/utils/secrets/read.yml
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
     argocd_app: keycloak
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
-    keycloak_username: current_vault_values.secret.admin.username
-    keycloak_password: current_vault_values.secret.admin.password
-    keycloak_domain: current_vault_values.secret.domain
-    keycloak_realm: current_vault_values.secret.extras.realm
+    keycloak_username: "{{ current_vault_values.secret.admin.username }}"
+    keycloak_password: "{{ current_vault_values.secret.admin.password }}"
+    keycloak_domain: "{{ current_vault_values.secret.domain }}"
+    keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
 
 # Setup keycloak server
 - name: Create keycloak realm
@@ -70,338 +70,338 @@
           claim.name: groups
           userinfo.token.claim: true
 
-# Setup clients
-# Argocd
-- name: Create argocd client
-  community.general.keycloak_client:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ argocd.keycloak.clientId }}"
-    name: "{{ argocd.keycloak.clientId }}"
-    always_display_in_console: true
-    frontchannel_logout: true
-    enabled: true
-    redirect_uris:
-      - https://{{ argocd.domain }}/*
-    web_origins:
-      - https://{{ argocd.domain }}
-    standard_flow_enabled: true
-    implicit_flow_enabled: false
-    direct_access_grants_enabled: true
-    clientAuthenticatorType: client-secret
-    public_client: false
-    protocol: openid-connect
-    attributes:
-      include.in.token.scope: true
-      display.on.consent.screen: true
-    default_client_scopes:
-      - profile
-      - email
-      - groups
-      - roles
-    state: present
+# # Setup clients
+# # Argocd
+# - name: Create argocd client
+#   community.general.keycloak_client:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     client_id: "{{ argocd.keycloak.clientId }}"
+#     name: "{{ argocd.keycloak.clientId }}"
+#     always_display_in_console: true
+#     frontchannel_logout: true
+#     enabled: true
+#     redirect_uris:
+#       - https://{{ argocd.domain }}/*
+#     web_origins:
+#       - https://{{ argocd.domain }}
+#     standard_flow_enabled: true
+#     implicit_flow_enabled: false
+#     direct_access_grants_enabled: true
+#     clientAuthenticatorType: client-secret
+#     public_client: false
+#     protocol: openid-connect
+#     attributes:
+#       include.in.token.scope: true
+#       display.on.consent.screen: true
+#     default_client_scopes:
+#       - profile
+#       - email
+#       - groups
+#       - roles
+#     state: present
 
-- name: Get argocd client secret
-  community.general.keycloak_clientsecret_info:
-    client_id: "{{ argocd.keycloak.clientId }}"
-    realm: "{{ keycloak_realm }}"
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-  register: argocd_client_secret
-  no_log: true
+# - name: Get argocd client secret
+#   community.general.keycloak_clientsecret_info:
+#     client_id: "{{ argocd.keycloak.clientId }}"
+#     realm: "{{ keycloak_realm }}"
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#   register: argocd_client_secret
+#   no_log: true
 
-- name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/argocd
-    data:
-      keycloak:
-        clientId: "argocd"
-        clientSecret: "{{ argocd_client_secret.clientsecret_info.value }}"
-
-
-# Sonarqube
-- name: Create sonarqube client
-  community.general.keycloak_client:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ sonarqube.keycloak.clientId }}"
-    name: "{{ sonarqube.keycloak.clientId }}"
-    always_display_in_console: true
-    frontchannel_logout: true
-    enabled: true
-    redirect_uris:
-      - https://{{ sonarqube.domain }}/*
-    web_origins:
-      - https://{{ sonarqube.domain }}
-    standard_flow_enabled: true
-    implicit_flow_enabled: false
-    direct_access_grants_enabled: true
-    clientAuthenticatorType: client-secret
-    public_client: false
-    protocol: openid-connect
-    default_client_scopes:
-      - profile
-      - email
-      - groups
-      - roles
-    state: present
-
-- name: Get sonarqube client secret
-  community.general.keycloak_clientsecret_info:
-    client_id: "{{ sonarqube.keycloak.clientId }}"
-    realm: "{{ keycloak_realm }}"
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-  register: sonarqube_client_secret
-  no_log: true
-
-- name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/sonarqube
-    data:
-      keycloak:
-        clientId: "sonarqube"
-        clientSecret: "{{ sonarqube_client_secret.clientsecret_info.value }}"
+# - name: Create vault secret
+#   community.hashi_vault.vault_kv2_write:
+#     url: https://{{ vault.domain }}
+#     auth_method: token
+#     token: "{{ vault_token }}"
+#     path: secret/admin/apps/argocd
+#     data:
+#       keycloak:
+#         clientId: "argocd"
+#         clientSecret: "{{ argocd_client_secret.clientsecret_info.value }}"
 
 
-# Grafana
-- name: Create grafana client
-  community.general.keycloak_client:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ grafana.keycloak.clientId }}"
-    name: "{{ grafana.keycloak.clientId }}"
-    always_display_in_console: true
-    frontchannel_logout: true
-    enabled: true
-    redirect_uris:
-      - https://{{ grafana.domain }}/*
-    web_origins:
-      - https://{{ grafana.domain }}
-    standard_flow_enabled: true
-    implicit_flow_enabled: false
-    direct_access_grants_enabled: true
-    clientAuthenticatorType: client-secret
-    public_client: false
-    protocol: openid-connect
-    default_client_scopes:
-      - profile
-      - email
-      - groups
-      - roles
-    state: present
+# # Sonarqube
+# - name: Create sonarqube client
+#   community.general.keycloak_client:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     client_id: "{{ sonarqube.keycloak.clientId }}"
+#     name: "{{ sonarqube.keycloak.clientId }}"
+#     always_display_in_console: true
+#     frontchannel_logout: true
+#     enabled: true
+#     redirect_uris:
+#       - https://{{ sonarqube.domain }}/*
+#     web_origins:
+#       - https://{{ sonarqube.domain }}
+#     standard_flow_enabled: true
+#     implicit_flow_enabled: false
+#     direct_access_grants_enabled: true
+#     clientAuthenticatorType: client-secret
+#     public_client: false
+#     protocol: openid-connect
+#     default_client_scopes:
+#       - profile
+#       - email
+#       - groups
+#       - roles
+#     state: present
 
-- name: Get grafana client secret
-  community.general.keycloak_clientsecret_info:
-    client_id: "{{ grafana.keycloak.clientId }}"
-    realm: "{{ keycloak_realm }}"
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-  register: grafana_client_secret
-  no_log: true
+# - name: Get sonarqube client secret
+#   community.general.keycloak_clientsecret_info:
+#     client_id: "{{ sonarqube.keycloak.clientId }}"
+#     realm: "{{ keycloak_realm }}"
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#   register: sonarqube_client_secret
+#   no_log: true
 
-- name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/grafana
-    data:
-      keycloak:
-        clientId: "grafana"
-        clientSecret: "{{ grafana_client_secret.clientsecret_info.value }}"
-
-
-# Harbor
-- name: Create harbor client
-  community.general.keycloak_client:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ harbor.keycloak.clientId }}"
-    name: "{{ harbor.keycloak.clientId }}"
-    always_display_in_console: true
-    frontchannel_logout: true
-    enabled: true
-    redirect_uris:
-      - https://{{ harbor.domain }}/*
-    web_origins:
-      - https://{{ harbor.domain }}
-    standard_flow_enabled: true
-    implicit_flow_enabled: false
-    direct_access_grants_enabled: true
-    clientAuthenticatorType: client-secret
-    public_client: false
-    protocol: openid-connect
-    default_client_scopes:
-      - profile
-      - email
-      - groups
-      - roles
-    state: present
-
-- name: Get harbor client secret
-  community.general.keycloak_clientsecret_info:
-    client_id: "{{ harbor.keycloak.clientId }}"
-    realm: "{{ keycloak_realm }}"
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-  register: harbor_client_secret
-  no_log: true
-
-- name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/harbor
-    data:
-      keycloak:
-        clientId: "harbor"
-        clientSecret: "{{ harbor_client_secret.clientsecret_info.value }}"
+# - name: Create vault secret
+#   community.hashi_vault.vault_kv2_write:
+#     url: https://{{ vault.domain }}
+#     auth_method: token
+#     token: "{{ vault_token }}"
+#     path: secret/admin/apps/sonarqube
+#     data:
+#       keycloak:
+#         clientId: "sonarqube"
+#         clientSecret: "{{ sonarqube_client_secret.clientsecret_info.value }}"
 
 
-# Minio
-- name: Create minio client
-  community.general.keycloak_client:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ minio.keycloak.clientId }}"
-    name: "{{ minio.keycloak.clientId }}"
-    always_display_in_console: true
-    frontchannel_logout: true
-    enabled: true
-    redirect_uris:
-      - https://{{ minio.domain }}/*
-    web_origins:
-      - https://{{ minio.domain }}
-    standard_flow_enabled: true
-    implicit_flow_enabled: false
-    direct_access_grants_enabled: true
-    clientAuthenticatorType: client-secret
-    public_client: false
-    protocol: openid-connect
-    default_client_scopes:
-      - profile
-      - email
-      - groups
-      - roles
-    state: present
+# # Grafana
+# - name: Create grafana client
+#   community.general.keycloak_client:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     client_id: "{{ grafana.keycloak.clientId }}"
+#     name: "{{ grafana.keycloak.clientId }}"
+#     always_display_in_console: true
+#     frontchannel_logout: true
+#     enabled: true
+#     redirect_uris:
+#       - https://{{ grafana.domain }}/*
+#     web_origins:
+#       - https://{{ grafana.domain }}
+#     standard_flow_enabled: true
+#     implicit_flow_enabled: false
+#     direct_access_grants_enabled: true
+#     clientAuthenticatorType: client-secret
+#     public_client: false
+#     protocol: openid-connect
+#     default_client_scopes:
+#       - profile
+#       - email
+#       - groups
+#       - roles
+#     state: present
 
-- name: Get minio client secret
-  community.general.keycloak_clientsecret_info:
-    client_id: "{{ minio.keycloak.clientId }}"
-    realm: "{{ keycloak_realm }}"
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-  register: minio_client_secret
-  no_log: true
+# - name: Get grafana client secret
+#   community.general.keycloak_clientsecret_info:
+#     client_id: "{{ grafana.keycloak.clientId }}"
+#     realm: "{{ keycloak_realm }}"
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#   register: grafana_client_secret
+#   no_log: true
 
-- name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/minio
-    data:
-      keycloak:
-        clientId: "minio"
-        clientSecret: "{{ minio_client_secret.clientsecret_info.value }}"
+# - name: Create vault secret
+#   community.hashi_vault.vault_kv2_write:
+#     url: https://{{ vault.domain }}
+#     auth_method: token
+#     token: "{{ vault_token }}"
+#     path: secret/admin/apps/prometheus-stack
+#     data:
+#       keycloak:
+#         clientId: "grafana"
+#         clientSecret: "{{ grafana_client_secret.clientsecret_info.value }}"
 
 
-# Vault
-- name: Create keycloak client
-  community.general.keycloak_client:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    client_id: "{{ vault.keycloak.clientId }}"
-    name: "{{ vault.keycloak.clientId }}"
-    always_display_in_console: true
-    frontchannel_logout: true
-    enabled: true
-    redirect_uris:
-      - https://{{ vault.domain }}/*
-    web_origins:
-      - https://{{ vault.domain }}
-    standard_flow_enabled: true
-    implicit_flow_enabled: false
-    direct_access_grants_enabled: true
-    clientAuthenticatorType: client-secret
-    public_client: false
-    protocol: openid-connect
-    attributes:
-      include.in.token.scope: true
-      display.on.consent.screen: true
-    default_client_scopes:
-      - profile
-      - email
-      - groups
-      - roles
-    state: present
+# # Harbor
+# - name: Create harbor client
+#   community.general.keycloak_client:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     client_id: "{{ harbor.keycloak.clientId }}"
+#     name: "{{ harbor.keycloak.clientId }}"
+#     always_display_in_console: true
+#     frontchannel_logout: true
+#     enabled: true
+#     redirect_uris:
+#       - https://{{ harbor.domain }}/*
+#     web_origins:
+#       - https://{{ harbor.domain }}
+#     standard_flow_enabled: true
+#     implicit_flow_enabled: false
+#     direct_access_grants_enabled: true
+#     clientAuthenticatorType: client-secret
+#     public_client: false
+#     protocol: openid-connect
+#     default_client_scopes:
+#       - profile
+#       - email
+#       - groups
+#       - roles
+#     state: present
 
-- name: Get keycloak client secret
-  community.general.keycloak_clientsecret_info:
-    client_id: "{{ vault.keycloak.clientId }}"
-    realm: "{{ keycloak_realm }}"
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-  register: vault_client_secret
-  no_log: true
+# - name: Get harbor client secret
+#   community.general.keycloak_clientsecret_info:
+#     client_id: "{{ harbor.keycloak.clientId }}"
+#     realm: "{{ keycloak_realm }}"
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#   register: harbor_client_secret
+#   no_log: true
 
-- name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/vault
-    data:
-      keycloak:
-        clientId: "vault"
-        clientSecret: "{{ vault_client_secret.clientsecret_info.value }}"
+# - name: Create vault secret
+#   community.hashi_vault.vault_kv2_write:
+#     url: https://{{ vault.domain }}
+#     auth_method: token
+#     token: "{{ vault_token }}"
+#     path: secret/admin/apps/harbor
+#     data:
+#       keycloak:
+#         clientId: "harbor"
+#         clientSecret: "{{ harbor_client_secret.clientsecret_info.value }}"
+
+
+# # Minio
+# - name: Create minio client
+#   community.general.keycloak_client:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     client_id: "{{ minio.keycloak.clientId }}"
+#     name: "{{ minio.keycloak.clientId }}"
+#     always_display_in_console: true
+#     frontchannel_logout: true
+#     enabled: true
+#     redirect_uris:
+#       - https://{{ minio.domain }}/*
+#     web_origins:
+#       - https://{{ minio.domain }}
+#     standard_flow_enabled: true
+#     implicit_flow_enabled: false
+#     direct_access_grants_enabled: true
+#     clientAuthenticatorType: client-secret
+#     public_client: false
+#     protocol: openid-connect
+#     default_client_scopes:
+#       - profile
+#       - email
+#       - groups
+#       - roles
+#     state: present
+
+# - name: Get minio client secret
+#   community.general.keycloak_clientsecret_info:
+#     client_id: "{{ minio.keycloak.clientId }}"
+#     realm: "{{ keycloak_realm }}"
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#   register: minio_client_secret
+#   no_log: true
+
+# - name: Create vault secret
+#   community.hashi_vault.vault_kv2_write:
+#     url: https://{{ vault.domain }}
+#     auth_method: token
+#     token: "{{ vault_token }}"
+#     path: secret/admin/apps/minio
+#     data:
+#       keycloak:
+#         clientId: "minio"
+#         clientSecret: "{{ minio_client_secret.clientsecret_info.value }}"
+
+
+# # Vault
+# - name: Create keycloak client
+#   community.general.keycloak_client:
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#     realm: "{{ keycloak_realm }}"
+#     client_id: "{{ vault.keycloak.clientId }}"
+#     name: "{{ vault.keycloak.clientId }}"
+#     always_display_in_console: true
+#     frontchannel_logout: true
+#     enabled: true
+#     redirect_uris:
+#       - https://{{ vault.domain }}/*
+#     web_origins:
+#       - https://{{ vault.domain }}
+#     standard_flow_enabled: true
+#     implicit_flow_enabled: false
+#     direct_access_grants_enabled: true
+#     clientAuthenticatorType: client-secret
+#     public_client: false
+#     protocol: openid-connect
+#     attributes:
+#       include.in.token.scope: true
+#       display.on.consent.screen: true
+#     default_client_scopes:
+#       - profile
+#       - email
+#       - groups
+#       - roles
+#     state: present
+
+# - name: Get keycloak client secret
+#   community.general.keycloak_clientsecret_info:
+#     client_id: "{{ vault.keycloak.clientId }}"
+#     realm: "{{ keycloak_realm }}"
+#     auth_client_id: admin-cli
+#     auth_keycloak_url: https://{{ keycloak_domain }}
+#     auth_realm: master
+#     auth_username: "{{ keycloak_username }}"
+#     auth_password: "{{ keycloak_password }}"
+#   register: vault_client_secret
+#   no_log: true
+
+# - name: Create vault secret
+#   community.hashi_vault.vault_kv2_write:
+#     url: https://{{ vault.domain }}
+#     auth_method: token
+#     token: "{{ vault_token }}"
+#     path: secret/admin/apps/vault
+#     data:
+#       keycloak:
+#         clientId: "vault"
+#         clientSecret: "{{ vault_client_secret.clientsecret_info.value }}"
