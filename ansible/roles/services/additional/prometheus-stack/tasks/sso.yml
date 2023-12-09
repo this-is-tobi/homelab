@@ -13,12 +13,30 @@
 - name: Get vault secrets
   include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
-    argocd_app: grafana
+    argocd_app: prometheus-stack
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
     grafana_domain: "{{ current_vault_values.secret.domain }}"
     grafana_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
+
+- name: Create a Keycloak client role
+  community.general.keycloak_role:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    name: "{{ client_role }}"
+    client_id: "{{ grafana_client_id }}"
+    state: present
+  loop_control:
+    loop_var: client_role
+  with_items:
+    - grafanaadmin
+    - admin
+    - editor
 
 - name: Create grafana client
   community.general.keycloak_client:
@@ -50,6 +68,20 @@
       - roles
     state: present
 
+- name: Map client roles to admin group
+  community.general.keycloak_client_rolemapping:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ grafana_client_id }}"
+    group_name: admin
+    roles:
+      - name: grafanaadmin
+    state: present
+
 - name: Get grafana client secret
   community.general.keycloak_clientsecret_info:
     client_id: "{{ grafana_client_id }}"
@@ -63,11 +95,10 @@
   no_log: true
 
 - name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/grafana
-    data:
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: prometheus-stack
+    vault_values:
       keycloak:
         clientSecret: "{{ grafana_client_secret.clientsecret_info.value }}"

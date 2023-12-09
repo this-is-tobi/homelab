@@ -5,21 +5,31 @@ metadata:
 data:
   grafana.ini: |-
     [server]
-    root_url = https://{{ grafana.domain }}
+    root_url = https://<path:secret/data/admin/apps/prometheus-stack#domain>
+    domain = <path:secret/data/admin/apps/prometheus-stack#domain>
     [auth.generic_oauth]
     enabled = true
     name = Keycloak
     allow_sign_up = true
-    client_id = {{ keycloak.clientIds.grafana }}
-    client_secret = {{ grafana_client_secret }}
+    client_id = <path:secret/data/admin/apps/prometheus-stack#keycloak | jsonPath {.clientId}>
+    client_secret = <path:secret/data/admin/apps/prometheus-stack#keycloak | jsonPath {.clientSecret}>
     scopes = openid email profile roles groups
     email_attribute_path = email
     login_attribute_path = username
     name_attribute_path = full_name
-    auth_url = https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}/protocol/openid-connect/auth
-    token_url = https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}/protocol/openid-connect/token
-    api_url = https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}/protocol/openid-connect/userinfo
+    auth_url = https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/auth
+    token_url = https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/token
+    api_url = https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo
     allow_assign_grafana_admin = true
     role_attribute_path = contains(roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
-    [dashboards]
-    default_home_dashboard_path: dashboards/k3s/k3s.json
+    [analytics]
+    check_for_updates = true
+    [grafana_net]
+    url = https://grafana.net
+    [log]
+    mode = console
+    [paths]
+    data = /var/lib/grafana/
+    logs = /var/log/grafana
+    plugins = /var/lib/grafana/plugins
+    provisioning = /etc/grafana/provisioning
