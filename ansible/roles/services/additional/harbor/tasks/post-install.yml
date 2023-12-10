@@ -1,17 +1,34 @@
-- name: Retrieve current vault secret
-  community.hashi_vault.vault_kv2_get:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/harbor
-  register: current
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: keycloak
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    keycloak_username: "{{ current_vault_values.secret.admin.username }}"
+    keycloak_password: "{{ current_vault_values.secret.admin.password }}"
+    keycloak_domain: "{{ current_vault_values.secret.domain }}"
+    keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
+
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: harbor
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    harbor_domain: "{{ current_vault_values.secret.domain }}"
+    harbor_username: "{{ current_vault_values.secret.admin.username }}"
+    harbor_password: "{{ current_vault_values.secret.admin.password }}"
+    harbor_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
+    harbor_client_secret: "{{ current_vault_values.secret.keycloak.clientSecret }}"
 
 - name: Update harbor config
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor.domain }}/api/v2.0/configurations
-    password: "{{ current.secret.admin.password }}"
-    user: admin
+    url: https://{{ harbor_domain }}/api/v2.0/configurations
+    user: "{{ harbor_username }}"
+    password: "{{ harbor_password }}"
     force_basic_auth: true
     body_format: json
     body:
@@ -19,8 +36,8 @@
       "notification_enable": true
       "oidc_admin_group": "admin"
       "oidc_auto_onboard": true
-      "oidc_client_id": "{{ current.secret.keycloak.clientId }}"
-      "oidc_endpoint": "https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}"
+      "oidc_client_id": "{{ harbor_client_id }}"
+      "oidc_endpoint": "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
       "oidc_extra_redirect_params": "{}"
       "oidc_group_filter": ""
       "oidc_groups_claim": "groups"
@@ -31,6 +48,5 @@
       "quota_per_project_enable": true
       "read_only": false
       "robot_name_prefix": "robot$"
-      "robot_token_duration": 30
       "self_registration": false
-      "oidc_client_secret": "{{ current.secret.keycloak.clientSecret }}"
+      "oidc_client_secret": "{{ harbor_client_secret }}"

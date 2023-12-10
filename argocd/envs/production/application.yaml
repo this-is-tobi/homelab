@@ -48,7 +48,7 @@ spec:
     namespace: argocd-system
   syncPolicy:
     automated:
-      selfHeal: false
+      selfHeal: true
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

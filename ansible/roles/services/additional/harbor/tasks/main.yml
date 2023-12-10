@@ -10,6 +10,7 @@
   vars:
     argocd_app: harbor
     vault_values:
+      domain: "registry.{{ rootDomain }}"
       admin:
         username: "admin"
         password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"

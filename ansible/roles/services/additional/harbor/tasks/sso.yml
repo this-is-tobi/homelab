@@ -63,11 +63,10 @@
   no_log: true
 
 - name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/harbor
-    data:
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: harbor
+    vault_values:
       keycloak:
         clientSecret: "{{ harbor_client_secret.clientsecret_info.value }}"

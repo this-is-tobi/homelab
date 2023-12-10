@@ -15,82 +15,65 @@ spec:
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
   - chart: harbor
-    repoURL: https://helm.goharbor.io
-    targetRevision: 1.13.1
+    repoURL: https://charts.bitnami.com/bitnami
+    targetRevision: 19.2.1
     helm:
       releaseName: harbor
       valuesObject:
-        expose:
-          type: ingress
-          tls:
-            enabled: true
-            certSource: secret
-            secret:
-              secretName: registry.ohmlab.fr
-          ingress:
-            hosts:
-              core: registry.ohmlab.fr
-            className: traefik
+        adminPassword: <path:secret/data/admin/apps/harbor#admin | jsonPath {.password}>
+        registry:
+          replicaCount: 1
+          nodeSelector:
+            node-type: worker
+        portal:
+          replicaCount: 2
+          nodeSelector:
+            node-type: worker
+        core:
+          replicaCount: 3
+          nodeSelector:
+            node-type: worker
+        jobservice:
+          replicaCount: 1
+          nodeSelector:
+            node-type: worker
+        trivy:
+          replicaCount: 2
+          nodeSelector:
+            node-type: worker
+        exporter:
+          nodeSelector:
+            node-type: worker
+        exposureType: ingress
+        externalURL: https://<path:secret/data/admin/apps/harbor#domain>
+        ingress:
+          core:
+            ingressClassName: traefik
             annotations:
               cert-manager.io/cluster-issuer: letsencrypt-prod
-        externalURL:  https://registry.ohmlab.fr
+            hostname: <path:secret/data/admin/apps/harbor#domain>
+            tls: true
         persistence:
           enabled: true
-          resourcePolicy: keep
+          mountPath: /data
+          accessModes:
+            - ReadWriteOnce
           persistentVolumeClaim:
             registry:
               size: 100Gi
             jobservice:
-              jobLog:
-                size: 5Gi
-            database:
-              size: 5Gi
-            redis:
-              size: 5Gi
+              size: 10Gi
             trivy:
-              size: 5Gi
-        existingSecretAdminPassword: harbor-admin
-        existingSecretAdminPasswordKey: password
-        existingSecretSecretKey: harbor-admin
-        enableMigrateHelmHook: false
-        portal:
-          replicas: 1
-          revisionHistoryLimit: 5
-          nodeSelector:
-            node-type: worker
-        core:
-          replicas: 1
-          revisionHistoryLimit: 5
-          nodeSelector:
-            node-type: worker
-        jobservice:
-          replicas: 1
-          revisionHistoryLimit: 5
-          nodeSelector:
-            node-type: worker
-        registry:
-          replicas: 1
-          revisionHistoryLimit: 5
-          nodeSelector:
-            node-type: worker
-        trivy:
-          enabled: true
-          replicas: 1
-          nodeSelector:
-            node-type: worker
-          vulnType: os,library
-          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
-          securityCheck: vuln,config,secret
-          ignoreUnfixed: false
-        database:
-          type: external
-          external:
-            host: harbor-pg-cluster-rw
-            port: 5432
-            username: harbor
-            coreDatabase: harbor
-            existingSecret: harbor-pg-cluster-app
-            sslmode: disable
+              size: 10Gi
+        postgresql:
+          enabled: false
+        externalDatabase:
+          host: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.host}>
+          port: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.port}>
+          coreDatabase: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.database}>
+          user: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.app.username}>
+          password: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.app.password}>
+          sslmode: disable
   destination:
     server: https://kubernetes.default.svc
     namespace: harbor
