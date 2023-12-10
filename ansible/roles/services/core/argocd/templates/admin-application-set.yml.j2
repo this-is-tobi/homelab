@@ -26,9 +26,8 @@ spec:
         server: https://kubernetes.default.svc
         namespace: admin
       syncPolicy:
-        # automated:
-        #   selfHeal: false
+        automated:
+          selfHeal: true
         syncOptions:
         - CreateNamespace=true
         - ApplyOutOfSyncOnly=true
-
