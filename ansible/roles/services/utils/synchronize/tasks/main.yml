@@ -22,6 +22,11 @@
     body:
       "project": "{{ argocd_app_config.spec.project }}"
       "appNamespace": "{{ argocd_app_config.metadata.namespace }}"
+      "syncOptions":
+        "items":
+          - "CreateNamespace=true"
+          - "ApplyOutOfSyncOnly=true"
+          - "ServerSideApply=true"
     headers:
       Authorization: Bearer {{ argocd_token }}
     status_code: 200
