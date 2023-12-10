@@ -16,77 +16,40 @@
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
+    sonarqube_domain: "{{ current_vault_values.secret.domain }}"
     sonarqube_username: "{{ current_vault_values.secret.admin.username }}"
     sonarqube_password: "{{ current_vault_values.secret.admin.password }}"
     sonarqube_token: "{{ current_vault_values.secret.admin.token }}"
-    sonarqube_domain: "{{ current_vault_values.secret.domain }}"
-
-# Setup sonarqube server
-- name: Login
-  ansible.builtin.uri:
-    url: "https://{{ sonarqube_domain }}/api/authentication/login?login={{ sonarqube_username }}&password={{ sonarqube_password }}"
-    method: POST
-  register: sonar_login_call
-
-- debug: var=sonar_login_call
-
-- name: Create token
-  ansible.builtin.uri:
-    url: "https://{{ sonarqube_domain }}/api/user_tokens/generate"
-    method: POST
-    headers:
-      Cookie: "{{ sonar_login_call.cookies_string }}"
-  register: sonar_token_call
-  when: sonarqube_token == None
-
-- debug: var=sonar_token_call
-
-- name: Set fact for vault secrets
-  ansible.builtin.set_fact:
-    sonarqube_token: "{{ sonar_token_call.json.token }}"
-  when: sonarqube_token == None
-
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: sonarqube
-    vault_values:
-      admin:
-        token: "{{ sonarqube_token }}"
-  when: sonarqube_token == None
+    sonarqube_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
+    sonarqube_client_secret: "{{ current_vault_values.secret.keycloak.clientSecret }}"
 
 - name: Get admin group
   ansible.builtin.uri:
     url: "https://{{ sonarqube_domain }}/api/user_groups/search?q=admin"
-    user: "{{ sonarqube_token }}"
+    method: GET
+    user: "{{ sonarqube_username }}"
+    password: "{{ sonarqube_password }}"
     force_basic_auth: true
-    method: get
-    status_code: [200,400,404]
-    headers:
-      Cookie: "{{ sonar_login_call.cookies_string }}"
   register: admin_group
 
 - name: Create admin group
   ansible.builtin.uri:
     url: "https://{{ sonarqube_domain }}/api/user_groups/create?name=admin&description=admin"
-    user: "{{ sonarqube_token }}"
+    method: POST
+    user: "{{ sonarqube_username }}"
+    password: "{{ sonarqube_password }}"
     force_basic_auth: true
-    method: post
     status_code: [200,204]
-    headers:
-      Cookie: "{{ sonar_login_call.cookies_string }}"
-  when: not admin_group.status == 200
+  when: admin_group.json.groups | selectattr('name', 'equalto', 'admin') | list | length == 0
 
 - name: Add admin permissions to admin group
   ansible.builtin.uri:
     url: "https://{{ sonarqube_domain }}/api/permissions/add_group?groupName=admin&permission={{ item }}"
-    user: "{{ sonarqube_token }}"
+    method: POST
+    user: "{{ sonarqube_username }}"
+    password: "{{ sonarqube_password }}"
     force_basic_auth: true
-    method: post
     status_code: [200,204]
-    headers:
-      Cookie: "{{ sonar_login_call.cookies_string }}"
   with_items:
     - admin
     - gateadmin
@@ -94,27 +57,3 @@
     - profileadmin
     - provisioning
     - scan
-
-- name: Set oidc settings
-  ansible.builtin.uri:
-    url: "https://{{ sonarqube_domain }}/api/settings/set?key={{ item.key | urlencode }}&value={{ item.value | urlencode }}"
-    user: "{{ sonarqube_token }}"
-    force_basic_auth: true
-    method: POST
-    status_code: 204
-    headers:
-      Cookie: "{{ sonar_login_call.cookies_string }}"
-  with_dict:
-    sonar.core.serverBaseURL: "https://{{ sonarqube_domain }}"
-    sonar.auth.oidc.enabled: "true"
-    sonar.auth.oidc.allowUsersToSignUp: "true"
-    sonar.auth.oidc.autoLogin: "false"
-    sonar.auth.oidc.loginButtonText: "Connect with Keycloak"
-    sonar.auth.oidc.groupsSync.claimName: "groups"
-    sonar.auth.oidc.loginStrategy: "Email"
-    sonar.auth.oidc.groupsSync: "true"
-    sonar.auth.oidc.scopes: "openid profile email roles groups"
-    sonar.auth.oidc.issuerUri: "https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}"
-    sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
-    sonar.auth.oidc.clientId.secured: "{{ sonarqube.keycloak.clientId }}"
-    sonar.auth.oidc.clientSecret.secured: "{{ sonarqube.keycloak.clientSecret }}"

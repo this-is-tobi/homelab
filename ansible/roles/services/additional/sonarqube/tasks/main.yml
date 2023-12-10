@@ -26,6 +26,7 @@
         app:
           username: "sonarqube"
           password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+        connectionString: jdbc:postgresql://sonarqube-pg-cluster-rw:5432/sonarqube?socketTimeout=1500
       keycloak:
         clientId: "sonarqube"
 
