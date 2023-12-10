@@ -20,24 +20,6 @@
     grafana_domain: "{{ current_vault_values.secret.domain }}"
     grafana_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
 
-- name: Create a Keycloak client role
-  community.general.keycloak_role:
-    auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak_domain }}
-    auth_realm: master
-    auth_username: "{{ keycloak_username }}"
-    auth_password: "{{ keycloak_password }}"
-    realm: "{{ keycloak_realm }}"
-    name: "{{ client_role }}"
-    client_id: "{{ grafana_client_id }}"
-    state: present
-  loop_control:
-    loop_var: client_role
-  with_items:
-    - grafanaadmin
-    - admin
-    - editor
-
 - name: Create grafana client
   community.general.keycloak_client:
     auth_client_id: admin-cli
@@ -67,6 +49,24 @@
       - groups
       - roles
     state: present
+
+- name: Create a Keycloak client role
+  community.general.keycloak_role:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    name: "{{ client_role }}"
+    client_id: "{{ grafana_client_id }}"
+    state: present
+  loop_control:
+    loop_var: client_role
+  with_items:
+    - grafanaadmin
+    - admin
+    - editor
 
 - name: Map client roles to admin group
   community.general.keycloak_client_rolemapping:
