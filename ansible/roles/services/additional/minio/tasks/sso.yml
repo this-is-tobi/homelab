@@ -48,7 +48,63 @@
       - email
       - groups
       - roles
+    protocol_mappers:
+      - name: minio-policy-mapper
+        protocol: openid-connect
+        protocolMapper: oidc-usermodel-client-role-mapper
+        consentRequired: false
+        config:
+          id.token.claim: true
+          access.token.claim: true
+          claim.name: minio-policy
+          userinfo.token.claim: true
+          jsonType.label: String
+          aggregate.attrs: true
+          client_id: "{{ minio_client_id }}"
+          multivalued: true
+    attributes:
+      use.jwks.url: true
+      jwks.url: https://{{ keycloak_domain }}/realms/{{ keycloak_realm }}/protocol/openid-connect/certs
     state: present
+
+- name: Create keycloak roles
+  community.general.keycloak_role:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    name: "{{ item }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ minio_client_id }}"
+    description: Role for minio
+    state: present
+  loop:
+    - consoleAdmin
+    - diagnostics
+    - readonly
+    - readwrite
+    - writeonly
+
+- name: Map keycloak role to admin group
+  community.general.keycloak_client_rolemapping:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
+    client_id: "{{ minio_client_id }}"
+    group_name: admin
+    roles:
+      - name: "{{ item }}"
+    state: present
+  loop:
+    - consoleAdmin
+    - diagnostics
+    - readonly
+    - readwrite
+    - writeonly
 
 - name: Get minio client secret
   community.general.keycloak_clientsecret_info:
@@ -63,11 +119,10 @@
   no_log: true
 
 - name: Create vault secret
-  community.hashi_vault.vault_kv2_write:
-    url: https://{{ vault.domain }}
-    auth_method: token
-    token: "{{ vault_token }}"
-    path: secret/admin/apps/minio
-    data:
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: minio
+    vault_values:
       keycloak:
         clientSecret: "{{ minio_client_secret.clientsecret_info.value }}"

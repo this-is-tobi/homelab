@@ -10,6 +10,8 @@
   vars:
     argocd_app: minio
     vault_values:
+      domain: "minio.{{ rootDomain }}"
+      domainApi: "s3.{{ rootDomain }}"
       admin:
         username: "admin"
         password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
