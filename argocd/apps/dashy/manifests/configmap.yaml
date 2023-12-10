@@ -28,10 +28,10 @@ data:
       - name: Services
         icon: fas fa-rocket
         items:
-          - title: Argocd
-            description: Deploy apps using gitops
-            url: https://argocd.ohmlab.fr
-            icon: hl-argocd
+          # - title: Argocd
+          #   description: Deploy apps using gitops
+          #   url: https://argocd.ohmlab.fr
+          #   icon: hl-argocd
           - title: Grafana
             description: Watch cluster metrics & application logs
             url: https://monitoring.ohmlab.fr
@@ -44,18 +44,22 @@ data:
             description: Single Sign On managment
             url: https://sso.ohmlab.fr
             icon: hl-keycloak
-          - title: Kubernetes
-            description: Kubernetes dashboard to watch cluster ressources
-            url: https://kube.ohmlab.fr
-            icon: hl-kubernetes-dashboard
+          # - title: Kubernetes
+          #   description: Kubernetes dashboard to watch cluster ressources
+          #   url: https://kube.ohmlab.fr
+          #   icon: hl-kubernetes-dashboard
           - title: Minio
             description: Store data with s3 standard
             url: https://minio.ohmlab.fr
             icon: hl-minio
-          - title: Vault
-            description: Store & retrieve secrets safely
-            url: https://vault.ohmlab.fr
-            icon: hl-vault
+          - title: Sonarqube
+            description: Code analysis service
+            url: https://kube.ohmlab.fr
+            icon: hl-kubernetes-dashboard
+          # - title: Vault
+          #   description: Store & retrieve secrets safely
+          #   url: https://vault.ohmlab.fr
+          #   icon: hl-vault
         displayData:
           sortBy: alphabetical
           collapsed: false
