@@ -41,5 +41,5 @@
     status_code: 200
   register: argocd_app_status
   until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
-  retries: 30
+  retries: 60
   delay: 10
