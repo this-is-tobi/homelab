@@ -1,14 +1,7 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: cloud-pi-native-runner
-
----
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
   name: cloud-pi-native-runner
-  namespace: cloud-pi-native-runner
 spec:
   template:
     spec:
@@ -22,7 +15,6 @@ apiVersion: actions.summerwind.dev/v1alpha1
 kind: HorizontalRunnerAutoscaler
 metadata:
   name: cloud-pi-native-hra
-  namespace: cloud-pi-native-runner
 spec:
   scaleDownDelaySecondsAfterScaleOut: 600
   githubAPICredentialsFrom:
@@ -31,12 +23,12 @@ spec:
   scaleTargetRef:
     kind: RunnerDeployment
     name: cloud-pi-native-runner
+  minReplicas: 2
+  maxReplicas: 4
   scaleUpTriggers:
   - githubEvent:
       workflowJob: {}
     duration: 60m
-  minReplicas: 2
-  maxReplicas: 4
   # metrics:
   # - type: PercentageRunnersBusy
   #   scaleUpThreshold: '0.75'
