@@ -2,6 +2,8 @@
 - name: Init
   ansible.builtin.include_role:
     name: services/utils/initialize
+  vars:
+    include_keycloak: true
 
 # Setup
 - name: Set mattermost postgres app password

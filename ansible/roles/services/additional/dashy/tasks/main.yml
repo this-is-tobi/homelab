@@ -3,6 +3,15 @@
   ansible.builtin.include_role:
     name: services/utils/initialize
 
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: dashy
+    vault_values:
+      domain: "{{ rootDomain }}"
+
 # Install
 - name: Sync application
   ansible.builtin.include_role:

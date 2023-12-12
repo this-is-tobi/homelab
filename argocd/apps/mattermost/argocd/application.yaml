@@ -11,10 +11,6 @@ spec:
   project: admin
   revisionHistoryLimit: 5
   sources:
-  - path: argocd/apps/mattermost/manifests
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-    ref: repo
   - chart: mattermost-team-edition
     repoURL: https://helm.mattermost.com
     targetRevision: 6.6.44
@@ -220,12 +216,15 @@ spec:
             }
           }
         }
+  - path: argocd/apps/mattermost/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: mattermost
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

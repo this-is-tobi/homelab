@@ -18,8 +18,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: dashy
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

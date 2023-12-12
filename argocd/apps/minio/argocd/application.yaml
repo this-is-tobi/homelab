@@ -54,8 +54,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: minio
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

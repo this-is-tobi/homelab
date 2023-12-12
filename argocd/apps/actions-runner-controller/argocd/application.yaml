@@ -11,9 +11,6 @@ spec:
   project: admin
   revisionHistoryLimit: 5
   sources:
-  - path: argocd/apps/actions-runner-controller/manifests
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
   - chart: actions-runner-controller
     repoURL: https://actions-runner-controller.github.io/actions-runner-controller
     targetRevision: 0.23.7
@@ -35,12 +32,15 @@ spec:
           enabled: true
         imagePullSecrets: []
         nodeSelector: {}
+  - path: argocd/apps/actions-runner-controller/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: actions-runner-controller
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

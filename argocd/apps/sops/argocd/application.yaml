@@ -11,9 +11,6 @@ spec:
   project: admin
   revisionHistoryLimit: 5
   sources:
-  - path: argocd/apps/sops/manifests
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
   - chart: sops-secrets-operator
     repoURL: https://isindir.github.io/sops-secrets-operator
     targetRevision: 0.17.2
@@ -29,12 +26,15 @@ spec:
           - mountPath: /etc/sops-age-key-file/
             name: sops-age-key-file
             secretName: sops-age-key-file
+  - path: argocd/apps/sops/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: sops
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

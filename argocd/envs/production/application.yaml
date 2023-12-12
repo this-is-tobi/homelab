@@ -25,6 +25,9 @@ spec:
   # - path: argocd/apps/kubernetes-dashboard/argocd
   #   repoURL: https://github.com/this-is-tobi/homelab.git
   #   targetRevision: main
+  # - path: argocd/apps/mattermost/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
   - path: argocd/apps/minio/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
@@ -40,9 +43,6 @@ spec:
   - path: argocd/apps/system-upgrade/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
-  # - path: argocd/apps/mattermost/argocd
-  #   repoURL: https://github.com/this-is-tobi/homelab.git
-  #   targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd-system

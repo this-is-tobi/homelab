@@ -1,18 +1,6 @@
 - name: Get vault secrets
   include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
-    argocd_app: keycloak
-
-- name: Set fact for vault secrets
-  ansible.builtin.set_fact:
-    keycloak_username: "{{ current_vault_values.secret.admin.username }}"
-    keycloak_password: "{{ current_vault_values.secret.admin.password }}"
-    keycloak_domain: "{{ current_vault_values.secret.domain }}"
-    keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
-
-- name: Get vault secrets
-  include_tasks: roles/services/utils/secrets/tasks/read.yml
-  vars:
     argocd_app: minio
 
 - name: Set fact for vault secrets

@@ -3,15 +3,6 @@
   ansible.builtin.include_role:
     name: services/utils/initialize
 
-# Setup
-# - name: Setup secrets
-#   ansible.builtin.include_role:
-#     name: services/utils/secrets
-#   vars:
-#     argocd_app: actions-runner-controller
-#     vault_values:
-#       githubApps: []
-
 # Install
 - name: Sync application
   ansible.builtin.include_role:

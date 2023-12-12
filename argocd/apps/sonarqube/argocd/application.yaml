@@ -11,9 +11,6 @@ spec:
   project: admin
   revisionHistoryLimit: 5
   sources:
-  - path: argocd/apps/sonarqube/manifests
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
   - chart: sonarqube
     repoURL: https://SonarSource.github.io/helm-chart-sonarqube
     targetRevision: 10.2.1+800
@@ -74,12 +71,15 @@ spec:
           sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
           sonar.auth.oidc.clientId.secured: "<path:secret/data/admin/apps/sonarqube#keycloak | jsonPath {.clientId}>"
           sonar.auth.oidc.clientSecret.secured: "<path:secret/data/admin/apps/sonarqube#keycloak | jsonPath {.clientSecret}>"
+  - path: argocd/apps/sonarqube/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: sonarqube
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

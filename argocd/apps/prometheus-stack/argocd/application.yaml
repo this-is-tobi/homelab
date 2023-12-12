@@ -11,9 +11,6 @@ spec:
   project: admin
   revisionHistoryLimit: 5
   sources:
-  - path: argocd/apps/prometheus-stack/manifests
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
   - chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
     targetRevision: 55.1.0
@@ -52,12 +49,15 @@ spec:
               allow_assign_grafana_admin: true
               groups_attribute_path: groups
               role_attribute_path: contains(roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(roles[*], 'admin') && 'Admin' || contains(roles[*], 'editor') && 'Editor' || 'Viewer'
+  - path: argocd/apps/prometheus-stack/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true
