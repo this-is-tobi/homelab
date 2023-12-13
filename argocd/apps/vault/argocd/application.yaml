@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd-system
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - chart: vault
+    repoURL: https://helm.releases.hashicorp.com
+    targetRevision: 0.27.0
+    helm:
+      releaseName: vault
+      valuesObject:
+        server:
+          ha:
+            enabled: true
+            replicas: 3
+            apiAddr: "https://<path:secret/data/admin/apps/vault#domain>"
+            raft:
+              enabled: true
+          standalone:
+            enabled: false
+          auditStorage:
+            enable: true
+            size: 10Gi
+          dataStorage:
+            enable: true
+            size: 10Gi
+          nodeSelector:
+            node-type: worker
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+            hosts:
+              - host: <path:secret/data/admin/apps/vault#domain>
+                paths:
+                  - /
+            tls:
+              - hosts:
+                  - <path:secret/data/admin/apps/vault#domain>
+                secretName: <path:secret/data/admin/apps/vault#domain>
+  - path: argocd/apps/vault/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

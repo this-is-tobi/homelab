@@ -1,0 +1,31 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+  vars:
+    include_keycloak: true
+
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: argocd
+    vault_values:
+      domain: "gitops.{{ rootDomain }}"
+      admin:
+        username: "admin"
+        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+      keycloak:
+        clientId: "argocd"
+
+# Setup sso
+- name: Setup SSO
+  include_tasks: sso.yml
+
+# Install
+- name: Sync application
+  ansible.builtin.include_role:
+    name: services/utils/synchronize
+  vars:
+    argocd_app: argocd

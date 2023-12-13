@@ -1,0 +1,186 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd-system
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - chart: argocd
+    repoURL: https://argoproj.github.io/argo-helm
+    targetRevision: 5.51.6
+    helm:
+      releaseName: argocd
+      valuesObject:
+        redis-ha:
+          enabled: true
+        controller:
+          replicas: 1
+        applicationSet:
+          enabled: true
+          replicas: 2
+        configs:
+          secret:
+            argocdServerAdminPassword: <path:secret/data/admin/apps/argocd#admin | jsonPath {.password}>
+          params:
+            server.insecure: true
+          rbac:
+            policy.csv: |
+              p, role:none, *, *, */*, deny
+              p, role:admin, *, *, */*, allow
+              g, admin, role:admin
+          policy.default: role:none
+          scopes: "[groups]"
+          cm:
+            url: https://<path:secret/data/admin/apps/argocd#domain>
+            resource.customizations: |
+              networking.k8s.io/Ingress:
+                health.lua: |
+                  hs = {}
+                  hs.status = "Healthy"
+                  return hs
+            oidc.config: |
+              name: Keycloak
+              issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
+              clientID: <path:secret/data/admin/apps/argocd#keycloak | jsonPath {.clientId}>
+              clientSecret: <path:secret/data/admin/apps/argocd#keycloak | jsonPath {.clientSecret}>
+              requestedScopes: ["openid", "profile", "email", "groups"]
+        dex:
+          enabled: false
+          nodeSelector:
+            node-type: worker
+        server:
+          autoscaling:
+            enabled: false
+            minReplicas: 2
+          ingress:
+            enabled: true
+            ingressClassName: traefik
+            hosts:
+            - <path:secret/data/admin/apps/argocd#domain>
+            https: false
+            annotations:
+              "cert-manager.io/cluster-issuer": letsencrypt-prod
+            tls:
+            - hosts:
+              - <path:secret/data/admin/apps/argocd#domain>
+              secretName: <path:secret/data/admin/apps/argocd#domain>
+        repoServer:
+          autoscaling:
+            enabled: false
+            minReplicas: 2
+          initContainers:
+          - name: download-tools
+            image: registry.access.redhat.com/ubi8
+            env:
+            - name: AVP_VERSION
+              value: 1.17.0
+            command: [sh, -c]
+            args:
+            - >-
+              OS="$(uname | tr '[:upper:]' '[:lower:]')" && [ "$(uname -m)" = "aarch64" ] && ARCH="arm64" || ARCH="amd64" &&
+              curl -L https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v$(AVP_VERSION)/argocd-vault-plugin_$(AVP_VERSION)_${OS}_${ARCH} -o argocd-vault-plugin &&
+              chmod +x argocd-vault-plugin &&
+              mv argocd-vault-plugin /custom-tools/
+            volumeMounts:
+            - mountPath: /custom-tools
+              name: custom-tools
+          extraContainers:
+          - name: avp
+            command: [/var/run/argocd/argocd-cmp-server]
+            image: quay.io/argoproj/argocd:v2.9.1
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 999
+            envFrom:
+            - secretRef:
+                name: vault-plugin-secret
+            volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: tmp
+            # Register plugins into sidecar
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp.yaml
+              name: cmp-plugin
+            # Important: Mount tools into $PATH
+            - name: custom-tools
+              subPath: argocd-vault-plugin
+              mountPath: /usr/local/bin/argocd-vault-plugin
+          - name: avp-helm
+            command: [/var/run/argocd/argocd-cmp-server]
+            image: quay.io/argoproj/argocd:v2.9.1
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 999
+            envFrom:
+            - secretRef:
+                name: vault-plugin-secret
+            volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: tmp
+            # Register plugins into sidecar
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp-helm.yaml
+              name: cmp-plugin
+            # Important: Mount tools into $PATH
+            - name: custom-tools
+              subPath: argocd-vault-plugin
+              mountPath: /usr/local/bin/argocd-vault-plugin
+          - name: avp-kustomize
+            command: [/var/run/argocd/argocd-cmp-server]
+            image: quay.io/argoproj/argocd:v2.9.1
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 999
+            envFrom:
+            - secretRef:
+                name: vault-plugin-secret
+            volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: tmp
+            # Register plugins into sidecar
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp-kustomize.yaml
+              name: cmp-plugin
+            # Important: Mount tools into $PATH
+            - name: custom-tools
+              subPath: argocd-vault-plugin
+              mountPath: /usr/local/bin/argocd-vault-plugin
+          volumes:
+          - configMap:
+              name: cmp-plugin
+            name: cmp-plugin
+          - name: custom-tools
+            emptyDir: {}
+        crds:
+          install: false
+          keep: true
+  - path: argocd/apps/argocd/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

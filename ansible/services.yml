@@ -9,39 +9,34 @@
   roles:
     - name: ./roles/services/core/traefik
       tags:
-        - traefik
-        - ingress-controller
         - never
+        - traefik-core
 
     - name: ./roles/services/core/longhorn
       tags:
-        - longhorn
-        - storage
         - core
+        - longhorn-core
 
     - name: ./roles/services/core/cert-manager
       tags:
-        - cert-manager
-        - certmanager
         - core
+        - cert-manager-core
 
     - name: ./roles/services/core/vault
       tags:
-        - vault
         - core
+        - vault-core
 
     - name: ./roles/services/core/argocd
       tags:
-        - argocd
-        - argo
-        - gitops
         - core
+        - argocd-core
 
     - name: ./roles/services/additional/sops
       tags:
+        - additional
         - sops
         - secrets
-        - additional
 
     - name: ./roles/services/additional/system-upgrade
       tags:
@@ -51,47 +46,60 @@
 
     - name: ./roles/services/additional/cloudnative-pg
       tags:
-        - postgres-operator
-        - cnpg
         - additional
+        - postgres-operator
+        - cloudnative-pg
+        - cnpg
 
     - name: ./roles/services/additional/keycloak
       tags:
+        - additional
         - keycloak
         - sso
+
+    - name: ./roles/services/additional/vault
+      tags:
         - additional
+        - vault
+
+    - name: ./roles/services/additional/argocd
+      tags:
+        - additional
+        - argocd
+        - argo
+        - gitops
 
     - name: ./roles/services/additional/kubernetes-dashboard
       tags:
-        - dashboard
+        - additional
         - kubernetes-dashboard
         - kube-dashboard
-        - additional
+        - console
 
     - name: ./roles/services/additional/prometheus-stack
       tags:
+        - additional
         - prometheus
         - grafana
         - monitoring
-        - additional
 
     - name: ./roles/services/additional/minio
       tags:
+        - additional
         - minio
         - s3
-        - additional
 
     - name: ./roles/services/additional/harbor
       tags:
+        - additional
         - harbor
         - registry
-        - additional
 
     - name: ./roles/services/additional/sonarqube
       tags:
+        - additional
         - sonarqube
         - sonar
-        - additional
 
     - name: ./roles/services/additional/mattermost
       tags:
@@ -100,13 +108,13 @@
 
     - name: ./roles/services/additional/actions-runner-controller
       tags:
+        - additional
         - actions-runner-controller
         - arc
         - runners
-        - additional
 
     - name: ./roles/services/additional/dashy
       tags:
+        - additional
         - dashy
         - dashboard
-        - additional
