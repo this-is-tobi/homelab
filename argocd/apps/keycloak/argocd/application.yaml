@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: keycloak
     repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 17.3.5
+    targetRevision: 17.3.6
     helm:
       releaseName: keycloak
       valuesObject:

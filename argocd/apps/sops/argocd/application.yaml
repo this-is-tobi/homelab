@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: sops-secrets-operator
     repoURL: https://isindir.github.io/sops-secrets-operator
-    targetRevision: 0.17.2
+    targetRevision: 0.17.4
     helm:
       releaseName: sops
       valuesObject:
