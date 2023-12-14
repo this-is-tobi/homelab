@@ -3,7 +3,8 @@ kind: Ingress
 metadata:
   name: actions-runner-controller-github-webhook-server
   annotations:
-    "cert-manager.io/cluster-issuer": letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:
@@ -18,5 +19,5 @@ spec:
               number: 80
   tls:
   - hosts:
-    - arc.ohmlab.fr
-    secretName: arc.ohmlab.fr
+    - <path:secret/data/admin/apps/actions-runner-controller#domain>
+    secretName: <path:secret/data/admin/apps/actions-runner-controller#domain>

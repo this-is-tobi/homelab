@@ -3,13 +3,18 @@
   ansible.builtin.include_role:
     name: services/utils/initialize
 
+# Setup
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: "keycloak"
+    vault_values:
+      domain: "kube.{{ rootDomain }}"
+
 # Install
 - name: Sync application
   ansible.builtin.include_role:
     name: services/utils/synchronize
   vars:
     argocd_app: kubernetes-dashboard
-
-# Post install
-# - name: Post install
-#   include_tasks: post-install.yml

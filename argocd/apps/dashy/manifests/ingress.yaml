@@ -3,21 +3,22 @@ kind: Ingress
 metadata:
   name: dashy
   annotations:
-    kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
 spec:
+  ingressClassName: traefik
   rules:
-    - host: ohmlab.fr
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: dashy
-                port:
-                  number: 80
+  - host: <path:secret/data/admin/apps/dashy#domain>
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dashy
+            port:
+              number: 80
   tls:
-    - hosts:
-        - ohmlab.fr
-      secretName: ohmlab.fr
+  - hosts:
+    - <path:secret/data/admin/apps/dashy#domain>
+    secretName: <path:secret/data/admin/apps/dashy#domain>

@@ -24,15 +24,17 @@ spec:
             issuer:
               name: letsencrypt-prod
               scope: cluster
+            annotations:
+              traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
             hosts:
-            - kube.ohmlab.fr
+            - <path:secret/data/admin/apps/kubernetes-dashboard#domain>
             paths:
               web: /
               api: /api
             tls:
             - hosts:
-              - kube.ohmlab.fr
-              secretName: kube.ohmlab.fr
+              - <path:secret/data/admin/apps/kubernetes-dashboard#domain>
+              secretName: <path:secret/data/admin/apps/kubernetes-dashboard#domain>
           nodeSelector:
             node-type: worker
           settings:

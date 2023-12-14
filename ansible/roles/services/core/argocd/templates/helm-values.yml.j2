@@ -45,7 +45,8 @@ server:
     - {{ argocd.domain }}
     https: false
     annotations:
-      "cert-manager.io/cluster-issuer": letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
     tls:
     - hosts:
       - {{ argocd.domain }}
