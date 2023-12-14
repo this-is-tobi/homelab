@@ -8,7 +8,7 @@
   ansible.builtin.include_role:
     name: services/utils/secrets
   vars:
-    argocd_app: "keycloak"
+    argocd_app: "kubernetes-dashboard"
     vault_values:
       domain: "kube.{{ rootDomain }}"
 
