@@ -9,7 +9,7 @@
   roles:
     - name: ./roles/services/core/traefik
       tags:
-        - never
+        - core
         - traefik-core
 
     - name: ./roles/services/core/longhorn
