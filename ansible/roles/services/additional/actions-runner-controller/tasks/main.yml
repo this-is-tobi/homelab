@@ -8,7 +8,7 @@
   ansible.builtin.include_role:
     name: services/utils/secrets
   vars:
-    argocd_app: "keycloak"
+    argocd_app: "actions-runner-controller"
     vault_values:
       domain: "arc.{{ rootDomain }}"
 
