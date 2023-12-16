@@ -94,13 +94,13 @@
   no_log: true
   register: bouncer_key
 
-- name: Set keycloak client secret
+- name: Set crowdsec bouncer key
   delegate_to: localhost
   become: false
   ansible.builtin.shell:
     cmd: |
-      yq -i '.crowdsec.bouncerNftablesKey = "{{ argocd_client_secret.clientsecret_info.value }}"' ./inventory/group_vars/gateway/all.yml
-  when: not crowdsec.bouncerNftablesKey == "{{ argocd_client_secret.clientsecret_info.value }}"
+      yq -i '.crowdsec.bouncerNftablesKey = "{{ bouncer_key.stdout }}"' ./inventory/group_vars/gateway/all.yml
+  when: not crowdsec.bouncerNftablesKey == "{{ bouncer_key.stdout }}"
 
 - name: Get infos on crowdsec container
   community.general.docker_container_info:
