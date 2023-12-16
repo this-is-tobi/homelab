@@ -54,15 +54,19 @@ spec:
         persistence:
           enabled: true
           mountPath: /data
-          accessModes:
-            - ReadWriteMany
           persistentVolumeClaim:
             registry:
               size: 100Gi
+              accessModes:
+              - ReadWriteMany
             jobservice:
               size: 10Gi
+              accessModes:
+              - ReadWriteMany
             trivy:
               size: 10Gi
+              accessModes:
+              - ReadWriteMany
         postgresql:
           enabled: false
         externalDatabase:
