@@ -18,3 +18,7 @@
     name: services/utils/synchronize
   vars:
     argocd_app: kubernetes-dashboard
+
+# Post install
+- name: Post install
+  include_tasks: post-install.yml

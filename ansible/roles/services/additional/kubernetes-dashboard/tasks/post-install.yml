@@ -1,0 +1,16 @@
+# Get vault secrets
+- name: Retrieve kubernetes dashboard token
+  kubernetes.core.k8s_info:
+    namespace: "kubernetes-dashboard"
+    kind: Secret
+    name: kubernetes-dashboard-admin
+  register: kubernetes_dashboard_admin_secret
+
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: "kubernetes-dashboard"
+    vault_values:
+      admin:
+        token: "{{ kubernetes_dashboard_admin_secret.resources[0].data.token | b64decode }}"
