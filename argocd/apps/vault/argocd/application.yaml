@@ -48,9 +48,6 @@ spec:
               - hosts:
                   - <path:secret/data/admin/apps/vault#domain>
                 secretName: <path:secret/data/admin/apps/vault#domain>
-  - path: argocd/apps/vault/manifests
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: vault

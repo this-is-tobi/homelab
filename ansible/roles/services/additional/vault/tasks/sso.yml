@@ -1,7 +1,7 @@
 - name: Get vault secrets
   include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
-    vault_app: vault
+    argocd_app: vault
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
@@ -54,7 +54,7 @@
   ansible.builtin.include_role:
     name: services/utils/secrets
   vars:
-    vault_app: vault
+    argocd_app: vault
     vault_values:
       keycloak:
         clientSecret: "{{ vault_client_secret.clientsecret_info.value }}"
