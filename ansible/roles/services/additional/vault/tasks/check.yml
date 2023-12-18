@@ -2,7 +2,7 @@
   kubernetes.core.k8s_exec:
     container: vault
     pod: "{{ vault_pod }}"
-    namespace: "{{ vault.namespace }}"
+    namespace: "{{ vault_namespace }}"
     command: vault status -format=json
   register: vault_health
   ignore_errors: true

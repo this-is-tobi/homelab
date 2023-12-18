@@ -32,10 +32,10 @@ data:
       - name: Services
         icon: fas fa-rocket
         items:
-          # - title: Argocd
-          #   description: Deploy apps using gitops
-          #   url: ''
-          #   icon: hl-argocd
+          - title: Argocd
+            description: Deploy apps using gitops
+            url: https://<path:secret/data/admin/apps/argocd#domain>
+            icon: hl-argocd
           - title: Grafana
             description: Watch cluster metrics & application logs
             url: https://<path:secret/data/admin/apps/prometheus-stack#domain>
@@ -64,10 +64,10 @@ data:
             description: Code analysis service
             url: https://<path:secret/data/admin/apps/sonarqube#domain>
             icon: hl-sonarqube
-          # - title: Vault
-          #   description: Store & retrieve secrets safely
-          #   url: ''
-          #   icon: hl-vault
+          - title: Vault
+            description: Store & retrieve secrets safely
+            url: https://<path:secret/data/admin/apps/vault#domain>
+            icon: hl-vault
         displayData:
           sortBy: alphabetical
           collapsed: false

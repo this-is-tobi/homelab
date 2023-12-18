@@ -19,6 +19,15 @@
       keycloak:
         clientId: "vault"
 
+- name: Setup vars
+  ansible.builtin.include_vars:
+    file: "{{ playbook_dir }}/../argocd/apps/vault/argocd/application.yaml"
+    name: vault_app_config
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    vault_namespace: "{{ vault_app_config.spec.destination.namespace }}"
+
 # Setup sso
 - name: Setup SSO
   include_tasks: sso.yml

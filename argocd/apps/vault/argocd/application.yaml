@@ -53,10 +53,10 @@ spec:
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: vault
   syncPolicy:
-    automated:
-      selfHeal: false
+    # automated:
+    #   selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

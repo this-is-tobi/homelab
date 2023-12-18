@@ -17,13 +17,6 @@ spec:
     helm:
       releaseName: argocd
       valuesObject:
-        redis-ha:
-          enabled: true
-        controller:
-          replicas: 1
-        applicationSet:
-          enabled: true
-          replicas: 2
         configs:
           secret:
             argocdServerAdminPassword: <path:secret/data/admin/apps/argocd#admin | jsonPath {.password}>
@@ -50,6 +43,13 @@ spec:
               clientID: <path:secret/data/admin/apps/argocd#keycloak | jsonPath {.clientId}>
               clientSecret: <path:secret/data/admin/apps/argocd#keycloak | jsonPath {.clientSecret}>
               requestedScopes: ["openid", "profile", "email", "groups"]
+        redis-ha:
+          enabled: false
+        controller:
+          replicas: 1
+        applicationSet:
+          enabled: true
+          replicas: 1
         dex:
           enabled: false
           nodeSelector:
@@ -57,7 +57,7 @@ spec:
         server:
           autoscaling:
             enabled: false
-            minReplicas: 2
+            minReplicas: 1
           ingress:
             enabled: true
             ingressClassName: traefik
@@ -74,7 +74,7 @@ spec:
         repoServer:
           autoscaling:
             enabled: false
-            minReplicas: 2
+            minReplicas: 1
           initContainers:
           - name: download-tools
             image: registry.access.redhat.com/ubi8
@@ -180,8 +180,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: argocd
   syncPolicy:
-    automated:
-      selfHeal: false
+    # automated:
+    #   selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

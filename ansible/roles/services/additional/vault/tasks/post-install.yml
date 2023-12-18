@@ -81,8 +81,8 @@
 
 - name: Unseal vault primary - node 1
   ansible.builtin.include_tasks: unseal.yml
-  # vars:
-  #   vault_pod: vault-0
+  vars:
+    vault_pod: vault-0
   when: vault_status == 'not init' or vault_status == 'sealed'
 
 # Init vault node 2
@@ -176,6 +176,8 @@
         version: 2
     body_format: json
   when: get_engines.status == 400
+
+# Setup oidc
 - name: Get auth methods
   ansible.builtin.uri:
     validate_certs: true
@@ -186,7 +188,6 @@
       "X-Vault-Token": "{{ vault_token }}"
   register: get_auth_method
 
-# Setup oidc
 - name: Enable oidc auth method
   ansible.builtin.uri:
     validate_certs: true
