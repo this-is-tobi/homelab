@@ -1,45 +1,29 @@
+# Refresh platform application
 - name: Setup vars
   ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argocd/apps/{{ argocd_app }}/argocd/application.yaml"
-    name: argocd_app_config
+    file: "{{ playbook_dir }}/../argocd/envs/production/application.yaml"
+    name: argocd_platform_config
 
-- name: Refresh argocd application
+- name: Refresh argocd platform application
   ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_app_config.metadata.namespace }}"
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_platform_config.metadata.namespace }}"
     method: GET
     body_format: json
     headers:
-      Authorization: Bearer {{ argocd_token }}
+      Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
-  retries: 5
+  retries: 30
   delay: 10
 
-- name: Synchronize argocd application
+- name: Get argocd platform application status
   ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}/sync"
-    method: POST
-    body_format: json
-    body:
-      "project": "{{ argocd_app_config.spec.project }}"
-      "appNamespace": "{{ argocd_app_config.metadata.namespace }}"
-      "syncOptions":
-        "items":
-          - "CreateNamespace=true"
-          - "ApplyOutOfSyncOnly=true"
-          - "ServerSideApply=true"
-    headers:
-      Authorization: Bearer {{ argocd_token }}
-    status_code: 200
-
-- name: Get argocd application status
-  ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?project={{ argocd_app_config.spec.project }}&appNamespace={{ argocd_app_config.metadata.namespace }}"
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_config.metadata.name }}?project={{ argocd_platform_config.spec.project }}&appNamespace={{ argocd_platform_config.metadata.namespace }}"
     method: GET
     body_format: json
     headers:
-      Authorization: Bearer {{ argocd_token }}
+      Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
-  register: argocd_app_status
-  until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
+  register: argocd_platform_status
+  until: argocd_platform_status.json.status.sync.status == 'Synced' and argocd_platform_status.json.status.health.status == 'Healthy'
   retries: 60
   delay: 10

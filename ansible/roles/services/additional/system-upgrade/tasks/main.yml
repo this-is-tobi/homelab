@@ -5,7 +5,6 @@
 
 # Install
 - name: Sync application
-  ansible.builtin.include_role:
-    name: services/utils/synchronize
+  include_tasks: roles/services/utils/synchronize/sync.yml
   vars:
     argocd_app: system-upgrade

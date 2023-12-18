@@ -5,48 +5,12 @@
   vars:
     include_keycloak: true
 
-# Setup
-- name: Set mattermost postgres app password
-  ansible.builtin.set_fact:
-    mattermost_pg_app_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
-
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: mattermost
-    vault_values:
-      domain: "mattermost.{{ rootDomain }}"
-      admin:
-        username: "admin"
-        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
-      postgres:
-        host: "mattermost-pg-cluster-rw"
-        port: "5432"
-        database: "mattermost"
-        admin:
-          username: "postgres"
-          password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
-        app:
-          username: "mattermost"
-          password: "{{ mattermost_pg_app_password }}"
-        connectionString: "mattermost:{{ mattermost_pg_app_password }}@mattermost-pg-cluster-rw:5432/mattermost?sslmode=disable&connect_timeout=10"
-      s3:
-        endpoint: ""
-        bucketName: ""
-        region: ""
-        accessKey: ""
-        secretKey: ""
-      smtp:
-        server: ""
-        port: 465
-        username: ""
-        password: ""
-        email: ""
+# Setup vault secrets
+- name: Setup vault secrets
+  ansible.builtin.include_tasks: vault-secrets.yml
 
 # Install
 - name: Sync application
-  ansible.builtin.include_role:
-    name: services/utils/synchronize
+  include_tasks: roles/services/utils/synchronize/sync.yml
   vars:
     argocd_app: mattermost

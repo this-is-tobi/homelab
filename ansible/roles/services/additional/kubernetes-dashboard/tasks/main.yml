@@ -3,19 +3,13 @@
   ansible.builtin.include_role:
     name: services/utils/initialize
 
-# Setup
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: "kubernetes-dashboard"
-    vault_values:
-      domain: "kube.{{ rootDomain }}"
+# Setup vault secrets
+- name: Setup vault secrets
+  ansible.builtin.include_tasks: vault-secrets.yml
 
 # Install
 - name: Sync application
-  ansible.builtin.include_role:
-    name: services/utils/synchronize
+  include_tasks: roles/services/utils/synchronize/sync.yml
   vars:
     argocd_app: kubernetes-dashboard
 

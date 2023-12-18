@@ -3,25 +3,12 @@
   ansible.builtin.include_role:
     name: services/utils/initialize
 
-# Setup
-- name: Generate age keys
-  ansible.builtin.command:
-    cmd: age-keygen
-  register: age_keys
-
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: sops
-    vault_values:
-      extras:
-        keys: "{{ age_keys.stdout | b64encode }}"
-        publicKey: "{{ age_keys.stdout | regex_search('public key: (.+)', '\\1', multiline=True) | first }}"
+# Setup vault secrets
+- name: Setup vault secrets
+  ansible.builtin.include_tasks: vault-secrets.yml
 
 # Install
 - name: Sync application
-  ansible.builtin.include_role:
-    name: services/utils/synchronize
+  include_tasks: roles/services/utils/synchronize/sync.yml
   vars:
     argocd_app: sops

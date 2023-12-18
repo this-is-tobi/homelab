@@ -1,46 +1,70 @@
-- name: Retrieve vault keys
-  kubernetes.core.k8s_info:
-    namespace: "{{ vault.namespace }}"
-    kind: Secret
-    name: vault-admin
-  register: vault_keys
-
-- name: Set vault token
-  ansible.builtin.set_fact:
-    vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
-
-- name: Retrieve argocd credentials
-  kubernetes.core.k8s_info:
-    namespace: "{{ argocd.namespace }}"
-    kind: Secret
-    name: argocd-admin
-  register: argocd_secret
-
-- name: Get argocd api token
-  ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/session"
-    method: POST
-    body_format: json
-    body:
-      "username": "{{ argocd_secret.resources[0].data.username | b64decode }}"
-      "password": "{{ argocd_secret.resources[0].data.password | b64decode }}"
-    status_code: 200
-  register: argocd_token_call
-
-- name: Set argocd token
-  ansible.builtin.set_fact:
-    argocd_token: "{{ argocd_token_call.json.token }}"
-
+# Get Vault infos
 - block:
-  - name: Get vault secrets
-    include_tasks: roles/services/utils/secrets/tasks/read.yml
-    vars:
-      argocd_app: keycloak
+    - name: Retrieve vault keys
+      kubernetes.core.k8s_info:
+        namespace: "{{ vault.namespace }}"
+        kind: Secret
+        name: vault-admin
+      register: vault_keys
 
-  - name: Set fact for vault secrets
-    ansible.builtin.set_fact:
-      keycloak_username: "{{ current_vault_values.secret.admin.username }}"
-      keycloak_password: "{{ current_vault_values.secret.admin.password }}"
-      keycloak_domain: "{{ current_vault_values.secret.domain }}"
-      keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
+    - name: Set vault token
+      ansible.builtin.set_fact:
+        vault_core_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
+  when: vault_core_token is undefined
+
+# Get Argocd infos
+- block:
+    - name: Retrieve argocd credentials
+      kubernetes.core.k8s_info:
+        namespace: "{{ argocd.namespace }}"
+        kind: Secret
+        name: argocd-admin
+      register: argocd_secret
+
+    - name: Get argocd api token
+      ansible.builtin.uri:
+        url: "https://{{ argocd.domain }}/api/v1/session"
+        method: POST
+        body_format: json
+        body:
+          "username": "{{ argocd_secret.resources[0].data.username | b64decode }}"
+          "password": "{{ argocd_secret.resources[0].data.password | b64decode }}"
+        status_code: 200
+      register: argocd_token_call
+
+    - name: Set argocd core token
+      ansible.builtin.set_fact:
+        argocd_core_token: "{{ argocd_token_call.json.token }}"
+  when: argocd_core_token is undefined
+
+# Create default secrets
+- block:
+    - name: Find apps secret files
+      ansible.builtin.find:
+        paths: "{{ playbook_dir }}/roles/services/additional"
+        patterns: "vault-secrets.yml"
+        recurse: true
+      register: results
+
+    - name: Get keycloak vault secrets
+      include_tasks: "{{ vault_app }}"
+      loop_control:
+        loop_var: vault_app
+      with_items: "{{ results.files | json_query('[].path') }}"
+  when: init_vault_secret | default(false)
+
+
+# Get Keycloak infos
+- block:
+    - name: Get keycloak vault secrets
+      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      vars:
+        argocd_app: keycloak
+
+    - name: Set fact for keycloak vault secrets
+      ansible.builtin.set_fact:
+        keycloak_username: "{{ current_vault_values.secret.admin.username }}"
+        keycloak_password: "{{ current_vault_values.secret.admin.password }}"
+        keycloak_domain: "{{ current_vault_values.secret.domain }}"
+        keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
   when: include_keycloak | default(false)

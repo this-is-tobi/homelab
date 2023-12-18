@@ -76,7 +76,7 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
     body: "{{ lookup('ansible.builtin.template', 'superadmin-policy.json.j2') }}"
     body_format: json
 
@@ -87,7 +87,7 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
     body:
       "name": "admin"
       "type": "external"
@@ -102,7 +102,7 @@
     method: GET
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
   register: oidc_auth
 
 - name: Get admin group id
@@ -112,7 +112,7 @@
     method: GET
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
   register: user_group
 
 - name: Create admin group alias
@@ -122,7 +122,7 @@
     method: POST
     status_code: [200, 400]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
     body:
       "name": "admin"
       "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"

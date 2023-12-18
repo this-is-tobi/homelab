@@ -71,7 +71,7 @@
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
-    vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
+    vault_core_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
 
 # Unseal vault node 1
 - name: Set seal count - node 1
@@ -158,7 +158,7 @@
     url: "https://{{ vault.domain }}/v1/sys/mounts/secret"
     status_code: [200, 400]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
   register: get_engines
 
 - name: Create default 'secret/' kv engine
@@ -168,7 +168,7 @@
     method: POST
     status_code: [204]
     headers:
-      "X-Vault-Token": "{{ vault_token }}"
+      "X-Vault-Token": "{{ vault_core_token }}"
     body:
       type: kv
       options:

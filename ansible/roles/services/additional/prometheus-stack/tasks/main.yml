@@ -5,19 +5,9 @@
   vars:
     include_keycloak: true
 
-# Setup
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: prometheus-stack
-    vault_values:
-      domain: "monitoring.{{ rootDomain }}"
-      admin:
-        username: "admin"
-        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
-      keycloak:
-        clientId: "grafana"
+# Setup vault secrets
+- name: Setup vault secrets
+  ansible.builtin.include_tasks: vault-secrets.yml
 
 # Setup sso
 - name: Setup SSO
@@ -25,7 +15,6 @@
 
 # Install
 - name: Sync application
-  ansible.builtin.include_role:
-    name: services/utils/synchronize
+  include_tasks: roles/services/utils/synchronize/sync.yml
   vars:
     argocd_app: prometheus-stack

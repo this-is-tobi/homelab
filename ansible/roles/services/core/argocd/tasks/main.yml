@@ -55,7 +55,7 @@
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
-    vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
+    vault_core_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
 
 - name: Deploy argocd plugins config
   kubernetes.core.k8s:

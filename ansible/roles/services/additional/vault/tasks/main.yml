@@ -5,20 +5,11 @@
   vars:
     include_keycloak: true
 
-# Setup
-- name: Setup secrets
-  ansible.builtin.include_role:
-    name: services/utils/secrets
-  vars:
-    argocd_app: vault
-    vault_values:
-      domain: "vault.{{ rootDomain }}"
-      admin:
-        username: "admin"
-        password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
-      keycloak:
-        clientId: "vault"
+# Setup vault secrets
+- name: Setup vault secrets
+  ansible.builtin.include_tasks: vault-secrets.yml
 
+# Get namespace
 - name: Setup vars
   ansible.builtin.include_vars:
     file: "{{ playbook_dir }}/../argocd/apps/vault/argocd/application.yaml"
@@ -30,15 +21,14 @@
 
 # Setup sso
 - name: Setup SSO
-  include_tasks: sso.yml
+  ansible.builtin.include_tasks: sso.yml
 
 # Install
 - name: Sync application
-  ansible.builtin.include_role:
-    name: services/utils/synchronize
+  ansible.builtin.include_tasks: roles/services/utils/synchronize/sync.yml
   vars:
     argocd_app: vault
 
 # Post install
 - name: Post install
-  include_tasks: post-install.yml
+  ansible.builtin.include_tasks: post-install.yml

@@ -32,6 +32,18 @@
         - core
         - argocd-core
 
+    - name: ./roles/services/utils/initialize
+      tags:
+        - additional
+        - initialize
+      vars:
+        init_vault_secret: true
+
+    - name: ./roles/services/utils/synchronize
+      tags:
+        - additional
+        - synchronize
+
     - name: ./roles/services/additional/sops
       tags:
         - additional

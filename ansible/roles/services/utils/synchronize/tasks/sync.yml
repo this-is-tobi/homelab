@@ -1,0 +1,46 @@
+# Sync application
+- name: Setup vars
+  ansible.builtin.include_vars:
+    file: "{{ playbook_dir }}/../argocd/apps/{{ argocd_app }}/argocd/application.yaml"
+    name: argocd_app_config
+
+- name: Refresh argocd application
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_app_config.metadata.namespace }}"
+    method: GET
+    body_format: json
+    headers:
+      Authorization: Bearer {{ argocd_core_token }}
+    status_code: 200
+  retries: 30
+  delay: 10
+
+- name: Synchronize argocd application
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}/sync"
+    method: POST
+    body_format: json
+    body:
+      "project": "{{ argocd_app_config.spec.project }}"
+      "appNamespace": "{{ argocd_app_config.metadata.namespace }}"
+      "syncOptions":
+        "items":
+          - "CreateNamespace=true"
+          - "ApplyOutOfSyncOnly=true"
+          - "ServerSideApply=true"
+    headers:
+      Authorization: Bearer {{ argocd_core_token }}
+    status_code: 200
+
+- name: Get argocd application status
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?project={{ argocd_app_config.spec.project }}&appNamespace={{ argocd_app_config.metadata.namespace }}"
+    method: GET
+    body_format: json
+    headers:
+      Authorization: Bearer {{ argocd_core_token }}
+    status_code: 200
+  register: argocd_app_status
+  until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
+  retries: 60
+  delay: 10
