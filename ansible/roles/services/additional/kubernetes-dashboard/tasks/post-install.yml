@@ -1,4 +1,3 @@
-# Get vault secrets
 - name: Retrieve kubernetes dashboard token
   kubernetes.core.k8s_info:
     namespace: "kubernetes-dashboard"

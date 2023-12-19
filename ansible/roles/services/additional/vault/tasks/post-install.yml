@@ -73,6 +73,15 @@
   ansible.builtin.set_fact:
     vault_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
 
+- name: Setup vault secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: vault
+    vault_values:
+      admin:
+        token: "{{ vault_token }}"
+
 # Unseal vault node 1
 - name: Set seal count - node 1
   ansible.builtin.set_fact:
@@ -178,6 +187,18 @@
   when: get_engines.status == 400
 
 # Setup oidc
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: vault
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    vault_domain: "{{ current_vault_values.secret.domain }}"
+    vault_token: "{{ current_vault_values.secret.admin.token }}"
+    vault_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
+    vault_client_secret: "{{ current_vault_values.secret.keycloak.clientSecret }}"
+
 - name: Get auth methods
   ansible.builtin.uri:
     validate_certs: true
@@ -236,7 +257,7 @@
         - "roles"
         - "groups"
       "bound_audiences":
-        - "{{ vault_client_secret }}"
+        - "{{ vault_client_id }}"
       "claim_mappings":
         "prefered_username": "username"
         "email": "email"
@@ -272,7 +293,7 @@
       "name": "admin"
       "type": "external"
       "policies":
-        - "{{ item.admin }}"
+        - "admin"
     body_format: json
 
 - name: Get oidc accessor

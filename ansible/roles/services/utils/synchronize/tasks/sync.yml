@@ -12,8 +12,7 @@
     headers:
       Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
-  retries: 30
-  delay: 10
+    timeout: 600
 
 - name: Synchronize argocd application
   ansible.builtin.uri:

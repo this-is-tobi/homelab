@@ -86,7 +86,7 @@
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
 # Post install
-- name: Deploy argocd admin application set
+- name: Deploy argocd admin project
   kubernetes.core.k8s:
     template:
       path: "admin-project.yml.j2"

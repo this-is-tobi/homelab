@@ -1,3 +1,8 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+
 # Refresh platform application
 - name: Setup vars
   ansible.builtin.include_vars:
@@ -12,8 +17,7 @@
     headers:
       Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
-  retries: 30
-  delay: 10
+    timeout: 600
 
 - name: Get argocd platform application status
   ansible.builtin.uri:

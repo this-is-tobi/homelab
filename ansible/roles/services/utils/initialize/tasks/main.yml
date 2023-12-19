@@ -46,7 +46,7 @@
         recurse: true
       register: results
 
-    - name: Get keycloak vault secrets
+    - name: Create default vault secrets
       include_tasks: "{{ vault_app }}"
       loop_control:
         loop_var: vault_app

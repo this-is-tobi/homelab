@@ -9,7 +9,7 @@
 
 # Install
 - name: Sync application
-  include_tasks: roles/services/utils/synchronize/sync.yml
+  include_tasks: roles/services/utils/synchronize/tasks/sync.yml
   vars:
     argocd_app: kubernetes-dashboard
 
