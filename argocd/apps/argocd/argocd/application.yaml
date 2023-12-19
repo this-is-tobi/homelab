@@ -11,7 +11,7 @@ spec:
   project: admin
   revisionHistoryLimit: 5
   sources:
-  - chart: argocd
+  - chart: argo-cd
     repoURL: https://argoproj.github.io/argo-helm
     targetRevision: 5.51.6
     helm:
@@ -180,8 +180,8 @@ spec:
     server: https://kubernetes.default.svc
     namespace: argocd
   syncPolicy:
-    # automated:
-    #   selfHeal: false
+    automated:
+      selfHeal: false
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true
