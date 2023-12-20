@@ -49,7 +49,7 @@ spec:
               api_url: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo
               allow_assign_grafana_admin: true
               groups_attribute_path: groups
-              role_attribute_path: contains(resource_access."grafana".roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(resource_access."grafana".roles[*], 'admin') && 'Admin' || contains(resource_access."grafana".roles[*], 'editor') && 'Editor' || 'Viewer'
+              role_attribute_path: contains(groups[*], 'admin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || 'Viewer'
   - path: argocd/apps/prometheus-stack/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
