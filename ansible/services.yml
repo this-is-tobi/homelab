@@ -6,6 +6,7 @@
   vars_files:
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/services.yml
+    - ./inventory/group_vars/gateway.yml
   roles:
     - name: ./roles/services/core/traefik
       tags:
@@ -124,6 +125,12 @@
         - actions-runner-controller
         - arc
         - runners
+
+    - name: ./roles/services/additional/crowdsec
+      tags:
+        - additional
+        - crowdsec
+        - firewall
 
     - name: ./roles/services/additional/dashy
       tags:

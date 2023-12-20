@@ -1,0 +1,45 @@
+# Get vault secrets
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: crowdsec
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    crowdsec_domain: "{{ current_vault_values.secret.domain }}"
+    crowdsec_enroll_key: "{{ current_vault_values.secret.extras.enrollKey }}"
+    crowdsec_bouncer_key: "{{ current_vault_values.secret.extras.bouncerApiKey }}"
+    crowdsec_instance_name: "{{ current_vault_values.secret.extras.instanceName }}"
+
+- name: Wait crowdsec container
+  kubernetes.core.k8s:
+    kind: Pod
+    name: crowdsec-lapi
+    namespace: "{{ crowdsec_namespace }}"
+    wait: true
+    wait_sleep: 10
+    wait_timeout: 600
+    wait_condition:
+      reason:
+      type: Initialized
+      status: "True"
+
+# Register bouncer
+- name: Register traefik bouncer
+  kubernetes.core.k8s_exec:
+    # container: vault
+    pod: crowdsec-lapi
+    namespace: "{{ crowdsec_namespace }}"
+    command: cscli bouncers add traefik-ingress-bouncer | grep '^[[:space:]]' | tr -d '[:space:]'
+  register: bouncer_init
+  when: crowdsec_bouncer_key | default(false)
+
+# Setup vault secrets
+- name: Setup secrets
+  ansible.builtin.include_role:
+    name: services/utils/secrets
+  vars:
+    argocd_app: crowdsec
+    vault_values:
+      extras:
+        bouncerApiKey: "{{ bouncer_init.stdout }}"

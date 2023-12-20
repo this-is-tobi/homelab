@@ -16,6 +16,9 @@ spec:
   - path: argocd/apps/cloudnative-pg/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
+  - path: argocd/apps/crowdsec/argocd
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   - path: argocd/apps/dashy/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main

@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crowdsec
+  namespace: argocd-system
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  source:
+    chart: crowdsec
+    repoURL: https://crowdsecurity.github.io/helm-charts
+    targetRevision: 0.9.10
+    helm:
+      releaseName: crowdsec
+      valuesObject:
+        container_runtime: containerd
+        agent:
+          acquisition:
+            - namespace: kube-system
+              podName: traefik-*
+              program: traefik
+          env:
+            - name: PARSERS
+              # value: "crowdsecurity/cri-logs"
+              value: "crowdsecurity/traefik-logs"
+            - name: COLLECTIONS
+              value: "crowdsecurity/traefik"
+            - name: DISABLE_PARSERS
+              value: "crowdsecurity/whitelists"
+          persistentVolume:
+            config:
+              enabled: false
+              accessModes:
+                - ReadWriteMany
+        lapi:
+          persistentVolume:
+            data:
+              accessModes:
+                - ReadWriteMany
+            config:
+              accessModes:
+                - ReadWriteMany
+          ingress:
+            enabled: false
+            ingressClassName: traefik
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
+            host: <path:secret/data/admin/apps/crowdsec#domain>
+            tls:
+              - hosts:
+                  - <path:secret/data/admin/apps/crowdsec#domain>
+                secretName: <path:secret/data/admin/apps/crowdsec#domain>
+          env:
+            - name: ENROLL_KEY
+              value: "<path:secret/data/admin/apps/crowdsec#extras | jsonPath {.enrollKey}>"
+            - name: ENROLL_INSTANCE_NAME
+              value: "<path:secret/data/admin/apps/crowdsec#extras | jsonPath {.instanceName}>"
+            - name: ENROLL_TAGS
+              value: "<path:secret/data/admin/apps/crowdsec#extras | jsonPath {.tags}>"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crowdsec
+  syncPolicy:
+    automated:
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true
