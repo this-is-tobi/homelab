@@ -1,18 +1,3 @@
-redis-ha:
-  enabled: true
-controller:
-  replicas: 1
-server:
-  autoscaling:
-    enabled: false
-    minReplicas: 2
-repoServer:
-  autoscaling:
-    enabled: false
-    minReplicas: 2
-applicationSet:
-  enabled: true
-  replicas: 2
 configs:
   secret:
     argocdServerAdminPassword: {{ argocd_hashed_password }}
@@ -33,11 +18,29 @@ configs:
           hs = {}
           hs.status = "Healthy"
           return hs
-dex:
-  enabled: false
-  nodeSelector:
-    node-type: worker
+redis-ha:
+  enabled: true
+redis:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+notifications:
+  replicas: 1
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+controller:
+  replicas: 2
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
 server:
+  autoscaling:
+    enabled: false
+    minReplicas: 2
   ingress:
     enabled: true
     ingressClassName: {{ ingressClassName }}
@@ -51,7 +54,29 @@ server:
     - hosts:
       - {{ argocd.domain }}
       secretName: {{ argocd.domain }}
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+applicationSet:
+  enabled: true
+  replicas: 2
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+dex:
+  enabled: false
+  nodeSelector:
+    node-type: worker
 repoServer:
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
   initContainers:
   - name: download-tools
     image: registry.access.redhat.com/ubi8

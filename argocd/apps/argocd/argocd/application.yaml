@@ -45,11 +45,30 @@ spec:
               requestedScopes: ["openid", "profile", "email", "groups"]
         redis-ha:
           enabled: false
+        redis:
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+        notifications:
+          replicas: 1
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
         controller:
           replicas: 1
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
         applicationSet:
           enabled: true
           replicas: 1
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
         dex:
           enabled: false
           nodeSelector:
@@ -58,6 +77,10 @@ spec:
           autoscaling:
             enabled: false
             minReplicas: 1
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
           ingress:
             enabled: true
             ingressClassName: traefik
@@ -75,6 +98,10 @@ spec:
           autoscaling:
             enabled: false
             minReplicas: 1
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
           initContainers:
           - name: download-tools
             image: registry.access.redhat.com/ubi8
