@@ -17,6 +17,9 @@ spec:
     helm:
       releaseName: prometheus-stack
       valuesObject:
+        prometheus:
+          prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
         grafana:
           adminPassword: <path:secret/data/admin/apps/prometheus-stack#admin | jsonPath {.password}>
           ingress:
