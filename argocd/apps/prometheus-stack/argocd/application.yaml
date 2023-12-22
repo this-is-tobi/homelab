@@ -20,6 +20,10 @@ spec:
         prometheus:
           prometheusSpec:
             serviceMonitorSelectorNilUsesHelmValues: false
+            probeSelectorNilUsesHelmValues: false
+            podMonitorSelector: false
+            ruleSelectorNilUsesHelmValues: false
+            scrapeConfigSelectorNilUsesHelmValues: false
         grafana:
           adminPassword: <path:secret/data/admin/apps/prometheus-stack#admin | jsonPath {.password}>
           ingress:
