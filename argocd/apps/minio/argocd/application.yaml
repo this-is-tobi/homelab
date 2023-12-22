@@ -49,6 +49,10 @@ spec:
             - ReadWriteOnce
           size: 500Gi
         extraEnvVarsCM: minio-sso
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true
   - path: argocd/apps/minio/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
