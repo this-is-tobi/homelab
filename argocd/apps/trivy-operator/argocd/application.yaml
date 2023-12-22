@@ -22,12 +22,19 @@ spec:
         operator:
           replicas: 1
           revisionHistoryLimit: 3
+          metricsVulnIdEnabled: true
+          metricsExposedSecretInfo: true
+          metricsConfigAuditInfo: true
+          metricsRbacAssessmentInfo: true
+          metricsInfraAssessmentInfo: true
+          metricsImageInfo: true
+          metricsClusterComplianceInfo: true
         serviceMonitor:
           enabled: true
         trivy:
           ignoreUnfixed: false
           server:
-            replicas: 1
+            replicas: 2
   destination:
     server: https://kubernetes.default.svc
     namespace: trivy
