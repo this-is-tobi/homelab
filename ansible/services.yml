@@ -125,6 +125,12 @@
         - arc
         - runners
 
+    - name: ./roles/services/additional/trivy-operator
+      tags:
+        - additional
+        - trivy-operator
+        - trivy
+
     - name: ./roles/services/additional/dashy
       tags:
         - additional

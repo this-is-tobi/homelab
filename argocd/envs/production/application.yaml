@@ -46,6 +46,9 @@ spec:
   - path: argocd/apps/system-upgrade/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
+  - path: argocd/apps/trivy-operator/argocd
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   - path: argocd/apps/vault/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
