@@ -151,6 +151,7 @@
     vault_pod: vault-2
   when: vault_status == 'not init' or vault_status == 'sealed'
 
+# Create kv engine
 - name: Get kv engines
   ansible.builtin.uri:
     validate_certs: true

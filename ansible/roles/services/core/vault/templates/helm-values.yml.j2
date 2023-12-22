@@ -1,3 +1,6 @@
+global:
+  serverTelemetry:
+    prometheusOperator: true
 server:
   ha:
     enabled: true
@@ -5,6 +8,25 @@ server:
     apiAddr: "https://{{ vault.domain }}"
     raft:
       enabled: true
+      config: |
+        ui = true
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          # Enable unauthenticated metrics access (necessary for Prometheus Operator)
+          telemetry {
+            unauthenticated_metrics_access = "true"
+          }
+        }
+        storage "raft" {
+          path = "/vault/data"
+        }
+        service_registration "kubernetes" {}
+        telemetry {
+          prometheus_retention_time = "1h"
+          disable_hostname = true
+        }
   standalone:
     enabled: false
   auditStorage:
@@ -29,3 +51,9 @@ server:
       - hosts:
           - {{ vault.domain }}
         secretName: {{ vault.domain }}
+serverTelemetry:
+  serviceMonitor:
+    enabled: true
+injector:
+  metrics:
+    enabled: true
