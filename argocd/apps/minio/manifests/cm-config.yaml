@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: minio-sso
+  name: minio-config
   annotations:
     avp.kubernetes.io/remove-missing: "true"
 data:
@@ -17,3 +17,6 @@ data:
   MINIO_IDENTITY_OPENID_KEYCLOAK_REALM: <path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
   MINIO_IDENTITY_OPENID_KEYCLOAK_ADMIN_URL: https://<path:secret/data/admin/apps/keycloak#domain>/admin
   MINIO_BROWSER_REDIRECT_URL: https://<path:secret/data/admin/apps/minio#domain>/oauth_callback
+  MINIO_PROMETHEUS_AUTH_TYPE: public
+  MINIO_PROMETHEUS_URL: http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
+  MINIO_PROMETHEUS_JOB_ID: minio
