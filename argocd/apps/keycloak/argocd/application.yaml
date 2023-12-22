@@ -19,7 +19,7 @@ spec:
       valuesObject:
         replicaCount: 2
         auth:
-          adminUser: admin # <path:secret/data/admin/apps/keycloak#helmValues | jsonPath {.auth.adminUser}>
+          adminUser: <path:secret/data/admin/apps/keycloak#admin | jsonPath {.username}>
           existingSecret: keycloak-admin
           passwordSecretKey: password
         ingress:
@@ -49,6 +49,10 @@ spec:
           existingSecretDatabaseKey: database
           existingSecretUserKey: username
           existingSecretPasswordKey: password
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true
   - path: argocd/apps/keycloak/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
