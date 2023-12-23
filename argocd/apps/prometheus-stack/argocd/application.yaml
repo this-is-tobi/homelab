@@ -24,6 +24,7 @@ spec:
             podMonitorSelector: false
             ruleSelectorNilUsesHelmValues: false
             scrapeConfigSelectorNilUsesHelmValues: false
+            retention: 30d
         grafana:
           adminPassword: <path:secret/data/admin/apps/prometheus-stack#admin | jsonPath {.password}>
           ingress:
