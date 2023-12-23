@@ -5,6 +5,6 @@
 
 # Install
 - name: Sync application
-  include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+  include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
   vars:
     argocd_app: trivy-operator

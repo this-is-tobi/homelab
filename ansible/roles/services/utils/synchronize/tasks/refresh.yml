@@ -4,22 +4,15 @@
     file: "{{ playbook_dir }}/../argocd/apps/{{ argocd_app }}/argocd/application.yaml"
     name: argocd_app_config
 
-- name: Synchronize argocd application
+- name: Refresh argocd application
   ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}/sync"
-    method: POST
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_app_config.metadata.namespace }}"
+    method: GET
     body_format: json
-    body:
-      "project": "{{ argocd_app_config.spec.project }}"
-      "appNamespace": "{{ argocd_app_config.metadata.namespace }}"
-      "syncOptions":
-        "items":
-          - "CreateNamespace=true"
-          - "ApplyOutOfSyncOnly=true"
-          - "ServerSideApply=true"
     headers:
       Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
+    timeout: 600
 
 - name: Get argocd application status
   ansible.builtin.uri:

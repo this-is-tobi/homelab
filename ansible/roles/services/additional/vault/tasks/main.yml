@@ -25,7 +25,7 @@
 
 # Install
 - name: Sync application
-  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
   vars:
     argocd_app: vault
 
