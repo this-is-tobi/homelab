@@ -28,7 +28,6 @@ data:
       "fiscalYearStartMonth": 0,
       "gnetId": 12904,
       "graphTooltip": 1,
-      "id": 37,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -99,10 +98,12 @@ data:
                 "type": "prometheus",
                 "uid": "prometheus"
               },
-              "expr": "up{job=\"vault\"}",
+              "editorMode": "code",
+              "expr": "up{job=~\"vault.*\"}",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ instance }}",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -117,6 +118,7 @@ data:
           "fieldConfig": {
             "defaults": {
               "custom": {
+                "align": "auto",
                 "cellOptions": {
                   "type": "auto"
                 },
@@ -282,18 +284,32 @@ data:
           "type": "stat"
         },
         {
-          "aliasColors": {},
-          "breakPoint": "50%",
-          "combine": {
-            "label": "Others",
-            "threshold": 0
-          },
           "datasource": {
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "fontSize": "80%",
-          "format": "short",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
           "gridPos": {
             "h": 8,
             "w": 5,
@@ -301,35 +317,41 @@ data:
             "y": 0
           },
           "id": 49,
-          "legend": {
-            "header": "count",
-            "percentage": false,
-            "show": true,
-            "values": true
-          },
-          "legendType": "Right side",
           "links": [],
           "maxDataPoints": 1,
-          "nullPointMode": "connected",
-          "pieType": "pie",
-          "pluginVersion": "7.0.3",
-          "strokeWidth": "3",
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "10.2.2",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
               },
+              "editorMode": "code",
               "expr": "avg without(instance) (vault_identity_entity_alias_count)",
               "format": "time_series",
               "interval": "",
               "legendFormat": "{{ auth_method }}",
+              "range": true,
               "refId": "A"
             }
           ],
           "title": "Identity Entities Aliases by Method",
-          "type": "grafana-piechart-panel",
-          "valueName": "current"
+          "type": "stat"
         },
         {
           "datasource": {
@@ -2550,9 +2572,13 @@ data:
           {
             "allValue": "",
             "current": {
-              "selected": false,
-              "text": "All",
-              "value": "$__all"
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
             },
             "datasource": {
               "type": "prometheus",
@@ -2578,7 +2604,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-30m",
+        "from": "now-24h",
         "to": "now"
       },
       "timepicker": {
@@ -2608,6 +2634,6 @@ data:
       "timezone": "",
       "title": "Hashicorp Vault",
       "uid": "vaults",
-      "version": 1,
+      "version": 3,
       "weekStart": ""
     }
