@@ -38,9 +38,13 @@ controller:
     serviceMonitor:
       enabled: true
 server:
+  replicas: 2
   autoscaling:
     enabled: false
     minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 75
   ingress:
     enabled: true
     ingressClassName: {{ ingressClassName }}
@@ -70,9 +74,13 @@ dex:
   nodeSelector:
     node-type: worker
 repoServer:
+  replicas: 2
   autoscaling:
     enabled: false
     minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 75
+    targetMemoryUtilizationPercentage: 75
   metrics:
     enabled: true
     serviceMonitor:
