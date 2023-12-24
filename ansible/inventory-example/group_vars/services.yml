@@ -22,7 +22,7 @@ longhorn:
     chartName: "longhorn"
     chartVersion: "1.5.3"
   namespace: "longhorn-system"
-  domain: "longhorn.admin.{{ localRootDomain }}"
+  domain: "longhorn.admin.{{ rootDomain }}"
   s3:
     enabled: false
     endpoint: ""
