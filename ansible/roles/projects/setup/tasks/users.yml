@@ -1,27 +1,27 @@
 - name: Set keycloak group list
-  set_fact: 
+  set_fact:
     user_groups: "{{ user_groups | default([]) + [{ \"name\": group, \"state\": \"present\" }] }}"
-  loop_control: 
+  loop_control:
     loop_var: group
   with_items: "{{ item.groups }}"
 
 - name: Create keycloak user
   community.general.keycloak_user:
     auth_client_id: admin-cli
-    auth_keycloak_url: https://{{ keycloak.domain }}
+    auth_keycloak_url: https://{{ keycloak_domain }}
     auth_realm: master
-    auth_username: "{{ keycloak.username }}"
-    auth_password: "{{ keycloak.password }}"
-    realm: "{{ keycloak.realm }}"
+    auth_username: "{{ keycloak_username }}"
+    auth_password: "{{ keycloak_password }}"
+    realm: "{{ keycloak_realm }}"
     username: "{{ item.username }}"
     firstName: "{{ item.firstName }}"
     lastName: "{{ item.lastName }}"
     email: "{{ item.email }}"
     enabled: true
-    emailVerified: true
+    emailVerified: false
     groups: "{{ user_groups }}"
     state: present
 
 - name: Reset user_groups var
-  set_fact: 
+  set_fact:
     user_groups: []

@@ -2,7 +2,7 @@ kind: AppProject
 apiVersion: argoproj.io/v1alpha1
 metadata:
   name: {{ item.name }}
-  namespace: {{ argocd.namespace }}
+  namespace: argocd
 spec:
   destinations:
 {% for namespace in item.namespaces %}

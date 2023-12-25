@@ -1,4 +1,15 @@
+# Init
+- name: Init
+  ansible.builtin.include_role:
+    name: services/utils/initialize
+  vars:
+    include_keycloak: true
+
 # Projects
+- name: Get projects and users
+  ansible.builtin.include_role:
+    name: services/utils/projects
+
 - name: Setup project - keycloak
   include_tasks: keycloak.yml
   loop: "{{ projects }}"
@@ -15,7 +26,7 @@
 - name: Setup project - actions-runner-controller
   include_tasks: actions-runner-controller.yml
   loop: "{{ projects }}"
-  when: item.actionsRunnerController.enabled
+  when: item.arc.enabled
 
 - name: Setup project - harbor
   include_tasks: harbor.yml
