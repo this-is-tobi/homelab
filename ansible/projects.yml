@@ -5,7 +5,8 @@
     K8S_AUTH_KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
   vars_files:
     - ./inventory/group_vars/all.yml
-    - ./inventory/group_vars/projects/all.yml
+    - ./inventory/group_vars/services.yml
+    - ./inventory/group_vars/projects.yml
   roles:
     - name: ./roles/projects/setup
       tags:
@@ -13,9 +14,3 @@
         - access
         - projects
         - users
-
-    - name: ./roles/projects/docs
-      tags:
-        - never
-        - docs
-        - doc
