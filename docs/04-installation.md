@@ -86,7 +86,7 @@ It is possible to cleanly detroy the k3s cluster by running :
 Kubernetes services are deployed within 2 steps, the first one deploy core services that are needed to deploy one or more platforms, core services are composed of :
 - __Longhorn__ *- storage management in the cluster.*
 - __Traefik__ *- ingress controler to expose services.*
-- __Cert__ Manager *- certificate management for tls.*
+- __Cert Manager__ *- certificate management for tls.*
 - __Vault__ *- secret management for services deployments.*
 - __Argocd__ *- deployment management for services deployments.*
 

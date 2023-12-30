@@ -7,12 +7,12 @@ metadata:
 data:
   conf.yml: |
     pageInfo:
-      title: Homelab
+      title: Tobi's Cloud
       navLinks:
         - title: GitHub
           path: https://github.com/this-is-tobi/homelab
         - title: Documentation
-          path: https://<path:secret/data/admin/apps/dashy#domain>
+          path: https://docs.this-is-tobi.com
     appConfig:
       theme: adventure-basic
       startingView: default
@@ -23,7 +23,7 @@ data:
         disableWebSearch: true
       disableConfiguration: true
       hideComponents:
-        hideHeading: true
+        hideHeading: false
         hideNav: true
         hideSearch: true
         hideSettings: true
@@ -44,10 +44,6 @@ data:
             description: Container image registry & Helm chart registry
             url: https://<path:secret/data/admin/apps/harbor#domain>
             icon: hl-harbor
-          - title: Keycloak
-            description: Single Sign On managment
-            url: https://<path:secret/data/admin/apps/keycloak#domain>
-            icon: hl-keycloak
           - title: Kubernetes
             description: Kubernetes dashboard to watch cluster ressources
             url: https://<path:secret/data/admin/apps/kubernetes-dashboard#domain>
@@ -83,13 +79,36 @@ data:
             icon: fal fa-book
             statusCheck: false
           - title: Github
-            description: Code sources
+            description: Source code
             url: https://github.com/this-is-tobi/homelab
             icon: fab fa-github
             statusCheck: false
         displayData:
           sortBy: alphabetical
           collapsed: false
-          rows: 5
+          rows: 2
+          cols: 1
+          itemSize: large
+      - name: Services - Admin
+        icon: fas fa-cog
+        items:
+          - title: Argocd
+            description: Admin services deployment manager
+            url: https://<path:secret/data/admin/infos#argocd | jsonPath {.domain}>
+            icon: hl-argocd
+            statusCheck: true
+          - title: Keycloak
+            description: Single Sign On managment
+            url: https://<path:secret/data/admin/apps/keycloak#domain>
+            icon: hl-keycloak
+          - title: Vault
+            description: Admin secret manager
+            url: https://<path:secret/data/admin/infos#vault | jsonPath {.domain}>
+            icon: hl-vault
+            statusCheck: true
+        displayData:
+          sortBy: alphabetical
+          collapsed: true
+          rows: 3
           cols: 1
           itemSize: large
