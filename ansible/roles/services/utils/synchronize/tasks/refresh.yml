@@ -13,16 +13,3 @@
       Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
     timeout: 600
-
-- name: Get argocd application status
-  ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?project={{ argocd_app_config.spec.project }}&appNamespace={{ argocd_app_config.metadata.namespace }}"
-    method: GET
-    body_format: json
-    headers:
-      Authorization: Bearer {{ argocd_core_token }}
-    status_code: 200
-  register: argocd_app_status
-  until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
-  retries: 60
-  delay: 10
