@@ -56,6 +56,12 @@
         - system-upgrade
         - upgrade
 
+    - name: ./roles/services/additional/trivy-operator
+      tags:
+        - additional
+        - trivy-operator
+        - trivy
+
     - name: ./roles/services/additional/cloudnative-pg
       tags:
         - additional
@@ -116,7 +122,14 @@
     - name: ./roles/services/additional/mattermost
       tags:
         - never # Not arm64 compatible
+        # - additional
         - mattermost
+
+    - name: ./roles/services/additional/outline
+      tags:
+        - never # Not arm64 compatible
+        - additional
+        - outline
 
     - name: ./roles/services/additional/actions-runner-controller
       tags:
@@ -124,12 +137,6 @@
         - actions-runner-controller
         - arc
         - runners
-
-    - name: ./roles/services/additional/trivy-operator
-      tags:
-        - additional
-        - trivy-operator
-        - trivy
 
     - name: ./roles/services/additional/dashy
       tags:

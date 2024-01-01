@@ -25,6 +25,7 @@ The following services are deployed in the cluster :
 | [Longhorn](https://longhorn.io/)                                                  | Cloud native distributed block storage          | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                                                     |
 | [Mattermost](https://mattermost.com/)                                             | Chat service with file sharing and integrations | [mattermost/mattermost-team-edition](https://artifacthub.io/packages/helm/mattermost/mattermost-team-edition)                                   |
 | [Minio](https://min.io/)                                                          | High Performance Object Storage                 | [bitnami/minio](https://artifacthub.io/packages/helm/bitnami/minio)                                                                             |
+| [Outline](https://www.getoutline.com/)                                            | Share notes and wiki with your team             | [lrstanley/outline](https://artifacthub.io/packages/helm/lrstanley/outline)                                                                     |
 | [Prometheus-stack](https://prometheus.io/)                                        | Open-source monitoring solution                 | [prometheus-community/kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)                   |
 | [Sonarqube](https://www.sonarsource.com/products/sonarqube/)                      | Code quality analysis service                   | [sonarqube/sonarqube](https://artifacthub.io/packages/helm/sonarqube/sonarqube)                                                                 |
 | [Sops](https://github.com/isindir/sops-secrets-operator)                          | Secret manager that decode on the fly           | [sops-secrets-operator/sops-secrets-operator](https://artifacthub.io/packages/helm/sops-secrets-operator/sops-secrets-operator)                 |
@@ -53,6 +54,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | Mattermost           | <https://mattermost.domain.com>    |
 | Minio *- api*        | <https://s3.domain.com>            |
 | Minio *- web*        | <https://minio.domain.com>         |
+| Outline              | <https://outline.domain.com>       |
 | SonarQube            | <http://sonarqube.domain.com>      |
 | Vault *(admin)*      | <https://vault.admin.domain.com>   |
 | Vault                | <https://vault.domain.com>         |
@@ -75,6 +77,7 @@ Following services are connected through sso :
 - Harbor
 - Grafana
 - Minio
+- Outline
 - Sonarqube
 - Vault
 

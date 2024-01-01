@@ -53,7 +53,6 @@
       with_items: "{{ results.files | json_query('[].path') }}"
   when: init_vault_secret | default(false)
 
-
 # Get Keycloak infos
 - block:
     - name: Get keycloak vault secrets
@@ -68,3 +67,17 @@
         keycloak_domain: "{{ current_vault_values.secret.domain }}"
         keycloak_realm: "{{ current_vault_values.secret.extras.realm }}"
   when: include_keycloak | default(false)
+
+# Get Minio infos
+- block:
+    - name: Get minio vault secrets
+      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      vars:
+        argocd_app: minio
+
+    - name: Set fact for minio vault secrets
+      ansible.builtin.set_fact:
+        minio_username: "{{ current_vault_values.secret.admin.username }}"
+        minio_password: "{{ current_vault_values.secret.admin.password }}"
+        minio_api_domain: "{{ current_vault_values.secret.domainApi }}"
+  when: include_minio | default(false)
