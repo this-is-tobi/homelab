@@ -60,18 +60,25 @@ done
 
 if [ "$DECRYPT" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Decrypt data using Sops\n\n"
-  sops -d -i ./argocd/applications/keycloak/manifests/secrets.sops.yaml
+  find ./argocd -name '*.enc.yaml' -exec bash -c 'sops -d {} > $(dirname {})/$(basename {} .enc.yaml).dec.yaml' \;
 fi
 
 
 if [ "$ENCRYPT" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Encrypt data using Sops\n\n"
-  sops -e -i ./argocd/applications/keycloak/manifests/secrets.sops.yaml
+  find ./argocd -name '*.dec.yaml' -exec bash -c 'sops -e {} > $(dirname {})/$(basename {} .dec.yaml).enc.yaml' \;
 fi
 
 
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
+  CONTEXT=$(kubectl config current-context)
+  printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (y/n)?\n"
+  read ANSWER
+  if [ "$ANSWER" != "${ANSWER#[Nn]}" ]; then
+      exit 1
+  fi
+
   printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
   ansible-galaxy collection install -r $SCRIPT_PATH/ansible/collections/requirements.yml --upgrade
 
