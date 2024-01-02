@@ -6,7 +6,7 @@ auth/
 htpasswd
 
 # Homelab folder with ovpn & ssh files
-secrets/
+ansible/secrets/
 
 # Environment files
 .env
@@ -15,4 +15,4 @@ secrets/
 .DS_Store
 
 # Sops
-argocd/**/*.sops.yaml
+argocd/**/*.dec.yaml
