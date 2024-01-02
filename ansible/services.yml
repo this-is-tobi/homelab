@@ -128,7 +128,7 @@
     - name: ./roles/services/additional/outline
       tags:
         - never # Not arm64 compatible
-        - additional
+        # - additional
         - outline
 
     - name: ./roles/services/additional/actions-runner-controller
