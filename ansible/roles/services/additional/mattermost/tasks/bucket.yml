@@ -1,0 +1,52 @@
+# Get vault secrets
+- name: Get vault secrets
+  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  vars:
+    argocd_app: mattermost
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    mattermost_s3_access_key: "{{ current_vault_values.secret.s3.accessKey }}"
+    mattermost_s3_secret_key: "{{ current_vault_values.secret.s3.secretKey }}"
+    mattermost_s3_bucket_name: "{{ current_vault_values.secret.s3.bucketName }}"
+
+- name: Set minio alias fact
+  ansible.builtin.shell:
+    cmd: |
+      mc alias ls --json | jq -r 'select(.URL == "https://{{ minio_api_domain }}").alias'
+  register: mc_alias
+
+- name: Create minio bucket
+  amazon.aws.s3_bucket:
+    name: "{{ bucket_name }}"
+    endpoint_url: "https://{{ minio_api_domain }}"
+    aws_access_key: "{{ minio_username }}"
+    aws_secret_key: "{{ minio_password }}"
+    state: present
+
+- name: Create minio user
+  ansible.builtin.shell:
+    cmd: |
+      mc admin user add "{{ mc_alias.stdout }}" \
+        "{{ mattermost_s3_access_key }}" \
+        "{{ mattermost_s3_secret_key }}"
+
+- name: Create minio policy
+  ansible.builtin.shell:
+    cmd: |
+      mc admin policy create "{{ mc_alias.stdout }}" \
+        "{{ mattermost_s3_access_key }}" \
+        "{{ playbook_dir }}/ansible/roles/services/additional/mattermost/templates/minio-policy.json"
+
+- name: Attach policy to user
+  ansible.builtin.shell:
+    cmd: |
+      mc admin policy attach "{{ mc_alias.stdout }}" \
+        "{{ mattermost_s3_access_key }}" \
+        --user "{{ mattermost_s3_access_key }}"
+
+- name: Create minio quota
+  ansible.builtin.shell:
+    cmd: |
+      mc quota set {{ mc_alias.stdout }}/{{ mattermost_s3_bucket_name }} \
+        --size 10Go

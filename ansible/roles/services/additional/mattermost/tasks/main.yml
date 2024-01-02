@@ -4,10 +4,15 @@
     name: services/utils/initialize
   vars:
     include_keycloak: true
+    include_minio: true
 
 # Setup vault secrets
 - name: Setup vault secrets
   ansible.builtin.include_tasks: vault-secrets.yml
+
+# Setup s3 bucket
+- name: Setup s3 bucket
+  include_tasks: bucket.yml
 
 # Install
 - name: Sync application
