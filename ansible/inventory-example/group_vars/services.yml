@@ -4,7 +4,7 @@ argocd:
     repoUrl: "https://argoproj.github.io/argo-helm"
     repoName: "argo"
     chartName: "argo-cd"
-    chartVersion: "5.51.4"
+    chartVersion: "5.52.0"
   namespace: "argocd-system"
   domain: "argocd.admin.{{ rootDomain }}"
 certManager:
@@ -33,7 +33,7 @@ traefik:
     repoUrl: "https://traefik.github.io/charts"
     repoName: "traefik"
     chartName: "traefik"
-    chartVersion: "25.0.0"
+    chartVersion: "26.0.0"
   namespace: "traefik-system"
 vault:
   helm:
