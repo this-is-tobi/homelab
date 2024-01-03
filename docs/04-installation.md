@@ -98,3 +98,7 @@ An `applicationSet` is responsible to deploy an `app of apps` for each environem
 The next step would be to deploy each platform environment to a dedicated cluster as described in the following schema.
 
 ![gitops-02](images/gitops-02.drawio.png)
+
+## Notes
+
+:warning: At the moment, `mattermost` and `outline` images are not `arm64` compatible so their deployment is disabled in the [service playbook](../ansible/services.yml) and in the Argocd [app of apps](../argocd/envs/production/application.yaml).
