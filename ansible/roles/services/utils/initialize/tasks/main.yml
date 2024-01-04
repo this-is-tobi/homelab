@@ -81,3 +81,44 @@
         minio_password: "{{ current_vault_values.secret.admin.password }}"
         minio_api_domain: "{{ current_vault_values.secret.domainApi }}"
   when: include_minio | default(false)
+
+# Get Sonarqube infos
+- block:
+    - name: Get sonarqube vault secrets
+      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      vars:
+        argocd_app: sonarqube
+
+    - name: Set fact for sonarqube vault secrets
+      ansible.builtin.set_fact:
+        sonarqube_username: "{{ current_vault_values.secret.admin.username }}"
+        sonarqube_password: "{{ current_vault_values.secret.admin.password }}"
+        sonarqube_domain: "{{ current_vault_values.secret.domain }}"
+  when: include_sonarqube | default(false)
+
+# Get Vault infos
+- block:
+    - name: Get vault vault secrets
+      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      vars:
+        argocd_app: vault
+
+    - name: Set fact for vault vault secrets
+      ansible.builtin.set_fact:
+        vault_token: "{{ current_vault_values.secret.admin.token }}"
+        vault_domain: "{{ current_vault_values.secret.domain }}"
+  when: include_vault | default(false)
+
+# Get Habror infos
+- block:
+    - name: Get harbor vault secrets
+      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      vars:
+        argocd_app: harbor
+
+    - name: Set fact for harbor vault secrets
+      ansible.builtin.set_fact:
+        harbor_username: "{{ current_vault_values.secret.admin.username }}"
+        harbor_password: "{{ current_vault_values.secret.admin.password }}"
+        harbor_domain: "{{ current_vault_values.secret.domain }}"
+  when: include_harbor | default(false)

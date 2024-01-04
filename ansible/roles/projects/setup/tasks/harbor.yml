@@ -4,7 +4,7 @@
     harbor_project:
       project_name: "{{ item.name }}"
       metadata:
-        public: "{{ item.harbor.public }}"
+        public: "false"
         storage_limit: "{{ item.harbor.quota }}"
         auto_scan: "true"
       membership:
@@ -53,9 +53,9 @@
 
 - name: Get project
   ansible.builtin.uri:
-    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ harbor_project.projectName }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ harbor_project.projectName }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
@@ -64,9 +64,9 @@
 - name: Create project
   ansible.builtin.uri:
     method: POST
-    url: https://{{ harbor.domain }}/api/v2.0/projects
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/projects
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ harbor_project | to_json }}"
@@ -76,9 +76,9 @@
 - name: Update project
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ get_harbor_project.json.project_id }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ get_harbor_project.json.project_id }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ harbor_project | to_json }}"
@@ -89,29 +89,29 @@
 - name: Set project quota config
   ansible.builtin.set_fact:
     quota_config: |
-      { 
-        "hard": { 
-          "storage": {{ harbor_project.metadata.storageLimit | human_to_bytes | int }} 
-        } 
+      {
+        "hard": {
+          "storage": {{ harbor_project.metadata.storageLimit | human_to_bytes | int }}
+        }
       }
   when: harbor_project.metadata.storageLimit != -1
 
 - name: Set project quota config
   ansible.builtin.set_fact:
     quota_config: |
-      { 
-        "hard": { 
-          "storage": {{ harbor_project.metadata.storageLimit | int }} 
-        } 
+      {
+        "hard": {
+          "storage": {{ harbor_project.metadata.storageLimit | int }}
+        }
       }
   when: harbor_project.metadata.storageLimit == -1
 
 - name: Get project quota
   ansible.builtin.uri:
     method: GET
-    url: https://{{ harbor.domain }}/api/v2.0/quotas/?reference_id={{ get_harbor_project.json.project_id }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/quotas/?reference_id={{ get_harbor_project.json.project_id }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     status_code: [200]
   register: harbor_project_quota
@@ -120,9 +120,9 @@
 - name: Update project quotas
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor.domain }}/api/v2.0/quotas/{{ get_harbor_project_quota.json[0].id }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/quotas/{{ get_harbor_project_quota.json[0].id }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ quota_config }}"
@@ -132,9 +132,9 @@
 # Membership
 - name: Get memberships
   ansible.builtin.uri:
-    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ harbor_project.projectName }}/members
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ harbor_project.projectName }}/members
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
@@ -147,9 +147,9 @@
 - name: Create project membership
   ansible.builtin.uri:
     method: POST
-    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ harbor_project.projectName }}/members
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ harbor_project.projectName }}/members
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ harbor_project.membership | to_json }}"
@@ -159,9 +159,9 @@
 - name: Update project membership
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor.domain }}/api/v2.0/projects/{{ harbor_project.projectName }}/members/{{ harbor_membership_id }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/projects/{{ harbor_project.projectName }}/members/{{ harbor_membership_id }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ harbor_project.membership | to_json }}"
@@ -171,9 +171,9 @@
 # Robot
 - name: Get robots
   ansible.builtin.uri:
-    url: https://{{ harbor.domain }}/api/v2.0/robots?name={{ harbor_project.project_name }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/robots?name={{ harbor_project.project_name }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     status_code: [200, 404]
@@ -182,9 +182,9 @@
 - name: Create robot
   ansible.builtin.uri:
     method: POST
-    url: https://{{ harbor.domain }}/api/v2.0/robots
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/robots
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ harbor_project.robot | to_json }}"
@@ -194,9 +194,9 @@
 - name: Update robot
   ansible.builtin.uri:
     method: PUT
-    url: https://{{ harbor.domain }}/api/v2.0/robots/{{ get_harbor_robot.json[0].id }}
-    password: "{{ harbor.password }}"
-    user: "{{ harbor.username }}"
+    url: https://{{ harbor_domain }}/api/v2.0/robots/{{ get_harbor_robot.json[0].id }}
+    password: "{{ harbor_password }}"
+    user: "{{ harbor_username }}"
     force_basic_auth: true
     body_format: json
     body: "{{ get_harbor_robot.json | ansible.builtin.combine(harbor_project.robot | ansible.utils.remove_keys(target=['name', 'level'])) | to_json }}"

@@ -1,22 +1,40 @@
-- name: Get vault secrets
-  include_tasks: roles/services/utils/secrets/tasks/read.yml
-  vars:
-    argocd_app: vault
+# create default kv engine
+- name: Get kv engines
+  ansible.builtin.uri:
+    validate_certs: true
+    method: GET
+    url: "https://{{ vault_domain }}/v1/sys/mounts/{{ item.name }}"
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+  register: get_engines
 
-- name: Set fact for vault secrets
-  ansible.builtin.set_fact:
-    vault_domain: "{{ current_vault_values.secret.domain }}"
-    vault_token: "{{ current_vault_values.secret.admin.token }}"
+- name: Create project kv engine
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/sys/mounts/{{ item.name }}"
+    method: POST
+    status_code: [204]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "type": "kv"
+      "options":
+        "version": 2
+    body_format: json
+  when: get_engines.status == 400
 
+# Configure SSO group
 - name: Create access policy
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault_domain }}/v1/sys/policies/acl/{{ item.policy_name }}"
+    url: "https://{{ vault_domain }}/v1/sys/policies/acl/{{ item.name }}"
     method: POST
     status_code: [200, 204]
     headers:
       "X-Vault-Token": "{{ vault_token }}"
-    body: "{{ lookup('ansible.builtin.template', 'project-policy.json.j2') }}"
+    body:
+      "policy": "{{ lookup('ansible.builtin.template', 'project-policy.json.j2') | regex_replace(\"'\", '\"') | string }}"
     body_format: json
 
 - name: Create group
@@ -67,3 +85,95 @@
       "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
       "canonical_id": "{{ user_group.json.data.id }}"
     body_format: json
+
+# Create vault plugin token
+- name: Create vault plugin token
+  ansible.builtin.uri:
+    validate_certs: true
+    url: "https://{{ vault_domain }}/v1/auth/token/create"
+    method: POST
+    status_code: [200, 400]
+    headers:
+      "X-Vault-Token": "{{ vault_token }}"
+    body:
+      "display_name": "{{ item.name }}"
+      "policies":
+        - "{{ item.name }}"
+      "ttl": "8760h"
+      "type": "service"
+    body_format: json
+  register: project_token
+  when: item.vault.avpSecretName is undefined
+
+- debug: var=project_token
+
+- name: Set fact for vault secrets
+  ansible.builtin.set_fact:
+    vault_project_token: "{{ (item.vault.avpToken | default(None)) or (project_token.json.auth.client_token | default(None)) }}"
+    vault_project_secret_name: "{{ (item.vault.avpSecretName | default(None)) or ('avp-' + item.name + '-' + lookup('ansible.builtin.password', '/dev/null', length=5, chars=['ascii_lowercase', 'digits'])) }}"
+  when: item.vault.avpSecretName is undefined
+
+- name: Create vault secret
+  ansible.builtin.include_role:
+    name: services/utils/projects
+  vars:
+    project_name: "{{ item.name }}"
+    vault_values: >-
+      {{
+        {
+          item.name: {
+            "vault": {
+              "avpToken": vault_project_token,
+              "avpSecretName": vault_project_secret_name
+            }
+          }
+        }
+      }}
+  when: item.vault.avpSecretName is undefined
+
+- name: Deploy agocd-vault-plugin secret
+  kubernetes.core.k8s:
+    state: present
+    template: vault-plugin-secret.yml.j2
+  when: item.vault.avpSecretName is undefined
+
+# Write token to the project kv
+- name: Reset current vault values
+  ansible.builtin.set_fact:
+    current_vault_project_values:
+    next_vault_project_values:
+      vault:
+        avpToken: "{{ vault_project_token }}"
+        avpSecretName: "{{ vault_project_secret_name }}"
+  when: item.vault.avpSecretName is undefined
+
+- name: Retrieve current vault secret
+  community.hashi_vault.vault_kv2_get:
+    url: https://{{ vault_domain }}
+    auth_method: token
+    token: "{{ vault_token }}"
+    namespace: secret
+    path: "{{ item.name }}"
+  register: current_vault_project_values
+  ignore_errors: true
+  when: item.vault.avpSecretName is undefined
+
+- name: Get current non null values
+  ansible.builtin.shell:
+    cmd: |
+      echo '{
+        "old": {{ current_vault_project_values.secret | default({}) | to_json }},
+        "new": {{ next_vault_project_values | default({}) | to_json }}
+      }' | yq -p=json -o=json -I=0 '.old *n .new'
+  register: current_vault_project_values_combined
+  when: item.vault.avpSecretName is undefined
+
+- name: Update vault secret
+  community.hashi_vault.vault_kv2_write:
+    url: https://{{ vault_domain }}
+    auth_method: token
+    token: "{{ vault_token }}"
+    namespace: secret
+    path: "{{ item.name }}"
+    data: "{{ current_vault_project_values_combined.stdout | from_json }}"
+  when: item.vault.avpSecretName is undefined

@@ -4,51 +4,16 @@
     name: services/utils/initialize
   vars:
     include_keycloak: true
+    include_sonarqube: true
+    include_vault: true
+    include_minio: true
+    include_harbor: true
 
 # Projects
-- name: Get projects and users
-  ansible.builtin.include_role:
-    name: services/utils/projects
+- name: Get projects
+  include_tasks: roles/services/utils/projects/tasks/read.yml
 
-- name: Setup project - keycloak
-  include_tasks: keycloak.yml
+# Setup projects
+- name: Setup projects
+  include_tasks: setup.yml
   loop: "{{ projects }}"
-
-- name: Setup project - kubernetes
-  include_tasks: kubernetes.yml
-  loop: "{{ projects }}"
-
-- name: Setup project - argocd
-  include_tasks: argocd.yml
-  loop: "{{ projects }}"
-  when: item.argocd.enabled
-
-- name: Setup project - actions-runner-controller
-  include_tasks: actions-runner-controller.yml
-  loop: "{{ projects }}"
-  when: item.arc.enabled
-
-- name: Setup project - harbor
-  include_tasks: harbor.yml
-  loop: "{{ projects }}"
-  when: item.harbor.enabled
-
-- name: Setup project - minio
-  include_tasks: minio.yml
-  loop: "{{ projects }}"
-  when: item.minio.enabled
-
-- name: Setup project - sonarqube
-  include_tasks: sonarqube.yml
-  loop: "{{ projects }}"
-  when: item.sonarqube.enabled
-
-- name: Setup project - vault
-  include_tasks: vault.yml
-  loop: "{{ projects }}"
-  when: item.vault.enabled
-
-# Users
-- name: Create users
-  include_tasks: users.yml
-  loop: "{{ users }}"
