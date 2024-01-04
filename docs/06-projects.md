@@ -7,6 +7,29 @@ Projects informations is stored in Vault under the key `secret/admin/projects`, 
 An `appProject` Argocd is created for each project with the key `argocd.enabled: true`, each project is mapped to the project's Keycloak group.
 Argocd is deployed with the [argocd-vault-plugin](https://argocd-vault-plugin.readthedocs.io/en/stable/) which allows Vault secrets to be used in manifests.
 
+Argocd applications require you to specify the name of the secret containing the connection information on the project's Vault namespace, and should be deployed according to the following example:
+
+```yaml
+project: example-project
+source:
+  repoURL: 'https://github.com/this-is-tobi/example-project.git'
+  path: ./helm
+  targetRevision: main
+  plugin:
+    env:
+      - name: AVP_SECRET
+        value: <avp_secret_name> # Available in Vault under the key `secret.<project_name>.vault.avpSecretName`
+      - name: HELM_VALUES
+        value: |
+          ingress: {}
+          ...
+destination:
+  server: 'https://kubernetes.default.svc'
+  namespace: example-project
+syncPolicy:
+  automated: {}
+```
+
 ## Vault
 
 Each project with the key `vault.enabled: true` get a namespace in the key value engine `secret/` with the appropriate policy mapped to the project's Keycloak group.
