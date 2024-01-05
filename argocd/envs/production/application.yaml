@@ -28,9 +28,9 @@ spec:
   - path: argocd/apps/kubernetes-dashboard/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
-  # - path: argocd/apps/mattermost/argocd
-  #   repoURL: https://github.com/this-is-tobi/homelab.git
-  #   targetRevision: main
+  - path: argocd/apps/mattermost/argocd
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   - path: argocd/apps/minio/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main

@@ -48,10 +48,10 @@ data:
             description: Kubernetes dashboard to watch cluster ressources
             url: https://<path:secret/data/admin/apps/kubernetes-dashboard#domain>
             icon: hl-kubernetes-dashboard
-          # - title: Mattermost
-          #   description: Team communication service
-          #   url: ''
-          #   icon: hl-mattermost
+          - title: Mattermost
+            description: Team communication service
+            url: https://<path:secret/data/admin/apps/mattermost#domain>
+            icon: hl-mattermost
           - title: Minio
             description: Store data with s3 standard
             url: https://<path:secret/data/admin/apps/minio#domain>
