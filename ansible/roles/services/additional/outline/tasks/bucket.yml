@@ -38,12 +38,27 @@
         "{{ outline_s3_access_key }}" \
         "{{ playbook_dir }}/roles/services/additional/outline/templates/minio-policy.json"
 
+- name: Get policy users
+  ansible.builtin.shell:
+    cmd: |
+      mc admin policy entities "{{ mc_alias.stdout }}/{{ outline_s3_bucket_name }}" \
+        --user "{{ outline_s3_access_key }}" \
+        --json \
+        | jq --arg u "{{ outline_s3_access_key }}" '.result.userMappings[] | select(.user == $u)'
+  register: policy_users
+
 - name: Attach policy to user
   ansible.builtin.shell:
     cmd: |
       mc admin policy attach "{{ mc_alias.stdout }}" \
         "{{ outline_s3_access_key }}" \
         --user "{{ outline_s3_access_key }}"
+  when: policy_users.stdout == ''
+
+- name: Attach public read policy
+  ansible.builtin.shell:
+    cmd: |
+      mc anonymousset "{{ mc_alias.stdout }}/{{ outline_s3_bucket_name }}"
 
 - name: Create minio quota
   ansible.builtin.shell:

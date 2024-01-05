@@ -48,7 +48,7 @@ spec:
           - name: AWS_SECRET_ACCESS_KEY
             value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.secretKey}>"
           - name: AWS_S3_UPLOAD_BUCKET_URL
-            value: "https://<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>.<path:secret/data/admin/apps/outline#s3 | jsonPath {.endpoint}>"
+            value: "https://<path:secret/data/admin/apps/outline#s3 | jsonPath {.endpoint}>/<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>"
           - name: AWS_S3_UPLOAD_BUCKET_NAME
             value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>"
           - name: AWS_S3_FORCE_PATH_STYLE

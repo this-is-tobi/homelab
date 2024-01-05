@@ -20,3 +20,4 @@ data:
   MINIO_PROMETHEUS_AUTH_TYPE: public
   MINIO_PROMETHEUS_URL: http://prometheus-stack-kube-prom-prometheus.monitoring.svc.cluster.local:9090
   MINIO_PROMETHEUS_JOB_ID: minio
+  MINIO_DOMAIN: <path:secret/data/admin/apps/minio#domainApi>

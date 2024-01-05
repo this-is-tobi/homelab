@@ -40,6 +40,9 @@ spec:
             cert-manager.io/cluster-issuer: letsencrypt-prod
             traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
           hostname: <path:secret/data/admin/apps/minio#domainApi>
+          extraHosts:
+          - name: "*.<path:secret/data/admin/apps/minio#domainApi>"
+            path: /
           path: /
           tls: true
         persistence:
