@@ -61,7 +61,7 @@ spec:
       cpu: 100m
     limits:
       memory: 2Gi
-      cpu: '2'
+      cpu: 500m
   affinity:
     enablePodAntiAffinity: true
 
