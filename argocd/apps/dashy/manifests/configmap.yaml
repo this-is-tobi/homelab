@@ -56,6 +56,10 @@ data:
             description: Store data with s3 standard
             url: https://<path:secret/data/admin/apps/minio#domain>
             icon: hl-minio
+          - title: Outline
+            description: Share notes and wiki
+            url: https://<path:secret/data/admin/apps/outline#domain>
+            icon: hl-outline
           - title: Sonarqube
             description: Code analysis service
             url: https://<path:secret/data/admin/apps/sonarqube#domain>

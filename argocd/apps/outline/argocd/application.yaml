@@ -15,11 +15,14 @@ spec:
     helm:
       releaseName: outline
       valuesObject:
+        image:
+          repository: ghcr.io/this-is-tobi/mirror/outline
+          tag:
         ingress:
           enabled: true
           className: traefik
           annotations:
-            cert-manager.io/cluster-issuer: le-fabnum-prod
+            cert-manager.io/cluster-issuer: letsencrypt-prod
           hosts:
           - <path:secret/data/admin/apps/outline#domain>
           tls:
@@ -28,7 +31,7 @@ spec:
             secretName: <path:secret/data/admin/apps/outline#domain>
         outline:
           generateEncryptionKeys: false
-          defaultLanguage: fr_FR
+          defaultLanguage: en_US
         environment:
           - name: URL
             value: "https://<path:secret/data/admin/apps/outline#domain>"
@@ -89,7 +92,7 @@ spec:
             memory: 1Gi
             cpu: "1"
   - path: argocd/apps/outline/manifests
-    repoURL: https://github.com/dnum-mi/fabnum-kube.git
+    repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
   destination:
     server: https://kubernetes.default.svc

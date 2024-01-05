@@ -34,9 +34,9 @@ spec:
   - path: argocd/apps/minio/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
-  # - path: argocd/apps/outline/argocd
-  #   repoURL: https://github.com/this-is-tobi/homelab.git
-  #   targetRevision: main
+  - path: argocd/apps/outline/argocd
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
   - path: argocd/apps/prometheus-stack/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
