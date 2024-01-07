@@ -113,6 +113,12 @@
         - harbor
         - registry
 
+    - name: ./roles/services/additional/gitea
+      tags:
+        - additional
+        - gitea
+        - git
+
     - name: ./roles/services/additional/sonarqube
       tags:
         - additional

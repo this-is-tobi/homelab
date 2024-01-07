@@ -19,6 +19,7 @@ The following services are deployed in the cluster :
 | [Cert-manager](https://cert-manager.io/)                                          | Cloud native certificate management             | [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager)                                                     |
 | [Cloud-native-postgres](https://cloudnative-pg.io/)                               | Cloud native postgres database management       | [cnpg/cloudnative-pg](https://artifacthub.io/packages/helm/cloudnative-pg/cloudnative-pg)                                                       |
 | [Dashy](https://github.com/Lissy93/dashy)                                         | Home dashboard                                  | -                                                                                                                                               |
+| [Gitea](https://about.gitea.com/)                                                 | Private, Fast, Reliable DevOps Platform         | [gitea/gitea](https://artifacthub.io/packages/helm/gitea/gitea)                                                                                 |
 | [Harbor](https://goharbor.io/)                                                    | Cloud native registry                           | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                                                           |
 | [Keycloak](https://keycloak.org)                                                  | Single Sign On service                          | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                                                       |
 | [Kubernetes-dashboard](https://github.com/kubernetes/dashboard)                   | Kubernetes dashboard                            | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard)                                   |
@@ -46,6 +47,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | ArgoCD *(admin)*     | <https://gitops.admin.domain.com>  |
 | ArgoCD               | <https://gitops.domain.com>        |
 | Dashy                | <https://domain.com>               |
+| Gitea                | <https://git.domain.com>           |
 | Grafana              | <https://monitoring.domain.com>    |
 | Harbor               | <https://registry.domain.com>      |
 | Keycloak             | <https://sso.domain.com>           |
@@ -75,6 +77,7 @@ By default a group is created for each service that use keycloak sso registratio
 Following services are connected through sso :
 - ArgoCD
 - Harbor
+- Gitea
 - Grafana
 - Minio
 - Outline

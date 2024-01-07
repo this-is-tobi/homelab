@@ -36,6 +36,10 @@ data:
             description: Deploy apps using gitops
             url: https://<path:secret/data/admin/apps/argocd#domain>
             icon: hl-argocd
+          - title: Gitea
+            description: Private DevOps Platform including code storage
+            url: https://<path:secret/data/admin/apps/gitea#domain>
+            icon: hl-gitea
           - title: Grafana
             description: Watch cluster metrics & application logs
             url: https://<path:secret/data/admin/apps/prometheus-stack#domain>
