@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: sonarqube
     repoURL: https://SonarSource.github.io/helm-chart-sonarqube
-    targetRevision: 10.2.1+800
+    targetRevision: 10.3.0+2009
     helm:
       releaseName: sonarqube
       valuesObject:
@@ -34,7 +34,7 @@ spec:
               secretName: <path:secret/data/admin/apps/sonarqube#domain>
         plugins:
           install:
-            - https://github.com/iSergio/sonarqube-community-branch-plugin/releases/download/1.16.1/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar
+            - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.18.0/sonarqube-community-branch-plugin-1.18.0.jar
             - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
         resources:
           limits:
@@ -42,7 +42,7 @@ spec:
             memory: 4Gi
           requests:
             cpu: 200m
-            memory: 512Mi
+            memory: 2Gi
         postgresql:
           enabled: false
         jdbcOverwrite:
@@ -55,8 +55,24 @@ spec:
           adminPasswordSecretName: sonarqube-admin
         monitoringPasscodeSecretName: sonarqube-monitoring-admin
         monitoringPasscodeSecretKey: password
-        jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar=web"
-        jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.16.1-SNAPSHOT.jar=ce"
+        jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.18.0.jar=web"
+        jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.18.0.jar=ce"
+        initSysctl:
+          vmMaxMapCount: 262144 # 1048576 # 524288
+        prometheusMonitoring:
+          podMonitor:
+            enabled: true
+            namespace: sonarqube
+        prometheusExporter:
+          enabled: true
+        livenessProbe:
+          initialDelaySeconds: 180
+          periodSeconds: 30
+          failureThreshold: 20
+        startupProbe:
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          failureThreshold: 30
         sonarProperties:
           sonar.core.serverBaseURL: "https://<path:secret/data/admin/apps/sonarqube#domain>"
           sonar.plugins.risk.consent: "ACCEPTED"
