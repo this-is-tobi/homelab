@@ -101,4 +101,6 @@ The next step would be to deploy each platform environment to a dedicated cluste
 
 ## Notes
 
-:warning: At the moment, `mattermost` and `outline` images are not `arm64` compatible so their deployment is disabled in the [service playbook](../ansible/services.yml) and in the Argocd [app of apps](../argocd/envs/production/application.yaml).
+At the moment, `mattermost` and `outline` images are not `arm64` compatible so their deployment are using custom mirror image with compatibility (see. [this repo](https://github.com/this-is-tobi/multiarch-mirror) and and associated Argocd applications).
+
+Every services could be disabled by commenting its declaration in the [service playbook](../ansible/services.yml) and in the Argocd [app of apps](../argocd/envs/production/application.yaml).
