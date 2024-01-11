@@ -36,6 +36,10 @@ data:
             description: Deploy apps using gitops
             url: https://<path:secret/data/admin/apps/argocd#domain>
             icon: hl-argocd
+          - title: Coder
+            description: Development environment in the cloud
+            url: https://<path:secret/data/admin/apps/coder#domain>
+            icon: hl-coder
           - title: Gitea
             description: Private DevOps Platform including code storage
             url: https://<path:secret/data/admin/apps/gitea#domain>

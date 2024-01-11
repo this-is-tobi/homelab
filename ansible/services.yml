@@ -127,14 +127,14 @@
 
     - name: ./roles/services/additional/mattermost
       tags:
-        - never # Not arm64 compatible
-        # - additional
+        # - never # Not arm64 compatible
+        - additional
         - mattermost
 
     - name: ./roles/services/additional/outline
       tags:
-        - never # Not arm64 compatible
-        # - additional
+        # - never # Not arm64 compatible
+        - additional
         - outline
 
     - name: ./roles/services/additional/actions-runner-controller
@@ -143,6 +143,12 @@
         - actions-runner-controller
         - arc
         - runners
+
+    - name: ./roles/services/additional/coder
+      tags:
+        - additional
+        - coder
+        - vscode
 
     - name: ./roles/services/additional/dashy
       tags:
