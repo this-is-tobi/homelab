@@ -25,6 +25,13 @@ spec:
             ruleSelectorNilUsesHelmValues: false
             scrapeConfigSelectorNilUsesHelmValues: false
             retention: 30d
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: ["ReadWriteMany"]
+                  resources:
+                    requests:
+                      storage: 100Gi
         grafana:
           adminPassword: <path:secret/data/admin/apps/prometheus-stack#admin | jsonPath {.password}>
           ingress:
