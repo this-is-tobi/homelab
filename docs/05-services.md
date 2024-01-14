@@ -47,6 +47,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | -------------------- | ---------------------------------- |
 | ArgoCD *(admin)*     | <https://gitops.admin.domain.com>  |
 | ArgoCD               | <https://gitops.domain.com>        |
+| Coder                | <https://coder.domain.com>         |
 | Dashy                | <https://domain.com>               |
 | Gitea                | <https://git.domain.com>           |
 | Grafana              | <https://monitoring.domain.com>    |
