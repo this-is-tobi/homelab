@@ -58,7 +58,7 @@ spec:
         jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.18.0.jar=web"
         jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.18.0.jar=ce"
         initSysctl:
-          vmMaxMapCount: 262144 # 1048576 # 524288
+          vmMaxMapCount: 262144
         prometheusMonitoring:
           podMonitor:
             enabled: true
