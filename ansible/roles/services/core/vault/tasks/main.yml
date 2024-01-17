@@ -13,7 +13,7 @@
 
 - name: Deploy helm chart
   kubernetes.core.helm:
-    name: "{{ vault.helm.chartName }}"
+    name: "{{ vault.helm.chartName }}-system"
     update_repo_cache: true
     chart_ref: "{{ vault.helm.repoName }}/{{ vault.helm.chartName }}"
     chart_version: "{{ vault.helm.chartVersion }}"
