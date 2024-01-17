@@ -1,5 +1,5 @@
 # k3s version
-k3sVersion: "v1.28.2+k3s1"
+k3sVersion: "v1.29.0+k3s1"
 # k3s_token is required for masters to talk together securely this token should be alpha numeric only
 k3sToken: ""
 # k3s CA data
@@ -19,7 +19,7 @@ k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}  --node-ip={{ k3sNodeIP }}  --prefer-bundled-bin  --flannel-iface {{ k3sFlanneliface }}
 # extra args to pass to master nodes
 k3sExtraServerArgs: >-
-  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --write-kubeconfig-mode 644  --node-label node-type=master
+  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --disable traefik  --write-kubeconfig-mode 644  --node-label node-type=master
 # extra args to pass to worker nodes
 k3sExtraAgentArgs: >-
   {{ k3sExtraArgs }}  --node-label node-type=worker
