@@ -17,7 +17,7 @@
   failed_when: false
 
 - name: Umount k3s filesystems
-  include_tasks: umount-with-children.yml
+  ansible.builtin.include_tasks: umount-with-children.yml
   with_items:
     - /run/k3s
     - /var/lib/kubelet

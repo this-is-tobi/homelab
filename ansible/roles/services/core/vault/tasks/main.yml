@@ -26,4 +26,4 @@
 
 # Post install
 - name: Post install
-  include_tasks: post-install.yml
+  ansible.builtin.include_tasks: post-install.yml

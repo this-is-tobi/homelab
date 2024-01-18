@@ -1,6 +1,6 @@
 # Get vault secrets
 - name: Get vault secrets
-  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
     argocd_app: keycloak
 

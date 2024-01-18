@@ -11,9 +11,9 @@
 
 # Projects
 - name: Get projects
-  include_tasks: roles/services/utils/projects/tasks/read.yml
+  ansible.builtin.include_tasks: roles/services/utils/projects/tasks/read.yml
 
 # Setup projects
 - name: Setup projects
-  include_tasks: setup.yml
+  ansible.builtin.include_tasks: setup.yml
   loop: "{{ projects }}"

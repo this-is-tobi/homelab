@@ -11,10 +11,10 @@
 
 # Setup sso
 - name: Setup SSO
-  include_tasks: sso.yml
+  ansible.builtin.include_tasks: sso.yml
 
 # Install
 - name: Sync application
-  include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
   vars:
     argocd_app: minio

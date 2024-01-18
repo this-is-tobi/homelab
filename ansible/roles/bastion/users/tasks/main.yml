@@ -39,11 +39,11 @@
   loop: "{{ bastionUsers }}"
 
 - name: Manage ssh keys
-  include_tasks: ssh.yml
+  ansible.builtin.include_tasks: ssh.yml
   loop: "{{ bastionUsers }}"
 
 - block:
   - name: Add openvpn users
-    include_tasks: openvpn.yml
+    ansible.builtin.include_tasks: openvpn.yml
     loop: "{{ bastionUsers }}"
   delegate_to: pi.gateway

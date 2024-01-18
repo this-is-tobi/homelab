@@ -1,5 +1,5 @@
 - name: Get vault secrets
-  include_tasks: roles/services/utils/secrets/tasks/read.yml
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
     argocd_app: coder
 
@@ -51,8 +51,7 @@
   no_log: true
 
 - name: Create vault secret
-  ansible.builtin.include_role:
-    name: services/utils/secrets
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write.yml
   vars:
     argocd_app: coder
     vault_values:

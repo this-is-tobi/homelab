@@ -47,7 +47,7 @@
       register: results
 
     - name: Create default vault secrets
-      include_tasks: "{{ vault_app }}"
+      ansible.builtin.include_tasks: "{{ vault_app }}"
       loop_control:
         loop_var: vault_app
       with_items: "{{ results.files | json_query('[].path') }}"
@@ -56,7 +56,7 @@
 # Get Keycloak infos
 - block:
     - name: Get keycloak vault secrets
-      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
       vars:
         argocd_app: keycloak
 
@@ -71,7 +71,7 @@
 # Get Minio infos
 - block:
     - name: Get minio vault secrets
-      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
       vars:
         argocd_app: minio
 
@@ -85,7 +85,7 @@
 # Get Sonarqube infos
 - block:
     - name: Get sonarqube vault secrets
-      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
       vars:
         argocd_app: sonarqube
 
@@ -99,7 +99,7 @@
 # Get Vault infos
 - block:
     - name: Get vault vault secrets
-      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
       vars:
         argocd_app: vault
 
@@ -112,7 +112,7 @@
 # Get Habror infos
 - block:
     - name: Get harbor vault secrets
-      include_tasks: roles/services/utils/secrets/tasks/read.yml
+      ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
       vars:
         argocd_app: harbor
 
