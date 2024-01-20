@@ -43,7 +43,7 @@ metadata:
   name: sonarqube-pg-cluster
 spec:
   imageName: ghcr.io/cloudnative-pg/postgresql:15.4
-  instances: 2
+  instances: 3
   primaryUpdateStrategy: unsupervised
   bootstrap:
     initdb:
@@ -60,7 +60,7 @@ spec:
       memory: 256Mi
       cpu: 100m
     limits:
-      memory: 2Gi
+      memory: 1Gi
       cpu: 500m
   affinity:
     enablePodAntiAffinity: true
