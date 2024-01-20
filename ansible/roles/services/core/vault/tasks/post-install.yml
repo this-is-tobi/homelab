@@ -176,3 +176,17 @@
         version: 2
     body_format: json
   when: get_engines.status == 400
+
+- name: Patch ServiceMonitor
+  kubernetes.core.k8s:
+    api_version: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    namespace: "{{ vault.namespace }}"
+    name: "vault"
+    state: patched
+    definition:
+      spec:
+        endpoints:
+          - bearerTokenSecret:
+              key: rootToken
+              name: "vault-admin"

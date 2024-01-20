@@ -16,7 +16,7 @@ server:
           cluster_address = "[::]:8201"
           # Enable unauthenticated metrics access (necessary for Prometheus Operator)
           telemetry {
-            unauthenticated_metrics_access = "true"
+            unauthenticated_metrics_access = "false"
           }
         }
         storage "raft" {
@@ -24,7 +24,7 @@ server:
         }
         service_registration "kubernetes" {}
         telemetry {
-          prometheus_retention_time = "1h"
+          prometheus_retention_time = "10m"
           disable_hostname = true
         }
   standalone:

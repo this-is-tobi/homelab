@@ -328,3 +328,17 @@
       "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
       "canonical_id": "{{ user_group.json.data.id }}"
     body_format: json
+
+- name: Patch ServiceMonitor
+  kubernetes.core.k8s:
+    api_version: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    namespace: "{{ vault_namespace }}"
+    name: "vault"
+    state: patched
+    definition:
+      spec:
+        endpoints:
+          - bearerTokenSecret:
+              key: rootToken
+              name: "vault-admin"
