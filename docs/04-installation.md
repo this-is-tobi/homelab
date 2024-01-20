@@ -2,11 +2,16 @@
 
 The whole installation is performed with [ansible](https://www.ansible.com/) so it is required to install it on the computer that will run playbooks. Also, ssh access to all hosts need to be setup.
 
-> __*Notes*__:
->
-> *Don't forget to replace `domain.com` with the appropriate domain. This can be setup in the the [all.yml](../ansible/inventory-example/group_vars/all.yml) file.*
-
 ## Prerequisites
+
+Following tools needs to be installed on the computer running the playbook :
+- [ansible](https://ansible.com) *- infrastructure as code software tools.*
+- [age](https://github.com/FiloSottile/age) *- simple, modern and secure encryption tool.*
+- [htpasswd](https://httpd.apache.org/docs/2.4/en/programs/htpasswd.html) *- user files for basic authentication managerment.*
+- [mc](https://min.io/docs/minio/linux/reference/minio-mc.html) *- command-line tool that allows you to manage your s3.*
+- [openssl](https://www.openssl.org/) *- cryptography and SSL/TLS toolkit.*
+- [hvac](https://hvac.readthedocs.io/en/stable/overview.html) *- HashiCorp Vault API client for Python 3.x.*
+- [yq](https://github.com/mikefarah/yq) *- portable command-line YAML, JSON, XML, CSV, TOML and properties processor.*
 
 For convenience, it is recommended to do these prerequisite steps :
 
@@ -19,6 +24,12 @@ cp -R ./ansible/inventory-example ./ansible/inventory
 ```
 
 Because crowdsec is used as the firewall, it is required to [create an account](https://app.crowdsec.net/) to share attack detection on the local network with the community as the community share it with us.
+
+
+> __*Notes*__:
+>
+> *Don't forget to replace `domain.com` with the appropriate domain. This can be setup in the the [all.yml](../ansible/inventory-example/group_vars/all.yml) file.*
+
 
 ## Settings
 
