@@ -43,25 +43,32 @@ To improve administrator experience, all services helm charts and versions can b
 
 Kubernetes services that are available through user interfaces are centralized on the [dashy](https://github.com/Lissy93/dashy) homepage but the full list can be found here :
 
-| Name                 | Url                                |
-| -------------------- | ---------------------------------- |
-| ArgoCD *(admin)*     | <https://gitops.admin.domain.com>  |
-| ArgoCD               | <https://gitops.domain.com>        |
-| Coder                | <https://coder.domain.com>         |
-| Dashy                | <https://domain.com>               |
-| Gitea                | <https://git.domain.com>           |
-| Grafana              | <https://monitoring.domain.com>    |
-| Harbor               | <https://registry.domain.com>      |
-| Keycloak             | <https://sso.domain.com>           |
-| Kubernetes-dashboard | <https://kube.domain.com>          |
-| Longhorn             | <http://longhorn.admin.domain.com> |
-| Mattermost           | <https://mattermost.domain.com>    |
-| Minio *- api*        | <https://s3.domain.com>            |
-| Minio *- web*        | <https://minio.domain.com>         |
-| Outline              | <https://outline.domain.com>       |
-| SonarQube            | <http://sonarqube.domain.com>      |
-| Vault *(admin)*      | <https://vault.admin.domain.com>   |
-| Vault                | <https://vault.domain.com>         |
+#### Admin
+
+| Name               | Url                                |
+| ------------------ | ---------------------------------- |
+| ArgoCD *(admin)*   | <https://gitops.admin.domain.com>  |
+| Longhorn *(admin)* | <http://longhorn.admin.domain.com> |
+| Vault *(admin)*    | <https://vault.admin.domain.com>   |
+
+#### Users
+
+| Name                 | Url                             |
+| -------------------- | ------------------------------- |
+| ArgoCD               | <https://gitops.domain.com>     |
+| Coder                | <https://coder.domain.com>      |
+| Dashy                | <https://domain.com>            |
+| Gitea                | <https://git.domain.com>        |
+| Grafana              | <https://monitoring.domain.com> |
+| Harbor               | <https://registry.domain.com>   |
+| Keycloak             | <https://sso.domain.com>        |
+| Kubernetes-dashboard | <https://kube.domain.com>       |
+| Mattermost           | <https://mattermost.domain.com> |
+| Minio *- api*        | <https://s3.domain.com>         |
+| Minio *- web*        | <https://minio.domain.com>      |
+| Outline              | <https://outline.domain.com>    |
+| SonarQube            | <http://sonarqube.domain.com>   |
+| Vault                | <https://vault.domain.com>      |
 
 > *__Notes:__ Replace `domain.com` by your own domain.*
 
