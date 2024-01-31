@@ -50,17 +50,17 @@
         - sops
         - secrets
 
-    - name: ./roles/services/additional/system-upgrade
-      tags:
-        - never
-        - system-upgrade
-        - upgrade
+    # - name: ./roles/services/additional/system-upgrade
+    #   tags:
+    #     - never
+    #     - system-upgrade
+    #     - upgrade
 
-    - name: ./roles/services/additional/trivy-operator
-      tags:
-        - additional
-        - trivy-operator
-        - trivy
+    # - name: ./roles/services/additional/trivy-operator
+    #   tags:
+    #     - additional
+    #     - trivy-operator
+    #     - trivy
 
     - name: ./roles/services/additional/cloudnative-pg
       tags:
@@ -69,73 +69,73 @@
         - cloudnative-pg
         - cnpg
 
-    - name: ./roles/services/additional/keycloak
-      tags:
-        - additional
-        - keycloak
-        - sso
+    # - name: ./roles/services/additional/keycloak
+    #   tags:
+    #     - additional
+    #     - keycloak
+    #     - sso
 
-    - name: ./roles/services/additional/vault
-      tags:
-        - additional
-        - vault
+    # - name: ./roles/services/additional/vault
+    #   tags:
+    #     - additional
+    #     - vault
 
-    - name: ./roles/services/additional/argocd
-      tags:
-        - additional
-        - argocd
-        - argo
-        - gitops
+    # - name: ./roles/services/additional/argocd
+    #   tags:
+    #     - additional
+    #     - argocd
+    #     - argo
+    #     - gitops
 
-    - name: ./roles/services/additional/kubernetes-dashboard
-      tags:
-        - additional
-        - kubernetes-dashboard
-        - kube-dashboard
-        - console
+    # - name: ./roles/services/additional/kubernetes-dashboard
+    #   tags:
+    #     - additional
+    #     - kubernetes-dashboard
+    #     - kube-dashboard
+    #     - console
 
-    - name: ./roles/services/additional/prometheus-stack
-      tags:
-        - additional
-        - prometheus
-        - grafana
-        - monitoring
+    # - name: ./roles/services/additional/prometheus-stack
+    #   tags:
+    #     - additional
+    #     - prometheus
+    #     - grafana
+    #     - monitoring
 
-    - name: ./roles/services/additional/minio
-      tags:
-        - additional
-        - minio
-        - s3
+    # - name: ./roles/services/additional/minio
+    #   tags:
+    #     - additional
+    #     - minio
+    #     - s3
 
-    - name: ./roles/services/additional/harbor
-      tags:
-        - additional
-        - harbor
-        - registry
+    # - name: ./roles/services/additional/harbor
+    #   tags:
+    #     - additional
+    #     - harbor
+    #     - registry
 
-    - name: ./roles/services/additional/gitea
-      tags:
-        - additional
-        - gitea
-        - git
+    # - name: ./roles/services/additional/gitea
+    #   tags:
+    #     - additional
+    #     - gitea
+    #     - git
 
-    - name: ./roles/services/additional/sonarqube
-      tags:
-        - additional
-        - sonarqube
-        - sonar
+    # - name: ./roles/services/additional/sonarqube
+    #   tags:
+    #     - additional
+    #     - sonarqube
+    #     - sonar
 
-    - name: ./roles/services/additional/mattermost
-      tags:
-        # - never # Not arm64 compatible
-        - additional
-        - mattermost
+    # - name: ./roles/services/additional/mattermost
+    #   tags:
+    #     # - never # Not arm64 compatible
+    #     - additional
+    #     - mattermost
 
-    - name: ./roles/services/additional/outline
-      tags:
-        # - never # Not arm64 compatible
-        - additional
-        - outline
+    # - name: ./roles/services/additional/outline
+    #   tags:
+    #     # - never # Not arm64 compatible
+    #     - additional
+    #     - outline
 
     - name: ./roles/services/additional/actions-runner-controller
       tags:
@@ -144,14 +144,14 @@
         - arc
         - runners
 
-    - name: ./roles/services/additional/coder
-      tags:
-        - additional
-        - coder
-        - vscode
+    # - name: ./roles/services/additional/coder
+    #   tags:
+    #     - additional
+    #     - coder
+    #     - vscode
 
-    - name: ./roles/services/additional/dashy
-      tags:
-        - additional
-        - dashy
-        - dashboard
+    # - name: ./roles/services/additional/dashy
+    #   tags:
+    #     - additional
+    #     - dashy
+    #     - dashboard

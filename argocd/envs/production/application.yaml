@@ -10,57 +10,57 @@ spec:
   - path: argocd/apps/actions-runner-controller/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
-  - path: argocd/apps/argocd/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
+  # - path: argocd/apps/argocd/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
   - path: argocd/apps/cloudnative-pg/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
-  - path: argocd/apps/coder/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/dashy/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/gitea/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/harbor/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/keycloak/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/kubernetes-dashboard/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/mattermost/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/minio/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/outline/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/prometheus-stack/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/sonarqube/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
+  # - path: argocd/apps/coder/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/dashy/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/gitea/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/harbor/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/keycloak/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/kubernetes-dashboard/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/mattermost/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/minio/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/outline/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/prometheus-stack/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/sonarqube/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
   - path: argocd/apps/sops/argocd
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
-  - path: argocd/apps/system-upgrade/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/trivy-operator/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
-  - path: argocd/apps/vault/argocd
-    repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: main
+  # - path: argocd/apps/system-upgrade/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/trivy-operator/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
+  # - path: argocd/apps/vault/argocd
+  #   repoURL: https://github.com/this-is-tobi/homelab.git
+  #   targetRevision: main
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd-system
