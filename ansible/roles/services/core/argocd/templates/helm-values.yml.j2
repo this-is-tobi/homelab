@@ -22,19 +22,19 @@ redis-ha:
   enabled: true
 redis:
   metrics:
-    enabled: true
+    enabled: false
     serviceMonitor:
       enabled: true
 notifications:
   replicas: 1
   metrics:
-    enabled: true
+    enabled: false
     serviceMonitor:
       enabled: true
 controller:
   replicas: 2
   metrics:
-    enabled: true
+    enabled: false
     serviceMonitor:
       enabled: true
 server:
@@ -53,20 +53,19 @@ server:
     https: false
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-      traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
     tls:
     - hosts:
       - {{ argocd.domain }}
       secretName: {{ argocd.domain }}
   metrics:
-    enabled: true
+    enabled: false
     serviceMonitor:
       enabled: true
 applicationSet:
   enabled: true
   replicas: 2
   metrics:
-    enabled: true
+    enabled: false
     serviceMonitor:
       enabled: true
 dex:
@@ -82,7 +81,7 @@ repoServer:
     targetCPUUtilizationPercentage: 75
     targetMemoryUtilizationPercentage: 75
   metrics:
-    enabled: true
+    enabled: false
     serviceMonitor:
       enabled: true
   initContainers:

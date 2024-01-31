@@ -26,7 +26,7 @@ metadata:
   namespace: "{{ longhorn.namespace }}"
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd,longhorn-system-auth-middleware@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: longhorn-system-auth-middleware@kubernetescrd
 spec:
   ingressClass: traefik
   rules:

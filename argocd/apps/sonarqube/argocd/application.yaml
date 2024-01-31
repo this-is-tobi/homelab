@@ -22,7 +22,6 @@ spec:
           ingressClassName: traefik
           annotations:
             cert-manager.io/cluster-issuer: letsencrypt-prod
-            traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
             nginx.ingress.kubernetes.io/proxy-body-size:
             ingressClassName: traefik
           hosts:

@@ -4,7 +4,6 @@ metadata:
   name: actions-runner-controller-github-webhook-server
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
 spec:
   ingressClassName: traefik
   rules:

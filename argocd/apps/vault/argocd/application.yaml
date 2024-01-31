@@ -58,7 +58,6 @@ spec:
             ingressClassName: traefik
             annotations:
               cert-manager.io/cluster-issuer: letsencrypt-prod
-              traefik.ingress.kubernetes.io/router.middlewares: kube-system-redirect-middleware@kubernetescrd
             hosts:
             - host: <path:secret/data/admin/apps/vault#domain>
               paths:
