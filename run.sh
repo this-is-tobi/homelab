@@ -24,7 +24,7 @@ Following flags are available:
   -e    Encrypt data using Sops.
 
   -k    Copy kubeconfig locally, default is '$FETCH_KUBECONFIG'.
-        Directory output should be passed as arg.
+        Kubeconfig is fetched to '$HOME/.kube/config.d/homelab'.
 
   -p    Run ansible playbook, default is '$PLAYBOOK'.
         Playbook should be passed as arg.
@@ -39,7 +39,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hdek:p:t: flag; do
+while getopts hdekp:t: flag; do
   case "${flag}" in
     d)
       DECRYPT="true";;
@@ -72,11 +72,13 @@ fi
 
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
-  CONTEXT=$(kubectl config current-context)
-  printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (y/n)?\n"
-  read ANSWER
-  if [ "$ANSWER" != "${ANSWER#[Nn]}" ]; then
-      exit 1
+  if [[ ! "$PLAYBOOK" =~ "infra.yml" ]]; then
+    CONTEXT=$(kubectl config current-context)
+    printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
+    read ANSWER
+    if [ "$ANSWER" != "${ANSWER#[Nn]}" ]; then
+        exit 1
+    fi
   fi
 
   printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
@@ -97,14 +99,25 @@ fi
 
 
 # Copy kube config to local machine
-if [ ! "$FETCH_KUBECONFIG" = "false" ]; then
+if [ "$FETCH_KUBECONFIG" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Copy kube config locally\n\n"
 
-  GATEWAY_IP=$(cat ansible/inventory/hosts.yml | yq '[.all.children.gateway.hosts[][]][0]')
-  MASTER_IP=$(cat ansible/inventory/hosts.yml | yq '[.all.children.cluster.children.masters.hosts[][]][0]')
-  USER=$(cat ansible/inventory/group_vars/all.yml | yq '.ansible_user')
+  GATEWAY_IP=$(yq '[.gateway.hosts[][]][0]' ansible/inventory/hosts.yml)
+  MASTER_IP=$(yq '[.k3s.children.masters.hosts[][]][0]' ansible/inventory/hosts.yml)
+  USER=$(yq '.ansible_user' ansible/inventory/group_vars/all.yml)
 
-  scp $USER@$MASTER_IP:/etc/rancher/k3s/k3s.yaml $KUBECONFIG/kubeconfig
-  CLUSTER_KUBECONFIG="$(sed "s/127.0.0.1/$GATEWAY_IP/g" $KUBECONFIG/kubeconfig)"
-  echo "$CLUSTER_KUBECONFIG" > $KUBECONFIG/kubeconfig
+  mkdir -p $HOME/.kube/config.d
+  scp $USER@$MASTER_IP:/etc/rancher/k3s/k3s.yaml $HOME/.kube/config.d/homelab
+  CLUSTER_KUBECONFIG="$(sed "s/127.0.0.1/$GATEWAY_IP/g" $HOME/.kube/config.d/homelab)"
+  echo "$CLUSTER_KUBECONFIG" > $HOME/.kube/config.d/homelab
+
+  export CLUSTER_CERTIFICATE_AUTHORITY_DATA="$(yq '.clusters[0].cluster.certificate-authority-data' $HOME/.kube/config.d/homelab)"
+  export CLUSTER_SERVER="$(yq '.clusters[0].cluster.server' $HOME/.kube/config.d/homelab)"
+  export USER_CLIENT_CERTIFICATE_DATA="$(yq '.users[0].user.client-certificate-data' $HOME/.kube/config.d/homelab)"
+  export USER_CLIENT_KEY_DATA="$(yq '.users[0].user.client-key-data' $HOME/.kube/config.d/homelab)"
+
+  yq -i '(.clusters[] | select(.name == "homelab") | .cluster.certificate-authority-data) = env(CLUSTER_CERTIFICATE_AUTHORITY_DATA)' ~/.kube/config
+  yq -i '(.clusters[] | select(.name == "homelab") | .cluster.server) = env(CLUSTER_SERVER)' ~/.kube/config
+  yq -i '(.users[] | select(.name == "homelab") | .user.client-certificate-data) = env(USER_CLIENT_CERTIFICATE_DATA)' ~/.kube/config
+  yq -i '(.users[] | select(.name == "homelab") | .user.client-key-data) = env(USER_CLIENT_KEY_DATA)' ~/.kube/config
 fi
