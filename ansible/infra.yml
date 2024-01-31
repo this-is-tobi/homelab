@@ -16,11 +16,10 @@
     - ./inventory/group_vars/gateway.yml
   roles:
     - common/hostname
+    - common/locales
     - common/ssh
-    - common/docker
-    - gateway/openvpn
-    - gateway/crowdsec
     - gateway/haproxy
+    - gateway/crowdsec
   tags:
     - gateway
 
@@ -32,6 +31,7 @@
     - ./inventory/group_vars/bastion.yml
   roles:
     - common/hostname
+    - common/locales
     - common/ssh
     - common/docker
     - bastion/users
@@ -47,15 +47,16 @@
     - ./inventory/group_vars/k3s.yml
   roles:
     - common/hostname
+    - common/locales
     - common/ssh
     - k3s/prereq
     - k3s/download
     - k3s/storage
-    # - k3s/registry
   tags:
     - k3s
     - k3s-deploy
     - k3s-init
+
 - hosts: masters
   become: true
   serial: 1
@@ -68,6 +69,7 @@
     - k3s
     - k3s-deploy
     - k3s-masters
+
 - hosts: workers
   become: true
   serial: 1
