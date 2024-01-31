@@ -9,6 +9,7 @@
       - grep
       - util-linux
       - nfs-common
+      - jq
 
 - name: Enable service iscsid
   ansible.builtin.service:
@@ -16,9 +17,11 @@
     enabled: yes
     state: started
 
-
 - name: Get /dev/sda UUID
-  ansible.builtin.command: "lsblk -n -o UUID /dev/sda"
+  ansible.builtin.shell:
+    cmd: |
+      DISK="$(lsblk --tree -o PATH,MOUNTPOINT -J | jq -r '.blockdevices[] | select(.children == null) | .path' | head -n 1)"
+      lsblk -n -o UUID "$DISK"
   register: sda_uuid
   when: (additional_disk is defined) and (additional_disk|bool == True)
 

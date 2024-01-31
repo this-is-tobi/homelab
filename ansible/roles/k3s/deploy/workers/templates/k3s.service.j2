@@ -5,9 +5,10 @@ After=network-online.target
 
 [Service]
 Type=notify
-ExecStartPre=/bin/sh -xc '! /usr/bin/systemctl is-enabled --quiet nm-cloud-setup.service'
-ExecStartPre=-/sbin/modprobe br_netfilter
-ExecStartPre=-/sbin/modprobe overlay
+EnvironmentFile=-/etc/default/%N
+EnvironmentFile=-/etc/sysconfig/%N
+EnvironmentFile=-/etc/systemd/system/k3s.service.env
+ExecStartPre=/bin/sh -xc '! /usr/bin/systemctl is-enabled --quiet nm-cloud-setup.service 2>/dev/null'
 ExecStart=/usr/local/bin/k3s agent --server https://{{ k3sApiServerEndpoint }}:6443 --token {{ k3sToken }} {{ k3sExtraAgentArgs | default("") }} {{ k3sExtraStorageArgs | default("") }}
 KillMode=process
 Delegate=yes

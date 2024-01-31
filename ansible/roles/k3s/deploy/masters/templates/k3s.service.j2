@@ -1,15 +1,17 @@
 [Unit]
 Description=Lightweight Kubernetes
 Documentation=https://k3s.io
-After=network-online.target
 Wants=network-online.target
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target
 
 [Service]
 Type=notify
-ExecStartPre=/bin/sh -xc '! /usr/bin/systemctl is-enabled --quiet nm-cloud-setup.service'
-ExecStartPre=-/sbin/modprobe br_netfilter
-ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/local/bin/k3s server {{ init_server_args | default("") }} {{ k3sExtraServerArgs | default("") }} {{ k3sExtraStorageArgs | default("") }}
+EnvironmentFile=-/etc/default/%N
+EnvironmentFile=-/etc/sysconfig/%N
+EnvironmentFile=-/etc/systemd/system/k3s.service.env
 KillMode=process
 Delegate=yes
 # Having non-zero Limit*s causes performance problems due to accounting overhead
@@ -21,6 +23,6 @@ TasksMax=infinity
 TimeoutStartSec=0
 Restart=always
 RestartSec=5s
-
-[Install]
-WantedBy=multi-user.target
+ExecStartPre=-/sbin/modprobe br_netfilter
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/local/bin/k3s server {{ init_server_args | default("") }} {{ k3sExtraServerArgs | default("") }} {{ k3sExtraStorageArgs | default("") }}

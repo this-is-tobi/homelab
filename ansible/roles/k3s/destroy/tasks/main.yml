@@ -61,3 +61,13 @@
     path: /storage01
     state: unmounted
   when: (additional_disk is defined) and (additional_disk|bool == True)
+
+- name: Reenable SWAP in fstab (1/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^# (.+?\sswap\s+sw\s+.*)$'
+    replace: '\1'
+
+- name: Enable SWAP (2/2)
+  shell: |
+    swapon -a
