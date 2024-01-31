@@ -1,25 +1,23 @@
-- name: Create haproxy service dir
-  ansible.builtin.file:
-    path: "/services/haproxy"
-    state: directory
-    owner: root
-    group: "{{ ansible_user }}"
-    mode: 0775
+- name: Install required system packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - haproxy
 
 - name: Copy haproxy config file
   ansible.builtin.template:
     src: "haproxy.cfg.j2"
-    dest: "/services/haproxy/haproxy.cfg"
+    dest: "/etc/haproxy/haproxy.cfg"
 
-- name: Copy docker-compose file
-  ansible.builtin.template:
-    src: "docker-compose.yml.j2"
-    dest: "/services/haproxy/docker-compose.yml"
+- name: Enable and check haproxy service
+  ansible.builtin.service:
+    name: haproxy
+    state: started
+    enabled: yes
 
-- name: Launch haproxy
-  community.docker.docker_compose:
-    state: present
-    recreate: always
-    project_src: "/services/haproxy"
-    files: 
-      - "docker-compose.yml"
+- name: Restart haproxy
+  ansible.builtin.service:
+    name: haproxy
+    state: restarted

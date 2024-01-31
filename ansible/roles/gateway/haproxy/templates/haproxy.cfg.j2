@@ -30,26 +30,32 @@ frontend stats
 frontend homelab_entrypoint_lb
   bind *:80
   bind *:443
+  mode tcp
+  option tcplog
   default_backend homelab_entrypoint
 
 frontend k3s_api_server_lb
   bind *:6443
+  mode tcp
+  option tcplog
   acl white_list src 192.168.0.0/24
   tcp-request connection reject if !white_list
   default_backend k3s_api_server
 
 backend homelab_entrypoint
   mode tcp
-  balance roundrobin
   option tcp-check
+  balance roundrobin
+  default-server inter 10s downinter 5s
   {% for host in groups['masters'] %}
 server {{ host }} {{ hostvars[host]['ansible_host'] }} check port 80
   {% endfor %}
 
 backend k3s_api_server
   mode tcp
-  balance roundrobin
   option tcp-check
+  balance roundrobin
+  default-server inter 10s downinter 5s
   {% for host in groups['masters'] %}
 server {{ host }} {{ hostvars[host]['ansible_host'] }} check port 6443
   {% endfor %}

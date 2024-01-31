@@ -1,0 +1,24 @@
+API_KEY={{ haproxy_bouncer_key.stdout }}
+MAP_PATH= # path to community_blocklist.map
+# bounce for all type of remediation that the bouncer can receive from the local API
+BOUNCING_ON_TYPE=all
+# when the bouncer receive an unknown remediation, fallback to this remediation
+FALLBACK_REMEDIATION=ban
+MODE=stream
+REQUEST_TIMEOUT=1000
+# exclude the bouncing on those location
+EXCLUDE_LOCATION=
+# Update frequency in stream mode, in second
+UPDATE_FREQUENCY=10
+#those apply for "ban" action
+# /!\ REDIRECT_LOCATION and BAN_TEMPLATE_PATH/RET_CODE can't be used together. REDIRECT_LOCATION take priority over RET_CODE AND BAN_TEMPLATE_PATH
+BAN_TEMPLATE_PATH=/var/lib/crowdsec/lua/haproxy/templates/ban.html
+REDIRECT_LOCATION=
+RET_CODE=
+#those apply for "captcha" action
+# Captcha Secret Key
+SECRET_KEY=
+# Captcha Site key
+SITE_KEY=
+CAPTCHA_TEMPLATE_PATH=/var/lib/crowdsec/lua/haproxy/templates/captcha.html
+CAPTCHA_EXPIRATION=3600

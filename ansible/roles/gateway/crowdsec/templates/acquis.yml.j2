@@ -1,6 +1,7 @@
 source: journalctl
 journalctl_filter:
   - "_SYSTEMD_UNIT=ssh.service"
+  - "_SYSTEMD_UNIT=haproxy.service"
 labels:
   type: journald
 
@@ -11,8 +12,8 @@ filenames:
 labels:
   type: syslog
 
-source: docker
-container_name:
-  - haproxy
-labels:
-  type: syslog
+# source: docker
+# container_name:
+#   - haproxy
+# labels:
+#   type: syslog

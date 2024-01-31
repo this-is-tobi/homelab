@@ -4,20 +4,8 @@
     state: present
     update_cache: true
   loop:
-    - python3-pip
     - jq
-
-- name: Add required python packages
-  ansible.builtin.pip:
-    name:
-      - docker-compose
-    executable: pip3
-
-- name: Apt update and install nftables
-  ansible.builtin.apt:
-    update_cache: true
-    name: nftables
-    state: present
+    - nftables
 
 - name: Enable and check nftables service
   ansible.builtin.systemd:
@@ -25,99 +13,94 @@
     state: started
     enabled: yes
 
-- name: Add an apt signing key
-  ansible.builtin.apt_key:
-    url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+- name: Add crowdsec apt repository
+  ansible.builtin.shell:
+    cmd: curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
 
-- name: Add apt repo
-  ansible.builtin.apt_repository:
-    repo: deb https://packagecloud.io/crowdsec/crowdsec/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release | lower }} main
-    update_cache: true
+# - name: Add an apt signing key
+#   ansible.builtin.apt_key:
+#     url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
 
-- name: Crowdsec install nftables bouncer
+# - name: Add apt repo
+#   ansible.builtin.apt_repository:
+#     repo: deb https://packagecloud.io/crowdsec/crowdsec/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release | lower }} main
+#     update_cache: true
+
+- name: Install required system packages
   ansible.builtin.apt:
-    update_cache: true
-    name: crowdsec-firewall-bouncer-nftables
+    name: "{{ item }}"
     state: present
-
-- name: Restart docker
-  ansible.builtin.service:
-    name: docker
-    state: restarted
-
-- name: Create crowdsec service dir
-  ansible.builtin.file:
-    path: "/services/crowdsec"
-    state: directory
-    owner: root
-    group: "{{ ansible_user }}"
-    mode: 0775
+    update_cache: true
+  loop:
+    - crowdsec
+    - crowdsec-firewall-bouncer-nftables
+    - crowdsec-haproxy-bouncer
 
 - name: Copy crowdsec acquisition file
   ansible.builtin.template:
     src: "acquis.yml.j2"
-    dest: "/services/crowdsec/acquis.yml"
-
-- name: Create crowdsec dashboard dir
-  ansible.builtin.file:
-    path: "/services/crowdsec/dashboard"
-    state: directory
-
-- name: Copy crowdsec dashboard Dockerfile
-  ansible.builtin.template:
-    src: "Dockerfile.j2"
-    dest: "/services/crowdsec/dashboard/Dockerfile"
-
-- name: Copy docker-compose file
-  ansible.builtin.template:
-    src: "docker-compose.yml.j2"
-    dest: "/services/crowdsec/docker-compose.yml"
-
-- name: Launch crowdsec
-  community.docker.docker_compose:
-    state: present
-    project_src: "/services/crowdsec"
-    files:
-      - "docker-compose.yml"
+    dest: "/etc/crowdsec/acquis.yml"
 
 - name: Register crowdsec bouncer key
   ansible.builtin.shell:
     cmd: |
-      NFTABLES_BOUNCER_KEY="$(docker exec crowdsec cscli bouncers list -o json \
-        | jq -r '.[] | select(.name == "crowdsec-firewall-bouncer-nftables") | .api_key')"
+      NFTABLES_BOUNCER_KEY="$(sudo cscli bouncers list -o json \
+        | jq -r '.[] | select(.name | contains("firewall-bouncer")) | .api_key')"
       if [ -z "$NFTABLES_BOUNCER_KEY" ]; then
-        docker exec crowdsec cscli bouncers add crowdsec-firewall-bouncer-nftables | grep '^[[:space:]]' | tr -d '[:space:]'
+        sudo cscli bouncers add crowdsec-firewall-bouncer-nftables | grep '^[[:space:]]' | tr -d '[:space:]'
       else
         echo "$NFTABLES_BOUNCER_KEY"
       fi
-    chdir: "/services/crowdsec"
   no_log: true
-  register: bouncer_key
+  register: nftables_bouncer_key
 
-- name: Set crowdsec bouncer key
+- name: Set crowdsec nftables bouncer key
   delegate_to: localhost
   become: false
   ansible.builtin.shell:
     cmd: |
-      yq -i '.crowdsec.bouncerNftablesKey = "{{ bouncer_key.stdout }}"' ./inventory/group_vars/gateway/all.yml
-  when: not crowdsec.bouncerNftablesKey == "{{ bouncer_key.stdout }}"
+      yq -i '.crowdsec.bouncerNftablesKey = "{{ nftables_bouncer_key.stdout }}"' ./inventory/group_vars/gateway.yml
+  when: not crowdsec.bouncerNftablesKey == nftables_bouncer_key.stdout
 
-- name: Get infos on crowdsec container
-  community.general.docker_container_info:
-    name: crowdsec
-  register: crowdsec_container
-
-- name: Register crowdsec container ip
-  ansible.builtin.set_fact:
-    crowdsec_ip: "{{ crowdsec_container.container['NetworkSettings']['Networks']['crowdsec_homelab']['IPAddress'] }}"
-
-- name: Copy bouncer config file
+- name: Copy nftables bouncer config file
   ansible.builtin.template:
     src: "crowdsec-firewall-bouncer.yml.j2"
     dest: "/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yml"
 
-- name: Enable and start bouncer service
+- name: Enable and start nftables bouncer service
   ansible.builtin.systemd:
     name: crowdsec-firewall-bouncer
-    state: started
+    state: restarted
+    enabled: true
+
+- name: Register crowdsec bouncer key
+  ansible.builtin.shell:
+    cmd: |
+      HAPROXY_BOUNCER_KEY="$(sudo cscli bouncers list -o json \
+        | jq -r '.[] | select(.name | contains("haproxy")) | .api_key')"
+      if [ -z "$HAPROXY_BOUNCER_KEY" ]; then
+        sudo cscli bouncers add crowdsec-haproxy-bouncer | grep '^[[:space:]]' | tr -d '[:space:]'
+      else
+        echo "$HAPROXY_BOUNCER_KEY"
+      fi
+  no_log: true
+  register: haproxy_bouncer_key
+
+- name: Set crowdsec haproxy bouncer key
+  delegate_to: localhost
+  become: false
+  ansible.builtin.shell:
+    cmd: |
+      yq -i '.crowdsec.bouncerHaproxyKey = "{{ haproxy_bouncer_key.stdout }}"' ./inventory/group_vars/gateway.yml
+  when: not crowdsec.bouncerHaproxyKey == haproxy_bouncer_key.stdout
+
+- name: Copy haproxy bouncer config file
+  ansible.builtin.template:
+    src: "crowdsec-haproxy-bouncer.conf.j2"
+    dest: "/etc/crowdsec/bouncers/crowdsec-haproxy-bouncer.conf"
+
+- name: Enable and start haproxy bouncer service
+  ansible.builtin.systemd:
+    name: crowdsec-firewall-bouncer
+    state: restarted
     enabled: true

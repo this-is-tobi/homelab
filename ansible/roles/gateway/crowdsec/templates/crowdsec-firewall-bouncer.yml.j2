@@ -9,8 +9,8 @@ log_compression: true
 log_max_size: 100
 log_max_backups: 3
 log_max_age: 30
-api_url: http://{{ crowdsec_ip }}:8080/
-api_key: {{ bouncer_key.stdout }}
+api_url: http://localhost:8080/
+api_key: {{ nftables_bouncer_key.stdout }}
 insecure_skip_verify: false
 disable_ipv6: false
 deny_action: DROP
@@ -41,6 +41,3 @@ nftables:
     table: crowdsec6
     chain: crowdsec6-chain
 # packet filter
-pf:
-  # an empty string disables the anchor
-  anchor_name: ""
