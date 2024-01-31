@@ -1,8 +1,3 @@
-- name: Remove /etc/ssh/sshd_config.d/rename_user.conf
-  ansible.builtin.file:
-    state: absent
-    path: /etc/ssh/sshd_config.d/rename_user.conf
-
 - name: Copy sshd_config file
   ansible.builtin.template:
     src: sshd_config.j2
