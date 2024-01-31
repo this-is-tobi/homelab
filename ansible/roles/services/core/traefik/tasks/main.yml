@@ -23,11 +23,3 @@
     timeout: 10m0s
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
-
-# Post install
-- name: Deploy middleware
-  kubernetes.core.k8s:
-    state: present
-    template: "{{ item }}"
-  with_items:
-    - middleware.yml.j2
