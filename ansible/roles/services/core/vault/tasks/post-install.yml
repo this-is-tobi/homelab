@@ -1,7 +1,7 @@
 - name: Wait vault container
   kubernetes.core.k8s:
     kind: Pod
-    name: vault-0
+    name: "{{ item }}"
     namespace: "{{ vault.namespace }}"
     wait: true
     wait_sleep: 10
@@ -10,6 +10,10 @@
       reason:
       type: Initialized
       status: "True"
+  with_items:
+    - vault-system-0
+    - vault-system-1
+    - vault-system-2
 
 - name: Find vault keys
   kubernetes.core.k8s_info:
@@ -22,7 +26,7 @@
 - name: Check vault status - node 1
   ansible.builtin.include_tasks: check.yml
   vars:
-    vault_pod: vault-0
+    vault_pod: vault-system-0
 
 - name: Check if vault is coherent
   ansible.builtin.assert:
@@ -38,7 +42,7 @@
 - name: Init vault node - node 1
   kubernetes.core.k8s_exec:
     container: vault
-    pod: vault-0
+    pod: vault-system-0
     namespace: "{{ vault.namespace }}"
     command: vault operator init -key-shares=3 -key-threshold=2 -format=json
   register: init
@@ -76,27 +80,27 @@
 # Unseal vault node 1
 - name: Set seal count - node 1
   ansible.builtin.set_fact:
-    vault_pod: vault-0
+    vault_pod: vault-system-0
     unsealKeyNb: "0"
 
 - name: Unseal vault primary - node 1
   ansible.builtin.include_tasks: unseal.yml
   # vars:
-  #   vault_pod: vault-0
+  #   vault_pod: vault-system-0
   when: vault_status == 'not init' or vault_status == 'sealed'
 
 # Init vault node 2
 - name: Check vault status - node 2
   ansible.builtin.include_tasks: check.yml
   vars:
-    vault_pod: vault-1
+    vault_pod: vault-system-1
 
 - name: Init vault node - node 2
   kubernetes.core.k8s_exec:
     container: vault
-    pod: vault-1
+    pod: vault-system-1
     namespace: "{{ vault.namespace }}"
-    command: vault operator raft join http://vault-0.vault-internal:8200
+    command: vault operator raft join http://vault-system-0.vault-system-internal:8200
   retries: 3
   delay: 20
   when: vault_status == 'not init'
@@ -105,14 +109,14 @@
 - name: Check vault status - node 3
   ansible.builtin.include_tasks: check.yml
   vars:
-    vault_pod: vault-2
+    vault_pod: vault-system-2
 
 - name: Init vault node - node 3
   kubernetes.core.k8s_exec:
     container: vault
-    pod: vault-2
+    pod: vault-system-2
     namespace: "{{ vault.namespace }}"
-    command: vault operator raft join http://vault-0.vault-internal:8200
+    command: vault operator raft join http://vault-system-0.vault-system-internal:8200
   retries: 3
   delay: 20
   when: vault_status == 'not init'
@@ -121,34 +125,34 @@
 - name: Check vault status - node 2
   ansible.builtin.include_tasks: check.yml
   vars:
-    vault_pod: vault-1
+    vault_pod: vault-system-1
 
 - name: Set seal count - node 2
   ansible.builtin.set_fact:
-    vault_pod: vault-1
+    vault_pod: vault-system-1
     unsealKeyNb: "0"
 
 - name: Unseal vault node - node 2
   ansible.builtin.include_tasks: unseal.yml
   vars:
-    vault_pod: vault-1
+    vault_pod: vault-system-1
   when: vault_status == 'not init' or vault_status == 'sealed'
 
 # Unseal node 3
 - name: Check vault status - node 2
   ansible.builtin.include_tasks: check.yml
   vars:
-    vault_pod: vault-2
+    vault_pod: vault-system-2
 
 - name: Set seal count - node 3
   ansible.builtin.set_fact:
-    vault_pod: vault-2
+    vault_pod: vault-system-2
     unsealKeyNb: "0"
 
 - name: Unseal vault node - node 3
   ansible.builtin.include_tasks: unseal.yml
   vars:
-    vault_pod: vault-2
+    vault_pod: vault-system-2
   when: vault_status == 'not init' or vault_status == 'sealed'
 
 # Create kv engine
