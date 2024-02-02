@@ -22,21 +22,27 @@
 
 - name: Activating cgroup support
   ansible.builtin.lineinfile:
-    path: /boot/cmdline.txt
+    # path: /boot/cmdline.txt
+    path: /boot/firmware/cmdline.txt
     regexp: '^((?!.*\bcgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory\b).*)$'
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
     backrefs: true
-  notify: reboot
 
-- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
-  shell: |
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/3)
+  ansible.builtin.shell: |
     swapoff -a
 
-- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
-  replace:
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/3)
+  ansible.builtin.replace:
     path: /etc/fstab
     regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
     replace: '# \1'
+
+- name: Disable SWAP service (3/3)
+  ansible.builtin.systemd:
+    name: dphys-swapfile
+    state: stopped
+    enabled: false
 
 - name: Install utility packages
   ansible.builtin.apt:
@@ -46,3 +52,13 @@
       - bash
       - curl
       - grep
+
+- name: Comment out "search" line in resolv.conf
+  ansible.builtin.replace:
+    path: /etc/resolv.conf
+    regexp: '^search(.*)$'
+    replace: '#\g<0>'
+
+- name: Ensure resolv.conf is immutable
+  ansible.builtin.command: chattr +i /etc/resolv.conf
+  notify: reboot

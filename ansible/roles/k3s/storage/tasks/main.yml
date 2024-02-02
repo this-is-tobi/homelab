@@ -17,7 +17,7 @@
     enabled: yes
     state: started
 
-- name: Get /dev/sda UUID
+- name: Get disk UUID
   ansible.builtin.shell:
     cmd: |
       DISK="$(lsblk --tree -o PATH,MOUNTPOINT -J | jq -r '.blockdevices[] | select(.children == null) | .path' | head -n 1)"

@@ -62,11 +62,17 @@
     state: unmounted
   when: (additional_disk is defined) and (additional_disk|bool == True)
 
-- name: Reenable SWAP in fstab (1/2)
+- name: Enable SWAP in fstab (1/2)
   replace:
     path: /etc/fstab
     regexp: '^# (.+?\sswap\s+sw\s+.*)$'
     replace: '\1'
+
+- name: Enable SWAP service (3/3)
+  ansible.builtin.systemd:
+    name: dphys-swapfile
+    state: started
+    enabled: true
 
 - name: Enable SWAP (2/2)
   shell: |
