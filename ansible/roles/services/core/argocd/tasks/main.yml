@@ -85,6 +85,14 @@
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
+# Setup vault secrets
+- name: Setup secrets
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
+  vars:
+    vault_values:
+      argocd:
+        domain: "{{ argocd.domain }}"
+
 # Post install
 - name: Deploy argocd admin project
   kubernetes.core.k8s:

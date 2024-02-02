@@ -27,3 +27,11 @@
 # Post install
 - name: Post install
   ansible.builtin.include_tasks: post-install.yml
+
+# Setup vault secrets
+- name: Setup secrets
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
+  vars:
+    vault_values:
+      vault:
+        domain: "{{ vault.domain }}"
