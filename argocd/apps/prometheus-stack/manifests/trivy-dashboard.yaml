@@ -7,6 +7,49 @@ metadata:
 data:
   trivy-operator.json: |-
     {
+      "__inputs": [
+        {
+          "name": "DS_PROMETHEUS",
+          "label": "Prometheus",
+          "description": "",
+          "type": "datasource",
+          "pluginId": "prometheus",
+          "pluginName": "Prometheus"
+        }
+      ],
+      "__elements": [],
+      "__requires": [
+        {
+          "type": "grafana",
+          "id": "grafana",
+          "name": "Grafana",
+          "version": "8.5.0"
+        },
+        {
+          "type": "datasource",
+          "id": "prometheus",
+          "name": "Prometheus",
+          "version": "5.0.0"
+        },
+        {
+          "type": "panel",
+          "id": "timeseries",
+          "name": "Time series",
+          "version": ""
+        },
+        {
+          "type": "panel",
+          "id": "stat",
+          "name": "Stat",
+          "version": ""
+        },
+        {
+          "type": "panel",
+          "id": "table",
+          "name": "Table",
+          "version": ""
+        }
+      ],
       "annotations": {
         "list": [
           {
@@ -19,20 +62,28 @@ data:
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
             "type": "dashboard"
           }
         ]
       },
+      "description": "This is a modern dashboard for the Trivy Operator from Aqua Security. Made to take advantage of the latest Grafana features. GitHub repository: https://github.com/dotdc/grafana-dashboards-kubernetes",
       "editable": true,
       "fiscalYearStartMonth": 0,
-      "graphTooltip": 0,
+      "graphTooltip": 1,
       "links": [],
       "liveNow": false,
       "panels": [
         {
           "collapsed": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "datasource",
+            "uid": "grafana"
           },
           "gridPos": {
             "h": 1,
@@ -40,72 +91,22 @@ data:
             "x": 0,
             "y": 0
           },
-          "id": 68,
+          "id": 43,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Overview",
+          "title": "Vulnerabilities",
           "type": "row"
         },
         {
           "datasource": {
-            "uid": "$datasource"
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 2,
-            "x": 0,
-            "y": 1
-          },
-          "id": 26,
-          "links": [],
-          "options": {
-            "code": {
-              "language": "plaintext",
-              "showLineNumbers": false,
-              "showMiniMap": false
-            },
-            "content": "![argoimage](https://avatars1.githubusercontent.com/u/30269780?s=110&v=4)",
-            "mode": "markdown"
-          },
-          "pluginVersion": "10.2.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "transparent": true,
-          "type": "text"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "thresholds"
               },
-              "mappings": [
-                {
-                  "options": {
-                    "match": "null",
-                    "result": {
-                      "text": "N/A"
-                    }
-                  },
-                  "type": "special"
-                }
-              ],
+              "mappings": [],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -115,84 +116,7 @@ data:
                   },
                   {
                     "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "dtdurations"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 3,
-            "x": 2,
-            "y": 1
-          },
-          "id": 32,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "none",
-            "graphMode": "none",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto",
-            "wideLayout": true
-          },
-          "pluginVersion": "10.2.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "time() - max(process_start_time_seconds{job=\"argocd-server-metrics\",namespace=~\"$namespace\"})",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "refId": "A"
-            }
-          ],
-          "title": "Uptime",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "fixedColor": "rgb(31, 120, 193)",
-                "mode": "fixed"
-              },
-              "mappings": [
-                {
-                  "options": {
-                    "match": "null",
-                    "result": {
-                      "text": "0"
-                    }
-                  },
-                  "type": "special"
-                }
-              ],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
+                    "value": 1
                   }
                 ]
               },
@@ -202,65 +126,55 @@ data:
           },
           "gridPos": {
             "h": 4,
-            "w": 3,
-            "x": 5,
+            "w": 4,
+            "x": 0,
             "y": 1
           },
-          "id": 94,
-          "links": [],
-          "maxDataPoints": 100,
+          "id": 51,
           "options": {
-            "colorMode": "none",
+            "colorMode": "value",
             "graphMode": "area",
             "justifyMode": "auto",
-            "orientation": "horizontal",
+            "orientation": "auto",
             "reduceOptions": {
               "calcs": [
-                "lastNotNull"
+                "last"
               ],
               "fields": "",
               "values": false
             },
-            "textMode": "auto",
-            "wideLayout": true
+            "textMode": "auto"
           },
-          "pluginVersion": "10.2.2",
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "count(count by (server) (argocd_cluster_info{namespace=~\"$namespace\"}))",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{severity=\"Critical\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "title": "Clusters",
+          "title": "CRITICAL",
           "type": "stat"
         },
         {
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
               "color": {
-                "fixedColor": "rgb(31, 120, 193)",
-                "mode": "fixed"
+                "mode": "thresholds"
               },
-              "mappings": [
-                {
-                  "options": {
-                    "match": "null",
-                    "result": {
-                      "text": "N/A"
-                    }
-                  },
-                  "type": "special"
-                }
-              ],
+              "mappings": [],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -269,8 +183,8 @@ data:
                     "value": null
                   },
                   {
-                    "color": "red",
-                    "value": 80
+                    "color": "orange",
+                    "value": 1
                   }
                 ]
               },
@@ -280,143 +194,123 @@ data:
           },
           "gridPos": {
             "h": 4,
-            "w": 3,
+            "w": 4,
+            "x": 4,
+            "y": 1
+          },
+          "id": 50,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{severity=\"High\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "HIGH",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
             "x": 8,
             "y": 1
           },
-          "id": 75,
-          "links": [],
-          "maxDataPoints": 100,
+          "id": 49,
           "options": {
-            "colorMode": "none",
+            "colorMode": "value",
             "graphMode": "area",
             "justifyMode": "auto",
-            "orientation": "horizontal",
+            "orientation": "auto",
             "reduceOptions": {
               "calcs": [
-                "lastNotNull"
+                "last"
               ],
               "fields": "",
               "values": false
             },
-            "textMode": "auto",
-            "wideLayout": true
+            "textMode": "auto"
           },
-          "pluginVersion": "10.2.2",
-          "repeatDirection": "h",
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\"})",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{severity=\"Medium\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "title": "Applications",
+          "title": "MEDIUM",
           "type": "stat"
         },
         {
           "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "fixedColor": "rgb(31, 120, 193)",
-                "mode": "fixed"
-              },
-              "mappings": [
-                {
-                  "options": {
-                    "match": "null",
-                    "result": {
-                      "text": "0"
-                    }
-                  },
-                  "type": "special"
-                }
-              ],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 3,
-            "x": 11,
-            "y": 1
-          },
-          "id": 107,
-          "links": [],
-          "maxDataPoints": 100,
-          "options": {
-            "colorMode": "none",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "textMode": "auto",
-            "wideLayout": true
-          },
-          "pluginVersion": "10.2.2",
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "count(count by (repo) (argocd_app_info{namespace=~\"$namespace\"}))",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
-              "refId": "A"
-            }
-          ],
-          "title": "Repositories",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "thresholds"
               },
-              "mappings": [
-                {
-                  "id": 0,
-                  "op": "=",
-                  "text": "0",
-                  "type": 1,
-                  "value": "null"
-                }
-              ],
-              "max": 100,
-              "min": 0,
+              "mappings": [],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -425,8 +319,8 @@ data:
                     "value": null
                   },
                   {
-                    "color": "red",
-                    "value": 80
+                    "color": "blue",
+                    "value": 1
                   }
                 ]
               },
@@ -436,2000 +330,1920 @@ data:
           },
           "gridPos": {
             "h": 4,
-            "w": 3,
-            "x": 14,
+            "w": 4,
+            "x": 12,
             "y": 1
           },
-          "id": 100,
-          "links": [],
+          "id": 60,
           "options": {
-            "minVizHeight": 75,
-            "minVizWidth": 75,
-            "orientation": "horizontal",
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
             "reduceOptions": {
               "calcs": [
-                "lastNotNull"
+                "last"
               ],
               "fields": "",
               "values": false
             },
-            "showThresholdLabels": false,
-            "showThresholdMarkers": true
+            "textMode": "auto"
           },
-          "pluginVersion": "10.2.2",
-          "repeatDirection": "h",
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",operation!=\"\"})",
-              "format": "time_series",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{severity=\"Low\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
               "instant": true,
-              "intervalFactor": 1,
-              "legendFormat": "",
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "title": "Operations",
-          "type": "gauge"
+          "title": "LOW",
+          "type": "stat"
         },
         {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "purple",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
             "h": 4,
-            "w": 7,
-            "x": 17,
+            "w": 4,
+            "x": 16,
             "y": 1
           },
-          "hiddenSeries": false,
-          "id": 28,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "connected",
+          "id": 52,
           "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\"}) by (namespace)",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
-              "legendFormat": "{{namespace}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Applications",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "decimals": 0,
-              "format": "short",
-              "logBase": 1,
-              "show": true
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
             },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "uid": "$datasource"
+            "textMode": "auto"
           },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 5
-          },
-          "id": 77,
-          "panels": [],
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{severity=\"Unknown\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "title": "Application Status",
-          "type": "row"
+          "title": "UNKNOWN",
+          "type": "stat"
         },
         {
-          "aliasColors": {
-            "Degraded": "semi-dark-red",
-            "Healthy": "green",
-            "Missing": "semi-dark-purple",
-            "Progressing": "semi-dark-blue",
-            "Suspended": "semi-dark-orange",
-            "Unknown": "rgb(255, 255, 255)"
-          },
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "text",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
-            "h": 6,
-            "w": 12,
-            "x": 0,
-            "y": 6
+            "h": 4,
+            "w": 4,
+            "x": 20,
+            "y": 1
           },
-          "hiddenSeries": false,
-          "id": 105,
-          "interval": "",
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "hideEmpty": false,
-            "hideZero": false,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
+          "id": 39,
           "options": {
-            "alertThreshold": true
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
           },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\",health_status!=\"\"}) by (health_status)",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
-              "legendFormat": "{{health_status}}",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Health Status",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 2,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "title": "TOTAL",
+          "type": "stat"
         },
         {
-          "aliasColors": {
-            "Degraded": "semi-dark-red",
-            "Healthy": "green",
-            "Missing": "semi-dark-purple",
-            "OutOfSync": "semi-dark-yellow",
-            "Progressing": "semi-dark-blue",
-            "Suspended": "semi-dark-orange",
-            "Synced": "semi-dark-green",
-            "Unknown": "rgb(255, 255, 255)"
-          },
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 6,
-            "w": 12,
-            "x": 12,
-            "y": 6
-          },
-          "hiddenSeries": false,
-          "id": 106,
-          "interval": "",
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "hideEmpty": false,
-            "hideZero": false,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
+              "color": {
+                "mode": "palette-classic"
               },
-              "expr": "sum(argocd_app_info{namespace=~\"$namespace\",dest_server=~\"$cluster\",health_status=~\"$health_status\",sync_status=~\"$sync_status\",health_status!=\"\"}) by (sync_status)",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
-              "legendFormat": "{{sync_status}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Sync Status",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 2,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 12
-          },
-          "id": 104,
-          "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Sync Stats",
-          "type": "row"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 6,
-            "w": 24,
-            "x": 0,
-            "y": 13
-          },
-          "hiddenSeries": false,
-          "id": 56,
-          "interval": "",
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "total",
-            "sortDesc": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 1,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(round(increase(argocd_app_sync_total{namespace=~\"$namespace\",dest_server=~\"$cluster\"}[$interval]))) by ($grouping)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{$grouping}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Sync Activity",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "decimals": 0,
-              "format": "short",
-              "label": "",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            },
-            {
-              "decimals": -12,
-              "format": "short",
-              "label": "",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 5,
-            "w": 24,
-            "x": 0,
-            "y": 19
-          },
-          "hiddenSeries": false,
-          "id": 73,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": false,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "total",
-            "sortDesc": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(round(increase(argocd_app_sync_total{namespace=~\"$namespace\",phase=~\"Error|Failed\",dest_server=~\"$cluster\"}[$interval]))) by ($grouping, phase)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{phase}}: {{$grouping}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Sync Failures",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "decimals": 0,
-              "format": "none",
-              "label": "",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": "",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 24
-          },
-          "id": 64,
-          "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Controller Stats",
-          "type": "row"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 6,
-            "w": 24,
-            "x": 0,
-            "y": 25
-          },
-          "hiddenSeries": false,
-          "id": 58,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "max": true,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "total",
-            "sortDesc": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(argocd_app_reconcile_count{namespace=~\"$namespace\",dest_server=~\"$cluster\"}[$interval])) by ($grouping)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{$grouping}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Reconciliation Activity",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "cards": {},
-          "color": {
-            "cardColor": "#b4ff00",
-            "colorScale": "sqrt",
-            "colorScheme": "interpolateSpectral",
-            "exponent": 0.5,
-            "mode": "spectrum"
-          },
-          "dataFormat": "tsbuckets",
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
               "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 5
+          },
+          "id": 58,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{cluster=~\"$cluster\"}) by (namespace)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "{{namespace}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Total vulnerabilities by namespaces",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Critical"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "High"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Medium"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Low"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Unknown"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "purple",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 5
+          },
+          "id": 61,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{cluster=~\"$cluster\"}) by (severity)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Total vulnerabilities by severity",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 13
+          },
+          "id": 85,
+          "panels": [],
+          "title": "Vulnerability Details",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto",
+                "filterable": true,
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "severity"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "options": {
+                          "Critical": {
+                            "color": "red",
+                            "index": 0
+                          },
+                          "High": {
+                            "color": "orange",
+                            "index": 1
+                          },
+                          "Low": {
+                            "color": "blue",
+                            "index": 3
+                          },
+                          "Medium": {
+                            "color": "yellow",
+                            "index": 2
+                          },
+                          "Unknown": {
+                            "color": "purple",
+                            "index": 4
+                          }
+                        },
+                        "type": "value"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.displayMode",
+                    "value": "color-text"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 14
+          },
+          "id": 83,
+          "options": {
+            "footer": {
+              "enablePagination": true,
+              "fields": [
+                "Value"
+              ],
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": []
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_vulnerabilities{namespace=~\"$namespace\", cluster=~\"$cluster\"}) by (namespace, image_registry, image_repository, image_tag, severity) > 0",
+              "format": "table",
+              "instant": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Vulnerability count per image and severity in $namespace namespace(s)",
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "Value": false
+                },
+                "indexByName": {
+                  "Time": 0,
+                  "Value": 6,
+                  "image_registry": 2,
+                  "image_repository": 3,
+                  "image_tag": 4,
+                  "namespace": 1,
+                  "severity": 5
+                },
+                "renameByName": {
+                  "Value": "Nb of vulnerabilities",
+                  "image_registry": "Image Registry",
+                  "image_repository": "Image Repository",
+                  "image_tag": "Image Tag",
+                  "namespace": "Namespace",
+                  "severity": "Severity"
                 }
               }
             },
-            "overrides": []
+            {
+              "id": "groupBy",
+              "options": {
+                "fields": {
+                  "All values": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Count": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Image Registry": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Image Repository": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Image Tag": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Namespace": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Nb of vulnerabilities": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Severity": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Value": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "image_registry": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "image_repository": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "image_tag": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "namespace": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "severity": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  }
+                }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "description": "Require operator.metricsVulnIdEnabled: true",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "displayMode": "auto",
+                "filterable": true,
+                "inspect": false
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "severity"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "options": {
+                          "Critical": {
+                            "color": "red",
+                            "index": 0
+                          },
+                          "High": {
+                            "color": "orange",
+                            "index": 1
+                          },
+                          "Low": {
+                            "color": "blue",
+                            "index": 3
+                          },
+                          "Medium": {
+                            "color": "yellow",
+                            "index": 2
+                          },
+                          "Unknown": {
+                            "color": "purple",
+                            "index": 4
+                          }
+                        },
+                        "type": "value"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.displayMode",
+                    "value": "color-text"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "vuln_id"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "https://nvd.nist.gov/vuln/detail/${__value.text}",
+                        "url": "https://nvd.nist.gov/vuln/detail/${__value.text}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
-            "h": 7,
+            "h": 12,
             "w": 24,
             "x": 0,
-            "y": 31
+            "y": 26
           },
-          "heatmap": {},
-          "hideZeroBuckets": false,
-          "highlightCards": true,
-          "id": 60,
-          "legend": {
-            "show": true
-          },
-          "links": [],
+          "id": 78,
           "options": {
-            "calculate": false,
-            "calculation": {},
-            "cellGap": 2,
-            "cellValues": {
-              "decimals": 0
+            "footer": {
+              "enablePagination": true,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
             },
-            "color": {
-              "exponent": 0.5,
-              "fill": "#b4ff00",
-              "mode": "scheme",
-              "reverse": false,
-              "scale": "exponential",
-              "scheme": "Spectral",
-              "steps": 128
-            },
-            "exemplars": {
-              "color": "rgba(255,0,255,0.7)"
-            },
-            "filterValues": {
-              "le": 1e-9
-            },
-            "legend": {
-              "show": true
-            },
-            "rowsFrame": {
-              "layout": "auto"
-            },
-            "showValue": "never",
-            "tooltip": {
-              "show": true,
-              "yHistogram": true
-            },
-            "yAxis": {
-              "axisPlacement": "left",
-              "reverse": false,
-              "unit": "short"
-            }
+            "showHeader": true,
+            "sortBy": []
           },
-          "pluginVersion": "10.2.2",
-          "reverseYBuckets": false,
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(increase(argocd_app_reconcile_bucket{namespace=~\"$namespace\"}[$interval])) by (le)",
-              "format": "heatmap",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_vulnerability_id{vuln_id=~\"CVE.*\", namespace=~\"$namespace\", cluster=~\"$cluster\"}) by (namespace, image_registry, image_repository, image_tag, vuln_id, severity)",
+              "format": "table",
               "instant": false,
-              "intervalFactor": 10,
-              "legendFormat": "{{le}}",
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
               "refId": "A"
             }
           ],
-          "title": "Reconciliation Performance",
-          "tooltip": {
-            "show": true,
-            "showHistogram": true
-          },
-          "tooltipDecimals": 0,
-          "type": "heatmap",
-          "xAxis": {
-            "show": true
-          },
-          "yAxis": {
-            "format": "short",
-            "logBase": 1,
-            "show": true
-          },
-          "yBucketBound": "auto"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 6,
-            "w": 24,
-            "x": 0,
-            "y": 38
-          },
-          "hiddenSeries": false,
-          "id": 80,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
+          "title": "Detaillled CVE vulnerabilities in $namespace namespace(s)",
+          "transformations": [
             {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(argocd_app_k8s_request_total{namespace=~\"$namespace\",server=~\"$cluster\"}[$interval])) by (verb, resource_kind)",
-              "format": "time_series",
-              "instant": false,
-              "intervalFactor": 1,
-              "legendFormat": "{{verb}} {{resource_kind}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "K8s API Activity",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "Value": true,
+                  "__name__": true,
+                  "container": true,
+                  "endpoint": true,
+                  "instance": true,
+                  "job": true,
+                  "namespace": false,
+                  "service": true
+                },
+                "indexByName": {
+                  "Time": 0,
+                  "Value": 7,
+                  "image_registry": 2,
+                  "image_repository": 3,
+                  "image_tag": 4,
+                  "namespace": 1,
+                  "severity": 6,
+                  "vuln_id": 5
+                },
+                "renameByName": {
+                  "image_namespace": "namespace",
+                  "image_registry": "Image Registry",
+                  "image_repository": "Image Repository",
+                  "image_tag": "Image Tag",
+                  "namespace": "Namespace",
+                  "severity": "Severity",
+                  "vuln_id": "Vulnerability",
+                  "vulnerability_id": ""
+                }
+              }
             },
             {
-              "format": "short",
-              "logBase": 1,
-              "show": true
+              "id": "groupBy",
+              "options": {
+                "fields": {
+                  "Image Registry": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Image Repository": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Image Tag": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Namespace": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Severity": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "Value": {
+                    "aggregations": [
+                      "lastNotNull"
+                    ]
+                  },
+                  "Vulnerability": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "image_namespace": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "namespace": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "severity": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "vuln_id": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  },
+                  "vulnerability_id": {
+                    "aggregations": [],
+                    "operation": "groupby"
+                  }
+                }
+              }
             }
           ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 7,
-            "w": 12,
-            "x": 0,
-            "y": 44
-          },
-          "hiddenSeries": false,
-          "id": 96,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideZero": true,
-            "max": true,
-            "min": false,
-            "rightSide": false,
-            "show": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(workqueue_depth{namespace=~\"$namespace\",name=~\"app_.*\"}) by (name)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{name}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Workqueue Depth",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 7,
-            "w": 12,
-            "x": 12,
-            "y": 44
-          },
-          "hiddenSeries": false,
-          "id": 98,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideZero": false,
-            "max": true,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(argocd_kubectl_exec_pending{namespace=~\"$namespace\"}) by (command)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{command}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Pending kubectl run",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "decimals": 0,
-              "format": "short",
-              "label": "",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            },
-            {
-              "decimals": 0,
-              "format": "short",
-              "label": "",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "type": "table"
         },
         {
           "collapsed": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "datasource",
+            "uid": "grafana"
           },
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 38
+          },
+          "id": 47,
+          "panels": [],
+          "title": "Config Audit Reports",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 0,
+            "y": 39
+          },
+          "id": 56,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{severity=\"Critical\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "CRITICAL",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 39
+          },
+          "id": 55,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{severity=\"High\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "HIGH",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 8,
+            "y": 39
+          },
+          "id": 54,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{severity=\"Medium\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "MEDIUM",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 12,
+            "y": 39
+          },
+          "id": 53,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{severity=\"Low\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "LOW",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "text",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 16,
+            "y": 39
+          },
+          "id": 65,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "TOTAL",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 43
+          },
+          "id": 62,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{cluster=~\"$cluster\"}) by (namespace)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Total config audit report by namespaces",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Critical"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "High"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Medium"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Low"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 12,
+            "y": 43
+          },
+          "id": 63,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "pluginVersion": "8.5.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_resource_configaudits{cluster=~\"$cluster\"}) by (severity)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Total config audit report by severity",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
             "y": 51
           },
-          "id": 102,
+          "id": 68,
           "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Controller Telemetry",
+          "title": "RBAC Assessments",
           "type": "row"
         },
         {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
-            "h": 7,
-            "w": 24,
+            "h": 4,
+            "w": 4,
             "x": 0,
             "y": 52
           },
-          "hiddenSeries": false,
-          "id": 34,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "max": true,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "connected",
+          "id": 72,
           "options": {
-            "alertThreshold": true
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
           },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "go_memstats_heap_alloc_bytes{job=\"argocd-metrics\",namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{namespace}}",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{severity=\"Critical\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Memory Usage",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "bytes",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "title": "CRITICAL",
+          "type": "stat"
         },
         {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 59
+            "h": 4,
+            "w": 4,
+            "x": 4,
+            "y": 52
           },
-          "hiddenSeries": false,
-          "id": 108,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": true,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "avg",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "connected",
+          "id": 71,
           "options": {
-            "alertThreshold": true
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
           },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "irate(process_cpu_seconds_total{job=\"argocd-metrics\",namespace=~\"$namespace\"}[1m])",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{namespace}}",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{severity=\"High\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "CPU Usage",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "decimals": 1,
-              "format": "none",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "title": "HIGH",
+          "type": "stat"
         },
         {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 66
-          },
-          "hiddenSeries": false,
-          "id": 62,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": false,
-            "hideZero": false,
-            "max": true,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "go_goroutines{job=\"argocd-metrics\",namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{namespace}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Goroutines",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 73
-          },
-          "id": 88,
-          "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Cluster Stats",
-          "type": "row"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 74
-          },
-          "hiddenSeries": false,
-          "id": 90,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(argocd_cluster_api_resource_objects{namespace=~\"$namespace\",server=~\"$cluster\"}) by (server)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{server}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Resource Objects Count",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 6,
-            "w": 24,
-            "x": 0,
-            "y": 81
-          },
-          "hiddenSeries": false,
-          "id": 92,
-          "legend": {
-            "alignAsTable": true,
-            "avg": false,
-            "current": true,
-            "hideEmpty": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "  sum(argocd_cluster_api_resources{namespace=~\"$namespace\",server=~\"$cluster\"}) by (server)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{server}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "API Resources Count",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 87
-          },
-          "hiddenSeries": false,
-          "id": 86,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "max": false,
-            "min": false,
-            "rightSide": true,
-            "show": true,
-            "sort": "current",
-            "sortDesc": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(argocd_cluster_events_total{namespace=~\"$namespace\",server=~\"$cluster\"}[$interval])) by (server)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{server}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Cluster Events Count",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 94
+            "h": 4,
+            "w": 4,
+            "x": 8,
+            "y": 52
           },
           "id": 70,
-          "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Repo Server Stats",
-          "type": "row"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 95
-          },
-          "hiddenSeries": false,
-          "id": 82,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
           "options": {
-            "alertThreshold": true
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
           },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(increase(argocd_git_request_total{request_type=\"ls-remote\", namespace=~\"$namespace\"}[10m])) by (namespace)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{namespace}}",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{severity=\"Medium\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Git Requests (ls-remote)",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "title": "MEDIUM",
+          "type": "stat"
         },
         {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
-            "h": 8,
-            "w": 12,
+            "h": 4,
+            "w": 4,
             "x": 12,
-            "y": 95
+            "y": 52
           },
-          "hiddenSeries": false,
-          "id": 84,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
+          "id": 69,
           "options": {
-            "alertThreshold": true
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
           },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
+          "pluginVersion": "9.3.8",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(increase(argocd_git_request_total{request_type=\"fetch\", namespace=~\"$namespace\"}[10m])) by (namespace)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{namespace}}",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{severity=\"Low\", namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
               "refId": "A"
             }
           ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Git Requests (checkout)",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": "",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "title": "LOW",
+          "type": "stat"
         },
         {
-          "cards": {},
-          "color": {
-            "cardColor": "#b4ff00",
-            "colorScale": "sqrt",
-            "colorScheme": "interpolateSpectral",
-            "exponent": 0.5,
-            "mode": "spectrum"
-          },
-          "dataFormat": "tsbuckets",
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "text",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 4,
+            "x": 16,
+            "y": 52
+          },
+          "id": 73,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.3.8",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{namespace=~\"$namespace\", cluster=~\"$cluster\"})",
+              "instant": true,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "refId": "A"
+            }
+          ],
+          "title": "TOTAL",
+          "type": "stat"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
               "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
-              }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
@@ -2437,1530 +2251,326 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 103
+            "y": 56
           },
-          "heatmap": {},
-          "hideZeroBuckets": false,
-          "highlightCards": true,
-          "id": 114,
-          "legend": {
-            "show": false
-          },
+          "id": 74,
           "options": {
-            "calculate": false,
-            "calculation": {},
-            "cellGap": 2,
-            "cellValues": {},
-            "color": {
-              "exponent": 0.5,
-              "fill": "#b4ff00",
-              "mode": "scheme",
-              "reverse": false,
-              "scale": "exponential",
-              "scheme": "Spectral",
-              "steps": 128
-            },
-            "exemplars": {
-              "color": "rgba(255,0,255,0.7)"
-            },
-            "filterValues": {
-              "le": 1e-9
-            },
             "legend": {
-              "show": false
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
             },
-            "rowsFrame": {
-              "layout": "auto"
-            },
-            "showValue": "never",
             "tooltip": {
-              "show": true,
-              "yHistogram": false
-            },
-            "yAxis": {
-              "axisPlacement": "left",
-              "reverse": false,
-              "unit": "short"
+              "mode": "single",
+              "sort": "none"
             }
           },
-          "pluginVersion": "10.2.2",
-          "reverseYBuckets": false,
+          "pluginVersion": "8.5.0",
           "targets": [
             {
               "datasource": {
-                "uid": "$datasource"
+                "type": "prometheus",
+                "uid": "${datasource}"
               },
-              "expr": "sum(increase(argocd_git_request_duration_seconds_bucket{request_type=\"fetch\", namespace=~\"$namespace\"}[$interval])) by (le)",
-              "format": "heatmap",
-              "intervalFactor": 10,
-              "legendFormat": "{{le}}",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{cluster=~\"$cluster\"}) by (namespace)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
               "refId": "A"
             }
           ],
-          "title": "Git Fetch Performance",
-          "tooltip": {
-            "show": true,
-            "showHistogram": false
-          },
-          "type": "heatmap",
-          "xAxis": {
-            "show": true
-          },
-          "yAxis": {
-            "format": "short",
-            "logBase": 1,
-            "show": true
-          },
-          "yBucketBound": "auto"
+          "title": "Total RBAC Assessments by namespaces",
+          "type": "timeseries"
         },
         {
-          "cards": {},
-          "color": {
-            "cardColor": "#b4ff00",
-            "colorScale": "sqrt",
-            "colorScheme": "interpolateSpectral",
-            "exponent": 0.5,
-            "mode": "spectrum"
-          },
-          "dataFormat": "tsbuckets",
           "datasource": {
-            "uid": "$datasource"
+            "type": "prometheus",
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
               "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Critical"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "High"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "orange",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Medium"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Low"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
               }
-            },
-            "overrides": []
+            ]
           },
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 103
+            "y": 56
           },
-          "heatmap": {},
-          "hideZeroBuckets": false,
-          "highlightCards": true,
-          "id": 116,
-          "legend": {
-            "show": false
-          },
+          "id": 75,
           "options": {
-            "calculate": false,
-            "calculation": {},
-            "cellGap": 2,
-            "cellValues": {},
-            "color": {
-              "exponent": 0.5,
-              "fill": "#b4ff00",
-              "mode": "scheme",
-              "reverse": false,
-              "scale": "exponential",
-              "scheme": "Spectral",
-              "steps": 128
-            },
-            "exemplars": {
-              "color": "rgba(255,0,255,0.7)"
-            },
-            "filterValues": {
-              "le": 1e-9
-            },
             "legend": {
-              "show": false
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
             },
-            "rowsFrame": {
-              "layout": "auto"
-            },
-            "showValue": "never",
             "tooltip": {
-              "show": true,
-              "yHistogram": false
-            },
-            "yAxis": {
-              "axisPlacement": "left",
-              "reverse": false,
-              "unit": "short"
+              "mode": "multi",
+              "sort": "desc"
             }
           },
-          "pluginVersion": "10.2.2",
-          "reverseYBuckets": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(argocd_git_request_duration_seconds_bucket{request_type=\"ls-remote\", namespace=~\"$namespace\"}[$interval])) by (le)",
-              "format": "heatmap",
-              "intervalFactor": 10,
-              "legendFormat": "{{le}}",
-              "refId": "A"
-            }
-          ],
-          "title": "Git Ls-Remote Performance",
-          "tooltip": {
-            "show": true,
-            "showHistogram": false
-          },
-          "type": "heatmap",
-          "xAxis": {
-            "show": true
-          },
-          "yAxis": {
-            "format": "short",
-            "logBase": 1,
-            "show": true
-          },
-          "yBucketBound": "auto"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 111
-          },
-          "hiddenSeries": false,
-          "id": 71,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "connected",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "go_memstats_heap_alloc_bytes{job=\"argocd-repo-server\",namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Memory Used",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "bytes",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 7,
-            "w": 24,
-            "x": 0,
-            "y": 119
-          },
-          "hiddenSeries": false,
-          "id": 72,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "go_goroutines{job=\"argocd-repo-server\",namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Goroutines",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 126
-          },
-          "id": 66,
-          "panels": [],
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "refId": "A"
-            }
-          ],
-          "title": "Server Stats",
-          "type": "row"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
-            "y": 127
-          },
-          "hiddenSeries": false,
-          "id": 61,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "connected",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "go_memstats_heap_alloc_bytes{job=\"argocd-server-metrics\",namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Memory Used",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "bytes",
-              "logBase": 1,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 24,
-            "x": 0,
-            "y": 135
-          },
-          "hiddenSeries": false,
-          "id": 36,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "go_goroutines{job=\"argocd-server-metrics\",namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Goroutines",
-          "tooltip": {
-            "shared": true,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 24,
-            "x": 0,
-            "y": 144
-          },
-          "hiddenSeries": false,
-          "id": 38,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "connected",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "go_gc_duration_seconds{job=\"argocd-server-metrics\", quantile=\"1\", namespace=~\"$namespace\"}",
-              "format": "time_series",
-              "intervalFactor": 2,
-              "legendFormat": "{{pod}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "GC Time Quantiles",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "gridPos": {
-            "h": 2,
-            "w": 24,
-            "x": 0,
-            "y": 153
-          },
-          "id": 54,
-          "links": [],
-          "options": {
-            "code": {
-              "language": "plaintext",
-              "showLineNumbers": false,
-              "showMiniMap": false
-            },
-            "content": "#### gRPC Services:",
-            "mode": "markdown"
-          },
-          "pluginVersion": "10.2.2",
-          "transparent": true,
-          "type": "text"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 0,
-            "y": 155
-          },
-          "hiddenSeries": false,
-          "id": 40,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": false,
-            "show": true,
-            "sort": "total",
-            "sortDesc": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"application.ApplicationService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "ApplicationService Requests",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 12,
-            "y": 155
-          },
-          "hiddenSeries": false,
-          "id": 42,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"cluster.ClusterService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "ClusterService Requests",
-          "tooltip": {
-            "shared": false,
-            "sort": 2,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 0,
-            "y": 164
-          },
-          "hiddenSeries": false,
-          "id": 44,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"project.ProjectService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "ProjectService Requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 12,
-            "y": 164
-          },
-          "hiddenSeries": false,
-          "id": 46,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"repository.RepositoryService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [
-            {
-              "colorMode": "critical",
-              "fill": true,
-              "line": true,
-              "op": "gt",
-              "yaxis": "left"
-            }
-          ],
-          "timeRegions": [],
-          "title": "RepositoryService Requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 0,
-            "y": 173
-          },
-          "hiddenSeries": false,
-          "id": 48,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"session.SessionService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "SessionService Requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 12,
-            "y": 173
-          },
-          "hiddenSeries": false,
-          "id": 49,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"version.VersionService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "VersionService Requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 0,
-            "y": 182
-          },
-          "hiddenSeries": false,
-          "id": 50,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"account.AccountService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "AccountService Requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "uid": "$datasource"
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 12,
-            "y": 182
-          },
-          "hiddenSeries": false,
-          "id": 99,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": true,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null as zero",
-          "options": {
-            "alertThreshold": true
-          },
-          "paceLength": 10,
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "uid": "$datasource"
-              },
-              "expr": "sum(increase(grpc_server_handled_total{job=\"argocd-server-metrics\",grpc_service=\"settings.SettingsService\",namespace=~\"$namespace\"}[$interval])) by (grpc_code, grpc_method)",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "legendFormat": "{{grpc_code}},{{grpc_method}}",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "SettingsService Requests",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "collapsed": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "gridPos": {
-            "h": 1,
-            "w": 24,
-            "x": 0,
-            "y": 191
-          },
-          "id": 110,
-          "panels": [],
+          "pluginVersion": "8.5.0",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "${datasource}"
               },
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_role_rbacassessments{cluster=~\"$cluster\"}) by (severity)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
               "refId": "A"
             }
           ],
-          "title": "Redis Stats",
+          "title": "Total RBAC Assessments by severity",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 64
+          },
+          "id": 81,
+          "panels": [],
+          "title": "Exposed Secrets",
           "type": "row"
         },
         {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
           "datasource": {
             "type": "prometheus",
-            "uid": "prometheus"
+            "uid": "${datasource}"
           },
           "fieldConfig": {
             "defaults": {
-              "links": []
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 15,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "blue",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "none"
             },
             "overrides": []
           },
-          "fill": 1,
-          "fillGradient": 0,
           "gridPos": {
-            "h": 7,
+            "h": 8,
             "w": 24,
             "x": 0,
-            "y": 192
+            "y": 65
           },
-          "hiddenSeries": false,
-          "id": 112,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
+          "id": 76,
           "options": {
-            "alertThreshold": true
+            "legend": {
+              "calcs": [],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "percentage": false,
-          "pluginVersion": "10.2.2",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
+          "pluginVersion": "8.5.0",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "prometheus"
+                "uid": "${datasource}"
               },
-              "expr": "sum(increase(argocd_redis_request_total{namespace=~\"$namespace\"}[$interval])) by (failed)",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(trivy_image_exposedsecrets{cluster=~\"$cluster\"}) by (namespace)",
+              "instant": false,
+              "interval": "$resolution",
+              "legendFormat": "__auto",
+              "range": true,
               "refId": "A"
             }
           ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Requests by result",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
+          "title": "Total Exposed Secrets by namespaces",
+          "type": "timeseries"
         }
       ],
-      "refresh": "",
-      "schemaVersion": 38,
-      "tags": [],
+      "refresh": "30s",
+      "schemaVersion": 37,
+      "style": "dark",
+      "tags": [
+        "Prometheus",
+        "Addons",
+        "Trivy",
+        "Trivy-operator"
+      ],
       "templating": {
         "list": [
           {
             "current": {
               "selected": false,
               "text": "Prometheus",
-              "value": "prometheus"
+              "value": "Prometheus"
             },
             "hide": 0,
             "includeAll": false,
@@ -3968,54 +2578,95 @@ data:
             "name": "datasource",
             "options": [],
             "query": "prometheus",
+            "queryValue": "",
             "refresh": 1,
             "regex": "",
             "skipUrlSync": false,
             "type": "datasource"
           },
           {
-            "allValue": ".*",
             "current": {
+              "isNone": true,
               "selected": false,
-              "text": "All",
-              "value": "$__all"
+              "text": "None",
+              "value": ""
             },
             "datasource": {
               "type": "prometheus",
-              "uid": "$datasource"
+              "uid": "${datasource}"
             },
-            "definition": "label_values(kube_pod_info, namespace)",
+            "definition": "label_values(kube_node_info,cluster)",
             "hide": 0,
-            "includeAll": true,
+            "includeAll": false,
             "multi": false,
-            "name": "namespace",
+            "name": "cluster",
             "options": [],
-            "query": "label_values(kube_pod_info, namespace)",
+            "query": {
+              "qryType": 1,
+              "query": "label_values(kube_node_info,cluster)",
+              "refId": "PrometheusVariableQueryEditor-VariableQuery"
+            },
             "refresh": 1,
-            "regex": ".*argocd.*",
+            "regex": "",
             "skipUrlSync": false,
-            "sort": 0,
-            "tagValuesQuery": "",
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
+            "sort": 1,
+            "type": "query"
           },
           {
-            "auto": true,
-            "auto_count": 30,
-            "auto_min": "1m",
             "current": {
-              "selected": false,
-              "text": "auto",
-              "value": "$__auto_interval_interval"
+              "selected": true,
+              "text": [
+                "All"
+              ],
+              "value": [
+                "$__all"
+              ]
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "${datasource}"
+            },
+            "definition": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
+            "hide": 0,
+            "includeAll": true,
+            "multi": true,
+            "name": "namespace",
+            "options": [],
+            "query": {
+              "query": "label_values(kube_pod_info{cluster=\"$cluster\"}, namespace)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": true,
+              "text": "30s",
+              "value": "30s"
             },
             "hide": 0,
-            "name": "interval",
+            "includeAll": false,
+            "multi": false,
+            "name": "resolution",
             "options": [
               {
+                "selected": false,
+                "text": "1s",
+                "value": "1s"
+              },
+              {
+                "selected": false,
+                "text": "15s",
+                "value": "15s"
+              },
+              {
                 "selected": true,
-                "text": "auto",
-                "value": "$__auto_interval_interval"
+                "text": "30s",
+                "value": "30s"
               },
               {
                 "selected": false,
@@ -4024,227 +2675,31 @@ data:
               },
               {
                 "selected": false,
+                "text": "3m",
+                "value": "3m"
+              },
+              {
+                "selected": false,
                 "text": "5m",
                 "value": "5m"
-              },
-              {
-                "selected": false,
-                "text": "10m",
-                "value": "10m"
-              },
-              {
-                "selected": false,
-                "text": "30m",
-                "value": "30m"
-              },
-              {
-                "selected": false,
-                "text": "1h",
-                "value": "1h"
-              },
-              {
-                "selected": false,
-                "text": "2h",
-                "value": "2h"
-              },
-              {
-                "selected": false,
-                "text": "4h",
-                "value": "4h"
-              },
-              {
-                "selected": false,
-                "text": "8h",
-                "value": "8h"
               }
             ],
-            "query": "1m,5m,10m,30m,1h,2h,4h,8h",
-            "refresh": 2,
-            "skipUrlSync": false,
-            "type": "interval"
-          },
-          {
-            "allValue": "",
-            "current": {
-              "selected": false,
-              "text": "namespace",
-              "value": "namespace"
-            },
-            "hide": 0,
-            "includeAll": false,
-            "multi": false,
-            "name": "grouping",
-            "options": [
-              {
-                "selected": true,
-                "text": "namespace",
-                "value": "namespace"
-              },
-              {
-                "selected": false,
-                "text": "name",
-                "value": "name"
-              },
-              {
-                "selected": false,
-                "text": "project",
-                "value": "project"
-              }
-            ],
-            "query": "namespace,name,project",
-            "skipUrlSync": false,
-            "type": "custom"
-          },
-          {
-            "allValue": ".*",
-            "current": {
-              "selected": false,
-              "text": "All",
-              "value": "$__all"
-            },
-            "datasource": {
-              "type": "prometheus",
-              "uid": "$datasource"
-            },
-            "definition": "label_values(argocd_cluster_info, server)",
-            "hide": 0,
-            "includeAll": true,
-            "multi": false,
-            "name": "cluster",
-            "options": [],
-            "query": "label_values(argocd_cluster_info, server)",
-            "refresh": 1,
-            "regex": "",
-            "skipUrlSync": false,
-            "sort": 1,
-            "tagValuesQuery": "",
-            "tagsQuery": "",
-            "type": "query",
-            "useTags": false
-          },
-          {
-            "allValue": ".*",
-            "current": {
-              "selected": false,
-              "text": "All",
-              "value": "$__all"
-            },
-            "hide": 0,
-            "includeAll": true,
-            "multi": false,
-            "name": "health_status",
-            "options": [
-              {
-                "selected": true,
-                "text": "All",
-                "value": "$__all"
-              },
-              {
-                "selected": false,
-                "text": "Healthy",
-                "value": "Healthy"
-              },
-              {
-                "selected": false,
-                "text": "Progressing",
-                "value": "Progressing"
-              },
-              {
-                "selected": false,
-                "text": "Suspended",
-                "value": "Suspended"
-              },
-              {
-                "selected": false,
-                "text": "Missing",
-                "value": "Missing"
-              },
-              {
-                "selected": false,
-                "text": "Degraded",
-                "value": "Degraded"
-              },
-              {
-                "selected": false,
-                "text": "Unknown",
-                "value": "Unknown"
-              }
-            ],
-            "query": "Healthy,Progressing,Suspended,Missing,Degraded,Unknown",
-            "skipUrlSync": false,
-            "type": "custom"
-          },
-          {
-            "allValue": ".*",
-            "current": {
-              "selected": false,
-              "text": "All",
-              "value": "$__all"
-            },
-            "hide": 0,
-            "includeAll": true,
-            "multi": false,
-            "name": "sync_status",
-            "options": [
-              {
-                "selected": true,
-                "text": "All",
-                "value": "$__all"
-              },
-              {
-                "selected": false,
-                "text": "Synced",
-                "value": "Synced"
-              },
-              {
-                "selected": false,
-                "text": "OutOfSync",
-                "value": "OutOfSync"
-              },
-              {
-                "selected": false,
-                "text": "Unknown",
-                "value": "Unknown"
-              }
-            ],
-            "query": "Synced,OutOfSync,Unknown",
+            "query": "1s, 15s, 30s, 1m, 3m, 5m",
+            "queryValue": "",
             "skipUrlSync": false,
             "type": "custom"
           }
         ]
       },
       "time": {
-        "from": "now-30m",
+        "from": "now-1h",
         "to": "now"
       },
-      "timepicker": {
-        "refresh_intervals": [
-          "5s",
-          "10s",
-          "30s",
-          "1m",
-          "5m",
-          "15m",
-          "30m",
-          "1h",
-          "2h",
-          "1d"
-        ],
-        "time_options": [
-          "5m",
-          "15m",
-          "1h",
-          "6h",
-          "12h",
-          "24h",
-          "2d",
-          "7d",
-          "30d"
-        ]
-      },
+      "timepicker": {},
       "timezone": "",
-      "title": "ArgoCD",
-      "uid": "LCAgc9rWz",
-      "version": 5,
-      "weekStart": ""
+      "title": "Trivy Operator - Vulnerabilities",
+      "uid": "security_trivy_operator",
+      "version": 12,
+      "weekStart": "",
+      "gnetId": 16337
     }
