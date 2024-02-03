@@ -11,6 +11,7 @@ Following tools needs to be installed on the computer running the playbook :
 - [mc](https://min.io/docs/minio/linux/reference/minio-mc.html) *- command-line tool that allows you to manage your s3.*
 - [openssl](https://www.openssl.org/) *- cryptography and SSL/TLS toolkit.*
 - [hvac](https://hvac.readthedocs.io/en/stable/overview.html) *- HashiCorp Vault API client for Python 3.x.*
+- [sshpass](https://sourceforge.net/projects/sshpass) *- non-interactive ssh password auth*
 - [yq](https://github.com/mikefarah/yq) *- portable command-line YAML, JSON, XML, CSV, TOML and properties processor.*
 
 For convenience, it is recommended to do these prerequisite steps :

@@ -4,7 +4,7 @@
 
 ## Gateway
 
-A host is configured as the gateway to the local network (*i.e handle all incoming traffic*). It runs various services deployed via docker :
+A host is configured as the gateway to the local network (*i.e handle all incoming traffic*). It runs various services deployed with systemd :
 
 - [Openvpn](https://openvpn.net/) for external access to the local network (*i.e from internet*). An openvpn client conf is generated for each admin user declared in ansible `group_vars`.
 - [Haproxy](https://www.haproxy.org/) for loadbalancing all incoming external requests (*ports 80 & 443*) to the k3s cluster and loadbalancing k3s api server (*port 6443*).
@@ -26,7 +26,7 @@ Some hosts are configrured to run [k3s](https://k3s.io) (*Lightweight Kubernetes
 - 3 x master nodes
 - 5 x worker nodes
 
-The cluster comes with k3s integrated [klipper](https://github.com/k3s-io/klipper-lb) loadbalancer and [traefik](https://traefik.io/) ingressController.
+The cluster comes with k3s integrated [klipper](https://github.com/k3s-io/klipper-lb) loadbalancer ([traefik](https://traefik.io/) ingressController is disabled for manual installation.
 For convenience, [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed to perform an automatic k3s upgrade on each node by using two plans (one for masters and the other one for workers).
 
 [Longhorn](https://longhorn.io/) is used to deliver distributed block storage accross kubernetes, it will enroll all servers tagged `additional_disk: true` in [inventory/hosts.yml](../ansible/inventory-example/hosts.yml).
