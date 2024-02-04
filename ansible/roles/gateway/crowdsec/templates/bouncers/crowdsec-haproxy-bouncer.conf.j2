@@ -1,0 +1,15 @@
+API_KEY={{ haproxy_bouncer_key.stdout }}
+MAP_PATH=/var/lib/crowdsec/lua/haproxy/community_blocklist.map
+BOUNCING_ON_TYPE=all
+FALLBACK_REMEDIATION=ban
+REQUEST_TIMEOUT=3000
+UPDATE_FREQUENCY=10
+MODE=stream
+EXCLUDE_LOCATION=
+BAN_TEMPLATE_PATH=/var/lib/crowdsec/lua/haproxy/templates/ban.html
+REDIRECT_LOCATION=
+RET_CODE=
+SECRET_KEY=
+SITE_KEY=
+CAPTCHA_TEMPLATE_PATH=/var/lib/crowdsec/lua/haproxy/templates/captcha.html
+CAPTCHA_EXPIRATION=3600

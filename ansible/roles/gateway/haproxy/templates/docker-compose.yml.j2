@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  haproxy:
+    image: docker.io/haproxy:alpine3.19
+    container_name: haproxy
+    restart: unless-stopped
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    ports:
+      - 80:80
+      - 443:443
+      - 6443:6443
+      - 8404:8404
+    sysctls:
+      - net.ipv4.ip_unprivileged_port_start=0
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    driver: bridge

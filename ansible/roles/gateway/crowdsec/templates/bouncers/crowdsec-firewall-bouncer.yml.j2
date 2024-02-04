@@ -17,18 +17,13 @@ deny_action: DROP
 deny_log: false
 supported_decisions_types:
   - ban
-#to change log prefix
-#deny_log_prefix: "crowdsec: "
-#to change the blacklists name
 blacklists_ipv4: crowdsec-blacklists
 blacklists_ipv6: crowdsec6-blacklists
 #if present, insert rule in those chains
 iptables_chains:
   - INPUT
+  - DOCKER-USER
 #  - FORWARD
-#  - DOCKER-USER
-
-## nftables
 nftables:
   ipv4:
     enabled: true

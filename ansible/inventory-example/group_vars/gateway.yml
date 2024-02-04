@@ -1,10 +1,12 @@
-# openvpn
-openvpn:
-  serverHostname: "vpn.{{ rootDomain }}"
-  rootPassphrase: ""
-
-# crowdsec
+gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+wireguard:
+  domain: "vpn.{{ rootDomain }}"
+  password: ""
 crowdsec:
   bouncerNftablesKey: ""
+  bouncerHaproxyKey: ""
   enrollKey: ""
-  enrollInstanceName: ""
+  instanceName: "homelab"
+pihole:
+  domain: pihole.{{ localRootDomain }}
+  password: ""

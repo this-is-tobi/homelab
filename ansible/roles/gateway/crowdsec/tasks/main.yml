@@ -17,15 +17,6 @@
   ansible.builtin.shell:
     cmd: curl -s https://packagecloud.io/install/repositories/crowdsec/crowdsec/script.deb.sh | sudo bash
 
-# - name: Add an apt signing key
-#   ansible.builtin.apt_key:
-#     url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
-
-# - name: Add apt repo
-#   ansible.builtin.apt_repository:
-#     repo: deb https://packagecloud.io/crowdsec/crowdsec/{{ ansible_distribution | lower }}/ {{ ansible_distribution_release | lower }} main
-#     update_cache: true
-
 - name: Install required system packages
   ansible.builtin.apt:
     name: "{{ item }}"
@@ -36,12 +27,45 @@
     - crowdsec-firewall-bouncer-nftables
     - crowdsec-haproxy-bouncer
 
+- name: Create crowdsec acquis directory
+  ansible.builtin.file:
+    path: /etc/crowdsec/acquis.d
+    state: directory
+    owner: root
+    group: root
+
 - name: Copy crowdsec acquisition file
   ansible.builtin.template:
-    src: "acquis.yml.j2"
-    dest: "/etc/crowdsec/acquis.yml"
+    src: "acquis/{{ item }}.yml.j2"
+    dest: "/etc/crowdsec/acquis.d/{{ item }}.yml"
+  with_items:
+    - ssh
+    - haproxy
+    - wireguard
 
-- name: Register crowdsec bouncer key
+- name: Install crowdsec collections
+  ansible.builtin.shell:
+    cmd: |
+      sudo cscli collections install \
+        crowdsecurity/sshd \
+        crowdsecurity/base-http-scenarios \
+        crowdsecurity/http-cve \
+        crowdsecurity/haproxy \
+        crowdsecurity/wireguard
+
+- name: Install crowdsec parsers
+  ansible.builtin.shell:
+    cmd: |
+      sudo cscli parser install \
+        crowdsecurity/docker-logs
+
+- name: Enable and start crowdsec service
+  ansible.builtin.systemd:
+    name: crowdsec
+    state: restarted
+    enabled: true
+
+- name: Register crowdsec nftables bouncer key
   ansible.builtin.shell:
     cmd: |
       NFTABLES_BOUNCER_KEY="$(sudo cscli bouncers list -o json \
@@ -64,7 +88,7 @@
 
 - name: Copy nftables bouncer config file
   ansible.builtin.template:
-    src: "crowdsec-firewall-bouncer.yml.j2"
+    src: "bouncers/crowdsec-firewall-bouncer.yml.j2"
     dest: "/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yml"
 
 - name: Enable and start nftables bouncer service
@@ -73,7 +97,7 @@
     state: restarted
     enabled: true
 
-- name: Register crowdsec bouncer key
+- name: Register crowdsec haproxy bouncer key
   ansible.builtin.shell:
     cmd: |
       HAPROXY_BOUNCER_KEY="$(sudo cscli bouncers list -o json \
@@ -96,7 +120,7 @@
 
 - name: Copy haproxy bouncer config file
   ansible.builtin.template:
-    src: "crowdsec-haproxy-bouncer.conf.j2"
+    src: "bouncers/crowdsec-haproxy-bouncer.conf.j2"
     dest: "/etc/crowdsec/bouncers/crowdsec-haproxy-bouncer.conf"
 
 - name: Enable and start haproxy bouncer service

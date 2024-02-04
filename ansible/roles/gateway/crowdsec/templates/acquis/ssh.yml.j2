@@ -1,0 +1,13 @@
+source: journalctl
+journalctl_filter:
+  - "_SYSTEMD_UNIT=ssh.service"
+labels:
+  type: syslog
+
+---
+source: file
+filenames:
+  - /logs/auth.log
+  - /logs/syslog
+labels:
+  type: syslog

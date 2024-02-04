@@ -1,5 +1,0 @@
-- name: Setup secrets
-  ansible.builtin.include_tasks: secrets.yml
-
-- name: Install
-  ansible.builtin.include_tasks: install.yml
