@@ -4,9 +4,35 @@
 
 Gateway web interface services are deployed and accessible for admin purpose, they are available on local network at :
 
-| Name              | Url                                |
-| ----------------- | ---------------------------------- |
-| Haproxy dashboard | <http://haproxy.domain.local:8404> |
+| Name                | Url                         |
+| ------------------- | --------------------------- |
+| Haproxy dashboard   | <http://192.168.0.99:8404>  |
+| Pihole dashboard    | <http://192.168.0.99:5353>  |
+| Wireguard dashboard | <http://192.168.0.99:51821> |
+
+> *__Notes:__ Replace `192.168.0.99` with the gateway's ip address set in [hosts.yml](../ansible/inventory-example/hosts.yml).*
+
+### Haproxy
+
+[HAProxy](https://www.haproxy.org/) is a free and open source software that provides a high availability load balancer and reverse proxy for TCP and HTTP-based applications that spreads requests across multiple servers.
+
+Haproxy load-balances all incoming http and https traffic from the Internet (ports 80 and 443) via the master nodes, and also load-balances all Kubernetes api server traffic on the local network (port 6443). An ACL rule is defined to accept only local network IP address requests for the api server.
+
+The web interface lets you view the health status of master nodes on both types of endpoints (server api and internet traffic).
+
+## Pi-Hole
+
+[Pi-hole](https://pi-hole.net/) is a Linux network-level advertisement and Internet tracker blocking application which acts as a DNS sinkhole and optionally a DHCP server, intended for use on a private network. It is designed for low-power embedded devices with network capability, such as the Raspberry Pi, but can be installed on almost any Linux machine.
+
+Pi-hole has the ability to block traditional website advertisements as well as advertisements in unconventional places, such as smart TVs and mobile operating system advertisements.
+
+Using the web interface, you can enable/disable ad and tracker blocking, add a list of domains to be blocked, and configure local network DNS settings (and DHCP if required). It is also possible to view statistics on blocked domains according to the privacy rules set.
+
+## Wireguard
+
+[WireGuard](https://www.wireguard.com/) is a communication protocol and free and open-source software that implements encrypted virtual private networks (VPNs), and was designed with the goals of ease of use, high speed performance, and low attack surface.
+
+Wireguard's web interface lets you create / delete / activate / deactivate VPN users, download their configuration file and display the user's QrCode. With this user configuration file, a user can access the homelab network to perform an ssh connection to the bastion and then request the Kubernetes api server.
 
 ## Kubernetes
 
@@ -70,7 +96,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | SonarQube            | <http://sonarqube.domain.com>   |
 | Vault                | <https://vault.domain.com>      |
 
-> *__Notes:__ Replace `domain.com` by your own domain.*
+> *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../ansible/inventory-example/group_vars/all.yml).*
 
 ### Single sign on
 
@@ -98,4 +124,15 @@ Following services are connected through sso :
 
 The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Minio, Argocd and Trivy-operator to increase metrics coming from these applications.
 
-Some dashboards are already delivered with the installation but more can be added in `argocd/apps/prometheus-stack/manifests`, they will be automatically loaded on Argocd synchronization.
+Some dashboards are already delivered with the installation but more can be added in `argocd/apps/prometheus-stack/manifests`, they will be automatically loaded on Argocd synchronization. Already added dashboards are :
+- [argocd](../argocd/apps/prometheus-stack/manifests/argocd-dashboard.yaml)
+- [gitea](../argocd/apps/prometheus-stack/manifests/gitea-dashboard.yaml)
+- [harbor](../argocd/apps/prometheus-stack/manifests/harbor-dashboard.yaml)
+- [k3s](../argocd/apps/prometheus-stack/manifests/k3s-dashboard.yaml)
+- [kube-global](../argocd/apps/prometheus-stack/manifests/kube-global-dashboard.yaml)
+- [kube-node](../argocd/apps/prometheus-stack/manifests/kube-node-dashboard.yaml)
+- [kube-ns](../argocd/apps/prometheus-stack/manifests/kube-ns-dashboard.yaml)
+- [kube-pod](../argocd/apps/prometheus-stack/manifests/kube-pod-dashboard.yaml)
+- [minio](../argocd/apps/prometheus-stack/manifests/minio-dashboard.yaml)
+- [trivy](../argocd/apps/prometheus-stack/manifests/trivy-dashboard.yaml)
+- [vault](../argocd/apps/prometheus-stack/manifests/vault-dashboard.yaml)

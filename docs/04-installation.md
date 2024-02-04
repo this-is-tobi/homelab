@@ -8,6 +8,7 @@ Following tools needs to be installed on the computer running the playbook :
 - [ansible](https://ansible.com) *- infrastructure as code software tools.*
 - [age](https://github.com/FiloSottile/age) *- simple, modern and secure encryption tool.*
 - [htpasswd](https://httpd.apache.org/docs/2.4/en/programs/htpasswd.html) *- user files for basic authentication managerment.*
+- [jq](https://jqlang.github.io/jq/) *- lightweight and flexible command-line JSON processor.*
 - [mc](https://min.io/docs/minio/linux/reference/minio-mc.html) *- command-line tool that allows you to manage your s3.*
 - [openssl](https://www.openssl.org/) *- cryptography and SSL/TLS toolkit.*
 - [hvac](https://hvac.readthedocs.io/en/stable/overview.html) *- HashiCorp Vault API client for Python 3.x.*
@@ -18,7 +19,7 @@ For convenience, it is recommended to do these prerequisite steps :
 
 ```sh
 # Add gateway into /etc/hosts in case they are deployed with local domain
-[ ! $(sudo grep -q "192.168.0.110" /etc/hosts) ] && sudo sh -c "echo $'\n# Homelab\n192.168.0.110   crowdsec.domain.local haproxy.domain.local longhorn.domain.local traefik.domain.local' >> /etc/hosts"
+[ ! $(sudo grep -q "192.168.0.99" /etc/hosts) ] && sudo sh -c "echo $'\n# Homelab\n192.168.0.99   pihole.domain.local haproxy.domain.local wireguard.domain.local' >> /etc/hosts"
 
 # Copy inventory example to inventory
 cp -R ./ansible/inventory-example ./ansible/inventory
