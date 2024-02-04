@@ -1,4 +1,0 @@
-- name: Get vault secrets
-  ansible.builtin.include_tasks: setup.yml
-  loop: "{{ bastionUsers }}"
-  when: item.setup == true

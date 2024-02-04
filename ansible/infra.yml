@@ -18,26 +18,13 @@
     - common/hostname
     - common/locales
     - common/ssh
+    - common/docker
     - gateway/haproxy
+    - gateway/wireguard
+    - gateway/pihole
     - gateway/crowdsec
   tags:
     - gateway
-
-# Bastion
-- hosts: bastion
-  become: true
-  vars_files:
-    - ./inventory/group_vars/all.yml
-    - ./inventory/group_vars/bastion.yml
-  roles:
-    - common/hostname
-    - common/locales
-    - common/ssh
-    - common/docker
-    - bastion/users
-    - bastion/setup
-  tags:
-    - bastion
 
 # K3S - Deploy
 - hosts: k3s
@@ -93,3 +80,23 @@
     - k3s/destroy
   tags:
     - k3s-destroy
+
+# Bastion
+- hosts: bastion
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+    - ./inventory/group_vars/bastion.yml
+  roles:
+    - common/hostname
+    - common/locales
+    - common/ssh
+    - common/docker
+    - bastion/users
+    - bastion/setup
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-bastion
+    - bastion
