@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: argo-cd
     repoURL: https://argoproj.github.io/argo-helm
-    targetRevision: 5.52.1
+    targetRevision: 6.0.0
     helm:
       releaseName: argocd
       valuesObject:
@@ -84,15 +84,10 @@ spec:
           ingress:
             enabled: true
             ingressClassName: traefik
-            hosts:
-            - <path:secret/data/admin/apps/argocd#domain>
-            https: false
+            hostname: <path:secret/data/admin/apps/argocd#domain>
             annotations:
               cert-manager.io/cluster-issuer: letsencrypt-prod
-            tls:
-            - hosts:
-              - <path:secret/data/admin/apps/argocd#domain>
-              secretName: <path:secret/data/admin/apps/argocd#domain>
+            tls: true
         repoServer:
           autoscaling:
             enabled: false
@@ -120,7 +115,7 @@ spec:
           extraContainers:
           - name: avp
             command: [/var/run/argocd/argocd-cmp-server]
-            image: quay.io/argoproj/argocd:v2.9.1
+            image: quay.io/argoproj/argocd:v2.10.0
             securityContext:
               runAsNonRoot: true
               runAsUser: 999
@@ -144,7 +139,7 @@ spec:
               mountPath: /usr/local/bin/argocd-vault-plugin
           - name: avp-helm
             command: [/var/run/argocd/argocd-cmp-server]
-            image: quay.io/argoproj/argocd:v2.9.1
+            image: quay.io/argoproj/argocd:v2.10.0
             securityContext:
               runAsNonRoot: true
               runAsUser: 999
@@ -168,7 +163,7 @@ spec:
               mountPath: /usr/local/bin/argocd-vault-plugin
           - name: avp-kustomize
             command: [/var/run/argocd/argocd-cmp-server]
-            image: quay.io/argoproj/argocd:v2.9.1
+            image: quay.io/argoproj/argocd:v2.10.0
             securityContext:
               runAsNonRoot: true
               runAsUser: 999
