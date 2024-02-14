@@ -93,8 +93,7 @@
     - common/locales
     - common/ssh
     - common/docker
-    - bastion/users
-    - bastion/setup
+    - bastion
   tags:
     - k3s
     - k3s-deploy

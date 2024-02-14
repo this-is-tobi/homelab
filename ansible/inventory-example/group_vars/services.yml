@@ -4,15 +4,15 @@ argocd:
     repoUrl: "https://argoproj.github.io/argo-helm"
     repoName: "argo"
     chartName: "argo-cd"
-    chartVersion: "6.0.0"
+    chartVersion: "6.0.12"
   namespace: "argocd-system"
-  domain: "argocd.admin.{{ rootDomain }}"
+  domain: "gitops.admin.{{ rootDomain }}"
 certManager:
   helm:
     repoUrl: "https://charts.jetstack.io"
     repoName: "jetstack"
     chartName: "cert-manager"
-    chartVersion: "1.13.2"
+    chartVersion: "1.14.2"
   namespace: "cert-manager-system"
   email: "example@domain.com"
 longhorn:
@@ -20,7 +20,7 @@ longhorn:
     repoUrl: "https://charts.longhorn.io"
     repoName: "longhorn"
     chartName: "longhorn"
-    chartVersion: "1.5.3"
+    chartVersion: "1.6.0"
   namespace: "longhorn-system"
   domain: "longhorn.admin.{{ rootDomain }}"
   s3:

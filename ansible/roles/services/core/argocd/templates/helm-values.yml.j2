@@ -51,7 +51,11 @@ server:
     hostname: {{ argocd.domain }}
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    tls: true
+    tls: false
+    extraTls:
+    - hosts:
+      - {{ argocd.domain }}
+      secretName: {{ argocd.domain }}
   metrics:
     enabled: false
     serviceMonitor:
