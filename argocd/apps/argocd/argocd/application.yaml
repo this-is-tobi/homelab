@@ -96,6 +96,14 @@ spec:
             enabled: true
             serviceMonitor:
               enabled: true
+          rbac:
+          - apiGroups:
+            - ""
+            resources:
+            - secrets
+            verbs:
+            - get
+            - watch
           initContainers:
           - name: download-tools
             image: registry.access.redhat.com/ubi8
