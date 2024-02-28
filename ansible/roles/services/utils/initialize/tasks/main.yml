@@ -53,14 +53,20 @@
             | sed -e 's/argocd\/apps\/\(.*\)\/argocd/\1/'
       register: enabled_services
 
+    # - name: Create default vault secrets
+    #   ansible.builtin.include_tasks: "{{ vault_app }}"
+    #   vars:
+    #     argocd_app: "{{ vault_app }}"
+    #   loop_control:
+    #     loop_var: vault_app
+    #   with_items: "{{ results.files | json_query('[].path') }}"
+    #   when: (vault_app | regex_replace('.*(additional\/)(.*)(\/tasks).*', '\\2')) in enabled_services.stdout_lines
+
     - name: Create default vault secrets
       ansible.builtin.include_tasks: "{{ vault_app }}"
-      vars:
-        argocd_app: "{{ vault_app }}"
       loop_control:
         loop_var: vault_app
       with_items: "{{ results.files | json_query('[].path') }}"
-      when: (vault_app | regex_replace('.*(additional\/)(.*)(\/tasks).*', '\\2')) in enabled_services.stdout_lines
   when: init_vault_secret | default(false)
 
 # Get Keycloak infos
