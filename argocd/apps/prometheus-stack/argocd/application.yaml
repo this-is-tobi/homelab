@@ -13,15 +13,15 @@ spec:
   sources:
   - chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 55.6.0
+    targetRevision: 56.19.0
     helm:
       releaseName: prometheus-stack
       valuesObject:
         prometheus:
           prometheusSpec:
+            podMonitorSelector: false
             serviceMonitorSelectorNilUsesHelmValues: false
             probeSelectorNilUsesHelmValues: false
-            podMonitorSelector: false
             ruleSelectorNilUsesHelmValues: false
             scrapeConfigSelectorNilUsesHelmValues: false
             retention: 30d
@@ -33,6 +33,7 @@ spec:
                     requests:
                       storage: 100Gi
         grafana:
+          assertNoLeakedSecrets: false
           adminPassword: <path:secret/data/admin/apps/prometheus-stack#admin | jsonPath {.password}>
           ingress:
             enabled: true
@@ -45,6 +46,7 @@ spec:
             - hosts:
               - <path:secret/data/admin/apps/prometheus-stack#domain>
               secretName: <path:secret/data/admin/apps/prometheus-stack#domain>
+          defaultDashboardsTimezone: Europe/Paris
           grafana.ini:
             server:
               root_url: https://<path:secret/data/admin/apps/prometheus-stack#domain>
@@ -64,6 +66,14 @@ spec:
               allow_assign_grafana_admin: true
               groups_attribute_path: groups
               role_attribute_path: contains(groups[*], 'admin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || 'Viewer'
+          persistence:
+            enabled: true
+            type: sts
+            accessModes:
+              - ReadWriteMany
+            size: 3Gi
+            finalizers:
+              - kubernetes.io/pvc-protection
   - path: argocd/apps/prometheus-stack/manifests
     repoURL: https://github.com/this-is-tobi/homelab.git
     targetRevision: main
