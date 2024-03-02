@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: harbor
     repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 19.2.3
+    targetRevision: 19.9.0
     helm:
       releaseName: harbor
       valuesObject:
