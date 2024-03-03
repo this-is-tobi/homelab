@@ -14,6 +14,7 @@ PLAYBOOK="false"
 TAGS="all"
 DECRYPT="false"
 ENCRYPT="false"
+UPDATE="false"
 
 # Declare script helper
 TEXT_HELPER="\nThis script aims to install a full homelab with gateway, bastion and k3s cluster.
@@ -24,13 +25,16 @@ Following flags are available:
   -e    Encrypt data using Sops.
 
   -k    Copy kubeconfig locally, default is '$FETCH_KUBECONFIG'.
-        Kubeconfig is fetched to '$HOME/.kube/config.d/homelab'.
+        Kubeconfig is fetched to '$HOME/.kube/config.d/homelab' and
+        a context, user and cluster are create in '$HOME/.kube/config' with name 'homelab'.
 
   -p    Run ansible playbook, default is '$PLAYBOOK'.
         Playbook should be passed as arg.
 
   -t    Tags to run with playbook, default is '$TAGS'.
         This flag can be used with a CSV list (ex: -p 'init,services').
+
+  -u    Update ansible dependencies.
 
   -h    Print script help.\n\n"
 
@@ -39,7 +43,7 @@ print_help() {
 }
 
 # Parse options
-while getopts hdekp:t: flag; do
+while getopts hdekp:t:u flag; do
   case "${flag}" in
     d)
       DECRYPT="true";;
@@ -51,6 +55,8 @@ while getopts hdekp:t: flag; do
       PLAYBOOK="$(readlink -f ${OPTARG})";;
     t)
       TAGS="${OPTARG}";;
+    u)
+      UPDATE="true";;
     h | *)
       print_help
       exit 0;;
@@ -70,6 +76,13 @@ if [ "$ENCRYPT" = "true" ]; then
 fi
 
 
+# Update ansible dependencies
+if [ "$UPDATE" = "true" ]; then
+  printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
+  ansible-galaxy collection install -r $SCRIPT_PATH/ansible/collections/requirements.yml --upgrade
+fi
+
+
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
   if [[ ! "$PLAYBOOK" =~ "infra.yml" ]]; then
@@ -77,22 +90,16 @@ if [ ! "$PLAYBOOK" = "false" ]; then
     printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
     read ANSWER
     if [ "$ANSWER" != "${ANSWER#[Nn]}" ]; then
-        exit 1
+      exit 1
     fi
   fi
 
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
-  ansible-galaxy collection install -r $SCRIPT_PATH/ansible/collections/requirements.yml --upgrade
-
   printf "\n\n${red}[Homelab kube Manager].${no_color} Run ansible playbook\n\n"
   if [ ! -z "$KUBECONFIG_PATH" ]; then
-    echo "$KUBECONFIG_PATH"
     ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$KUBECONFIG_PATH"
   elif [ ! -z "$KUBECONFIG" ]; then
-    echo "$KUBECONFIG"
     ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$KUBECONFIG"
   else
-    echo "$HOME/.kube/config"
     ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$HOME/.kube/config"
   fi
 fi
