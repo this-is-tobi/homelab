@@ -1,0 +1,12 @@
+- block:
+    - name: Get enabled services list
+      ansible.builtin.shell:
+        cmd: |
+          yq '.spec.sources | map(.path) | .[]' ../argocd/envs/production/application.yaml \
+            | sed -e 's/argocd\/apps\/\(.*\)\/argocd/\1/'
+      register: get_enabled_services
+
+    - name: Set fact for keycloak vault secrets
+      ansible.builtin.set_fact:
+        enabled_services: "{{ get_enabled_services.stdout_lines }}"
+  when: enabled_services is undefined

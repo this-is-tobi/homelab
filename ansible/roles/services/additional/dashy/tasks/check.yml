@@ -1,0 +1,19 @@
+- name: Compute dashy configmap for enabled services
+  ansible.builtin.set_fact:
+    dashy_configmap: "{{ lookup('ansible.builtin.template', 'configmap.yaml.j2') }}"
+
+- name: Get current dashy configmap sha1
+  ansible.builtin.stat:
+    path : "{{ playbook_dir }}/../argocd/apps/dashy/manifests/configmap.yaml"
+  register: current_dashy_configmap
+
+- name: Update dashy configmap
+  ansible.builtin.template:
+    src: "configmap.yaml.j2"
+    dest: "{{ playbook_dir }}/../argocd/apps/dashy/manifests/configmap.yaml"
+  when: current_dashy_configmap.stat.checksum != (dashy_configmap | checksum)
+
+- name: Failed because of diverged configmap
+  ansible.builtin.fail:
+    msg: "Current dashy configmap is not synced with current enabled services, please push the new generated configmap to your repository"
+  when: current_dashy_configmap.stat.checksum != (dashy_configmap | checksum)

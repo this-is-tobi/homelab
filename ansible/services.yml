@@ -38,11 +38,7 @@
         - initialize
       vars:
         init_vault_secret: true
-
-    - name: ./roles/services/utils/synchronize
-      tags:
-        - additional
-        - synchronize
+        refresh_platform: true
 
     - name: ./roles/services/additional/sops
       tags:
@@ -50,11 +46,11 @@
         - sops
         - secrets
 
-    # - name: ./roles/services/additional/system-upgrade
-    #   tags:
-    #     - never
-    #     - system-upgrade
-    #     - upgrade
+    - name: ./roles/services/additional/system-upgrade
+      tags:
+        - never
+        - system-upgrade
+        - upgrade
 
     - name: ./roles/services/additional/trivy-operator
       tags:
@@ -75,24 +71,24 @@
         - keycloak
         - sso
 
-    # - name: ./roles/services/additional/vault
-    #   tags:
-    #     - additional
-    #     - vault
+    - name: ./roles/services/additional/vault
+      tags:
+        - additional
+        - vault
 
-    # - name: ./roles/services/additional/argocd
-    #   tags:
-    #     - additional
-    #     - argocd
-    #     - argo
-    #     - gitops
+    - name: ./roles/services/additional/argocd
+      tags:
+        - additional
+        - argocd
+        - argo
+        - gitops
 
-    # - name: ./roles/services/additional/kubernetes-dashboard
-    #   tags:
-    #     - additional
-    #     - kubernetes-dashboard
-    #     - kube-dashboard
-    #     - console
+    - name: ./roles/services/additional/kubernetes-dashboard
+      tags:
+        - additional
+        - kubernetes-dashboard
+        - kube-dashboard
+        - console
 
     - name: ./roles/services/additional/prometheus-stack
       tags:
@@ -113,29 +109,29 @@
         - harbor
         - registry
 
-    # - name: ./roles/services/additional/gitea
-    #   tags:
-    #     - additional
-    #     - gitea
-    #     - git
+    - name: ./roles/services/additional/gitea
+      tags:
+        - additional
+        - gitea
+        - git
 
-    # - name: ./roles/services/additional/sonarqube
-    #   tags:
-    #     - additional
-    #     - sonarqube
-    #     - sonar
+    - name: ./roles/services/additional/sonarqube
+      tags:
+        - additional
+        - sonarqube
+        - sonar
 
-    # - name: ./roles/services/additional/mattermost
-    #   tags:
-    #     # - never # Not arm64 compatible
-    #     - additional
-    #     - mattermost
+    - name: ./roles/services/additional/mattermost
+      tags:
+        # - never # Not arm64 compatible
+        - additional
+        - mattermost
 
-    # - name: ./roles/services/additional/outline
-    #   tags:
-    #     # - never # Not arm64 compatible
-    #     - additional
-    #     - outline
+    - name: ./roles/services/additional/outline
+      tags:
+        # - never # Not arm64 compatible
+        - additional
+        - outline
 
     - name: ./roles/services/additional/actions-runner-controller
       tags:

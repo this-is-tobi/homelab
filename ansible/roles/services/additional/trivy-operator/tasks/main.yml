@@ -1,10 +1,22 @@
-# Init
-- name: Init
+# Check enabled services
+- name: Check iif service is enable
   ansible.builtin.include_role:
-    name: services/utils/initialize
+    name: services/utils/check
 
-# Install
-- name: Sync application
-  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
-  vars:
-    argocd_app: trivy-operator
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: trivy-operator
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: trivy-operator
+  when: '"trivy-operator" in enabled_services'

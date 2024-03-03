@@ -1,14 +1,32 @@
-# Init
-- name: Init
+# Check enabled services
+- name: Check iif service is enable
   ansible.builtin.include_role:
-    name: services/utils/initialize
+    name: services/utils/check
 
-# Setup vault secrets
-- name: Setup vault secrets
-  ansible.builtin.include_tasks: vault-secrets.yml
+- block:
+  # Check configmap
+  - name: Check configmap
+    ansible.builtin.include_tasks: check.yml
 
-# Install
-- name: Sync application
-  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
-  vars:
-    argocd_app: dashy
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+    vars:
+      init_vault_secret: true
+
+  # Setup vault secrets
+  - name: Setup vault secrets
+    ansible.builtin.include_tasks: vault-secrets.yml
+
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: dashy
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: dashy
+  when: '"dashy" in enabled_services'

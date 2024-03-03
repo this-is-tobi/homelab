@@ -32,22 +32,72 @@ data:
       - name: Services
         icon: fas fa-rocket
         items:
+{% if "argocd" in enabled_services %}
+          - title: Argocd
+            description: Deploy apps using gitops
+            url: https://<path:secret/data/admin/apps/argocd#domain>
+            icon: hl-argocd
+{% endif %}
+{% if "coder" in enabled_services %}
           - title: Coder
             description: Development environment in the cloud
             url: https://<path:secret/data/admin/apps/coder#domain>
             icon: hl-coder
+{% endif %}
+{% if "gitea" in enabled_services %}
+          - title: Gitea
+            description: Private DevOps Platform including code storage
+            url: https://<path:secret/data/admin/apps/gitea#domain>
+            icon: hl-gitea
+{% endif %}
+{% if "prometheus-stack" in enabled_services %}
           - title: Grafana
             description: Watch cluster metrics & application logs
             url: https://<path:secret/data/admin/apps/prometheus-stack#domain>
             icon: hl-grafana
+{% endif %}
+{% if "harbor" in enabled_services %}
           - title: Harbor
             description: Container image registry & Helm chart registry
             url: https://<path:secret/data/admin/apps/harbor#domain>
             icon: hl-harbor
+{% endif %}
+{% if "kubernetes-dashboard" in enabled_services %}
+          - title: Kubernetes
+            description: Kubernetes dashboard to watch cluster ressources
+            url: https://<path:secret/data/admin/apps/kubernetes-dashboard#domain>
+            icon: hl-kubernetes-dashboard
+{% endif %}
+{% if "mattermost" in enabled_services %}
+          - title: Mattermost
+            description: Team communication service
+            url: https://<path:secret/data/admin/apps/mattermost#domain>
+            icon: hl-mattermost
+{% endif %}
+{% if "minio" in enabled_services %}
           - title: Minio
             description: Store data with s3 standard
             url: https://<path:secret/data/admin/apps/minio#domain>
             icon: hl-minio
+{% endif %}
+{% if "outline" in enabled_services %}
+          - title: Outline
+            description: Share notes and wiki
+            url: https://<path:secret/data/admin/apps/outline#domain>
+            icon: hl-outline
+{% endif %}
+{% if "sonarqube" in enabled_services %}
+          - title: Sonarqube
+            description: Code analysis service
+            url: https://<path:secret/data/admin/apps/sonarqube#domain>
+            icon: hl-sonarqube
+{% endif %}
+{% if "vault" in enabled_services %}
+          - title: Vault
+            description: Store & retrieve secrets safely
+            url: https://<path:secret/data/admin/apps/vault#domain>
+            icon: hl-vault
+{% endif %}
         displayData:
           sortBy: alphabetical
           collapsed: false
@@ -81,10 +131,12 @@ data:
             url: https://<path:secret/data/admin/infos#argocd | jsonPath {.domain}>
             icon: hl-argocd
             statusCheck: true
+{% if "keycloak" in enabled_services %}
           - title: Keycloak
             description: Single Sign On managment
             url: https://<path:secret/data/admin/apps/keycloak#domain>
             icon: hl-keycloak
+{% endif %}
           - title: Vault
             description: Admin secret manager
             url: https://<path:secret/data/admin/infos#vault | jsonPath {.domain}>

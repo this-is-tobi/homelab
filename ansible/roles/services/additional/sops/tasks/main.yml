@@ -1,14 +1,26 @@
-# Init
-- name: Init
+# Check enabled services
+- name: Check iif service is enable
   ansible.builtin.include_role:
-    name: services/utils/initialize
+    name: services/utils/check
 
-# Setup vault secrets
-- name: Setup vault secrets
-  ansible.builtin.include_tasks: vault-secrets.yml
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
 
-# Install
-- name: Sync application
-  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
-  vars:
-    argocd_app: sops
+  # Setup vault secrets
+  - name: Setup vault secrets
+    ansible.builtin.include_tasks: vault-secrets.yml
+
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: sops
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: sops
+  when: '"sops" in enabled_services'

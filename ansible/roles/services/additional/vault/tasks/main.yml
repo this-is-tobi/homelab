@@ -1,34 +1,46 @@
-# Init
-- name: Init
+# Check enabled services
+- name: Check iif service is enable
   ansible.builtin.include_role:
-    name: services/utils/initialize
-  vars:
-    include_keycloak: true
+    name: services/utils/check
 
-# Setup vault secrets
-- name: Setup vault secrets
-  ansible.builtin.include_tasks: vault-secrets.yml
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+    vars:
+      include_keycloak: true
 
-# Get namespace
-- name: Setup vars
-  ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argocd/apps/vault/argocd/application.yaml"
-    name: vault_app_config
+  # Setup vault secrets
+  - name: Setup vault secrets
+    ansible.builtin.include_tasks: vault-secrets.yml
 
-- name: Set fact for vault secrets
-  ansible.builtin.set_fact:
-    vault_namespace: "{{ vault_app_config.spec.destination.namespace }}"
+  # Get namespace
+  - name: Setup vars
+    ansible.builtin.include_vars:
+      file: "{{ playbook_dir }}/../argocd/apps/vault/argocd/application.yaml"
+      name: vault_app_config
 
-# Setup sso
-- name: Setup SSO
-  ansible.builtin.include_tasks: sso.yml
+  - name: Set fact for vault secrets
+    ansible.builtin.set_fact:
+      vault_namespace: "{{ vault_app_config.spec.destination.namespace }}"
 
-# Install
-- name: Sync application
-  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
-  vars:
-    argocd_app: vault
+  # Setup sso
+  - name: Setup SSO
+    ansible.builtin.include_tasks: sso.yml
 
-# Post install
-- name: Post install
-  ansible.builtin.include_tasks: post-install.yml
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: vault
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: vault
+
+  # Post install
+  - name: Post install
+    ansible.builtin.include_tasks: post-install.yml
+  when: '"vault" in enabled_services'

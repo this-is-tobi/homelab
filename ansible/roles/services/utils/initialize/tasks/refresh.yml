@@ -1,0 +1,28 @@
+# Refresh platform application
+- name: Setup vars
+  ansible.builtin.include_vars:
+    file: "{{ playbook_dir }}/../argocd/envs/production/application.yaml"
+    name: argocd_platform_config
+
+- name: Refresh argocd platform application
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_platform_config.metadata.namespace }}"
+    method: GET
+    body_format: json
+    headers:
+      Authorization: Bearer {{ argocd_core_token }}
+    status_code: 200
+    timeout: 600
+
+# - name: Get argocd platform application status
+#   ansible.builtin.uri:
+#     url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_config.metadata.name }}?project={{ argocd_platform_config.spec.project }}&appNamespace={{ argocd_platform_config.metadata.namespace }}"
+#     method: GET
+#     body_format: json
+#     headers:
+#       Authorization: Bearer {{ argocd_core_token }}
+#     status_code: 200
+#   register: argocd_platform_status
+#   until: argocd_platform_status.json.status.sync.status == 'Synced' and argocd_platform_status.json.status.health.status == 'Healthy'
+#   retries: 60
+#   delay: 10

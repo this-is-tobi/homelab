@@ -1,24 +1,36 @@
-# Init
-- name: Init
+# Check enabled services
+- name: Check iif service is enable
   ansible.builtin.include_role:
-    name: services/utils/initialize
-  vars:
-    include_keycloak: true
+    name: services/utils/check
 
-# Setup vault secrets
-- name: Setup vault secrets
-  ansible.builtin.include_tasks: vault-secrets.yml
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+    vars:
+      include_keycloak: true
 
-# Setup sso
-- name: Setup SSO
-  ansible.builtin.include_tasks: sso.yml
+  # Setup vault secrets
+  - name: Setup vault secrets
+    ansible.builtin.include_tasks: vault-secrets.yml
 
-# Install
-- name: Sync application
-  ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
-  vars:
-    argocd_app: harbor
+  # Setup sso
+  - name: Setup SSO
+    ansible.builtin.include_tasks: sso.yml
 
-# Post install
-- name: Post install
-  ansible.builtin.include_tasks: post-install.yml
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: harbor
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: harbor
+
+  # Post install
+  - name: Post install
+    ansible.builtin.include_tasks: post-install.yml
+  when: '"harbor" in enabled_services'
