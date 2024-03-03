@@ -15,11 +15,9 @@ Following tools needs to be installed on the computer running the playbook :
 - [sshpass](https://sourceforge.net/projects/sshpass) *- non-interactive ssh password auth*
 - [yq](https://github.com/mikefarah/yq) *- portable command-line YAML, JSON, XML, CSV, TOML and properties processor.*
 
-For convenience, it is recommended to do these prerequisite steps :
-
 ```sh
-# Add gateway into /etc/hosts in case they are deployed with local domain
-[ ! $(sudo grep -q "192.168.0.99" /etc/hosts) ] && sudo sh -c "echo $'\n# Homelab\n192.168.0.99   pihole.domain.local haproxy.domain.local wireguard.domain.local' >> /etc/hosts"
+# Clone the repository
+git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git
 
 # Copy inventory example to inventory
 cp -R ./ansible/inventory-example ./ansible/inventory
@@ -27,19 +25,27 @@ cp -R ./ansible/inventory-example ./ansible/inventory
 
 Because crowdsec is used as the firewall, it is required to [create an account](https://app.crowdsec.net/) to share attack detection on the local network with the community as the community share it with us.
 
-
 > __*Notes*__:
 >
-> *Don't forget to replace `domain.com` with the appropriate domain. This can be setup in the the [all.yml](../ansible/inventory-example/group_vars/all.yml) file.*
+> *Crowdsec, PiHole, etc installation can be ignored by commenting appropriate role in [infra playbook](../ansible/infra.yml).*
+>
+> *Every kubernetes services can be disabled by commenting its declaration in the [service playbook](../ansible/services.yml) and in the Argocd [app of apps](../argocd/envs/production/application.yaml). Ansible will determine which service is enabled and create the appropriate secrets in vault, it will also update the dashy configmap and may ask to push the updated file for gitops needs.*
 
 
 ## Settings
 
 Update the [hosts file](../ansible/inventory-example/hosts.yml) and [group_vars files](../ansible/inventory-example/group_vars/) to provide the appropriate infra and services settings.
 
-To create user access to the bastion, it is required to provide their informations in the `groups_vars/all.yml` file :
-- Set `setup: true` to setup the working environment for the given user
-- Add users ssh public key following the file structure `./secrets/ssh/<bastion_username>.pub`, this will add the appropriate key in the matching bastion user `authorized_keys`.
+Actions Runner Controller uses [Sops](https://github.com/getsops/sops) encrypted secret to store information about Github applications. These secrets are managed (encrypted/decrypted) using the wrapper script [run.sh](../run.sh) following the keys provided in [.sops.yaml](../.sops.yaml).
+
+> *__Notes:__*
+>
+> *__Update Sops keys with your own__ but __leave the first age key blank__ as it is used by the cluster's automated key management system.*
+
+
+To create user access to the bastion, it is required to provide their informations in the `groups_vars/bastion.yml` file :
+- Set `setup: true` to setup the working environment for the given user.
+- Put user ssh public key in the inventory file, this will grant user access to the bastion by adding `authorized_keys`.
 
 > __*Notes*__:
 >
@@ -112,8 +118,8 @@ The next step would be to deploy each platform environment to a dedicated cluste
 
 ![gitops-02](images/gitops-02.drawio.png)
 
-## Notes
+## Known issues
 
 At the moment, `mattermost` and `outline` images are not `arm64` compatible so their deployment are using custom mirror image with compatibility (see. [this repo](https://github.com/this-is-tobi/multiarch-mirror) and and associated Argocd applications).
 
-Every services could be disabled by commenting its declaration in the [service playbook](../ansible/services.yml) and in the Argocd [app of apps](../argocd/envs/production/application.yaml).
+The [official Harbor helm chart](https://artifacthub.io/packages/helm/harbor/harbor) cannot be used due to arm64 incompatibility, the [Bitnami distribution](https://artifacthub.io/packages/helm/bitnami/harbor) is used instead.

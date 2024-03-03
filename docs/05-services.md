@@ -67,7 +67,13 @@ The following services are deployed in the cluster :
 
 ### Versions
 
-To improve administrator experience, all services helm charts and versions can be managed thought the `groups_vars/services.yml` file for __core services only__, additional services are managed through gitops flow with sources available [here](../argocd/envs/production/application.yaml).
+To improve administrator experience, all services helm charts and versions can be managed thought the `groups_vars/services.yml` file for __core services only__.
+
+Additional services are managed through gitops flow with sources available [here](../argocd/envs/production/application.yaml).
+
+### Management
+
+Additional services activation/deactivation is managed by Ansible directly in the [app of apps file](../argocd/envs/production/application.yaml), by commenting the blocks in the `.spec.sources` section.
 
 ### Access
 
@@ -81,7 +87,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | Longhorn *(admin)* | <http://longhorn.admin.domain.com> |
 | Vault *(admin)*    | <https://vault.admin.domain.com>   |
 
-#### Users
+#### Standard
 
 | Name                 | Url                             |
 | -------------------- | ------------------------------- |
@@ -111,7 +117,7 @@ It is also usefull for admins to have a better control over homelab users and ac
 
 > Don't forget to select 'homelab' realm
 
-By default a group is created for each service that use keycloak sso registration, add user to group to grant access level for the given service.
+By default an admin group is created to give admin access on each service that use keycloak sso registration, keycloak users that are not in the admin group get simple access.
 
 Following services are connected through sso :
 - ArgoCD
