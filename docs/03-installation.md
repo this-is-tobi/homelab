@@ -12,7 +12,8 @@ Following tools needs to be installed on the computer running the playbook :
 - [mc](https://min.io/docs/minio/linux/reference/minio-mc.html) *- command-line tool that allows you to manage your s3.*
 - [openssl](https://www.openssl.org/) *- cryptography and SSL/TLS toolkit.*
 - [hvac](https://hvac.readthedocs.io/en/stable/overview.html) *- HashiCorp Vault API client for Python 3.x.*
-- [sshpass](https://sourceforge.net/projects/sshpass) *- non-interactive ssh password auth*
+- [sshpass](https://sourceforge.net/projects/sshpass) *- non-interactive ssh password auth.*
+- [sops](https://github.com/getsops/sops) *- Simple and flexible tool for managing secrets.*
 - [yq](https://github.com/mikefarah/yq) *- portable command-line YAML, JSON, XML, CSV, TOML and properties processor.*
 
 ```sh
@@ -41,6 +42,8 @@ Actions Runner Controller uses [Sops](https://github.com/getsops/sops) encrypted
 > *__Notes:__*
 >
 > *__Update Sops keys with your own__ but __leave the first age key blank__ as it is used by the cluster's automated key management system.*
+>
+> *Decrypt secrets by running `./run.sh -d` and encrypt secrets by running `./run.sh -e`, do not forget to recrypt secrets when changes are made.*
 
 
 To create user access to the bastion, it is required to provide their informations in the `groups_vars/bastion.yml` file :

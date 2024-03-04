@@ -8,7 +8,7 @@ It is a quick starting point for simple infrastructure needs or for testing vari
 
 ## Quickstart
 
-Make sure you meet all [prerequisites](./installation#prerequisites).
+Make sure all [prerequisites](./installation.md#prerequisites) are met.
 
 __Setup directory:__
 ```sh

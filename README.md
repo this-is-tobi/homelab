@@ -8,7 +8,7 @@ It is a quick starting point for simple infrastructure needs or for testing vari
 
 ## Documentation
 
-__Website:__ <https://this-is-tobi.com/homelab/introduction.html>.
+__Website:__ <https://this-is-tobi.com/homelab/introduction>.
 
 __Table of Contents__ *- md sources*:
 - [Compatibility](./docs/02-compatibility.md)
@@ -21,7 +21,7 @@ __Table of Contents__ *- md sources*:
 
 ## Quickstart
 
-Make sure you meet all [prerequisites](./installation#prerequisites).
+Make sure all [prerequisites](./docs/03-installation.md#prerequisites) are met.
 
 Setup directory :
 ```sh
