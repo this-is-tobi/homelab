@@ -49,6 +49,8 @@ spec:
               value: "openid,profile,email,groups,roles"
             - name: CODER_OIDC_GROUP_FIELD
               value: "groups"
+            - name: CODER_OIDC_ADMIN_GROUP
+              value: "admin"
             # - name: CODER_OIDC_ALLOWED_GROUPS
             #   value: "admin"
             - name: CODER_OIDC_GROUP_AUTO_CREATE
