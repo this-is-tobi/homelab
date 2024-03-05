@@ -1,12 +1,15 @@
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 wireguard:
+  enabled: false
   domain: "vpn.{{ rootDomain }}"
   password: ""
 crowdsec:
+  enabled: false
   bouncerNftablesKey: ""
   bouncerHaproxyKey: ""
   enrollKey: ""
   instanceName: "homelab"
 pihole:
+  enabled: false
   domain: pihole.{{ localRootDomain }}
   password: ""

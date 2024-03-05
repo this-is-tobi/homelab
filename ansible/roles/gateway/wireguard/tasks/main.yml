@@ -1,31 +1,33 @@
-- name: Set wireguard password
-  ansible.builtin.set_fact:
-    wireguard_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+- block:
+  - name: Set wireguard password
+    ansible.builtin.set_fact:
+      wireguard_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
 
-- name: Fetch wireguard password
-  delegate_to: localhost
-  become: false
-  ansible.builtin.shell:
-    cmd: |
-      yq -i '.wireguard.password = "{{ wireguard_password }}"' ./inventory/group_vars/gateway.yml
-  when: wireguard.password == ''
+  - name: Fetch wireguard password
+    delegate_to: localhost
+    become: false
+    ansible.builtin.shell:
+      cmd: |
+        yq -i '.wireguard.password = "{{ wireguard_password }}"' ./inventory/group_vars/gateway.yml
+    when: wireguard.password == ''
 
-- name: Create wireguard service dir
-  ansible.builtin.file:
-    path: "/services/wireguard"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: 0775
+  - name: Create wireguard service dir
+    ansible.builtin.file:
+      path: "/services/wireguard"
+      state: directory
+      owner: "{{ ansible_user }}"
+      group: "{{ ansible_user }}"
+      mode: 0775
 
-- name: Copy docker-compose file
-  ansible.builtin.template:
-    src: "docker-compose.yml.j2"
-    dest: "/services/wireguard/docker-compose.yml"
+  - name: Copy docker-compose file
+    ansible.builtin.template:
+      src: "docker-compose.yml.j2"
+      dest: "/services/wireguard/docker-compose.yml"
 
-- name: Launch wireguard
-  community.docker.docker_compose_v2:
-    state: present
-    project_src: "/services/wireguard"
-    files:
-      - "docker-compose.yml"
+  - name: Launch wireguard
+    community.docker.docker_compose_v2:
+      state: present
+      project_src: "/services/wireguard"
+      files:
+        - "docker-compose.yml"
+  when: wireguard.enabled
