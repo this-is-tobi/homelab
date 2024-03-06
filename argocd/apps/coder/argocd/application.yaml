@@ -28,7 +28,7 @@ spec:
             tls:
               enable: true
               secretName: "<path:secret/data/admin/apps/coder#domain>"
-              wildcardSecretName: "wild-<path:secret/data/admin/apps/coder#domain>"
+              # wildcardSecretName: "wild-<path:secret/data/admin/apps/coder#domain>"
           envUseClusterAccessURL: false
           env:
             - name: CODER_PG_CONNECTION_URL
