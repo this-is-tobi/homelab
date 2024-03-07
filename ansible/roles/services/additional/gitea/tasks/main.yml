@@ -1,5 +1,5 @@
 # Check enabled services
-- name: Check iif service is enable
+- name: Check if service is enable
   ansible.builtin.include_role:
     name: services/utils/check
 
