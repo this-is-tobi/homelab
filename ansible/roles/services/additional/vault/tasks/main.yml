@@ -39,6 +39,7 @@
     ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
     vars:
       argocd_app: vault
+      wait_sync: false
 
   # Post install
   - name: Post install

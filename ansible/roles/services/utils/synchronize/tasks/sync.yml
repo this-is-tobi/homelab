@@ -33,3 +33,4 @@
   until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
   retries: 60
   delay: 10
+  when: wait_sync | default(true)
