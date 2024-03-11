@@ -33,8 +33,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: sops
   syncPolicy:
-    automated:
-      selfHeal: false
+    automated: {}
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

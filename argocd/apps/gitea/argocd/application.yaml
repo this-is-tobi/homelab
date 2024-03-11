@@ -108,8 +108,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: gitea
   syncPolicy:
-    automated:
-      selfHeal: false
+    automated: {}
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

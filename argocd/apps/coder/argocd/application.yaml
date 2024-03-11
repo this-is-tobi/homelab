@@ -62,8 +62,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: coder
   syncPolicy:
-    automated:
-      selfHeal: false
+    automated: {}
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

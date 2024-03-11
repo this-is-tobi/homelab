@@ -89,8 +89,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: kubernetes-dashboard
   syncPolicy:
-    automated:
-      selfHeal: false
+    automated: {}
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

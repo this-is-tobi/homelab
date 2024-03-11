@@ -98,8 +98,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: outline
   syncPolicy:
-    automated:
-      selfHeal: false
+    automated: {}
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true

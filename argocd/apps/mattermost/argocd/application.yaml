@@ -85,8 +85,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: mattermost
   syncPolicy:
-    automated:
-      selfHeal: false
+    automated: {}
     syncOptions:
     - CreateNamespace=true
     - ApplyOutOfSyncOnly=true
