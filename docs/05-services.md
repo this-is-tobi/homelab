@@ -30,11 +30,11 @@ Gateway web interface services are deployed and accessible for admin purpose, th
 
 | Name                | Url                         |
 | ------------------- | --------------------------- |
-| Haproxy dashboard   | <http://192.168.0.99:8404>  |
-| Pihole dashboard    | <http://192.168.0.99:5353>  |
-| Wireguard dashboard | <http://192.168.0.99:51821> |
+| Haproxy dashboard   | <http://192.168.1.99:8404>  |
+| Pihole dashboard    | <http://192.168.1.99:5353>  |
+| Wireguard dashboard | <http://192.168.1.99:51821> |
 
-> *__Notes:__ Replace `192.168.0.99` with the gateway's ip address set in [hosts.yml](../ansible/inventory-example/hosts.yml).*
+> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../ansible/inventory-example/hosts.yml).*
 
 ## Kubernetes
 

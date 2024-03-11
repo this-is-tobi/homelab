@@ -4,14 +4,14 @@
 
 ```sh
 # Find ips on local subnet
-sudo nmap -sN 192.168.0.1/24
+sudo nmap -sN 192.168.1.1/24
 ```
 
 ## Disk
 
 ```sh
 # List disks
-lsblk -f 
+lsblk -f
 
 # umount /dev/sda1
 sudo wipefs -a /dev/sda
@@ -50,7 +50,7 @@ kubectl get pods --all-namespaces -o wide --field-selector spec.nodeName=<node>
 # Get node labels
 kubectl get nodes --show-labels
 
-# Create and apply secret from file 
+# Create and apply secret from file
 kubectl create secret -n <namespace> generic <secret_name> \
   --from-file=<file_name>.yaml \
   --dry-run=client \
@@ -60,7 +60,7 @@ kubectl create secret -n <namespace> generic <secret_name> \
 # Read secret
 kubectl -n <namespace> get secret <secret_name> -o jsonpath="{.data.<data_field>}" | base64 --decode
 
-# Forward port 
+# Forward port
 kubectl port-forward -n <namespace> svc/<service_name> <host_port>:<service_port>
 kubectl port-forward -n <namespace> pod/<pod_name> <host_port>:<pod_port>
 ```
