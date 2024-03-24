@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: minio
     repoURL: https://charts.bitnami.com/bitnami
-    targetRevision: 14.1.0
+    targetRevision: 14.1.2
     helm:
       releaseName: minio
       valuesObject:
