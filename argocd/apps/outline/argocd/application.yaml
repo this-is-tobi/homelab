@@ -11,13 +11,13 @@ spec:
   sources:
   - chart: outline
     repoURL: https://helm.liam.sh
-    targetRevision: 1.4.0
+    targetRevision: 1.5.1
     helm:
       releaseName: outline
       valuesObject:
         image:
           repository: ghcr.io/this-is-tobi/mirror/outline
-          tag:
+          tag: latest
         ingress:
           enabled: true
           className: traefik
