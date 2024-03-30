@@ -4,7 +4,7 @@ argocd:
     repoUrl: "https://argoproj.github.io/argo-helm"
     repoName: "argo"
     chartName: "argo-cd"
-    chartVersion: "6.7.3"
+    chartVersion: "6.7.6"
   namespace: "argocd-system"
   domain: "gitops.admin.{{ rootDomain }}"
 certManager:
