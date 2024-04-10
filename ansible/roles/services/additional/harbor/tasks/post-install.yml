@@ -40,3 +40,27 @@
       "robot_name_prefix": "robot$"
       "self_registration": false
       "oidc_client_secret": "{{ harbor_client_secret }}"
+
+- name: Get trivy schedule scan config
+  ansible.builtin.uri:
+    url: https://{{ harbor_domain }}/api/v2.0/system/scanAll/schedule
+    user: "{{ harbor_username }}"
+    password: "{{ harbor_password }}"
+    force_basic_auth: true
+    body_format: json
+  register: get_trivy_schedule_config
+
+- name: Enable daily trivy scans
+  ansible.builtin.uri:
+    method: POST
+    url: https://{{ harbor_domain }}/api/v2.0/system/scanAll/schedule
+    user: "{{ harbor_username }}"
+    password: "{{ harbor_password }}"
+    force_basic_auth: true
+    body_format: json
+    status_code: [201]
+    body:
+      "schedule":
+        "type": "Daily"
+        "cron": "0 0 0 * * *"
+  when: get_trivy_schedule_config.json is undefined
