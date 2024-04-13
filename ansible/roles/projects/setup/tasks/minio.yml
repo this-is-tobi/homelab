@@ -4,6 +4,11 @@
       mc alias ls --json | jq -r 'select(.URL == "https://{{ minio_api_domain }}").alias'
   register: mc_alias
 
+- name: Failed because of unknown s3 endpoint
+  ansible.builtin.fail:
+    msg: "Current s3 endpoint is not registered in your minio config, please set the alias with the command 'mc alias set homelab https://{{ minio_api_domain }}'"
+  when: mc_alias.stdout == ""
+
 - name: Create minio bucket
   amazon.aws.s3_bucket:
     name: "{{ item.name }}"
