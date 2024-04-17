@@ -13,7 +13,7 @@ spec:
   sources:
   - chart: mattermost-team-edition
     repoURL: https://helm.mattermost.com
-    targetRevision: 6.6.51
+    targetRevision: 6.6.52
     helm:
       releaseName: mattermost
       valuesObject:
