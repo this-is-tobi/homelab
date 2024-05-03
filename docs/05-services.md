@@ -64,6 +64,7 @@ The following services are deployed in the cluster :
 | [System-upgrade-controller](https://github.com/rancher/system-upgrade-controller) | K3S upgrade controller                          | -                                                                                                                                               |
 | [Trivy-operator](https://aquasecurity.github.io/trivy-operator/latest/)           | Kubernetes-native security toolkit              | [aqua/trivy-operator](https://aquasecurity.github.io/helm-charts/)                                                                              |
 | [Vault](https://www.vaultproject.io/)                                             | Secret management service                       | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                                                         |
+| [Vaultwarden](https://github.com/dani-garcia/vaultwarden)                         | Password management service                     | [vaultwarden/vaultwarden](https://artifacthub.io/packages/helm/vaultwarden/vaultwarden)                                                         |
 
 ### Versions
 
@@ -89,22 +90,23 @@ Kubernetes services that are available through user interfaces are centralized o
 
 #### Standard
 
-| Name                 | Url                             |
-| -------------------- | ------------------------------- |
-| ArgoCD               | <https://gitops.domain.com>     |
-| Coder                | <https://coder.domain.com>      |
-| Dashy                | <https://domain.com>            |
-| Gitea                | <https://git.domain.com>        |
-| Grafana              | <https://monitoring.domain.com> |
-| Harbor               | <https://registry.domain.com>   |
-| Keycloak             | <https://sso.domain.com>        |
-| Kubernetes-dashboard | <https://kube.domain.com>       |
-| Mattermost           | <https://mattermost.domain.com> |
-| Minio *- api*        | <https://s3.domain.com>         |
-| Minio *- web*        | <https://minio.domain.com>      |
-| Outline              | <https://outline.domain.com>    |
-| SonarQube            | <http://sonarqube.domain.com>   |
-| Vault                | <https://vault.domain.com>      |
+| Name                 | Url                              |
+| -------------------- | -------------------------------- |
+| ArgoCD               | <https://gitops.domain.com>      |
+| Coder                | <https://coder.domain.com>       |
+| Dashy                | <https://domain.com>             |
+| Gitea                | <https://git.domain.com>         |
+| Grafana              | <https://monitoring.domain.com>  |
+| Harbor               | <https://registry.domain.com>    |
+| Keycloak             | <https://sso.domain.com>         |
+| Kubernetes-dashboard | <https://kube.domain.com>        |
+| Mattermost           | <https://mattermost.domain.com>  |
+| Minio *- api*        | <https://s3.domain.com>          |
+| Minio *- web*        | <https://minio.domain.com>       |
+| Outline              | <https://outline.domain.com>     |
+| SonarQube            | <http://sonarqube.domain.com>    |
+| Vault                | <https://vault.domain.com>       |
+| Vaultwarden          | <https://vaultwarden.domain.com> |
 
 > *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../ansible/inventory-example/group_vars/all.yml).*
 

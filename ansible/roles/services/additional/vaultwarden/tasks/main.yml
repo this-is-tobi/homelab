@@ -1,0 +1,25 @@
+# Check enabled services
+- name: Check if service is enable
+  ansible.builtin.include_role:
+    name: services/utils/check
+
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+
+  # Setup vault secrets
+  - name: Setup vault secrets
+    ansible.builtin.include_tasks: vault-secrets.yml
+
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: vaultwarden
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: vaultwarden

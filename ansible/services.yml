@@ -146,6 +146,11 @@
         - coder
         - vscode
 
+    - name: ./roles/services/additional/vaultwarden
+      tags:
+        - additional
+        - vaultwarden
+
     - name: ./roles/services/additional/dashy
       tags:
         - additional

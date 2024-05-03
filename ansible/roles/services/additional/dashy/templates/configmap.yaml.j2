@@ -98,6 +98,12 @@ data:
             url: https://<path:secret/data/admin/apps/vault#domain>
             icon: hl-vault
 {% endif %}
+{% if "vaultwarden" in enabled_services %}
+          - title: Vaultwarden
+            description: Password management service
+            url: https://<path:secret/data/admin/apps/vaultwarden#domain>
+            icon: hl-vaultwarden
+{% endif %}
         displayData:
           sortBy: alphabetical
           collapsed: false

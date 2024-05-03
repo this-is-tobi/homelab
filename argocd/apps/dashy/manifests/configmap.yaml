@@ -48,6 +48,10 @@ data:
             description: Store data with s3 standard
             url: https://<path:secret/data/admin/apps/minio#domain>
             icon: hl-minio
+          - title: Vaultwarden
+            description: Password management service
+            url: https://<path:secret/data/admin/apps/vaultwarden#domain>
+            icon: hl-vaultwarden
         displayData:
           sortBy: alphabetical
           collapsed: false
