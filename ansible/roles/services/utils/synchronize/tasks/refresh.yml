@@ -4,6 +4,17 @@
     file: "{{ playbook_dir }}/../argocd/apps/{{ argocd_app }}/argocd/application.yaml"
     name: argocd_app_config
 
+- name: Check if application exists
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}"
+    method: GET
+    body_format: json
+    headers:
+      Authorization: Bearer {{ argocd_core_token }}
+    status_code: [200,403,404]
+    timeout: 600
+  register: app_exists
+
 - name: Refresh argocd application
   ansible.builtin.uri:
     url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_app_config.metadata.namespace }}"
@@ -13,3 +24,4 @@
       Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
     timeout: 600
+  when: app_exists.status == 200

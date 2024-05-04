@@ -36,6 +36,7 @@
       tags:
         - additional
         - initialize
+        - always
       vars:
         init_vault_secret: true
         refresh_platform: true
