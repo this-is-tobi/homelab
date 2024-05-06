@@ -1,0 +1,39 @@
+- name: Check if prometheus CRD are installed
+  kubernetes.core.k8s_info:
+    kind: servicemonitors
+    api: monitoring.coreos.com/v1
+  register: monitoring_crds
+
+- block:
+    - name: Get prometheus chart version
+      ansible.builtin.shell:
+        cmd: yq '.spec.sources[] | select(.chart == "kube-prometheus-stack") | .targetRevision' {{ playbook_dir }}/../argocd/apps/prometheus-stack/argocd/application.yaml
+      register: prometheus_chart_version
+
+    - name: Get prometheus app version
+      ansible.builtin.uri:
+        url: https://prometheus-community.github.io/helm-charts/index.yaml
+        return_content: true
+      register: prometheus_chart_index
+
+    - name: Set prometheus app version
+      ansible.builtin.set_fact:
+        prometheus_app_version: "{{ prometheus_chart_index.content | from_yaml | json_query(query) | first }}"
+      vars:
+        query: "entries.\"kube-prometheus-stack\"[?version=='{{ prometheus_chart_version.stdout }}'].appVersion"
+
+    - name: Download prometheus-operator CRDs
+      ansible.builtin.uri:
+        url: https://github.com/prometheus-operator/prometheus-operator/releases/download/{{ prometheus_app_version }}/stripped-down-crds.yaml
+        return_content: true
+      register: prometheusoperator_crds
+
+    - name: Apply CRDs
+      kubernetes.core.k8s:
+        state: present
+        definition: |
+          {{ prometheusoperator_crds.content |
+            regex_replace('- =~', "- '=~'") |
+            regex_replace('- =', "- '='") |
+            from_yaml_all }}
+  when: not monitoring_crds.api_found

@@ -7,6 +7,12 @@
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/services.yml
   roles:
+    - name: ./roles/services/utils/prerequisites
+      tags:
+        - core
+        - additional
+        - prerequisites
+
     - name: ./roles/services/core/traefik
       tags:
         - core
@@ -36,7 +42,6 @@
       tags:
         - additional
         - initialize
-        - always
       vars:
         init_vault_secret: true
         refresh_platform: true
