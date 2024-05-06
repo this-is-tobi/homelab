@@ -64,6 +64,8 @@ spec:
       cpu: 500m
   affinity:
     enablePodAntiAffinity: true
+  monitoring:
+    enablePodMonitor: true
 
 # ---
 # apiVersion: v1
