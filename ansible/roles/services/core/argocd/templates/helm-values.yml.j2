@@ -22,19 +22,19 @@ redis-ha:
   enabled: true
 redis:
   metrics:
-    enabled: false
+    enabled: true
     serviceMonitor:
       enabled: true
 notifications:
   replicas: 1
   metrics:
-    enabled: false
+    enabled: true
     serviceMonitor:
       enabled: true
 controller:
   replicas: 2
   metrics:
-    enabled: false
+    enabled: true
     serviceMonitor:
       enabled: true
 server:
@@ -57,14 +57,14 @@ server:
       - {{ argocd.domain }}
       secretName: {{ argocd.domain }}
   metrics:
-    enabled: false
+    enabled: true
     serviceMonitor:
-      enabled: false
+      enabled: true
 applicationSet:
   enabled: true
   replicas: 2
   metrics:
-    enabled: false
+    enabled: true
     serviceMonitor:
       enabled: true
 dex:
@@ -80,7 +80,7 @@ repoServer:
     targetCPUUtilizationPercentage: 75
     targetMemoryUtilizationPercentage: 75
   metrics:
-    enabled: false
+    enabled: true
     serviceMonitor:
       enabled: true
   initContainers:

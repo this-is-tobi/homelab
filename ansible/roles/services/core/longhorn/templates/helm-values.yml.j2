@@ -2,7 +2,6 @@ persistence:
   defaultClass: true
   defaultFsType: ext4
   defaultClassReplicaCount: 3
-
 defaultSettings:
   createDefaultDiskLabeledNodes: true
   defaultDataPath: /storage01
@@ -13,4 +12,6 @@ defaultSettings:
   backupTarget: {{ longhorn.s3.s3Endpoint }}
   backupTargetCredentialSecret: longhorn-s3
 {% endif %}
-
+metrics:
+  serviceMonitor:
+    enabled: true
