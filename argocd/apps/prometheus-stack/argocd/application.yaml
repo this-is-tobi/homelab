@@ -19,6 +19,7 @@ spec:
       valuesObject:
         prometheus:
           prometheusSpec:
+            podMonitorSelectorNilUsesHelmValues: false
             serviceMonitorSelectorNilUsesHelmValues: false
             probeSelectorNilUsesHelmValues: false
             ruleSelectorNilUsesHelmValues: false
