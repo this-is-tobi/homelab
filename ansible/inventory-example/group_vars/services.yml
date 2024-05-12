@@ -40,6 +40,6 @@ vault:
     repoUrl: "https://helm.releases.hashicorp.com"
     repoName: "hashicorp"
     chartName: "vault"
-    chartVersion: "0.27.0"
+    chartVersion: "0.28.0"
   namespace: "vault-system"
   domain: "vault.admin.{{ rootDomain }}"
