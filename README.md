@@ -33,12 +33,12 @@ cp -R ./ansible/inventory-example ./ansible/inventory
 ```
 
 Setup inventory values :
-- [host.yml](../ansible/inventory/hosts.yml)
-- [all.yml](../ansible/inventory/group_vars/all.yml)
-- [bastion.yml](../ansible/inventory/group_vars/bastion.yml)
-- [gateway.yml](../ansible/inventory/group_vars/gateway.yml)
-- [k3s.yml](../ansible/inventory/group_vars/k3s.yml)
-- [services.yml](../ansible/inventory/group_vars/services.yml)
+- [host.yml](./ansible/inventory/hosts.yml)
+- [all.yml](./ansible/inventory/group_vars/all.yml)
+- [bastion.yml](./ansible/inventory/group_vars/bastion.yml)
+- [gateway.yml](./ansible/inventory/group_vars/gateway.yml)
+- [k3s.yml](./ansible/inventory/group_vars/k3s.yml)
+- [services.yml](./ansible/inventory/group_vars/services.yml)
 
 
 Install homelab :
