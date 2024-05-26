@@ -54,13 +54,13 @@ spec:
   superuserSecret:
     name: vaultwarden-pg-cluster-admin
   storage:
-    size: 3Gi
+    size: 7Gi
   resources:
     requests:
-      memory: 256Mi
-      cpu: 100m
+      memory: 512Mi
+      cpu: 250m
     limits:
-      memory: 1Gi
+      memory: 2Gi
       cpu: 500m
   affinity:
     enablePodAntiAffinity: true
