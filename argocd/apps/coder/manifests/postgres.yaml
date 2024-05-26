@@ -54,7 +54,7 @@ spec:
   superuserSecret:
     name: coder-pg-cluster-admin
   storage:
-    size: 5Gi
+    size: 50Gi
   resources:
     requests:
       memory: 256Mi
