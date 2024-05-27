@@ -1,4 +1,4 @@
-k3sVersion: "v1.29.0+k3s1"
+k3sVersion: "v1.30.0+k3s1"
 k3sToken: ""
 k3sCaData: ""
 k3sSystemdDir: "/etc/systemd/system"
