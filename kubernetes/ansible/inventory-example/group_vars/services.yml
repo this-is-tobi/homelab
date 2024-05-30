@@ -20,7 +20,7 @@ longhorn:
     repoUrl: "https://charts.longhorn.io"
     repoName: "longhorn"
     chartName: "longhorn"
-    chartVersion: "1.6.0"
+    chartVersion: "1.6.2"
   namespace: "longhorn-system"
   domain: "longhorn.admin.{{ rootDomain }}"
   s3:
