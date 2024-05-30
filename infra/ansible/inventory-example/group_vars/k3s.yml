@@ -1,0 +1,15 @@
+k3sVersion: "v1.29.0+k3s1"
+k3sToken: ""
+k3sCaData: ""
+k3sSystemdDir: "/etc/systemd/system"
+k3sDataDir: "/var/lib/rancher/k3s"
+k3sFlanneliface: "eth0"
+k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
+k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
+k3sExtraArgs: >-
+  --node-name {{ inventory_hostname }}  --node-ip={{ k3sNodeIP }}  --flannel-iface {{ k3sFlanneliface }}
+k3sExtraServerArgs: >-
+  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --disable traefik  --write-kubeconfig-mode 644  --node-label node-type=master
+k3sExtraAgentArgs: >-
+  {{ k3sExtraArgs }}  --node-label node-type=worker

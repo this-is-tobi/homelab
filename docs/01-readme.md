@@ -13,30 +13,40 @@ Make sure all [prerequisites](./installation.md#prerequisites) are met.
 __Setup directory:__
 ```sh
 # Clone the repository
-git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git
+git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git && git init
 
 # Copy inventory example to inventory
-cp -R ./ansible/inventory-example ./ansible/inventory
+cp -R ./infra/ansible/inventory-example ./infra/ansible/inventory
+cp -R ./kubernetes/ansible/inventory-example ./kubernetes/ansible/inventory
 ```
 
-__Setup inventory:__
-- [host.yml](../ansible/inventory-exemple/hosts.yml)
-- [all.yml](../ansible/inventory-exemple/group_vars/all.yml)
-- [bastion.yml](../ansible/inventory-exemple/group_vars/bastion.yml)
-- [gateway.yml](../ansible/inventory-exemple/group_vars/gateway.yml)
-- [k3s.yml](../ansible/inventory-exemple/group_vars/k3s.yml)
-- [services.yml](../ansible/inventory-exemple/group_vars/services.yml)
+### Infra
 
+__Setup inventory:__
+- [host.yml](../infra/ansible/inventory-example/hosts.yml)
+- [all.yml](../infra/ansible/inventory-example/group_vars/all.yml)
+- [bastion.yml](../infra/ansible/inventory-example/group_vars/bastion.yml)
+- [gateway.yml](../infra/ansible/inventory-example/group_vars/gateway.yml)
+- [k3s.yml](../infra/ansible/inventory-example/group_vars/k3s.yml)
 
 __Install:__
 
 ```sh
 # Install infra
-./run.sh -p ./ansible/infra.yml -u -k
+./run.sh -p ./infra/ansible/install.yml -u -k
+```
 
+### Kubernetes
+
+__Setup inventory:__
+- [services.yml](../kubernetes/ansible/inventory-example/group_vars/services.yml)
+
+__Install:__
+
+```sh
 # Set kube context
 kubectl config set-context homelab
 
 # Install services
-./run.sh -p ./ansible/services.yml
+./run.sh -p ./kubernetes/ansible/services.yml -u
 ```

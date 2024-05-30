@@ -12,43 +12,53 @@ __Website:__ <https://this-is-tobi.com/homelab/introduction>.
 
 __Table of Contents__ *- md sources*:
 - [Compatibility](./docs/02-compatibility.md)
-- [Infrastructure](./docs/03-infrastructure.md)
-- [Installation](./docs/04-installation.md)
+- [Installation](./docs/03-installation.md)
+- [Infrastructure](./docs/04-infrastructure.md)
 - [Services](./docs/05-services.md)
 - [Projects](./docs/06-projects.md)
 - [Cheat sheet](./docs/07-cheat-sheet.md)
-
 
 ## Quickstart
 
 Make sure all [prerequisites](./docs/03-installation.md#prerequisites) are met.
 
-Setup directory :
+__Setup directory:__
 ```sh
 # Clone the repository
-git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git
+git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git && git init
 
 # Copy inventory example to inventory
-cp -R ./ansible/inventory-example ./ansible/inventory
+cp -R ./infra/ansible/inventory-example ./infra/ansible/inventory
+cp -R ./kubernetes/ansible/inventory-example ./kubernetes/ansible/inventory
 ```
 
-Setup inventory values :
-- [host.yml](./ansible/inventory/hosts.yml)
-- [all.yml](./ansible/inventory/group_vars/all.yml)
-- [bastion.yml](./ansible/inventory/group_vars/bastion.yml)
-- [gateway.yml](./ansible/inventory/group_vars/gateway.yml)
-- [k3s.yml](./ansible/inventory/group_vars/k3s.yml)
-- [services.yml](./ansible/inventory/group_vars/services.yml)
+### Infra
 
+__Setup inventory:__
+- [host.yml](./infra/ansible/inventory-example/hosts.yml)
+- [all.yml](./infra/ansible/inventory-example/group_vars/all.yml)
+- [bastion.yml](./infra/ansible/inventory-example/group_vars/bastion.yml)
+- [gateway.yml](./infra/ansible/inventory-example/group_vars/gateway.yml)
+- [k3s.yml](./infra/ansible/inventory-example/group_vars/k3s.yml)
 
-Install homelab :
+__Install:__
+
 ```sh
 # Install infra
-./run.sh -p ./ansible/infra.yml -u -k
+./run.sh -p ./infra/ansible/install.yml -u -k
+```
 
+### Kubernetes
+
+__Setup inventory:__
+- [services.yml](./kubernetes/ansible/inventory-example/group_vars/services.yml)
+
+__Install:__
+
+```sh
 # Set kube context
 kubectl config set-context homelab
 
 # Install services
-./run.sh -p ./ansible/services.yml
+./run.sh -p ./kubernetes/ansible/services.yml -u
 ```

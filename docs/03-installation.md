@@ -20,22 +20,23 @@ Following tools needs to be installed on the computer running the playbook :
 # Clone the repository
 git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git
 
-# Copy inventory example to inventory
-cp -R ./ansible/inventory-example ./ansible/inventory
+# Copy inventories examples to inventories
+cp -R ./infra/ansible/inventory-example ./infra/ansible/inventory
+cp -R ./kubernetes/ansible/inventory-example ./kubernetes/ansible/inventory
 ```
 
 Because crowdsec is used as the firewall, it is required to [create an account](https://app.crowdsec.net/) to share attack detection on the local network with the community as the community share it with us.
 
 > __*Notes*__:
 >
-> *Crowdsec, PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../ansible/inventory-example/group_vars/gateway.yml).*
+> *Crowdsec, PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../infra/ansible/inventory-example/group_vars/gateway.yml).*
 >
-> *Every kubernetes services can be disabled by commenting its declaration in the Argocd [app of apps](../argocd/envs/production/application.yaml). Ansible will determine which service is enabled and create the appropriate secrets in vault, it will also update the dashy configmap and may ask to push the updated file for gitops needs.*
+> *Every kubernetes services can be disabled by commenting its declaration in the Argocd [app of apps](../kubernetes/argocd/envs/production/application.yaml). Ansible will determine which service is enabled and create the appropriate secrets in vault, it will also update the dashy configmap and may ask to push the updated file for gitops needs.*
 
 
 ## Settings
 
-Update the [hosts file](../ansible/inventory-example/hosts.yml) and [group_vars files](../ansible/inventory-example/group_vars/) to provide the appropriate infra and services settings.
+Update the [hosts file](../infra/ansible/inventory-example/hosts.yml) and [group_vars files](../infra/ansible/inventory-example/group_vars/) to provide the appropriate infra and services settings.
 
 Actions Runner Controller uses [Sops](https://github.com/getsops/sops) encrypted secret to store information about Github applications. These secrets are managed (encrypted/decrypted) using the wrapper script [run.sh](../run.sh) following the keys provided in [.sops.yaml](../.sops.yaml).
 
@@ -56,41 +57,41 @@ To create user access to the bastion, it is required to provide their informatio
 
 ## Deploy
 
-Two playbooks are available, one for [infrastructure](../ansible/infra.yml) installation and another one for [services](../ansible/services.yml) installation.
+Two playbooks are available, one for [infrastructure](../infra/ansible/install.yml) installation and another one for [services](../kubernetes/ansible/services.yml) installation.
 Various tags are available in the playbooks (*for more details, take a look at the files*), it allows to launch only some part of the installation, the main ones are :
 
 __Infra :__
 ```sh
 # Deploy bastion
-./run.sh -p ./ansible/infra.yml -t bastion
+./run.sh -p ./infra/ansible/install.yml -t bastion
 
 # Deploy gateway
-./run.sh -p ./ansible/infra.yml -t gateway
+./run.sh -p ./infra/ansible/install.yml -t gateway
 
 # Deploy cluster
-./run.sh -p ./ansible/infra.yml -t k3s
+./run.sh -p ./infra/ansible/install.yml -t k3s
 ```
 
 __Services :__
 
 ```sh
 # Deploy kubernetes services
-./run.sh -p ./ansible/services.yml
+./run.sh -p ./kubernetes/ansible/services.yml
 
 # Deploy only core services
-./run.sh -p ./ansible/services.yml -t core
+./run.sh -p ./kubernetes/ansible/services.yml -t core
 
 # Deploy only platform services
-./run.sh -p ./ansible/services.yml -t additional
+./run.sh -p ./kubernetes/ansible/services.yml -t additional
 
 # Deploy only keycloak
-./run.sh -p ./ansible/services.yml -t keycloak
+./run.sh -p ./kubernetes/ansible/services.yml -t keycloak
 ```
 
 > __*Notes*__:
 >
 > *By default tag `all` is used so every roles are played on playbooks launch.*
-> *Multiple tags can be passed as follows :* `./run.sh -p ./ansible/infra.yml -t gateway,k3s`
+> *Multiple tags can be passed as follows :* `./run.sh -p ./infra/ansible/install.yml -t gateway,k3s`
 >
 > *First gateway init can take a long time to run because of openvpn key genereration (5-10min).*
 
@@ -100,7 +101,7 @@ It is possible to cleanly detroy the k3s cluster by running :
 
 ```sh
 # Destroy cluster
-./run.sh -p ./ansible/infra.yml -t k3s-destroy
+./run.sh -p ./infra/ansible/install.yml -t k3s-destroy
 ```
 
 ## Kubernetes services

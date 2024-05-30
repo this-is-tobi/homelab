@@ -8,7 +8,6 @@ no_color='\033[0m'
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Default
-export ANSIBLE_CONFIG="$SCRIPT_PATH/ansible/ansible.cfg"
 FETCH_KUBECONFIG="false"
 PLAYBOOK="false"
 TAGS="all"
@@ -29,7 +28,7 @@ Following flags are available:
         a context, user and cluster are create in '$HOME/.kube/config' with name 'homelab'.
 
   -p    Run ansible playbook, default is '$PLAYBOOK'.
-        Playbook should be passed as arg.
+        Playbook should be passed as arg (ex: './run.sh -p ./kubernetes/ansible/services.yml').
 
   -t    Tags to run with playbook, default is '$TAGS'.
         This flag can be used with a CSV list (ex: -p 'init,services').
@@ -52,7 +51,7 @@ while getopts hdekp:t:u flag; do
     k)
       FETCH_KUBECONFIG="true";;
     p)
-      PLAYBOOK="$(readlink -f ${OPTARG})";;
+      PLAYBOOK="${OPTARG}";;
     t)
       TAGS="${OPTARG}";;
     u)
@@ -85,7 +84,9 @@ fi
 
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
-  if [[ ! "$PLAYBOOK" =~ "infra.yml" ]]; then
+  if [[ "$PLAYBOOK" =~ ^kubernetes/.* || "$PLAYBOOK" =~ ^\./kubernetes/.*  ]]; then
+    PLAYBOOK="$(readlink -f $PLAYBOOK)"
+    export ANSIBLE_CONFIG="$SCRIPT_PATH/$(echo $PLAYBOOK | sed 's|^\./||' | cut -d'/' -f1)/ansible/ansible.cfg"
     CONTEXT=$(kubectl config current-context)
     printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
     read ANSWER
@@ -109,9 +110,9 @@ fi
 if [ "$FETCH_KUBECONFIG" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Copy kube config locally\n\n"
 
-  GATEWAY_IP=$(yq '[.gateway.hosts[][]][0]' ansible/inventory/hosts.yml)
-  MASTER_IP=$(yq '[.k3s.children.masters.hosts[][]][0]' ansible/inventory/hosts.yml)
-  USER=$(yq '.ansible_user' ansible/inventory/group_vars/all.yml)
+  GATEWAY_IP=$(yq '[.gateway.hosts[][]][0]' infra/ansible/inventory/hosts.yml)
+  MASTER_IP=$(yq '[.k3s.children.masters.hosts[][]][0]' infra/ansible/inventory/hosts.yml)
+  USER=$(yq '.ansible_user' infra/ansible/inventory/group_vars/all.yml)
 
   mkdir -p $HOME/.kube/config.d
   scp $USER@$MASTER_IP:/etc/rancher/k3s/k3s.yaml $HOME/.kube/config.d/homelab

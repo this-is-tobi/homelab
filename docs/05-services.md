@@ -34,7 +34,7 @@ Gateway web interface services are deployed and accessible for admin purpose, th
 | Pihole dashboard    | <http://192.168.1.99:5353>  |
 | Wireguard dashboard | <http://192.168.1.99:51821> |
 
-> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../ansible/inventory-example/hosts.yml).*
+> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../infra/ansible/inventory-example/hosts.yml).*
 
 ## Kubernetes
 
@@ -108,7 +108,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | Vault                | <https://vault.domain.com>       |
 | Vaultwarden          | <https://vaultwarden.domain.com> |
 
-> *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../ansible/inventory-example/group_vars/all.yml).*
+> *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../kubernetes/ansible/inventory-example/group_vars/all.yml).*
 
 ### Single sign on
 
