@@ -4,13 +4,13 @@
 
 - name: Get current dashy configmap sha1
   ansible.builtin.stat:
-    path : "{{ playbook_dir }}/../argocd/apps/dashy/manifests/configmap.yaml"
+    path : "{{ playbook_dir }}/../argo-cd/apps/dashy/manifests/configmap.yaml"
   register: current_dashy_configmap
 
 - name: Update dashy configmap
   ansible.builtin.template:
     src: "configmap.yaml.j2"
-    dest: "{{ playbook_dir }}/../argocd/apps/dashy/manifests/configmap.yaml"
+    dest: "{{ playbook_dir }}/../argo-cd/apps/dashy/manifests/configmap.yaml"
   when: current_dashy_configmap.stat.checksum != (dashy_configmap | checksum)
 
 - name: Failed because of diverged configmap

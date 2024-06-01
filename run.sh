@@ -65,13 +65,13 @@ done
 
 if [ "$DECRYPT" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Decrypt data using Sops\n\n"
-  find ./argocd -name '*.enc.yaml' -exec bash -c 'sops -d {} > $(dirname {})/$(basename {} .enc.yaml).dec.yaml' \;
+  find ./argo-cd -name '*.enc.yaml' -exec bash -c 'sops -d {} > $(dirname {})/$(basename {} .enc.yaml).dec.yaml' \;
 fi
 
 
 if [ "$ENCRYPT" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Encrypt data using Sops\n\n"
-  find ./argocd -name '*.dec.yaml' -exec bash -c 'sops -e {} > $(dirname {})/$(basename {} .dec.yaml).enc.yaml' \;
+  find ./argo-cd -name '*.dec.yaml' -exec bash -c 'sops -e {} > $(dirname {})/$(basename {} .dec.yaml).enc.yaml' \;
 fi
 
 

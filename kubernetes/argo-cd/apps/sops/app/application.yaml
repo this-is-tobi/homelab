@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sops
+  namespace: argocd-system
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - chart: sops-secrets-operator
+    repoURL: https://isindir.github.io/sops-secrets-operator
+    targetRevision: 0.18.6
+    helm:
+      releaseName: sops
+      valuesObject:
+        image:
+          pullPolicy: IfNotPresent
+        extraEnv:
+          - name: SOPS_AGE_KEY_FILE
+            value: /etc/sops-age-key-file/keys
+        secretsAsFiles:
+          - mountPath: /etc/sops-age-key-file/
+            name: sops-age-key-file
+            secretName: sops-age-key-file
+  - path: kubernetes/argo-cd/apps/sops/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sops
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

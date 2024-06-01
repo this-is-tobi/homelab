@@ -1,0 +1,9 @@
+{
+  "env": "prod",
+  "project": "admin",
+  "prodiver": "self-hosted",
+  "region": "fr-par",
+  "destination": {
+    "server": "https://kubernetes.default.svc"
+  }
+}

@@ -31,7 +31,7 @@ Because crowdsec is used as the firewall, it is required to [create an account](
 >
 > *Crowdsec, PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../infra/ansible/inventory-example/group_vars/gateway.yml).*
 >
-> *Every kubernetes services can be disabled by commenting its declaration in the Argocd [app of apps](../kubernetes/argocd/envs/production/application.yaml). Ansible will determine which service is enabled and create the appropriate secrets in vault, it will also update the dashy configmap and may ask to push the updated file for gitops needs.*
+> *Every kubernetes services can be disabled by commenting its declaration in the Argocd [applicationset](../kubernetes/argo-cd/envs/production/applicationset.yaml). Ansible will determine which service is enabled and create the appropriate secrets in vault, it will also update the dashy configmap and may ask to push the updated file for gitops needs.*
 
 
 ## Settings

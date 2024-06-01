@@ -1,12 +1,12 @@
 # Sync application
 - name: Setup vars
   ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argocd/envs/production/application.yaml"
+    file: "{{ playbook_dir }}/../argo-cd/platform-manager.yaml"
     name: argocd_platform_config
 
 - name: Setup vars
   ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argocd/apps/{{ argocd_app }}/argocd/application.yaml"
+    file: "{{ playbook_dir }}/../argo-cd/apps/{{ argocd_app }}/app/application.yaml"
     name: argocd_app_config
 
 - name: Synchronize argocd application

@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vaultwarden
+  namespace: argocd-system
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - chart: vaultwarden
+    repoURL: https://guerzon.github.io/vaultwarden
+    targetRevision: 0.22.7
+    helm:
+      releaseName: vaultwarden
+      valuesObject:
+        domain: https://<path:secret/data/admin/apps/vaultwarden#domain>
+        adminToken:
+          value: <path:secret/data/admin/apps/vaultwarden#admin | jsonPath {.token}>
+        database:
+          type: postgresql
+          host: <path:secret/data/admin/apps/vaultwarden#postgres | jsonPath {.host}>
+          port: <path:secret/data/admin/apps/vaultwarden#postgres | jsonPath {.port}>
+          username: <path:secret/data/admin/apps/vaultwarden#postgres | jsonPath {.app.username}>
+          password: <path:secret/data/admin/apps/vaultwarden#postgres | jsonPath {.app.password}>
+          dbName: <path:secret/data/admin/apps/vaultwarden#postgres | jsonPath {.database}>
+        signupsAllowed: true
+        signupsVerify: true
+        invitationsAllowed: true
+        invitationOrgName: "Homelab"
+        ingress:
+          enabled: true
+          class: traefik
+          nginxIngressAnnotations: false
+          additionalAnnotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+          hostname: <path:secret/data/admin/apps/vaultwarden#domain>
+          tls: true
+          tlsSecret: <path:secret/data/admin/apps/vaultwarden#domain>
+  - path: kubernetes/argo-cd/apps/vaultwarden/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vaultwarden
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

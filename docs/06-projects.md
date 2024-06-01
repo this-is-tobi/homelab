@@ -5,7 +5,7 @@ Projects informations is stored in Vault under the key `secret/admin/projects`, 
 ## Argocd
 
 An `appProject` Argocd is created for each project with the key `argocd.enabled: true`, each project is mapped to the project's Keycloak group.
-Argocd is deployed with the [argocd-vault-plugin](https://argocd-vault-plugin.readthedocs.io/en/stable/) which allows Vault secrets to be used in manifests.
+Argocd is deployed with the [argocd-vault-plugin](https://argo-cd-vault-plugin.readthedocs.io/en/stable/) which allows Vault secrets to be used in manifests.
 
 Argocd applications require you to specify the name of the secret containing the connection information on the project's Vault namespace, and should be deployed according to the following example:
 
@@ -33,7 +33,7 @@ syncPolicy:
 ## Vault
 
 Each project with the key `vault.enabled: true` get a namespace in the key value engine `secret/` with the appropriate policy mapped to the project's Keycloak group.
-In addition, a secret including a token whose access is restricted to the project's Vault namespace is created, enabling Argocd to retrieve Vault secrets. Manifests must include the appropriate secret name in the kubernetes manifests, as shown in the [example](https://argocd-vault-plugin.readthedocs.io/en/stable/config/#using-kubernetes-secrets-for-supplying-avp-configuration) of the argocd-vault plugin.
+In addition, a secret including a token whose access is restricted to the project's Vault namespace is created, enabling Argocd to retrieve Vault secrets. Manifests must include the appropriate secret name in the kubernetes manifests, as shown in the [example](https://argo-cd-vault-plugin.readthedocs.io/en/stable/config/#using-kubernetes-secrets-for-supplying-avp-configuration) of the argocd-vault plugin.
 
 ## Sonarqube
 

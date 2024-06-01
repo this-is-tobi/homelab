@@ -1,0 +1,104 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: outline
+  namespace: argocd-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+spec:
+  project: admin
+  revisionHistoryLimit: 5
+  sources:
+  - chart: outline
+    repoURL: https://helm.liam.sh
+    targetRevision: 1.5.1
+    helm:
+      releaseName: outline
+      valuesObject:
+        image:
+          repository: ghcr.io/this-is-tobi/mirror/outline
+          tag: latest
+        ingress:
+          enabled: true
+          className: traefik
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+          hosts:
+          - <path:secret/data/admin/apps/outline#domain>
+          tls:
+          - hosts:
+            - <path:secret/data/admin/apps/outline#domain>
+            secretName: <path:secret/data/admin/apps/outline#domain>
+        outline:
+          generateEncryptionKeys: false
+          defaultLanguage: en_US
+        environment:
+          - name: URL
+            value: "https://<path:secret/data/admin/apps/outline#domain>"
+          - name: DATABASE_URL
+            value: "postgres://<path:secret/data/admin/apps/outline#postgres | jsonPath {.connectionString}>"
+          - name: SECRET_KEY
+            value: "<path:secret/data/admin/apps/outline#admin | jsonPath {.secretKey}>"
+          - name: UTILS_SECRET
+            value: "<path:secret/data/admin/apps/outline#admin | jsonPath {.utilsSecret}>"
+          - name: AWS_ACCESS_KEY_ID
+            value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.accessKey}>"
+          - name: AWS_REGION
+            value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.region}>"
+          - name: AWS_SECRET_ACCESS_KEY
+            value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.secretKey}>"
+          - name: AWS_S3_UPLOAD_BUCKET_URL
+            value: "https://<path:secret/data/admin/apps/outline#s3 | jsonPath {.endpoint}>/<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>"
+          - name: AWS_S3_UPLOAD_BUCKET_NAME
+            value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>"
+          - name: AWS_S3_FORCE_PATH_STYLE
+            value: "true"
+          - name: AWS_S3_ACL
+            value: "private"
+          - name: FILE_STORAGE_UPLOAD_MAX_SIZE
+            value: "26214400"
+          - name: OIDC_CLIENT_ID
+            value: "<path:secret/data/admin/apps/outline#keycloak | jsonPath {.clientId}>"
+          - name: OIDC_CLIENT_SECRET
+            value: "<path:secret/data/admin/apps/outline#keycloak | jsonPath {.clientSecret}>"
+          - name: OIDC_AUTH_URI
+            value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/auth"
+          - name: OIDC_TOKEN_URI
+            value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/token"
+          - name: OIDC_USERINFO_URI
+            value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo"
+          - name: OIDC_USERNAME_CLAIM
+            value: "email"
+          - name: OIDC_DISPLAY_NAME
+            value: "Keycloak"
+          - name: OIDC_SCOPES
+            value: "openid profile email groups roles"
+        redis:
+          auth:
+            enabled: false
+        postgresql:
+          enabled: false
+        cnpg:
+          enabled: false
+        minio:
+          enabled: false
+        dex:
+          enabled: false
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 250m
+          limits:
+            memory: 1Gi
+            cpu: "1"
+  - path: kubernetes/argo-cd/apps/outline/manifests
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: outline
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
+    - ApplyOutOfSyncOnly=true

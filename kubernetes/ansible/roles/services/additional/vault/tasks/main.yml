@@ -18,7 +18,7 @@
   # Get namespace
   - name: Setup vars
     ansible.builtin.include_vars:
-      file: "{{ playbook_dir }}/../argocd/apps/vault/argocd/application.yaml"
+      file: "{{ playbook_dir }}/../argo-cd/apps/vault/app/application.yaml"
       name: vault_app_config
 
   - name: Set fact for vault secrets

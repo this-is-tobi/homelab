@@ -1,0 +1,62 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-manager
+  namespace: argocd-system
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - matrix:
+      generators:
+      - list:
+          elements:
+          - app: actions-runner-controller
+          # - app: argo-cd
+          # - app: argo-worklows
+          - app: cloudnative-pg
+          # - app: coder
+          - app: dashy
+          # - app: gitea
+          - app: harbor
+          - app: keycloak
+          # - app: kubernetes-dashboard
+          # - app: loki
+          # - app: mattermost
+          - app: minio
+          # - app: outline
+          - app: prometheus-stack
+          # - app: sonarqube
+          - app: sops
+          # - app: system-upgrade
+          # - app: trivy-operator
+          # - app: vault
+          # - app: vaultwarden
+      - git:
+          repoURL: https://github.com/this-is-tobi/homelab.git
+          revision: HEAD
+          files:
+          - path: 'kubernetes/argo-cd/envs/*/config.json'
+  template:
+    metadata:
+      name: '{{.app}}-{{.env}}'
+    spec:
+      project: '{{.project}}'
+      revisionHistoryLimit: 3
+      source:
+        path: 'kubernetes/argo-cd/apps/{{.app}}/app'
+        repoURL: https://github.com/this-is-tobi/homelab.git
+        targetRevision: HEAD
+      destination:
+        server: '{{.destination.server}}'
+        namespace: '{{.app}}-{{.env}}'
+      syncPolicy:
+        # automated:
+        #   selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+    # automated:
+    #   selfHeal: true

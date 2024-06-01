@@ -15,4 +15,4 @@ ansible/secrets/
 .DS_Store
 
 # Sops
-argocd/**/*.dec.yaml
+argo-cd/**/*.dec.yaml

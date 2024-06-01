@@ -2,8 +2,7 @@
     - name: Get enabled services list
       ansible.builtin.shell:
         cmd: |
-          yq '.spec.sources | map(.path) | .[]' ../argocd/envs/production/application.yaml \
-            | sed -e 's/argocd\/apps\/\(.*\)\/argocd/\1/'
+          yq '.spec.generators[0].matrix.generators[0].list.elements | map(.app) | .[]' ../argo-cd/platform-manager.yaml
       register: get_enabled_services
 
     - name: Set fact for keycloak vault secrets

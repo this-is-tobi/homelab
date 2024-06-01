@@ -1,7 +1,7 @@
 # Refresh platform application
 - name: Setup vars
   ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argocd/envs/production/application.yaml"
+    file: "{{ playbook_dir }}/../argo-cd/platform-manager.yaml"
     name: argocd_platform_config
 
 - name: Refresh argocd platform application

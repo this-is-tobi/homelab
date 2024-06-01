@@ -33,7 +33,7 @@
         - core
         - vault-core
 
-    - name: ./roles/services/core/argocd
+    - name: ./roles/services/core/argo-cd
       tags:
         - core
         - argocd-core
@@ -82,7 +82,7 @@
         - additional
         - vault
 
-    - name: ./roles/services/additional/argocd
+    - name: ./roles/services/additional/argo-cd
       tags:
         - additional
         - argocd
