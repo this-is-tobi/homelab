@@ -1,0 +1,11 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: cloud-pi-native-runner
+spec:
+  template:
+    spec:
+      repository: cloud-pi-native/console
+      githubAPICredentialsFrom:
+        secretRef:
+          name: cloud-pi-native-secret

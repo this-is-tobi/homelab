@@ -1,0 +1,19 @@
+trivy-operator:
+  nodeSelector:
+    node-type: worker
+  operator:
+    replicas: 1
+    revisionHistoryLimit: 3
+    metricsVulnIdEnabled: true
+    metricsExposedSecretInfo: true
+    metricsConfigAuditInfo: true
+    metricsRbacAssessmentInfo: true
+    metricsInfraAssessmentInfo: true
+    metricsImageInfo: true
+    metricsClusterComplianceInfo: true
+  serviceMonitor:
+    enabled: true
+  trivy:
+    ignoreUnfixed: false
+    server:
+      replicas: 2

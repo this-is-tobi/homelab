@@ -1,0 +1,10 @@
+apiVersion: v2
+name: vaultwarden
+type: application
+version: 0.1.0
+appVersion: "0.22.7"
+dependencies:
+- name: vaultwarden
+  alias: vaultwarden
+  version: 0.22.7
+  repository: https://guerzon.github.io/vaultwarden

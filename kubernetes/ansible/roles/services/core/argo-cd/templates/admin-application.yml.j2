@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: platform-base
+  name: platform-manager
   namespace: argocd-system
 spec:
   project: admin
   revisionHistoryLimit: 3
   sources:
   - repoURL: https://github.com/this-is-tobi/homelab.git
-    targetRevision: HEAD
+    targetRevision: main
     path: kubernetes/argo-cd
     directory:
       include: platform-manager.yaml

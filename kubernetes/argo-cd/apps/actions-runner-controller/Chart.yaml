@@ -1,0 +1,10 @@
+apiVersion: v2
+name: actions-runner-controller
+type: application
+version: 0.1.0
+appVersion: "0.23.7"
+dependencies:
+- name: actions-runner-controller
+  alias: actions-runner-controller
+  version: 0.23.7
+  repository: https://actions-runner-controller.github.io/actions-runner-controller

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: gitea
+type: application
+version: 0.1.0
+appVersion: "10.1.4"
+dependencies:
+- name: gitea
+  alias: gitea
+  version: 10.1.4
+  repository: https://dl.gitea.com/charts

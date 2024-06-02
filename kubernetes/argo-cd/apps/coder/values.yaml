@@ -1,0 +1,37 @@
+coder:
+  coder:
+    service:
+      type: "ClusterIP"
+    ingress:
+      enable: true
+      className: "traefik"
+      host: "<path:secret/data/admin/apps/coder#domain>"
+      wildcardHost: "*.<path:secret/data/admin/apps/coder#domain>"
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      tls:
+        enable: true
+        secretName: "<path:secret/data/admin/apps/coder#domain>"
+        # wildcardSecretName: "wild-<path:secret/data/admin/apps/coder#domain>"
+    envUseClusterAccessURL: false
+    env:
+      - name: CODER_PG_CONNECTION_URL
+        value: "postgres://<path:secret/data/admin/apps/coder#postgres | jsonPath {.connectionString}>"
+      - name: CODER_ACCESS_URL
+        value: "https://<path:secret/data/admin/apps/coder#domain>"
+      - name: CODER_OIDC_ISSUER_URL
+        value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>"
+      - name: CODER_OIDC_CLIENT_ID
+        value: "<path:secret/data/admin/apps/coder#keycloak | jsonPath {.clientId}>"
+      - name: CODER_OIDC_CLIENT_SECRET
+        value: "<path:secret/data/admin/apps/coder#keycloak | jsonPath {.clientSecret}>"
+      - name: CODER_OIDC_SIGN_IN_TEXT
+        value: "Login with Keycloak"
+      - name: CODER_OIDC_SCOPES
+        value: "openid,profile,email,groups,roles"
+      - name: CODER_OIDC_GROUP_FIELD
+        value: "groups"
+      - name: CODER_OIDC_ADMIN_GROUP
+        value: "admin"
+      - name: CODER_OIDC_GROUP_AUTO_CREATE
+        value: "true"

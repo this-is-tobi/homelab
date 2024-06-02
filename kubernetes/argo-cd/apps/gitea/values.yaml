@@ -1,0 +1,85 @@
+gitea:
+  replicaCount: 3
+  ingress:
+    enabled: true
+    className: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+    - host: <path:secret/data/admin/apps/gitea#domain>
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - secretName: <path:secret/data/admin/apps/gitea#domain>
+      hosts:
+        - <path:secret/data/admin/apps/gitea#domain>
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  serviceAccount:
+    create: true
+    automountServiceAccountToken: true
+  persistence:
+    enabled: true
+    size: 25Gi
+    accessModes:
+      - ReadWriteMany
+  gitea:
+    admin:
+      username: <path:secret/data/admin/apps/gitea#admin | jsonPath {.username}>
+      password: <path:secret/data/admin/apps/gitea#admin | jsonPath {.password}>
+      email: admin@<path:secret/data/admin/apps/gitea#domain>
+    # oauth:
+    # - name: Keycloak
+    #   provider: openidConnect
+    #   active: true
+    #   key: <path:secret/data/admin/apps/gitea#keycloak | jsonPath {.clientId}>
+    #   secret: <path:secret/data/admin/apps/gitea#keycloak | jsonPath {.clientSecret}>
+    #   autoDiscoverUrl: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/.well-known/openid-configuration
+    #   scopes: openid profile email roles groups
+    #   adminGroup: admin
+    #   groupClaimName: groups
+    #   groupTeamMap: ""
+    #   groupTeamMapRemoval: true
+    config:
+      database:
+        DB_TYPE: postgres
+        HOST: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.host}>:<path:secret/data/admin/apps/gitea#postgres | jsonPath {.port}>
+        NAME: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.database}>
+        USER: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.app.username}>
+        PASSWD: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.app.password}>
+        ENABLE_AUTO_REGISTRATION: "true"
+      cron.GIT_GC_REPOS:
+        ENABLED: false
+      server:
+        DOMAIN: <path:secret/data/admin/apps/gitea#domain>
+        ROOT_URL: https://<path:secret/data/admin/apps/gitea#domain>
+        SSH_LISTEN_PORT: 2222
+      openid:
+        ENABLE_OPENID_SIGNIN: true
+        ENABLE_OPENID_SIGNUP: true
+        WHITELISTED_URIS: <path:secret/data/admin/apps/keycloak#domain>
+      service:
+        SHOW_REGISTRATION_BUTTON: false
+        DISABLE_REGISTRATION: true
+        ALLOW_ONLY_EXTERNAL_REGISTRATION: true
+      oauth2_client:
+        OPENID_CONNECT_SCOPES: openid profile email roles groups
+        REGISTER_EMAIL_CONFIRM: false
+        ENABLE_AUTO_REGISTRATION: true
+        ACCOUNT_LINKING: auto
+        USERNAME: email
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  postgresql-ha:
+    enabled: false
+    primary:
+      persistence:
+        size: 25Gi

@@ -1,0 +1,62 @@
+mattermost:
+  image:
+    repository: ghcr.io/this-is-tobi/mirror/mattermost
+    tag: 9.6.1
+    imagePullPolicy: Always
+  persistence:
+    ## This volume persists generated data from users, like images, attachments...
+    data:
+      enabled: true # false
+      size: 10Gi
+    plugins:
+      enabled: true
+      size: 5Gi
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+    - <path:secret/data/admin/apps/mattermost#domain>
+    tls:
+    - hosts:
+      - <path:secret/data/admin/apps/mattermost#domain>
+      secretName: <path:secret/data/admin/apps/mattermost#domain>
+  mysql:
+    enabled: false
+  externalDB:
+    enabled: true
+    externalDriverType: postgres
+    externalConnectionString: <path:secret/data/admin/apps/mattermost#postgres | jsonPath {.connectionString}>
+  securityContext:
+    fsGroup: 2000
+    fsGroupChangePolicy: "OnRootMismatch"
+  serviceAccount:
+    create: true
+    name: mattermost
+  config:
+    MATTERMOST_EDITION: "team"
+    MM_FEATUREFLAGS_STREAMLINEDMARKETPLACE: "false"
+    MM_SERVICESETTINGS_SITEURL: "https://<path:secret/data/admin/apps/mattermost#domain>"
+    MM_SERVICESETTINGS_COLLAPSEDTHREAD: "default_on"
+    MM_SERVICESETTINGS_THREADAUTOFOLLOW: "true"
+    MM_FILESETTINGS_MAXFILESIZE: "26214400000"
+    MM_FILESETTINGS_DRIVERNAME: "local" # amazons3
+    # MM_FILESETTINGS_AMAZONS3ACCESSKEYID: "<path:secret/data/admin/apps/mattermost#s3 | jsonPath {.accessKey}>"
+    # MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY: "<path:secret/data/admin/apps/mattermost#s3 | jsonPath {.secretKey}>"
+    # MM_FILESETTINGS_AMAZONS3BUCKET: "<path:secret/data/admin/apps/mattermost#s3 | jsonPath {.bucketName}>"
+    # MM_FILESETTINGS_AMAZONS3PATHPREFIX: "<path:secret/data/admin/apps/mattermost#s3 | jsonPath {.bucketPrefix}>"
+    # MM_FILESETTINGS_AMAZONS3REGION: "<path:secret/data/admin/apps/mattermost#s3 | jsonPath {.region}>"
+    # MM_FILESETTINGS_AMAZONS3ENDPOINT: "<path:secret/data/admin/apps/mattermost#s3 | jsonPath {.endpoint}>"
+    # MM_FILESETTINGS_AMAZONS3SSE: "false"
+    # MM_EMAILSETTINGS_ENABLESMTPAUTH: "true"
+    # MM_EMAILSETTINGS_FEEDBACKEMAIL: "<path:secret/data/admin/apps/mattermost#smtp | jsonPath {.email}>"
+    # MM_EMAILSETTINGS_SMTPUSERNAME: "<path:secret/data/admin/apps/mattermost#smtp | jsonPath {.username}>"
+    # MM_EMAILSETTINGS_SMTPPASSWORD: "<path:secret/data/admin/apps/mattermost#smtp | jsonPath {.password}>"
+    # MM_EMAILSETTINGS_SMTPSERVER: "<path:secret/data/admin/apps/mattermost#smtp | jsonPath {.server}>"
+    # MM_EMAILSETTINGS_SMTPPORT: "<path:secret/data/admin/apps/mattermost#smtp | jsonPath {.port}>"
+    MM_LOCALIZATIONSETTINGS_DEFAULTCLIENTLOCALE: "en"
+    MM_LOGSETTINGS_CONSOLELEVEL: "INFO"
+    MM_PLUGINSETTINGS_ENABLEUPLOADS: "true"
+    MM_PLUGINSETTINGS_CLIENTDIRECTORY: "./client/plugins"
+    MM_PLUGINSETTINGS_PLUGINSTATES: '{"com.mattermost.apps":{"Enable":true},"focalboard":{"Enable":true},"github":{"Enable":true},"com.github.manland.mattermost-plugin-gitlab":{"Enable":true},"com.github.matterpoll.matterpoll":{"Enable":true},"com.github.scottleedavis.mattermost-plugin-remind":{"Enable":true},"com.github.moussetc.mattermost-plugin-giphy":{"Enable":true},"com.mattermost.agenda":{"Enable":true},"alertmanager":{"Enable":true},"com.github.moussetc.mattermost.plugin.giphy":{"Enable":true},"jitsi":{"Enable":true},"com.cpanato.broadcast":{"Enable":true},"com.mattermost.plugin-todo":{"Enable":true}}'
