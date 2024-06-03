@@ -39,7 +39,9 @@ spec:
           - path: 'kubernetes/argo-cd/envs/*/config.json'
   template:
     metadata:
-      name: '{{.app}}-{{.env}}'
+      name: '{{.app}}{{.suffix.name}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
     spec:
       project: '{{.project}}'
       revisionHistoryLimit: 3
@@ -47,32 +49,20 @@ spec:
         repoURL: https://github.com/this-is-tobi/homelab.git
         path: 'kubernetes/argo-cd/apps/{{.app}}'
         targetRevision: main
-        # plugin:
-        #   # name: argocd-vault-plugin-helm
-        #   releaseName: '{{.app}}-{{.env}}'
-        #   # env:
-        #   # - name: AVP_SECRET
-        #   #   value: vault-plugin-secret
-        #   # - name: HELM_ARGS
-        #   #   value: -f values.yaml
-        #   # - name: HELM_VALUES
-        #   #   value: |
-        #   #     ingress: {}
-        #   #     ...
-        helm:
-          releaseName: '{{.app}}-{{.env}}'
-          parameters: []
-          valueFiles:
-            - 'values.yaml'
+        plugin:
+          env:
+          - name: AVP_SECRET
+            value: vault-plugin-secret
       destination:
         server: '{{.destination.server}}'
-        namespace: '{{.app}}-{{.env}}'
+        namespace: '{{.app}}{{.suffix.namespace}}'
       syncPolicy:
         # automated:
         #   selfHeal: true
         syncOptions:
         - CreateNamespace=true
         - ApplyOutOfSyncOnly=true
+        - ServerSideApply=true
   syncPolicy:
     preserveResourcesOnDeletion: true
     # automated:

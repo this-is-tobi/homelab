@@ -23,10 +23,10 @@
   - name: Refresh application
     ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
     vars:
-      argocd_app: argocd
+      argocd_app: argo-cd
 
   - name: Sync application
     ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
     vars:
-      argocd_app: argocd
+      argocd_app: argo-cd
   when: '"argocd" in enabled_services'

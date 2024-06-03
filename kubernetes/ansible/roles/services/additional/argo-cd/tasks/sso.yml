@@ -1,14 +1,14 @@
 - name: Get vault secrets
   ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/read.yml
   vars:
-    argocd_app: argocd
+    argocd_app: argo-cd
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
-    argocd_domain: "{{ current_vault_values.secret.domain }}"
-    argocd_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
+    argo_cd_domain: "{{ current_vault_values.secret.domain }}"
+    argo_cd_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
 
-- name: Create argocd client
+- name: Create argo-cd client
   community.general.keycloak_client:
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}
@@ -16,15 +16,15 @@
     auth_username: "{{ keycloak_username }}"
     auth_password: "{{ keycloak_password }}"
     realm: "{{ keycloak_realm }}"
-    client_id: "{{ argocd_client_id }}"
-    name: "{{ argocd_client_id }}"
+    client_id: "{{ argo_cd_client_id }}"
+    name: "{{ argo_cd_client_id }}"
     always_display_in_console: true
     frontchannel_logout: true
     enabled: true
     redirect_uris:
-      - https://{{ argocd_domain }}/*
+      - https://{{ argo_cd_domain }}/*
     web_origins:
-      - https://{{ argocd_domain }}
+      - https://{{ argo_cd_domain }}
     standard_flow_enabled: true
     implicit_flow_enabled: false
     direct_access_grants_enabled: true
@@ -40,20 +40,20 @@
 
 - name: Get argocd client secret
   community.general.keycloak_clientsecret_info:
-    client_id: "{{ argocd_client_id }}"
+    client_id: "{{ argo_cd_client_id }}"
     realm: "{{ keycloak_realm }}"
     auth_client_id: admin-cli
     auth_keycloak_url: https://{{ keycloak_domain }}
     auth_realm: master
     auth_username: "{{ keycloak_username }}"
     auth_password: "{{ keycloak_password }}"
-  register: argocd_client_secret
+  register: argo_cd_client_secret
   no_log: true
 
 - name: Create vault secret
   ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write.yml
   vars:
-    argocd_app: argocd
+    argocd_app: argo-cd
     vault_values:
       keycloak:
-        clientSecret: "{{ argocd_client_secret.clientsecret_info.value }}"
+        clientSecret: "{{ argo_cd_client_secret.clientsecret_info.value }}"

@@ -1,22 +1,20 @@
 # Sync application
 - name: Setup vars
-  ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argo-cd/platform-manager.yaml"
-    name: argocd_platform_config
-
-- name: Setup vars
-  ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argo-cd/apps/{{ argocd_app }}/app/application.yaml"
-    name: argocd_app_config
+  ansible.builtin.set_fact:
+    argocd_platform_name: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
+    argocd_platform_namespace: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.namespace') }}"
+    argocd_platform_project: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('spec.project') }}"
+    # argocd_app_name: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/apps/{{ argocd_app }}/Chart.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
+    argocd_app_name: "{{ argocd_app }}"
 
 - name: Synchronize argocd application
   ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_config.metadata.name }}/sync"
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_name }}/sync"
     method: POST
     body_format: json
     body:
-      "project": "{{ argocd_platform_config.spec.project }}"
-      "appNamespace": "{{ argocd_platform_config.metadata.namespace }}"
+      "project": "{{ argocd_platform_project }}"
+      "appNamespace": "{{ argocd_platform_namespace }}"
       "syncOptions":
         "items":
           - "CreateNamespace=true"
@@ -27,31 +25,30 @@
           "version": "v1alpha1"
           "kind": "Application"
           "namespace": "argocd-system"
-          "name": "{{ argocd_app_config.metadata.name }}"
+          "name": "{{ argocd_app_name }}"
     headers:
       Authorization: Bearer {{ argocd_core_token }}
     status_code: 200
 
-# - name: Synchronize argocd application
-#   ansible.builtin.uri:
-#     url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}/sync"
-#     method: POST
-#     body_format: json
-#     body:
-#       "project": "{{ argocd_app_config.spec.project }}"
-#       "appNamespace": "{{ argocd_app_config.metadata.namespace }}"
-#       "syncOptions":
-#         "items":
-#           - "CreateNamespace=true"
-#           - "ApplyOutOfSyncOnly=true"
-#           - "ServerSideApply=true"
-#     headers:
-#       Authorization: Bearer {{ argocd_core_token }}
-#     status_code: 200
+- name: Synchronize argocd application
+  ansible.builtin.uri:
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_name }}/sync"
+    method: POST
+    body_format: json
+    body:
+      "project": "{{ argocd_platform_project }}"
+      "syncOptions":
+        "items":
+          - "CreateNamespace=true"
+          - "ApplyOutOfSyncOnly=true"
+          - "ServerSideApply=true"
+    headers:
+      Authorization: Bearer {{ argocd_core_token }}
+    status_code: 200
 
 - name: Get argocd application status
   ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_config.metadata.name }}?project={{ argocd_app_config.spec.project }}&appNamespace={{ argocd_app_config.metadata.namespace }}"
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_name }}?project={{ argocd_platform_project }}&appNamespace={{ argocd_platform_namespace }}"
     method: GET
     body_format: json
     headers:
@@ -60,5 +57,5 @@
   register: argocd_app_status
   until: argocd_app_status.json.status.sync.status == 'Synced' and argocd_app_status.json.status.health.status == 'Healthy'
   retries: 60
-  delay: 10
+  delay: 20
   when: wait_sync | default(true)

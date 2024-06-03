@@ -1,12 +1,12 @@
 # Refresh platform application
 - name: Setup vars
-  ansible.builtin.include_vars:
-    file: "{{ playbook_dir }}/../argo-cd/platform-manager.yaml"
-    name: argocd_platform_config
+  ansible.builtin.set_fact:
+    argocd_platform_name: "{{ lookup('ansible.builtin.template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | community.general.json_query('metadata.name') }}"
+    argocd_platform_namespace: "{{ lookup('ansible.builtin.template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | community.general.json_query('metadata.namespace') }}"
 
 - name: Refresh argocd platform application
   ansible.builtin.uri:
-    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_config.metadata.name }}?refresh=hard&appNamespace={{ argocd_platform_config.metadata.namespace }}"
+    url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_platform_name }}?refresh=hard&appNamespace={{ argocd_platform_namespace }}"
     method: GET
     body_format: json
     headers:

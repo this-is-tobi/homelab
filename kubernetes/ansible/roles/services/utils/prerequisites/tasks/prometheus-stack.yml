@@ -7,7 +7,7 @@
 - block:
     - name: Get prometheus chart version
       ansible.builtin.shell:
-        cmd: yq '.spec.sources[] | select(.chart == "kube-prometheus-stack") | .targetRevision' {{ playbook_dir }}/../argo-cd/apps/prometheus-stack/app/application.yaml
+        cmd: yq 'appVersion' {{ playbook_dir }}/../argo-cd/apps/prometheus-stack/Chart.yaml
       register: prometheus_chart_version
 
     - name: Get prometheus app version

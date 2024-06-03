@@ -1,8 +1,12 @@
 {
-  "env": "prod",
+  "env": "production",
   "project": "admin",
   "prodiver": "self-hosted",
   "region": "fr-par",
+  "suffix": {
+    "name": "",
+    "namespace": ""
+  },
   "destination": {
     "server": "https://kubernetes.default.svc"
   }

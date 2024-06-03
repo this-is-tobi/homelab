@@ -37,6 +37,11 @@ data:
             - sh
             - "-c"
             - "find . -name 'Chart.yaml' && find . -name 'values.yaml'"
+      init:
+        command:
+          - sh
+          - "-c"
+          - "helm dependency build"
       generate:
         command:
           - bash
