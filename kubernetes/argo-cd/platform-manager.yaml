@@ -13,7 +13,7 @@ spec:
           elements:
           - app: actions-runner-controller
           # - app: argo-cd
-          # - app: argo-worklows
+          - app: argo-workflows
           - app: cloudnative-pg
           # - app: coder
           - app: dashy

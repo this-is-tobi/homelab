@@ -1,0 +1,10 @@
+apiVersion: v2
+name: argo-wrokflows
+type: application
+version: 0.1.0
+appVersion: "0.41.7"
+dependencies:
+- name: argo-wrokflows
+  alias: argo-wrokflows
+  version: 0.41.7
+  repository: https://argoproj.github.io/argo-helm

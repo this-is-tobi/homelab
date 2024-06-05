@@ -1,0 +1,58 @@
+argo-workflows:
+  controller:
+    parallelism:
+    resourceRateLimit: {}
+      # limit: 10
+      # burst: 1
+    workflowNamespaces:
+    - argo-workflows
+    replicas: 3
+    serviceMonitor:
+      enabled: true
+  server:
+    replicas: 3
+    authModes:
+    - server
+    - client
+    - sso
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      ingressClassName: traefik
+      hosts:
+      - <path:secret/data/admin/apps/argo-workflows#domain>
+      tls:
+      - secretName: <path:secret/data/admin/apps/argo-workflows#domain>-tls
+        hosts:
+          - <path:secret/data/admin/apps/argo-workflows#domain>
+    sso:
+      enabled: true
+      issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
+      clientId:
+        name: argo-server-sso
+        key: client-id
+      clientSecret:
+        name: argo-server-sso
+        key: client-secret
+      redirectUrl: <path:secret/data/admin/apps/argo-workflows#domain>
+      rbac:
+        enabled: true
+        secretWhitelist: []
+      scopes:
+      - profile
+      - email
+      - groups
+      - roles
+      sessionExpiry: "24h"
+      customGroupClaimName: groups
+      userInfoPath: ""
+      insecureSkipVerify: false
+      filterGroupsRegex: []
+      # - ".*argo-wf.*"
+      # - ".*argo-workflow.*"
+  metricsConfig:
+    enabled: true
+  crds:
+    install: true
+    keep: true
