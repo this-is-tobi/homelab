@@ -78,7 +78,8 @@ fi
 # Update ansible dependencies
 if [ "$UPDATE" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
-  ansible-galaxy collection install -r $SCRIPT_PATH/ansible/collections/requirements.yml --upgrade
+  ansible-galaxy collection install -r $SCRIPT_PATH/infra/ansible/collections/requirements.yml --upgrade
+  ansible-galaxy collection install -r $SCRIPT_PATH/kubernetes/ansible/collections/requirements.yml --upgrade
 fi
 
 
