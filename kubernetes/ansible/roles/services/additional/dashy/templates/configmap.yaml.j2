@@ -32,11 +32,17 @@ data:
       - name: Services
         icon: fas fa-rocket
         items:
-{% if "argocd" in enabled_services %}
-          - title: Argocd
+{% if "argo-cd" in enabled_services %}
+          - title: Argo-cd
             description: Deploy apps using gitops
             url: https://<path:secret/data/admin/apps/argo-cd#domain>
             icon: hl-argocd
+{% endif %}
+{% if "argo-workflows" in enabled_services %}
+          - title: Argo-workflows
+            description: Workflow Engine for Kubernetes
+            url: https://<path:secret/data/admin/apps/argo-workflows#domain>
+            icon: hl-argoworkflows
 {% endif %}
 {% if "coder" in enabled_services %}
           - title: Coder
