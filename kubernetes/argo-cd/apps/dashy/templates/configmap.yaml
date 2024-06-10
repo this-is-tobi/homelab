@@ -35,7 +35,7 @@ data:
           - title: Argo-workflows
             description: Workflow Engine for Kubernetes
             url: https://<path:secret/data/admin/apps/argo-workflows#domain>
-            icon: hl-argoworkflows
+            icon: hl-argocd
           - title: Grafana
             description: Watch cluster metrics & application logs
             url: https://<path:secret/data/admin/apps/prometheus-stack#domain>

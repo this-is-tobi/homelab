@@ -30,12 +30,12 @@ argo-workflows:
       enabled: true
       issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
       clientId:
-        name: argo-server-sso
-        key: client-id
+        name: argo-workflows-sso
+        key: clientId
       clientSecret:
-        name: argo-server-sso
-        key: client-secret
-      redirectUrl: <path:secret/data/admin/apps/argo-workflows#domain>
+        name: argo-workflows-sso
+        key: clientSecret
+      redirectUrl: https://<path:secret/data/admin/apps/argo-workflows#domain>/oauth2/callback
       rbac:
         enabled: true
         secretWhitelist: []

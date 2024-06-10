@@ -86,8 +86,16 @@
       tags:
         - additional
         - argocd
+        - argo-cd
         - argo
         - gitops
+
+    - name: ./roles/services/additional/argo-workflows
+      tags:
+        - additional
+        - argoworkflows
+        - argoworkflow
+        - argo-workflows
 
     - name: ./roles/services/additional/kubernetes-dashboard
       tags:
