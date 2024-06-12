@@ -40,6 +40,8 @@ spec:
   template:
     metadata:
       name: '{{.app}}{{.suffix.name}}'
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
