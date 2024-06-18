@@ -6,6 +6,10 @@ metadata:
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
+  ignoreApplicationDifferences:
+  - name: plugin
+    jqPathExpressions:
+      - .spec.source.plugin.env[] | select(.name == "HELM_VALUES").value
   generators:
   - matrix:
       generators:
@@ -55,6 +59,8 @@ spec:
           env:
           - name: AVP_SECRET
             value: vault-plugin-secret
+          - name: HELM_VALUES
+            value: ""
       destination:
         server: '{{.destination.server}}'
         namespace: '{{.app}}{{.suffix.namespace}}'
