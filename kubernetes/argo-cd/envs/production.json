@@ -9,5 +9,6 @@
   },
   "destination": {
     "server": "https://kubernetes.default.svc"
-  }
+  },
+  "targetRevision": "main"
 }

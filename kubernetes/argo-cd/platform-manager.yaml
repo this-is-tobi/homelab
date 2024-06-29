@@ -7,9 +7,8 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   ignoreApplicationDifferences:
-  - name: plugin
-    jqPathExpressions:
-      - .spec.source.plugin.env[] | select(.name == "HELM_VALUES").value
+  - jqPathExpressions:
+    - .spec.source.plugin.env[] | select(.name == "HELM_VALUES").value
   generators:
   - matrix:
       generators:
@@ -40,7 +39,7 @@ spec:
           repoURL: https://github.com/this-is-tobi/homelab.git
           revision: main
           files:
-          - path: 'kubernetes/argo-cd/envs/*/config.json'
+          - path: 'kubernetes/argo-cd/envs/*'
   template:
     metadata:
       name: '{{.app}}{{.suffix.name}}'
@@ -54,7 +53,7 @@ spec:
       source:
         repoURL: https://github.com/this-is-tobi/homelab.git
         path: 'kubernetes/argo-cd/apps/{{.app}}'
-        targetRevision: main
+        targetRevision: '{{.targetRevision}}'
         plugin:
           env:
           - name: AVP_SECRET
