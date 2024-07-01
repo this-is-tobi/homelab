@@ -5,6 +5,11 @@
     # argocd_app_name: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/apps/{{ argocd_app }}/Chart.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
     argocd_app_name: "{{ argocd_app }}"
 
+- name: Reading file contents
+  ansible.builtin.command: jq '{env:.env, appSuffix:.suffix.name}' "{{ item }}"
+  register: suffix
+  with_fileglob: "{{ playbook_dir }}/../argo-cd/envs/*.json"
+
 - name: Check if application exists
   ansible.builtin.uri:
     url: "https://{{ argocd.domain }}/api/v1/applications/{{ argocd_app_name }}"
