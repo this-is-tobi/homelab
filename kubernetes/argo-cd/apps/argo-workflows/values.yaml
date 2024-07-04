@@ -12,9 +12,13 @@ argo-workflows:
   server:
     replicas: 3
     authModes:
-    - server
+    # - server
     - client
     - sso
+    serviceAccount:
+      annotations:
+        workflows.argoproj.io/rbac-rule: '"admin" in groups'
+        workflows.argoproj.io/rbac-rule-precedence: "1"
     ingress:
       enabled: true
       annotations:
@@ -25,7 +29,7 @@ argo-workflows:
       tls:
       - secretName: <path:secret/data/admin/apps/argo-workflows#domain>-tls
         hosts:
-          - <path:secret/data/admin/apps/argo-workflows#domain>
+        - <path:secret/data/admin/apps/argo-workflows#domain>
     sso:
       enabled: true
       issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
