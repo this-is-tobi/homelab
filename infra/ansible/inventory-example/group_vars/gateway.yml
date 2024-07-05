@@ -1,8 +1,12 @@
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+haproxy:
+  extraKubeAllowedIps: ""
 wireguard:
   enabled: false
   domain: "vpn.{{ rootDomain }}"
   password: ""
+  ipRange: "10.8.0.x"
+  allowedIps: "0.0.0.0/0, ::/0"
 crowdsec:
   enabled: false
   bouncerNftablesKey: ""
