@@ -7,6 +7,8 @@ argocd:
     chartVersion: "7.1.2"
   namespace: "argocd-system"
   domain: "gitops.admin.{{ rootDomain }}"
+  sso:
+    enabled: false
 certManager:
   helm:
     repoUrl: "https://charts.jetstack.io"
@@ -43,3 +45,5 @@ vault:
     chartVersion: "0.28.0"
   namespace: "vault-system"
   domain: "vault.admin.{{ rootDomain }}"
+  sso:
+    enabled: false

@@ -6,8 +6,8 @@
       data:
         oidc.config: |
           name: Keycloak
-          issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
-          clientID: <path:secret/data/admin/apps/argo-cd#keycloak | jsonPath {.clientId}>
-          clientSecret: <path:secret/data/admin/apps/argo-cd#keycloak | jsonPath {.clientSecret}>
+          issuer: https://<path:secret/data/core/infos#argo-cd | jsonPath {.keycloak.domain}>/realms/<path:secret/data/core/infos#argo-cd | jsonPath {.keycloak.realm}>
+          clientID: <path:secret/data/core/infos#argo-cd | jsonPath {.keycloak.clientId}>
+          clientSecret: <path:secret/data/core/infos#argo-cd | jsonPath {.keycloak.clientSecret}>
           requestedScopes: ["openid", "profile", "email", "roles", "groups"]
     state: patched

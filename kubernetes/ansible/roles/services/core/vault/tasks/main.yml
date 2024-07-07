@@ -24,6 +24,11 @@
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
+# Setup sso
+- name: Setup SSO
+  ansible.builtin.include_tasks: sso.yml
+  when: vault.sso.enabled
+
 # Post install
 - name: Post install
   ansible.builtin.include_tasks: post-install.yml
@@ -35,3 +40,8 @@
     vault_values:
       vault:
         domain: "{{ vault.domain }}"
+        keycloak:
+          domain: null
+          realm: null
+          clientId: null
+          clientSecret: null

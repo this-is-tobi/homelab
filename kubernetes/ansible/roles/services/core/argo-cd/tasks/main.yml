@@ -85,13 +85,10 @@
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
-# Setup vault secrets
-- name: Setup secrets
-  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
-  vars:
-    vault_values:
-      argocd:
-        domain: "{{ argocd.domain }}"
+# Setup sso
+- name: Setup SSO
+  ansible.builtin.include_tasks: sso.yml
+  when: argocd.sso.enabled
 
 # Post install
 - name: Deploy argocd admin project
@@ -105,3 +102,16 @@
     template:
       path: "admin-application.yml.j2"
     state: present
+
+# Setup vault secrets
+- name: Setup secrets
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
+  vars:
+    vault_values:
+      argo-cd:
+        domain: "{{ argocd.domain }}"
+        keycloak:
+          domain: null
+          realm: null
+          clientId: null
+          clientSecret: null
