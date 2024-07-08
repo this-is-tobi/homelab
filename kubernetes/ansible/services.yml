@@ -36,137 +36,16 @@
     - name: ./roles/services/core/argo-cd
       tags:
         - core
-        - argocd-core
+        - argo-cd-core
 
-    - name: ./roles/services/utils/initialize
+    - name: ./roles/services/utils/env
       tags:
-        - additional
-        - initialize
-      vars:
-        init_vault_secret: true
-        refresh_platform: true
-
-    - name: ./roles/services/additional/sops
-      tags:
-        - additional
-        - sops
-        - secrets
-
-    - name: ./roles/services/additional/system-upgrade
-      tags:
-        - never
-        - system-upgrade
-        - upgrade
-
-    - name: ./roles/services/additional/trivy-operator
-      tags:
-        - additional
-        - trivy-operator
-        - trivy
-
-    - name: ./roles/services/additional/cloudnative-pg
-      tags:
-        - additional
-        - postgres-operator
-        - cloudnative-pg
-        - cnpg
-
-    - name: ./roles/services/additional/keycloak
-      tags:
-        - additional
-        - keycloak
-        - sso
-
-    - name: ./roles/services/additional/vault
-      tags:
-        - additional
-        - vault
-
-    - name: ./roles/services/additional/argo-cd
-      tags:
-        - additional
-        - argocd
-        - argo-cd
-        - argo
-        - gitops
-
-    - name: ./roles/services/additional/argo-workflows
-      tags:
-        - additional
-        - argoworkflows
-        - argoworkflow
-        - argo-workflows
-
-    - name: ./roles/services/additional/kubernetes-dashboard
-      tags:
-        - additional
-        - kubernetes-dashboard
-        - kube-dashboard
-        - console
-
-    - name: ./roles/services/additional/prometheus-stack
-      tags:
-        - additional
-        - prometheus
-        - grafana
-        - monitoring
-
-    - name: ./roles/services/additional/minio
-      tags:
-        - additional
-        - minio
-        - s3
-
-    - name: ./roles/services/additional/harbor
-      tags:
-        - additional
-        - harbor
-        - registry
-
-    - name: ./roles/services/additional/gitea
-      tags:
-        - additional
-        - gitea
-        - git
-
-    - name: ./roles/services/additional/sonarqube
-      tags:
-        - additional
-        - sonarqube
-        - sonar
-
-    - name: ./roles/services/additional/mattermost
-      tags:
-        # - never # Not arm64 compatible
-        - additional
-        - mattermost
-
-    - name: ./roles/services/additional/outline
-      tags:
-        # - never # Not arm64 compatible
-        - additional
-        - outline
-
-    - name: ./roles/services/additional/actions-runner-controller
-      tags:
-        - additional
-        - actions-runner-controller
-        - arc
-        - runners
-
-    - name: ./roles/services/additional/coder
-      tags:
-        - additional
-        - coder
-        - vscode
-
-    - name: ./roles/services/additional/vaultwarden
-      tags:
-        - additional
-        - vaultwarden
-
-    - name: ./roles/services/additional/dashy
-      tags:
-        - additional
-        - dashy
-        - dashboard
+        - env
+        - always
+      when: >
+        'core' not in ansible_run_tags and
+        'traefik-core' not in ansible_run_tags and
+        'longhorn-core' not in ansible_run_tags and
+        'cert-manager-core' not in ansible_run_tags and
+        'vault-core' not in ansible_run_tags and
+        'argo-cd-core' not in ansible_run_tags

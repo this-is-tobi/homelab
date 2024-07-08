@@ -4,8 +4,7 @@
     argocd_platform_name: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
     argocd_platform_namespace: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.namespace') }}"
     argocd_platform_project: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('spec.project') }}"
-    # argocd_app_name: "{{ lookup('template', '{{ playbook_dir }}/../argo-cd/apps/{{ argocd_app }}/Chart.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
-    argocd_app_name: "{{ argocd_app }}"
+    argocd_app_name: "{{ argocd_app }}{{ platform_env_conf.suffix.name }}"
 
 - name: Synchronize argocd application
   ansible.builtin.uri:

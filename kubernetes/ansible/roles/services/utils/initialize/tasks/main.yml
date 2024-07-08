@@ -1,4 +1,4 @@
-# Get Vault infos
+# Get Vault core infos
 - block:
     - name: Retrieve vault keys
       kubernetes.core.k8s_info:
@@ -12,7 +12,7 @@
         vault_core_token: "{{ vault_keys.resources[0].data.rootToken | b64decode }}"
   when: vault_core_token is undefined
 
-# Get Argocd infos
+# Get Argocd core infos
 - block:
     - name: Retrieve argocd credentials
       kubernetes.core.k8s_info:
@@ -37,7 +37,7 @@
         argocd_core_token: "{{ argocd_token_call.json.token }}"
   when: argocd_core_token is undefined
 
-# Create default secrets
+# Create default Vault secrets
 - block:
     - name: Find apps secret files
       ansible.builtin.find:
@@ -58,12 +58,6 @@
         loop_var: vault_app
       with_items: "{{ results.files | json_query('[].path') }}"
       when: (vault_app | regex_replace('.*(additional\/)(.*)(\/tasks).*', '\\2')) in enabled_services
-
-  #   - name: Create default vault secrets
-  #     ansible.builtin.include_tasks: "{{ vault_app }}"
-  #     loop_control:
-  #       loop_var: vault_app
-  #     with_items: "{{ results.files | json_query('[].path') }}"
   when: init_vault_secret | default(false)
 
 # Get Keycloak infos

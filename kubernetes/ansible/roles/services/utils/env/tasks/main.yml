@@ -1,0 +1,14 @@
+- name: Get platform env configs
+  ansible.builtin.command: jq -c '.' "{{ item }}"
+  register: platform_env_confs_raw
+  loop: "{{ query('fileglob', '{{ playbook_dir }}/../argo-cd/envs/*.json') | sort }}"
+
+- name: Set platform env configs
+  ansible.builtin.set_fact:
+    platform_env_confs: "{{ platform_env_confs_raw.results | map(attribute='stdout') | join(',') }}"
+
+- name: Install and configure services
+  ansible.builtin.include_tasks: configure.yml
+  loop: "{{ platform_env_confs }}"
+  loop_control:
+    loop_var: platform_env_conf

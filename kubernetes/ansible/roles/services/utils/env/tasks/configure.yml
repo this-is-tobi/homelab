@@ -1,0 +1,153 @@
+- ansible.builtin.include_role:
+    name: ./roles/services/utils/initialize
+  tags:
+    - additional
+    - initialize
+  vars:
+    init_vault_secret: true
+    refresh_platform: true
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/sops
+  tags:
+    - additional
+    - sops
+    - secrets
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/system-upgrade
+  tags:
+    - never
+    - system-upgrade
+    - upgrade
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/trivy-operator
+  tags:
+    - additional
+    - trivy-operator
+    - trivy
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/cloudnative-pg
+  tags:
+    - additional
+    - postgres-operator
+    - cloudnative-pg
+    - cnpg
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/keycloak
+  tags:
+    - additional
+    - keycloak
+    - sso
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/vault
+  tags:
+    - additional
+    - vault
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/argo-cd
+  tags:
+    - additional
+    - argocd
+    - argo-cd
+    - argo
+    - gitops
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/argo-workflows
+  tags:
+    - additional
+    - argoworkflows
+    - argoworkflow
+    - argo-workflows
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/kubernetes-dashboard
+  tags:
+    - additional
+    - kubernetes-dashboard
+    - kube-dashboard
+    - console
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/prometheus-stack
+  tags:
+    - additional
+    - prometheus
+    - grafana
+    - monitoring
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/minio
+  tags:
+    - additional
+    - minio
+    - s3
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/harbor
+  tags:
+    - additional
+    - harbor
+    - registry
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/gitea
+  tags:
+    - additional
+    - gitea
+    - git
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/sonarqube
+  tags:
+    - additional
+    - sonarqube
+    - sonar
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/mattermost
+  tags:
+    # - never # Not arm64 compatible
+    - additional
+    - mattermost
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/outline
+  tags:
+    # - never # Not arm64 compatible
+    - additional
+    - outline
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/actions-runner-controller
+  tags:
+    - additional
+    - actions-runner-controller
+    - arc
+    - runners
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/coder
+  tags:
+    - additional
+    - coder
+    - vscode
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/vaultwarden
+  tags:
+    - additional
+    - vaultwarden
+
+- ansible.builtin.include_role:
+    name: ./roles/services/additional/dashy
+  tags:
+    - additional
+    - dashy
+    - dashboard
