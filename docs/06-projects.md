@@ -19,7 +19,7 @@ source:
     env:
       - name: AVP_SECRET
         value: <avp_secret_name> # Available in Vault under the key `secret.<project_name>.vault.avpSecretName`
-      - name: HELM_VALUES
+      - name: ARGOCD_ENV_HELM_VALUES
         value: |
           ingress: {}
           ...
