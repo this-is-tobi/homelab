@@ -35,79 +35,85 @@ data:
 {% if "argo-cd" in enabled_services %}
           - title: Argo-cd
             description: Deploy apps using gitops
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/argo-cd#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/argo-cd#domain>
             icon: hl-argocd
 {% endif %}
 {% if "argo-workflows" in enabled_services %}
           - title: Argo-workflows
             description: Workflow Engine for Kubernetes
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/argo-workflows#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/argo-workflows#domain>
             icon: hl-argocd
 {% endif %}
 {% if "coder" in enabled_services %}
           - title: Coder
             description: Development environment in the cloud
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/coder#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/coder#domain>
             icon: hl-coder
 {% endif %}
 {% if "gitea" in enabled_services %}
           - title: Gitea
             description: Private DevOps Platform including code storage
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/gitea#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/gitea#domain>
             icon: hl-gitea
 {% endif %}
 {% if "prometheus-stack" in enabled_services %}
           - title: Grafana
             description: Watch cluster metrics & application logs
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/prometheus-stack#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/prometheus-stack#domain>
             icon: hl-grafana
 {% endif %}
 {% if "harbor" in enabled_services %}
           - title: Harbor
             description: Container image registry & Helm chart registry
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/harbor#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/harbor#domain>
             icon: hl-harbor
 {% endif %}
 {% if "kubernetes-dashboard" in enabled_services %}
           - title: Kubernetes
             description: Kubernetes dashboard to watch cluster ressources
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/kubernetes-dashboard#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/kubernetes-dashboard#domain>
             icon: hl-kubernetes-dashboard
 {% endif %}
 {% if "mattermost" in enabled_services %}
           - title: Mattermost
             description: Team communication service
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/mattermost#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/mattermost#domain>
             icon: hl-mattermost
 {% endif %}
 {% if "minio" in enabled_services %}
           - title: Minio
             description: Store data with s3 standard
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/minio#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/minio#domain>
             icon: hl-minio
 {% endif %}
 {% if "outline" in enabled_services %}
           - title: Outline
             description: Share notes and wiki
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/outline#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/outline#domain>
             icon: hl-outline
 {% endif %}
 {% if "sonarqube" in enabled_services %}
           - title: Sonarqube
             description: Code analysis service
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/sonarqube#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/sonarqube#domain>
             icon: hl-sonarqube
+{% endif %}
+{% if "sorry-cypress" in enabled_services %}
+          - title: Sorry Cypress
+            description: Run cypress tests in parallel without dashboard
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/sorry-cypress#domain>
+            icon: hl-typescript
 {% endif %}
 {% if "vault" in enabled_services %}
           - title: Vault
             description: Store & retrieve secrets safely
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/vault#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/vault#domain>
             icon: hl-vault
 {% endif %}
 {% if "vaultwarden" in enabled_services %}
           - title: Vaultwarden
             description: Password management service
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/vaultwarden#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/vaultwarden#domain>
             icon: hl-vaultwarden
 {% endif %}
         displayData:
@@ -140,13 +146,13 @@ data:
         items:
           - title: Argocd
             description: Admin services deployment manager
-            url: https://<path:secret/data/core/infos#argocd | jsonPath {.domain}>
+            url: https://<path:secret/data/core/infos#argo-cd | jsonPath {.domain}>
             icon: hl-argocd
             statusCheck: true
 {% if "keycloak" in enabled_services %}
           - title: Keycloak
             description: Single Sign On managment
-            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/keycloak#domain>
+            url: https://<path:secret/data/platforms/{{ platform_env_conf.env }}/apps/keycloak#domain>
             icon: hl-keycloak
 {% endif %}
           - title: Vault

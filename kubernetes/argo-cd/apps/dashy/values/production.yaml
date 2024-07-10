@@ -55,6 +55,10 @@ dashy:
               description: Store data with s3 standard
               url: https://<path:secret/data/platforms/production/apps/minio#domain>
               icon: hl-minio
+            - title: Sorry Cypress
+              description: Run cypress tests in parallel without dashboard
+              url: https://<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+              icon: hl-typescript
           displayData:
             sortBy: alphabetical
             collapsed: false
@@ -85,7 +89,7 @@ dashy:
           items:
             - title: Argocd
               description: Admin services deployment manager
-              url: https://<path:secret/data/core/infos#argocd | jsonPath {.domain}>
+              url: https://<path:secret/data/core/infos#argo-cd | jsonPath {.domain}>
               icon: hl-argocd
               statusCheck: true
             - title: Keycloak
