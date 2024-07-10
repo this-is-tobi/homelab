@@ -1,0 +1,64 @@
+harbor:
+  adminPassword: ""
+  registry:
+    replicaCount: 1
+    nodeSelector:
+      node-type: worker
+  portal:
+    replicaCount: 2
+    nodeSelector:
+      node-type: worker
+  core:
+    replicaCount: 3
+    nodeSelector:
+      node-type: worker
+  jobservice:
+    replicaCount: 1
+    nodeSelector:
+      node-type: worker
+  trivy:
+    replicaCount: 2
+    nodeSelector:
+      node-type: worker
+  exporter:
+    nodeSelector:
+      node-type: worker
+  exposureType: ingress
+  externalURL: ""
+  ingress:
+    core:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hostname: ""
+      tls: true
+  persistence:
+    enabled: true
+    mountPath: /data
+    persistentVolumeClaim:
+      registry:
+        size: 100Gi
+        accessModes:
+        - ReadWriteMany
+      jobservice:
+        size: 10Gi
+        accessModes:
+        - ReadWriteMany
+      trivy:
+        size: 10Gi
+        accessModes:
+        - ReadWriteMany
+  postgresql:
+    enabled: false
+  externalDatabase:
+    host: ""
+    port: ""
+    coreDatabase: ""
+    user: ""
+    password: ""
+    sslmode: disable
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: "30s"

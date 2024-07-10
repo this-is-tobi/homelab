@@ -1,7 +1,7 @@
 keycloak:
   replicaCount: 2
   auth:
-    adminUser: <path:secret/data/admin/apps/keycloak#admin | jsonPath {.username}>
+    adminUser: <path:secret/data/platforms/production/apps/keycloak#admin | jsonPath {.username}>
     existingSecret: keycloak-admin
     passwordSecretKey: password
   ingress:
@@ -9,7 +9,7 @@ keycloak:
     ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: <path:secret/data/admin/apps/keycloak#domain>
+    hostname: <path:secret/data/platforms/production/apps/keycloak#domain>
     path: /
     tls: true
     secrets: []

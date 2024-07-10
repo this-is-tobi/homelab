@@ -1,0 +1,10 @@
+# Create admin service account
+- name: Create admin service account token
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        name: argo-workflows-server.service-account-token
+        annotations:
+          kubernetes.io/service-account.name: argo-workflows-server
+      type: kubernetes.io/service-account-token

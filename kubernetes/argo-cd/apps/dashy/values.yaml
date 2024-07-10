@@ -41,19 +41,19 @@ dashy:
           items:
             - title: Argo-workflows
               description: Workflow Engine for Kubernetes
-              url: https://<path:secret/data/admin/apps/argo-workflows#domain>
+              url: ""
               icon: hl-argocd
             - title: Grafana
               description: Watch cluster metrics & application logs
-              url: https://<path:secret/data/admin/apps/prometheus-stack#domain>
+              url: ""
               icon: hl-grafana
             - title: Harbor
               description: Container image registry & Helm chart registry
-              url: https://<path:secret/data/admin/apps/harbor#domain>
+              url: ""
               icon: hl-harbor
             - title: Minio
               description: Store data with s3 standard
-              url: https://<path:secret/data/admin/apps/minio#domain>
+              url: ""
               icon: hl-minio
           displayData:
             sortBy: alphabetical
@@ -85,16 +85,16 @@ dashy:
           items:
             - title: Argocd
               description: Admin services deployment manager
-              url: https://<path:secret/data/admin/infos#argocd | jsonPath {.domain}>
+              url: ""
               icon: hl-argocd
               statusCheck: true
             - title: Keycloak
               description: Single Sign On managment
-              url: https://<path:secret/data/admin/apps/keycloak#domain>
+              url: ""
               icon: hl-keycloak
             - title: Vault
               description: Admin secret manager
-              url: https://<path:secret/data/admin/infos#vault | jsonPath {.domain}>
+              url: ""
               icon: hl-vault
               statusCheck: true
           displayData:

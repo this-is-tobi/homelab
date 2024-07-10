@@ -9,8 +9,8 @@ kubernetes-dashboard:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-      - <path:secret/data/admin/apps/kubernetes-dashboard#domain>
-      secretName: <path:secret/data/admin/apps/kubernetes-dashboard#domain>
+      - ""
+      secretName: ""
       pathType: Prefix
       paths:
         web: /

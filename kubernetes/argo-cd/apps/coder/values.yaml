@@ -5,26 +5,26 @@ coder:
     ingress:
       enable: true
       className: "traefik"
-      host: "<path:secret/data/admin/apps/coder#domain>"
-      wildcardHost: "*.<path:secret/data/admin/apps/coder#domain>"
+      host: ""
+      wildcardHost: ""
       annotations:
         cert-manager.io/cluster-issuer: "letsencrypt-prod"
       tls:
         enable: true
-        secretName: "<path:secret/data/admin/apps/coder#domain>"
-        # wildcardSecretName: "wild-<path:secret/data/admin/apps/coder#domain>"
+        secretName: ""
+        # wildcardSecretName: ""
     envUseClusterAccessURL: false
     env:
       - name: CODER_PG_CONNECTION_URL
-        value: "postgres://<path:secret/data/admin/apps/coder#postgres | jsonPath {.connectionString}>"
+        value: ""
       - name: CODER_ACCESS_URL
-        value: "https://<path:secret/data/admin/apps/coder#domain>"
+        value: ""
       - name: CODER_OIDC_ISSUER_URL
-        value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>"
+        value: ""
       - name: CODER_OIDC_CLIENT_ID
-        value: "<path:secret/data/admin/apps/coder#keycloak | jsonPath {.clientId}>"
+        value: ""
       - name: CODER_OIDC_CLIENT_SECRET
-        value: "<path:secret/data/admin/apps/coder#keycloak | jsonPath {.clientSecret}>"
+        value: ""
       - name: CODER_OIDC_SIGN_IN_TEXT
         value: "Login with Keycloak"
       - name: CODER_OIDC_SCOPES

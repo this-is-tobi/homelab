@@ -7,12 +7,12 @@ sonarqube:
       nginx.ingress.kubernetes.io/proxy-body-size:
       ingressClassName: traefik
     hosts:
-      - name: <path:secret/data/admin/apps/sonarqube#domain>
+      - name: ""
         path: /
     tls:
       - hosts:
-          - <path:secret/data/admin/apps/sonarqube#domain>
-        secretName: <path:secret/data/admin/apps/sonarqube#domain>
+          - ""
+        secretName: ""
   plugins:
     install:
       - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.18.0/sonarqube-community-branch-plugin-1.18.0.jar
@@ -28,8 +28,8 @@ sonarqube:
     enabled: false
   jdbcOverwrite:
     enable: true
-    jdbcUrl: <path:secret/data/admin/apps/sonarqube#postgres | jsonPath {.connectionString}>
-    jdbcUsername: <path:secret/data/admin/apps/sonarqube#postgres | jsonPath {.app.username}>
+    jdbcUrl: ""
+    jdbcUsername: ""
     jdbcSecretName: sonarqube-pg-cluster-app
     jdbcSecretPasswordKey: password
   account:
@@ -55,7 +55,7 @@ sonarqube:
     periodSeconds: 20
     failureThreshold: 30
   sonarProperties:
-    sonar.core.serverBaseURL: "https://<path:secret/data/admin/apps/sonarqube#domain>"
+    sonar.core.serverBaseURL: ""
     sonar.plugins.risk.consent: "ACCEPTED"
     sonar.auth.oidc.enabled: "true"
     sonar.auth.oidc.allowUsersToSignUp: "true"
@@ -65,7 +65,7 @@ sonarqube:
     sonar.auth.oidc.loginStrategy: "Email"
     sonar.auth.oidc.groupsSync: "true"
     sonar.auth.oidc.scopes: "openid profile email roles groups"
-    sonar.auth.oidc.issuerUri: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>"
+    sonar.auth.oidc.issuerUri: ""
     sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
-    sonar.auth.oidc.clientId.secured: "<path:secret/data/admin/apps/sonarqube#keycloak | jsonPath {.clientId}>"
-    sonar.auth.oidc.clientSecret.secured: "<path:secret/data/admin/apps/sonarqube#keycloak | jsonPath {.clientSecret}>"
+    sonar.auth.oidc.clientId.secured: ""
+    sonar.auth.oidc.clientSecret.secured: ""

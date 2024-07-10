@@ -1,5 +1,5 @@
 harbor:
-  adminPassword: <path:secret/data/admin/apps/harbor#admin | jsonPath {.password}>
+  adminPassword: <path:secret/data/platforms/production/apps/harbor#admin | jsonPath {.password}>
   registry:
     replicaCount: 1
     nodeSelector:
@@ -24,13 +24,13 @@ harbor:
     nodeSelector:
       node-type: worker
   exposureType: ingress
-  externalURL: https://<path:secret/data/admin/apps/harbor#domain>
+  externalURL: https://<path:secret/data/platforms/production/apps/harbor#domain>
   ingress:
     core:
       ingressClassName: traefik
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
-      hostname: <path:secret/data/admin/apps/harbor#domain>
+      hostname: <path:secret/data/platforms/production/apps/harbor#domain>
       tls: true
   persistence:
     enabled: true
@@ -51,11 +51,11 @@ harbor:
   postgresql:
     enabled: false
   externalDatabase:
-    host: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.host}>
-    port: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.port}>
-    coreDatabase: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.database}>
-    user: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.app.username}>
-    password: <path:secret/data/admin/apps/harbor#postgres | jsonPath {.app.password}>
+    host: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.host}>
+    port: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.port}>
+    coreDatabase: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.database}>
+    user: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.username}>
+    password: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.password}>
     sslmode: disable
   metrics:
     enabled: true

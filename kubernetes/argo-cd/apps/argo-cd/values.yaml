@@ -1,7 +1,7 @@
 argo-cd:
   configs:
     secret:
-      argocdServerAdminPassword: <path:secret/data/admin/apps/argo-cd#admin | jsonPath {.password}>
+      argocdServerAdminPassword: ""
     params:
       server.insecure: true
     rbac:
@@ -12,7 +12,7 @@ argo-cd:
     policy.default: role:none
     scopes: "[groups]"
     cm:
-      url: https://<path:secret/data/admin/apps/argo-cd#domain>
+      url: ""
       resource.customizations: |
         networking.k8s.io/Ingress:
           health.lua: |
@@ -21,9 +21,9 @@ argo-cd:
             return hs
       oidc.config: |
         name: Keycloak
-        issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
-        clientID: <path:secret/data/admin/apps/argo-cd#keycloak | jsonPath {.clientId}>
-        clientSecret: <path:secret/data/admin/apps/argo-cd#keycloak | jsonPath {.clientSecret}>
+        issuer: ""
+        clientID: ""
+        clientSecret: ""
         requestedScopes: ["openid", "profile", "email", "groups"]
   redis-ha:
     enabled: false
@@ -34,26 +34,26 @@ argo-cd:
         enabled: true
   notifications:
     enabled: true
-    argocdUrl: https://<path:secret/data/admin/apps/argo-cd#domain>
+    argocdUrl: ""
     context:
       provider: OVH
       cluster: fabnum
-      environment: production
+      environment: ""
     secret:
       create: true
       items:
-        mattermost-token: <path:secret/data/admin/apps/argo-cd#notifications | jsonPath {.mattermost.token}>
-        email-username: <path:secret/data/admin/apps/argo-cd#smtp | jsonPath {.username}>
-        email-password: <path:secret/data/admin/apps/argo-cd#smtp | jsonPath {.password}>
+        mattermost-token: ""
+        email-username: ""
+        email-password: ""
     notifiers:
       service.email: |
         username: $email-username
         password: $email-password
-        host: <path:secret/data/admin/apps/argo-cd#smtp | jsonPath {.server}>
-        port: <path:secret/data/admin/apps/argo-cd#smtp | jsonPath {.port}>
-        from: <path:secret/data/admin/apps/argo-cd#smtp | jsonPath {.email}>
+        host: ""
+        port: ""
+        from: ""
       service.mattermost: |
-        apiURL: https://<path:secret/data/admin/apps/mattermost#domain>
+        apiURL: ""
         token: $mattermost-token
     triggers:
       trigger.on-deployed: |
@@ -348,7 +348,7 @@ argo-cd:
     ingress:
       enabled: true
       ingressClassName: traefik
-      hostname: <path:secret/data/admin/apps/argo-cd#domain>
+      hostname: ""
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       tls: true

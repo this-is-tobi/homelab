@@ -18,5 +18,5 @@ spec:
               number: 80
   tls:
   - hosts:
-    - <path:secret/data/admin/apps/actions-runner-controller#domain>
-    secretName: <path:secret/data/admin/apps/actions-runner-controller#domain>
+    - <path:secret/data/platforms/production/apps/actions-runner-controller#domain>
+    secretName: <path:secret/data/platforms/production/apps/actions-runner-controller#domain>

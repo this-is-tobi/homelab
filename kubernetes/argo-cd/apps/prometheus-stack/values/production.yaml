@@ -1,0 +1,58 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      podMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorSelectorNilUsesHelmValues: false
+      probeSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
+      scrapeConfigSelectorNilUsesHelmValues: false
+      retention: 30d
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteMany"]
+            resources:
+              requests:
+                storage: 100Gi
+  grafana:
+    assertNoLeakedSecrets: false
+    adminPassword: <path:secret/data/platforms/production/apps/prometheus-stack#admin | jsonPath {.password}>
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - <path:secret/data/platforms/production/apps/prometheus-stack#domain>
+      tls:
+      - hosts:
+        - <path:secret/data/platforms/production/apps/prometheus-stack#domain>
+        secretName: <path:secret/data/platforms/production/apps/prometheus-stack#domain>
+    defaultDashboardsTimezone: Europe/Paris
+    grafana.ini:
+      server:
+        root_url: https://<path:secret/data/platforms/production/apps/prometheus-stack#domain>
+      auth.generic_oauth:
+        enabled: true
+        name: Keycloak
+        allow_sign_up: true
+        client_id: <path:secret/data/platforms/production/apps/prometheus-stack#keycloak | jsonPath {.clientId}>
+        client_secret: <path:secret/data/platforms/production/apps/prometheus-stack#keycloak | jsonPath {.clientSecret}>
+        scopes: openid email profile roles groups
+        email_attribute_path: email
+        login_attribute_path: username
+        name_attribute_path: full_name
+        auth_url: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/auth
+        token_url: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/token
+        api_url: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo
+        allow_assign_grafana_admin: true
+        groups_attribute_path: groups
+        role_attribute_path: contains(groups[*], 'admin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || 'Viewer'
+    persistence:
+      enabled: true
+      type: sts
+      accessModes:
+        - ReadWriteMany
+      size: 3Gi
+      finalizers:
+        - kubernetes.io/pvc-protection

@@ -58,8 +58,10 @@ spec:
           env:
           - name: AVP_SECRET
             value: vault-plugin-secret
-          - name: HELM_VALUES
+          - name: ARGOCD_ENV_HELM_VALUES
             value: ""
+          - name: ARGOCD_ENV_HELM_ARGS
+            value: -f values/{{.env}}.yaml
       destination:
         server: '{{.destination.server}}'
         namespace: '{{.app}}{{.suffix.namespace}}'

@@ -25,21 +25,21 @@ argo-workflows:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       ingressClassName: traefik
       hosts:
-      - <path:secret/data/admin/apps/argo-workflows#domain>
+      - ""
       tls:
-      - secretName: <path:secret/data/admin/apps/argo-workflows#domain>-tls
+      - secretName: ""
         hosts:
-        - <path:secret/data/admin/apps/argo-workflows#domain>
+        - ""
     sso:
       enabled: true
-      issuer: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>
+      issuer: ""
       clientId:
         name: argo-workflows-sso
         key: clientId
       clientSecret:
         name: argo-workflows-sso
         key: clientSecret
-      redirectUrl: https://<path:secret/data/admin/apps/argo-workflows#domain>/oauth2/callback
+      redirectUrl: ""
       rbac:
         enabled: true
         secretWhitelist: []

@@ -6,14 +6,14 @@ gitea:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-    - host: <path:secret/data/admin/apps/gitea#domain>
+    - host: ""
       paths:
       - path: /
         pathType: Prefix
     tls:
-    - secretName: <path:secret/data/admin/apps/gitea#domain>
+    - secretName: ""
       hosts:
-        - <path:secret/data/admin/apps/gitea#domain>
+        - ""
   resources:
     requests:
       cpu: 100m
@@ -31,16 +31,16 @@ gitea:
       - ReadWriteMany
   gitea:
     admin:
-      username: <path:secret/data/admin/apps/gitea#admin | jsonPath {.username}>
-      password: <path:secret/data/admin/apps/gitea#admin | jsonPath {.password}>
-      email: admin@<path:secret/data/admin/apps/gitea#domain>
+      username: ""
+      password: ""
+      email: ""
     # oauth:
     # - name: Keycloak
     #   provider: openidConnect
     #   active: true
-    #   key: <path:secret/data/admin/apps/gitea#keycloak | jsonPath {.clientId}>
-    #   secret: <path:secret/data/admin/apps/gitea#keycloak | jsonPath {.clientSecret}>
-    #   autoDiscoverUrl: https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/.well-known/openid-configuration
+    #   key: ""
+    #   secret: ""
+    #   autoDiscoverUrl: ""
     #   scopes: openid profile email roles groups
     #   adminGroup: admin
     #   groupClaimName: groups
@@ -49,21 +49,21 @@ gitea:
     config:
       database:
         DB_TYPE: postgres
-        HOST: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.host}>:<path:secret/data/admin/apps/gitea#postgres | jsonPath {.port}>
-        NAME: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.database}>
-        USER: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.app.username}>
-        PASSWD: <path:secret/data/admin/apps/gitea#postgres | jsonPath {.app.password}>
+        HOST: ""
+        NAME: ""
+        USER: ""
+        PASSWD: ""
         ENABLE_AUTO_REGISTRATION: "true"
       cron.GIT_GC_REPOS:
         ENABLED: false
       server:
-        DOMAIN: <path:secret/data/admin/apps/gitea#domain>
-        ROOT_URL: https://<path:secret/data/admin/apps/gitea#domain>
+        DOMAIN: ""
+        ROOT_URL: ""
         SSH_LISTEN_PORT: 2222
       openid:
         ENABLE_OPENID_SIGNIN: true
         ENABLE_OPENID_SIGNUP: true
-        WHITELISTED_URIS: <path:secret/data/admin/apps/keycloak#domain>
+        WHITELISTED_URIS: ""
       service:
         SHOW_REGISTRATION_BUTTON: false
         DISABLE_REGISTRATION: true

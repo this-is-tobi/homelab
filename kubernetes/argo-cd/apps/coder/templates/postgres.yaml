@@ -6,8 +6,8 @@ metadata:
   annotations:
     avp.kubernetes.io/remove-missing: "true"
 data:
-  username: <path:secret/data/admin/apps/coder#postgres | jsonPath {.admin.username} | base64encode>
-  password: <path:secret/data/admin/apps/coder#postgres | jsonPath {.admin.password} | base64encode>
+  username: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.admin.username} | base64encode>
+  password: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.admin.password} | base64encode>
 
 ---
 apiVersion: v1
@@ -18,8 +18,8 @@ metadata:
   annotations:
     avp.kubernetes.io/remove-missing: "true"
 data:
-  username: <path:secret/data/admin/apps/coder#postgres | jsonPath {.app.username} | base64encode>
-  password: <path:secret/data/admin/apps/coder#postgres | jsonPath {.app.password} | base64encode>
+  username: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.username} | base64encode>
+  password: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.password} | base64encode>
 
 ---
 apiVersion: v1
@@ -30,11 +30,11 @@ metadata:
   annotations:
     avp.kubernetes.io/remove-missing: "true"
 data:
-  host: <path:secret/data/admin/apps/coder#postgres | jsonPath {.host} | base64encode>
-  port: <path:secret/data/admin/apps/coder#postgres | jsonPath {.port} | base64encode>
-  database: <path:secret/data/admin/apps/coder#postgres | jsonPath {.database} | base64encode>
-  username: <path:secret/data/admin/apps/coder#postgres | jsonPath {.app.username} | base64encode>
-  password: <path:secret/data/admin/apps/coder#postgres | jsonPath {.app.password} | base64encode>
+  host: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.host} | base64encode>
+  port: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.port} | base64encode>
+  database: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.database} | base64encode>
+  username: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.username} | base64encode>
+  password: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.password} | base64encode>
 
 ---
 apiVersion: postgresql.cnpg.io/v1
@@ -76,16 +76,16 @@ spec:
 #   annotations:
 #     avp.kubernetes.io/remove-missing: "true"
 # data:
-#   DB_HOST: <path:secret/data/admin/apps/coder#postgres | jsonPath {.host} | base64encode>
-#   DB_PORT: <path:secret/data/admin/apps/coder#postgres | jsonPath {.port} | base64encode>
-#   DB_NAME: <path:secret/data/admin/apps/coder#postgres | jsonPath {.database} | base64encode>
-#   DB_USER: <path:secret/data/admin/apps/coder#postgres | jsonPath {.app.username} | base64encode>
-#   DB_PASS: <path:secret/data/admin/apps/coder#postgres | jsonPath {.app.password} | base64encode>
-#   S3_ENDPOINT: <path:secret/data/admin/apps/coder#postgres | jsonPath {.s3.endpoint} | base64encode>
-#   S3_ACCESS_KEY: <path:secret/data/admin/apps/coder#postgres | jsonPath {.s3.accessKey} | base64encode>
-#   S3_SECRET_KEY: <path:secret/data/admin/apps/coder#postgres | jsonPath {.s3.secretKey} | base64encode>
-#   S3_BUCKET_NAME: <path:secret/data/admin/apps/coder#postgres | jsonPath {.s3.bucketName} | base64encode>
-#   S3_BUCKET_PREFIX: <path:secret/data/admin/apps/coder#postgres | jsonPath {.s3.bucketPrefix} | base64encode>
+#   DB_HOST: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.host} | base64encode>
+#   DB_PORT: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.port} | base64encode>
+#   DB_NAME: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.database} | base64encode>
+#   DB_USER: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.username} | base64encode>
+#   DB_PASS: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.password} | base64encode>
+#   S3_ENDPOINT: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.endpoint} | base64encode>
+#   S3_ACCESS_KEY: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.accessKey} | base64encode>
+#   S3_SECRET_KEY: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.secretKey} | base64encode>
+#   S3_BUCKET_NAME: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.bucketName} | base64encode>
+#   S3_BUCKET_PREFIX: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.bucketPrefix} | base64encode>
 #   RETENTION_DAYS: MzA=
 
 # ---

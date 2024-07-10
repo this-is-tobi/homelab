@@ -1,0 +1,44 @@
+minio:
+  auth:
+    existingSecret: minio-admin
+  nodeSelector:
+    node-type: worker
+  mode: distributed
+  statefulset:
+    replicaCount: 4
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: <path:secret/data/platforms/production/apps/minio#domain>
+    path: /
+    tls: true
+  apiIngress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hostname: <path:secret/data/platforms/production/apps/minio#domainApi>
+    extraHosts:
+    - name: "*.<path:secret/data/platforms/production/apps/minio#domainApi>"
+      path: /
+    path: /
+    tls: true
+  persistence:
+    enabled: true
+    mountPath: /data
+    accessModes:
+      - ReadWriteOnce
+    size: 500Gi
+  extraEnvVarsCM: minio-config
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      jobLabel: minio
+      paths:
+      - /minio/v2/metrics/cluster
+      - /minio/v2/metrics/node
+      - /minio/v2/metrics/bucket
+      - /minio/v2/metrics/resource

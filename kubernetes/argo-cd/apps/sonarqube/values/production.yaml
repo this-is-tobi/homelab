@@ -1,0 +1,71 @@
+sonarqube:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/proxy-body-size:
+      ingressClassName: traefik
+    hosts:
+      - name: <path:secret/data/platforms/production/apps/sonarqube#domain>
+        path: /
+    tls:
+      - hosts:
+          - <path:secret/data/platforms/production/apps/sonarqube#domain>
+        secretName: <path:secret/data/platforms/production/apps/sonarqube#domain>
+  plugins:
+    install:
+      - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.18.0/sonarqube-community-branch-plugin-1.18.0.jar
+      - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
+  resources:
+    limits:
+      cpu: 800m
+      memory: 4Gi
+    requests:
+      cpu: 200m
+      memory: 2Gi
+  postgresql:
+    enabled: false
+  jdbcOverwrite:
+    enable: true
+    jdbcUrl: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.connectionString}>
+    jdbcUsername: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.app.username}>
+    jdbcSecretName: sonarqube-pg-cluster-app
+    jdbcSecretPasswordKey: password
+  account:
+    adminPasswordSecretName: sonarqube-admin
+  monitoringPasscodeSecretName: sonarqube-monitoring-admin
+  monitoringPasscodeSecretKey: password
+  jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.18.0.jar=web"
+  jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.18.0.jar=ce"
+  initSysctl:
+    vmMaxMapCount: 262144
+  prometheusMonitoring:
+    podMonitor:
+      enabled: true
+      namespace: sonarqube
+  prometheusExporter:
+    enabled: true
+  livenessProbe:
+    initialDelaySeconds: 180
+    periodSeconds: 30
+    failureThreshold: 20
+  startupProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    failureThreshold: 30
+  sonarProperties:
+    sonar.core.serverBaseURL: "https://<path:secret/data/platforms/production/apps/sonarqube#domain>"
+    sonar.plugins.risk.consent: "ACCEPTED"
+    sonar.auth.oidc.enabled: "true"
+    sonar.auth.oidc.allowUsersToSignUp: "true"
+    sonar.auth.oidc.autoLogin: "false"
+    sonar.auth.oidc.loginButtonText: "Connect with Keycloak"
+    sonar.auth.oidc.groupsSync.claimName: "groups"
+    sonar.auth.oidc.loginStrategy: "Email"
+    sonar.auth.oidc.groupsSync: "true"
+    sonar.auth.oidc.scopes: "openid profile email roles groups"
+    sonar.auth.oidc.issuerUri: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>"
+    sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
+    sonar.auth.oidc.clientId.secured: "<path:secret/data/platforms/production/apps/sonarqube#keycloak | jsonPath {.clientId}>"
+    sonar.auth.oidc.clientSecret.secured: "<path:secret/data/platforms/production/apps/sonarqube#keycloak | jsonPath {.clientSecret}>"

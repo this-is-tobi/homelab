@@ -3,7 +3,7 @@ vault:
     ha:
       enabled: true
       replicas: 3
-      apiAddr: "<path:secret/data/admin/apps/vault#domain>"
+      apiAddr: ""
       raft:
         enabled: true
         config: |
@@ -41,13 +41,13 @@ vault:
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
       hosts:
-      - host: <path:secret/data/admin/apps/vault#domain>
+      - host: ""
         paths:
         - /
       tls:
       - hosts:
-        - <path:secret/data/admin/apps/vault#domain>
-        secretName: <path:secret/data/admin/apps/vault#domain>
+        - ""
+        secretName: ""
   serverTelemetry:
     serviceMonitor:
       enabled: true

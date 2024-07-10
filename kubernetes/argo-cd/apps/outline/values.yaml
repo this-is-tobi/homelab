@@ -8,33 +8,33 @@ outline:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-    - <path:secret/data/admin/apps/outline#domain>
+    - ""
     tls:
     - hosts:
-      - <path:secret/data/admin/apps/outline#domain>
-      secretName: <path:secret/data/admin/apps/outline#domain>
+      - ""
+      secretName: ""
   outline:
     generateEncryptionKeys: false
     defaultLanguage: en_US
   environment:
     - name: URL
-      value: "https://<path:secret/data/admin/apps/outline#domain>"
+      value: ""
     - name: DATABASE_URL
-      value: "postgres://<path:secret/data/admin/apps/outline#postgres | jsonPath {.connectionString}>"
+      value: ""
     - name: SECRET_KEY
-      value: "<path:secret/data/admin/apps/outline#admin | jsonPath {.secretKey}>"
+      value: ""
     - name: UTILS_SECRET
-      value: "<path:secret/data/admin/apps/outline#admin | jsonPath {.utilsSecret}>"
+      value: ""
     - name: AWS_ACCESS_KEY_ID
-      value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.accessKey}>"
+      value: ""
     - name: AWS_REGION
-      value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.region}>"
+      value: ""
     - name: AWS_SECRET_ACCESS_KEY
-      value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.secretKey}>"
+      value: ""
     - name: AWS_S3_UPLOAD_BUCKET_URL
-      value: "https://<path:secret/data/admin/apps/outline#s3 | jsonPath {.endpoint}>/<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>"
+      value: ""
     - name: AWS_S3_UPLOAD_BUCKET_NAME
-      value: "<path:secret/data/admin/apps/outline#s3 | jsonPath {.bucketName}>"
+      value: ""
     - name: AWS_S3_FORCE_PATH_STYLE
       value: "true"
     - name: AWS_S3_ACL
@@ -42,15 +42,15 @@ outline:
     - name: FILE_STORAGE_UPLOAD_MAX_SIZE
       value: "26214400"
     - name: OIDC_CLIENT_ID
-      value: "<path:secret/data/admin/apps/outline#keycloak | jsonPath {.clientId}>"
+      value: ""
     - name: OIDC_CLIENT_SECRET
-      value: "<path:secret/data/admin/apps/outline#keycloak | jsonPath {.clientSecret}>"
+      value: ""
     - name: OIDC_AUTH_URI
-      value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/auth"
+      value: ""
     - name: OIDC_TOKEN_URI
-      value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/token"
+      value: ""
     - name: OIDC_USERINFO_URI
-      value: "https://<path:secret/data/admin/apps/keycloak#domain>/realms/<path:secret/data/admin/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo"
+      value: ""
     - name: OIDC_USERNAME_CLAIM
       value: "email"
     - name: OIDC_DISPLAY_NAME
