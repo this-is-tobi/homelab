@@ -1,0 +1,65 @@
+sorry-cypress:
+  api:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    ingress:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - host: api.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+      tls:
+      - hosts:
+        - api.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+        secretName: api.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+  dashboard:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    ingress:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - host: <path:secret/data/platforms/production/apps/sorry-cypress#domain>
+      tls:
+      - hosts:
+        - <path:secret/data/platforms/production/apps/sorry-cypress#domain>
+        secretName: <path:secret/data/platforms/production/apps/sorry-cypress#domain>
+  director:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    environmentVariables:
+      dashboardUrl: "https://<path:secret/data/platforms/production/apps/sorry-cypress#domain>"
+      executionDriver: "../execution/in-memory"
+      screenshotsDriver: "../screenshots/dummy.driver"
+    ingress:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - host: director.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+      tls:
+      - hosts:
+        - director.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+        secretName: director.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
+  mongodb:
+    internal_db:
+      enabled: false

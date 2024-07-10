@@ -31,6 +31,7 @@ spec:
           - app: prometheus-stack
           # - app: sonarqube
           - app: sops
+          - app: sorry-cypress
           # - app: system-upgrade
           # - app: trivy-operator
           # - app: vault

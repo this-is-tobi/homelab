@@ -1,0 +1,71 @@
+sorry-cypress:
+  api:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    ingress:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - host: ""
+        paths:
+        - /
+      tls:
+      - hosts:
+        - ""
+        secretName: ""
+  dashboard:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    ingress:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - host: ""
+        paths:
+        - /
+      tls:
+      - hosts:
+        - ""
+        secretName: ""
+  director:
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+    environmentVariables:
+      dashboardUrl: ""
+      executionDriver: "../execution/in-memory"
+      screenshotsDriver: "../screenshots/dummy.driver"
+    ingress:
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+      - host: ""
+        paths:
+        - /
+      tls:
+      - hosts:
+        - ""
+        secretName: ""
+  mongodb:
+    internal_db:
+      enabled: false
