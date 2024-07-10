@@ -1,0 +1,24 @@
+# Check enabled services
+- name: Check if service is enable
+  ansible.builtin.include_role:
+    name: services/utils/check
+
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+    vars:
+      include_keycloak: true
+
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: loki
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: loki
+  when: '"loki" in enabled_services'
