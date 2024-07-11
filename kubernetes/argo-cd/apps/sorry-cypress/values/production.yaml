@@ -1,3 +1,6 @@
+auth:
+  username: <path:secret/data/platforms/production/apps/sorry-cypress#admin | jsonPath {.username}>
+  password: <path:secret/data/platforms/production/apps/sorry-cypress#admin | jsonPath {.password}>
 sorry-cypress:
   api:
     replicas: 1
@@ -31,6 +34,7 @@ sorry-cypress:
       ingressClassName: traefik
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
+        traefik.ingress.kubernetes.io/router.middlewares: sorry-cypress-auth-middleware@kubernetescrd
       hosts:
       - host: <path:secret/data/platforms/production/apps/sorry-cypress#domain>
       tls:
@@ -62,4 +66,4 @@ sorry-cypress:
         secretName: director.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
   mongodb:
     internal_db:
-      enabled: false
+      enabled: true
