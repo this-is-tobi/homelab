@@ -2,7 +2,7 @@ version: '3'
 
 services:
   haproxy:
-    image: docker.io/haproxy:alpine3.19
+    image: docker.io/haproxy:{{ haproxy.version }}
     container_name: haproxy
     restart: unless-stopped
     volumes:

@@ -3,7 +3,7 @@ version: "3"
 services:
   pihole:
     container_name: pihole
-    image: docker.io/pihole/pihole:2024.03.2
+    image: docker.io/pihole/pihole:{{ pihole.version }}
     ports:
       - 53:53/tcp
       - 53:53/udp
