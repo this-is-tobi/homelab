@@ -12,7 +12,7 @@ A host is configured as the gateway to the local network (*i.e handle all incomi
 
 ## Bastion
 
-A host is configured as the bastion to access kubernetes ressources. As previously mentioned, a wireguard profile conf is generated for every `bastionUsers` set in [group_vars/all.yml](../infra/ansible/inventory-example/group_vars/all.yml).
+A host is configured as the bastion to access kubernetes ressources. As previously mentioned, a wireguard profile conf is generated for every `bastionUsers` set in [group_vars/all.yml](../ansible/infra/inventory-example/group_vars/all.yml).
 
 Bastion is available on the local network using ssh :
 
@@ -30,4 +30,4 @@ Some hosts are configrured to run [k3s](https://k3s.io) (*Lightweight Kubernetes
 The cluster comes with k3s integrated [klipper](https://github.com/k3s-io/klipper-lb) loadbalancer ([traefik](https://traefik.io/) ingressController is disabled and installed manually).
 For convenience, [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed to perform an automatic k3s upgrade on each node by using two plans (one for masters and the other one for workers).
 
-[Longhorn](https://longhorn.io/) is used to deliver distributed block storage accross kubernetes, it will enroll all servers tagged `additional_disk: true` in [inventory/hosts.yml](../infra/ansible/inventory-example/hosts.yml).
+[Longhorn](https://longhorn.io/) is used to deliver distributed block storage accross kubernetes, it will enroll all servers tagged `additional_disk: true` in [inventory/hosts.yml](../ansible/infra/inventory-example/hosts.yml).

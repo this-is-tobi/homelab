@@ -34,7 +34,7 @@ Gateway web interface services are deployed and accessible for admin purpose, th
 | Pihole dashboard    | <http://192.168.1.99:5353>  |
 | Wireguard dashboard | <http://192.168.1.99:51821> |
 
-> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../infra/ansible/inventory-example/hosts.yml).*
+> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../ansible/infra/inventory-example/hosts.yml).*
 
 ## Kubernetes
 
@@ -108,7 +108,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | Vault                | <https://vault.domain.com>       |
 | Vaultwarden          | <https://vaultwarden.domain.com> |
 
-> *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../kubernetes/ansible/inventory-example/group_vars/all.yml).*
+> *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../ansible/kube/inventory-example/group_vars/all.yml).*
 
 ### Single sign on
 
@@ -136,22 +136,22 @@ Following services are connected through sso :
 
 The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Minio, Argocd and Trivy-operator to increase metrics coming from these applications.
 
-Some dashboards are already delivered with the installation but more can be added in `argo-cd/apps/prometheus-stack/manifests`, they will be automatically loaded on Argocd synchronization. Already added dashboards are :
+Some dashboards are already delivered with the installation but more can be added in `argo-cd/apps/prometheus-stack/templates`, they will be automatically loaded on Argocd synchronization. Already added dashboards are :
 
 | Repository source                                                                                         | Grafana dashboard ID                                                                                          |
 | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [argocd-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/argo-cd-dashboard.yaml)                | [14584](https://grafana.com/grafana/dashboards/14584-argo-cd/)                                                |
-| [cert-manager-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/cert-manager-dashboard.yaml)     | [20340](https://grafana.com/grafana/dashboards/20340-cert-manager/)                                           |
-| [cloudnative-pg-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/cloudnative-pg-dashboard.yaml) | [20417](https://grafana.com/grafana/dashboards/20417-cloudnativepg/)                                          |
-| [gitea-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/gitea-dashboard.yaml)                   | [17802](https://grafana.com/grafana/dashboards/17802-gitea-dashbaord/)                                        |
-| [harbor-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/harbor-dashboard.yaml)                 | *- ( [source](https://github.com/goharbor/harbor/blob/main/contrib/grafana-dashboard/metrics-example.json) )* |
-| [k3s-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/k3s-dashboard.yaml)                       | [15282](https://grafana.com/grafana/dashboards/15282-k8s-rke-cluster-monitoring/)                             |
-| [kube-global-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/kube-global-dashboard.yaml)       | [15757](https://grafana.com/grafana/dashboards/15757-kubernetes-views-global/)                                |
-| [kube-node-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/kube-node-dashboard.yaml)           | [15759](https://grafana.com/grafana/dashboards/15759-kubernetes-views-nodes/)                                 |
-| [kube-ns-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/kube-ns-dashboard.yaml)               | [15758](https://grafana.com/grafana/dashboards/15758-kubernetes-views-namespaces/)                            |
-| [kube-pod-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/kube-pod-dashboard.yaml)             | [15760](https://grafana.com/grafana/dashboards/15760-kubernetes-views-pods/)                                  |
-| [longhorn-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/longhorn-dashboard.yaml)             | [13032](https://grafana.com/grafana/dashboards/13032-longhorn-example-v1-1-0/)                                |
-| [minio-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/minio-dashboard.yaml)                   | [13502](https://grafana.com/grafana/dashboards/13502-minio-dashboard/)                                        |
-| [traefik-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/traefik-dashboard.yaml)               | [17346](https://grafana.com/grafana/dashboards/17346-traefik-official-standalone-dashboard/)                  |
-| [trivy-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/trivy-dashboard.yaml)                   | [16337](https://grafana.com/grafana/dashboards/16337-trivy-operator-vulnerabilities/)                         |
-| [vault-dashboard.yaml](../argo-cd/apps/prometheus-stack/manifests/vault-dashboard.yaml)                   | [12904](https://grafana.com/grafana/dashboards/12904-hashicorp-vault/)                                        |
+| [argocd-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/argo-cd-dashboard.yaml)                | [14584](https://grafana.com/grafana/dashboards/14584-argo-cd/)                                                |
+| [cert-manager-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/cert-manager-dashboard.yaml)     | [20340](https://grafana.com/grafana/dashboards/20340-cert-manager/)                                           |
+| [cloudnative-pg-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/cloudnative-pg-dashboard.yaml) | [20417](https://grafana.com/grafana/dashboards/20417-cloudnativepg/)                                          |
+| [gitea-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/gitea-dashboard.yaml)                   | [17802](https://grafana.com/grafana/dashboards/17802-gitea-dashbaord/)                                        |
+| [harbor-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/harbor-dashboard.yaml)                 | *- ( [source](https://github.com/goharbor/harbor/blob/main/contrib/grafana-dashboard/metrics-example.json) )* |
+| [k3s-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/k3s-dashboard.yaml)                       | [15282](https://grafana.com/grafana/dashboards/15282-k8s-rke-cluster-monitoring/)                             |
+| [kube-global-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-global-dashboard.yaml)       | [15757](https://grafana.com/grafana/dashboards/15757-kubernetes-views-global/)                                |
+| [kube-node-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-node-dashboard.yaml)           | [15759](https://grafana.com/grafana/dashboards/15759-kubernetes-views-nodes/)                                 |
+| [kube-ns-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-ns-dashboard.yaml)               | [15758](https://grafana.com/grafana/dashboards/15758-kubernetes-views-namespaces/)                            |
+| [kube-pod-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-pod-dashboard.yaml)             | [15760](https://grafana.com/grafana/dashboards/15760-kubernetes-views-pods/)                                  |
+| [longhorn-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/longhorn-dashboard.yaml)             | [13032](https://grafana.com/grafana/dashboards/13032-longhorn-example-v1-1-0/)                                |
+| [minio-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/minio-dashboard.yaml)                   | [13502](https://grafana.com/grafana/dashboards/13502-minio-dashboard/)                                        |
+| [traefik-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/traefik-dashboard.yaml)               | [17346](https://grafana.com/grafana/dashboards/17346-traefik-official-standalone-dashboard/)                  |
+| [trivy-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/trivy-dashboard.yaml)                   | [16337](https://grafana.com/grafana/dashboards/16337-trivy-operator-vulnerabilities/)                         |
+| [vault-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/vault-dashboard.yaml)                   | [12904](https://grafana.com/grafana/dashboards/12904-hashicorp-vault/)                                        |

@@ -1,6 +1,6 @@
 # Projects
 
-Projects informations is stored in Vault under the key `secret/admin/projects`, these informations is evaluated by the [ansible playbook](../infra/ansible/projects.yml) to create the appropriate namespaces, keycloak mapping, etc... for each type of service available in the platform.
+Projects informations is stored in Vault under the key `secret/admin/projects`, these informations is evaluated by the [ansible playbook](../ansible/infra/projects.yml) to create the appropriate namespaces, keycloak mapping, etc... for each type of service available in the platform.
 
 ## Argocd
 

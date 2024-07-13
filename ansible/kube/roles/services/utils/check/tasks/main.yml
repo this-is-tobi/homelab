@@ -1,0 +1,11 @@
+- block:
+    - name: Get enabled services list
+      ansible.builtin.shell:
+        cmd: |
+          yq '.spec.generators[0].matrix.generators[0].list.elements | map(.app) | .[]' "{{ playbook_dir }}/../../argo-cd/platform-manager.yaml"
+      register: get_enabled_services
+
+    - name: Set fact for keycloak vault secrets
+      ansible.builtin.set_fact:
+        enabled_services: "{{ get_enabled_services.stdout_lines }}"
+  when: enabled_services is undefined

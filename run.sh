@@ -28,10 +28,10 @@ Following flags are available:
         a context, user and cluster are create in '$HOME/.kube/config' with name 'homelab'.
 
   -p    Run ansible playbook, default is '$PLAYBOOK'.
-        Playbook should be passed as arg (ex: './run.sh -p ./kubernetes/ansible/services.yml').
+        Playbook should be passed as arg (ex: './run.sh -p ./ansible/kube/install.yml').
 
   -t    Tags to run with playbook, default is '$TAGS'.
-        This flag can be used with a CSV list (ex: -p 'init,services').
+        This flag can be used with a CSV list (ex: -p 'minio,harbor').
 
   -u    Update ansible dependencies.
 
@@ -78,16 +78,16 @@ fi
 # Update ansible dependencies
 if [ "$UPDATE" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
-  ansible-galaxy collection install -r $SCRIPT_PATH/infra/ansible/collections/requirements.yml --upgrade
-  ansible-galaxy collection install -r $SCRIPT_PATH/kubernetes/ansible/collections/requirements.yml --upgrade
+  ansible-galaxy collection install -r $SCRIPT_PATH/ansible/infra/collections/requirements.yml --upgrade
+  ansible-galaxy collection install -r $SCRIPT_PATH/ansible/kube/collections/requirements.yml --upgrade
 fi
 
 
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
-  if [[ "$PLAYBOOK" =~ ^kubernetes/.* || "$PLAYBOOK" =~ ^\./kubernetes/.*  ]]; then
+  if [[ "$PLAYBOOK" =~ ^ansible/kube/.* || "$PLAYBOOK" =~ ^\./ansible/kube/.*  ]]; then
     PLAYBOOK="$(readlink -f $PLAYBOOK)"
-    export ANSIBLE_CONFIG="$SCRIPT_PATH/$(echo $PLAYBOOK | sed 's|^\./||' | cut -d'/' -f1)/ansible/ansible.cfg"
+    export ANSIBLE_CONFIG="$SCRIPT_PATH/ansible/$(echo $PLAYBOOK | sed 's|^\./||' | cut -d'/' -f1)/ansible.cfg"
     CONTEXT=$(kubectl config current-context)
     printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
     read ANSWER
@@ -111,9 +111,9 @@ fi
 if [ "$FETCH_KUBECONFIG" = "true" ]; then
   printf "\n\n${red}[Homelab kube Manager].${no_color} Copy kube config locally\n\n"
 
-  GATEWAY_IP=$(yq '[.gateway.hosts[][]][0]' infra/ansible/inventory/hosts.yml)
-  MASTER_IP=$(yq '[.k3s.children.masters.hosts[][]][0]' infra/ansible/inventory/hosts.yml)
-  USER=$(yq '.ansible_user' infra/ansible/inventory/group_vars/all.yml)
+  GATEWAY_IP=$(yq '[.gateway.hosts[][]][0]' ansible/infra/inventory/hosts.yml)
+  MASTER_IP=$(yq '[.k3s.children.masters.hosts[][]][0]' ansible/infra/inventory/hosts.yml)
+  USER=$(yq '.ansible_user' ansible/infra/inventory/group_vars/all.yml)
 
   mkdir -p $HOME/.kube/config.d
   scp $USER@$MASTER_IP:/etc/rancher/k3s/k3s.yaml $HOME/.kube/config.d/homelab

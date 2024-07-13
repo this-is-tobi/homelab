@@ -65,17 +65,17 @@ done
 
 printf "\n\n${red}[Pi image manager].${no_color} Copy image to external disk.\n\n"
 
-export USERNAME="$(yq '.ansible_user' $SCRIPT_PATH/../infra/ansible/inventory/group_vars/all.yml)"
-export PASSWORD="$(yq '.ansible_password' $SCRIPT_PATH/../infra/ansible/inventory/group_vars/all.yml)"
+export USERNAME="$(yq '.ansible_user' $SCRIPT_PATH/../ansible/infra/inventory/group_vars/all.yml)"
+export PASSWORD="$(yq '.ansible_password' $SCRIPT_PATH/../ansible/infra/inventory/group_vars/all.yml)"
 
 if [ -z "$USERNAME" ]; then
   export USERNAME="debian"
-  yq -i '.ansible_user = env(USERNAME)' "$SCRIPT_PATH/../infra/ansible/inventory/group_vars/all.yml"
+  yq -i '.ansible_user = env(USERNAME)' "$SCRIPT_PATH/../ansible/infra/inventory/group_vars/all.yml"
 fi
 
 if [ -z "$PASSWORD" ]; then
   export PASSWORD="$(openssl rand -base64 15)"
-  yq -i '.ansible_password = env(PASSWORD)' "$SCRIPT_PATH/../infra/ansible/inventory/group_vars/all.yml"
+  yq -i '.ansible_password = env(PASSWORD)' "$SCRIPT_PATH/../ansible/infra/inventory/group_vars/all.yml"
 fi
 
 find /Volumes -type d -name 'bootfs*' -maxdepth 1 -exec sh -c '

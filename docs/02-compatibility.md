@@ -21,7 +21,7 @@ For Raspberry, see :
 
 ## Access
 
-Each target server __should have a static IP address__ to maintain consistency in the inventory file [host.yml](../infra/ansible/inventory-example/hosts.yml), update this file with the appropriate values.
+Each target server __should have a static IP address__ to maintain consistency in the inventory file [host.yml](../ansible/infra/inventory-example/hosts.yml), update this file with the appropriate values.
 
 __SSH access to all machines is needed to install infrastructure__, username/password or ssh key could be used.
 

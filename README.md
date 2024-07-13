@@ -28,30 +28,30 @@ __Setup directory:__
 git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git && git init
 
 # Copy inventory example to inventory
-cp -R ./infra/ansible/inventory-example ./infra/ansible/inventory
-cp -R ./kubernetes/ansible/inventory-example ./kubernetes/ansible/inventory
+cp -R ./ansible/infra/inventory-example ./ansible/infra/inventory
+cp -R ./ansible/kube/inventory-example ./ansible/kube/inventory
 ```
 
 ### Infra
 
 __Setup inventory:__
-- [host.yml](./infra/ansible/inventory-example/hosts.yml)
-- [all.yml](./infra/ansible/inventory-example/group_vars/all.yml)
-- [bastion.yml](./infra/ansible/inventory-example/group_vars/bastion.yml)
-- [gateway.yml](./infra/ansible/inventory-example/group_vars/gateway.yml)
-- [k3s.yml](./infra/ansible/inventory-example/group_vars/k3s.yml)
+- [host.yml](./ansible/infra/inventory-example/hosts.yml)
+- [all.yml](./ansible/infra/inventory-example/group_vars/all.yml)
+- [bastion.yml](./ansible/infra/inventory-example/group_vars/bastion.yml)
+- [gateway.yml](./ansible/infra/inventory-example/group_vars/gateway.yml)
+- [k3s.yml](./ansible/infra/inventory-example/group_vars/k3s.yml)
 
 __Install:__
 
 ```sh
 # Install infra
-./run.sh -p ./infra/ansible/install.yml -u -k
+./run.sh -p ./ansible/infra/install.yml -u -k
 ```
 
 ### Kubernetes
 
 __Setup inventory:__
-- [services.yml](./kubernetes/ansible/inventory-example/group_vars/services.yml)
+- [services.yml](./ansible/kube/inventory-example/group_vars/services.yml)
 
 __Install:__
 
@@ -60,5 +60,5 @@ __Install:__
 kubectl config set-context homelab
 
 # Install services
-./run.sh -p ./kubernetes/ansible/services.yml -u
+./run.sh -p ./ansible/kube/install.yml -u
 ```
