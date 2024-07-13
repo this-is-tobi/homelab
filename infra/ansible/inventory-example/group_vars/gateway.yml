@@ -1,9 +1,3 @@
-crowdsec:
-  enabled: false
-  bouncerNftablesKey: ""
-  bouncerHaproxyKey: ""
-  enrollKey: ""
-  instanceName: "homelab"
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
   verion: "alpine3.19"

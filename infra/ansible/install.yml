@@ -22,7 +22,6 @@
     - gateway/haproxy
     - gateway/wireguard
     - gateway/pihole
-    - gateway/crowdsec
   tags:
     - gateway
 

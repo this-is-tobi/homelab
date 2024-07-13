@@ -6,10 +6,9 @@
 
 A host is configured as the gateway to the local network (*i.e handle all incoming traffic*). It runs various services deployed with systemd :
 
-- [Crowdsec](https://www.crowdsec.net/) for security purpose as it acts as a community firewall.
 - [Haproxy](https://www.haproxy.org/) for loadbalancing all incoming external requests (*ports 80 & 443*) to the k3s cluster and loadbalancing k3s api server (*port 6443*).
-- [PiHole](https://pi-hole.net/) for advertisements filtering.
-- [Wireguard](https://www.wireguard.com/) for external access to the local network (*i.e from internet*). VPN clients could be add using the web interface (see. services section).
+- [PiHole](https://pi-hole.net/) *(optional)* for advertisements filtering.
+- [Wireguard](https://www.wireguard.com/) *(optional)* for external access to the local network (*i.e from internet*). VPN clients could be add using the web interface (see. services section).
 
 ## Bastion
 
