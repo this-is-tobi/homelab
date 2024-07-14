@@ -15,23 +15,23 @@ spec:
       - list:
           elements:
           - app: actions-runner-controller
-          # - app: argo-cd
           - app: argo-workflows
           - app: cloudnative-pg
-          # - app: coder
           - app: dashy
-          # - app: gitea
           - app: harbor
           - app: keycloak
+          - app: minio
+          - app: prometheus-stack
+          - app: sops
+          - app: sorry-cypress
+          # - app: argo-cd
+          # - app: coder
+          # - app: gitea
           # - app: kubernetes-dashboard
           # - app: loki
           # - app: mattermost
-          - app: minio
           # - app: outline
-          - app: prometheus-stack
           # - app: sonarqube
-          - app: sops
-          - app: sorry-cypress
           # - app: system-upgrade
           # - app: trivy-operator
           # - app: vault
@@ -46,6 +46,10 @@ spec:
       name: '{{.app}}{{.suffix.name}}'
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
+      labels:
+        platform.env: '{{.env}}'
+        platform.provider: '{{.provider}}'
+        platform.region: '{{.region}}'
       finalizers:
         - resources-finalizer.argocd.argoproj.io
     spec:
@@ -59,10 +63,10 @@ spec:
           env:
           - name: AVP_SECRET
             value: vault-plugin-secret
-          - name: ARGOCD_ENV_HELM_ARGS
-            value: -f values/{{.env}}.yaml
           - name: HELM_ARGS
             value: -f values/{{.env}}.yaml
+          - name: HELM_VALUES
+            value: ''
       destination:
         server: '{{.destination.server}}'
         namespace: '{{.app}}{{.suffix.namespace}}'
