@@ -10,5 +10,29 @@
   "destination": {
     "server": "https://kubernetes.default.svc"
   },
-  "targetRevision": "main"
+  "targetRevision": "main",
+  "apps": [
+    { "app": "actions-runner-controller", "enabled": "true" },
+    { "app": "argo-cd", "enabled": "false" },
+    { "app": "argo-workflows", "enabled": "true" },
+    { "app": "cloudnative-pg", "enabled": "true" },
+    { "app": "coder", "enabled": "false" },
+    { "app": "dashy", "enabled": "true" },
+    { "app": "gitea", "enabled": "false" },
+    { "app": "harbor", "enabled": "true" },
+    { "app": "keycloak", "enabled": "true" },
+    { "app": "kubernetes-dashboard", "enabled": "false" },
+    { "app": "loki", "enabled": "false" },
+    { "app": "mattermost", "enabled": "false" },
+    { "app": "minio", "enabled": "true" },
+    { "app": "outline", "enabled": "false" },
+    { "app": "prometheus-stack", "enabled": "true" },
+    { "app": "sonarqube", "enabled": "false" },
+    { "app": "sops", "enabled": "true" },
+    { "app": "sorry-cypress", "enabled": "true" },
+    { "app": "system-upgrade", "enabled": "false" },
+    { "app": "trivy-operator", "enabled": "false" },
+    { "app": "vault", "enabled": "false" },
+    { "app": "vaultwarden", "enabled": "false" }
+  ]
 }
