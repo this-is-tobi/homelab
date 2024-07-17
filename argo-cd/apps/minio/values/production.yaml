@@ -30,7 +30,7 @@ minio:
     mountPath: /data
     accessModes:
       - ReadWriteOnce
-    size: 500Gi
+    size: 1Ti
   extraEnvVarsCM: minio-config
   metrics:
     enabled: true
