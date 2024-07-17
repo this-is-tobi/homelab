@@ -12,35 +12,19 @@ spec:
   generators:
   - matrix:
       generators:
-      - list:
-          elements:
-          - app: actions-runner-controller
-          - app: argo-workflows
-          - app: cloudnative-pg
-          - app: dashy
-          - app: harbor
-          - app: keycloak
-          - app: minio
-          - app: prometheus-stack
-          - app: sops
-          - app: sorry-cypress
-          # - app: argo-cd
-          # - app: coder
-          # - app: gitea
-          # - app: kubernetes-dashboard
-          # - app: loki
-          # - app: mattermost
-          # - app: outline
-          # - app: sonarqube
-          # - app: system-upgrade
-          # - app: trivy-operator
-          # - app: vault
-          # - app: vaultwarden
       - git:
           repoURL: https://github.com/this-is-tobi/homelab.git
           revision: main
           files:
           - path: './argo-cd/envs/*'
+      - list:
+          elementsYaml: "{{ .apps | toJson }}"
+        selector:
+          matchExpressions:
+          - key: enabled
+            operator: In
+            values:
+              - "true"
   template:
     metadata:
       name: '{{.app}}{{.suffix.name}}'
@@ -51,7 +35,7 @@ spec:
         platform.provider: '{{.provider}}'
         platform.region: '{{.region}}'
       finalizers:
-        - resources-finalizer.argocd.argoproj.io
+      - resources-finalizer.argocd.argoproj.io
     spec:
       project: '{{.project}}'
       revisionHistoryLimit: 3
