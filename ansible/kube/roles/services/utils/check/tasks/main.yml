@@ -2,7 +2,7 @@
     - name: Get enabled services list
       ansible.builtin.shell:
         cmd: |
-          yq -r '.apps[] | select(.enabled == "true") | .app' "{{ playbook_dir }}/../../argo-cd/envs/{{ platform_env.conf.file }}"
+          yq -r '.apps[] | select(.enabled == "true") | .app' "{{ playbook_dir }}/../../argo-cd/envs/{{ platform_env.file }}"
       register: get_enabled_services
 
     - name: Set fact for keycloak vault secrets
