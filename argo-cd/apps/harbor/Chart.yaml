@@ -1,10 +1,10 @@
 apiVersion: v2
 name: harbor
 type: application
-version: 0.1.0
-appVersion: "21.4.1"
+version: 2.11.0
+appVersion: "22.0.5"
 dependencies:
 - name: harbor
   alias: harbor
-  version: 21.4.1
+  version: 22.0.5
   repository: https://charts.bitnami.com/bitnami
