@@ -1,7 +1,7 @@
 apiVersion: v2
 name: sonarqube
 type: application
-version: 0.1.0
+version: 10.4.1+2389
 appVersion: "10.4.1"
 dependencies:
 - name: sonarqube

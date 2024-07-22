@@ -1,8 +1,8 @@
 apiVersion: v2
 name: harbor
 type: application
-version: 2.11.0
-appVersion: "22.0.5"
+version: 22.0.5
+appVersion: "2.11.0"
 dependencies:
 - name: harbor
   alias: harbor

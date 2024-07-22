@@ -1,8 +1,8 @@
 apiVersion: v2
 name: minio
 type: application
-version: 2024.7.16
-appVersion: "14.6.25"
+version: 14.6.16
+appVersion: "2024.7.16"
 dependencies:
 - name: minio
   alias: minio

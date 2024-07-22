@@ -1,8 +1,8 @@
 apiVersion: v2
 name: mattermost
 type: application
-version: 9.10.0
-appVersion: "6.6.59"
+version: 6.6.59
+appVersion: "9.10.0"
 dependencies:
 - name: mattermost
   alias: mattermost

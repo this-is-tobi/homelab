@@ -1,7 +1,7 @@
 apiVersion: v2
 name: vault
 type: application
-version: 0.1.0
+version: 0.28.1
 appVersion: "1.17.2"
 dependencies:
 - name: vault
