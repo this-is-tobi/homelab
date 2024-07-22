@@ -2,9 +2,9 @@ apiVersion: v2
 name: vault
 type: application
 version: 0.1.0
-appVersion: "0.28.0"
+appVersion: "1.17.2"
 dependencies:
 - name: vault
   alias: vault
-  version: 0.28.0
+  version: 0.28.1
   repository: https://helm.releases.hashicorp.com
