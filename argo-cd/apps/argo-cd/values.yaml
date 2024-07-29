@@ -329,6 +329,13 @@ argo-cd:
   applicationSet:
     enabled: true
     replicas: 1
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      hostname: ""
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      tls: true
     metrics:
       enabled: true
       serviceMonitor:
