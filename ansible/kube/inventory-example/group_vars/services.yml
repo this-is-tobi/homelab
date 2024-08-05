@@ -14,7 +14,7 @@ certManager:
     repoUrl: "https://charts.jetstack.io"
     repoName: "jetstack"
     chartName: "cert-manager"
-    chartVersion: "1.15.0"
+    chartVersion: "1.15.2"
   namespace: "cert-manager-system"
   email: "example@domain.com"
 longhorn:
