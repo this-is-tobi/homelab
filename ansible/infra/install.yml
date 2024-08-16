@@ -1,6 +1,8 @@
 # All
 - hosts: all
   become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
   serial: 1
   roles:
     - name: common/upgrade

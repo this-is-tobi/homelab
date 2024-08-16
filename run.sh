@@ -85,9 +85,9 @@ fi
 
 # Run ansible
 if [ ! "$PLAYBOOK" = "false" ]; then
+  PLAYBOOK="$(readlink -f $PLAYBOOK)"
+  export ANSIBLE_CONFIG="$(dirname $PLAYBOOK)/ansible.cfg"
   if [[ "$PLAYBOOK" =~ ^ansible/kube/.* || "$PLAYBOOK" =~ ^\./ansible/kube/.*  ]]; then
-    PLAYBOOK="$(readlink -f $PLAYBOOK)"
-    export ANSIBLE_CONFIG="$SCRIPT_PATH/ansible/$(echo $PLAYBOOK | sed 's|^\./||' | cut -d'/' -f1)/ansible.cfg"
     CONTEXT=$(kubectl config current-context)
     printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
     read ANSWER
