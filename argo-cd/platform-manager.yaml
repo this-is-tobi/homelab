@@ -37,7 +37,7 @@ spec:
       finalizers:
       - resources-finalizer.argocd.argoproj.io
     spec:
-      project: '{{.project}}'
+      project: admin
       revisionHistoryLimit: 3
       source:
         repoURL: https://github.com/this-is-tobi/homelab.git

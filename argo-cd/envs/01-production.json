@@ -1,6 +1,5 @@
 {
   "env": "production",
-  "project": "admin",
   "provider": "self-hosted",
   "region": "fr-par",
   "suffix": {
