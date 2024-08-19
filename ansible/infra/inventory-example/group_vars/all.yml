@@ -1,5 +1,11 @@
+# Ansible infos
 ansible_user: devops
 ansible_port: 22
-
+# Lab domains
 rootDomain: "example.domain.com"
 localRootDomain: "example.domain.local"
+# Admin users
+adminUsers: []
+# - username: ""
+#   sshPubKey: ""
+#   state: present # absent

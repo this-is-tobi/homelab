@@ -10,17 +10,6 @@ A host is configured as the gateway to the local network (*i.e handle all incomi
 - [PiHole](https://pi-hole.net/) *(optional)* for advertisements filtering.
 - [Wireguard](https://www.wireguard.com/) *(optional)* for external access to the local network (*i.e from internet*). VPN clients could be add using the web interface (see. services section).
 
-## Bastion
-
-A host is configured as the bastion to access kubernetes ressources. As previously mentioned, a wireguard profile conf is generated for every `bastionUsers` set in [group_vars/all.yml](../ansible/infra/inventory-example/group_vars/all.yml).
-
-Bastion is available on the local network using ssh :
-
-1. Connect to the vpn using the wireguard user profile conf.
-2. Connect to the bastion using `ssh <username>@<bastion_ip> -i <ssh_key>`.
-
-Set `setup: true` on the user object to install common packages and default zsh configuration.
-
 ## K3S cluster
 
 Some hosts are configrured to run [k3s](https://k3s.io) (*Lightweight Kubernetes*) with the following roles :

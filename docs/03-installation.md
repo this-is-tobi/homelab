@@ -45,9 +45,8 @@ Actions Runner Controller uses [Sops](https://github.com/getsops/sops) encrypted
 > *Decrypt secrets by running `./run.sh -d` and encrypt secrets by running `./run.sh -e`, do not forget to recrypt secrets when changes are made.*
 
 
-To create user access to the bastion, it is required to provide their informations in the `groups_vars/bastion.yml` file :
-- Set `setup: true` to setup the working environment for the given user.
-- Put user ssh public key in the inventory file, this will grant user access to the bastion by adding `authorized_keys`.
+To create admin access to the machines, it is required to provide their informations in the `groups_vars/all.yml` file :
+- Put user ssh public key in the inventory file, this will grant admin access to the infrastructure by adding `authorized_keys`.
 
 > __*Notes*__:
 >
@@ -60,9 +59,6 @@ Various tags are available in the playbooks (*for more details, take a look at t
 
 __Infra :__
 ```sh
-# Deploy bastion
-./run.sh -p ./ansible/infra/install.yml -t bastion
-
 # Deploy gateway
 ./run.sh -p ./ansible/infra/install.yml -t gateway
 

@@ -22,8 +22,8 @@
 
 - name: Activating cgroup support
   ansible.builtin.lineinfile:
-    path: /boot/cmdline.txt
-    # path: /boot/firmware/cmdline.txt
+    # path: /boot/cmdline.txt
+    path: /boot/firmware/cmdline.txt
     regexp: '^((?!.*\bcgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory\b).*)$'
     line: '\1 cgroup_enable=cpuset cgroup_memory=1 cgroup_enable=memory'
     backrefs: true
@@ -53,12 +53,12 @@
       - curl
       - grep
 
-- name: Comment out "search" line in resolv.conf
-  ansible.builtin.replace:
-    path: /etc/resolv.conf
-    regexp: '^search(.*)$'
-    replace: '#\g<0>'
+# - name: Comment out "search" line in resolv.conf
+#   ansible.builtin.replace:
+#     path: /etc/resolv.conf
+#     regexp: '^search(.*)$'
+#     replace: '#\g<0>'
 
-- name: Ensure resolv.conf is immutable
-  ansible.builtin.command: chattr +i /etc/resolv.conf
-  notify: reboot
+# - name: Ensure resolv.conf is immutable
+#   ansible.builtin.command: chattr +i /etc/resolv.conf
+#   notify: reboot

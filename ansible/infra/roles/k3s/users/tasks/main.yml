@@ -1,0 +1,3 @@
+- name: Create kubernetes users
+  ansible.builtin.include_tasks: users.yml
+  loop: "{{ adminUsers }}"

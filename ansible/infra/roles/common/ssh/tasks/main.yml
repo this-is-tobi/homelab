@@ -15,8 +15,15 @@
     mode: 0644
   notify: restart sshd
 
-- name: Add ssh key in authorized_keys
+- name: Add super admin ssh key in authorized_keys
   ansible.builtin.authorized_key:
     user: "{{ ansible_user }}"
     state: present
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Add admin users ssh keys in authorized_keys
+  ansible.builtin.authorized_key:
+    user: "{{ ansible_user }}"
+    state: "{{ item.state }}"
+    key: "{{ item.sshPubKey }}"
+  loop: "{{ adminUsers }}"

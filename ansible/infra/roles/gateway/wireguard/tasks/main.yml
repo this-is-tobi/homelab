@@ -52,4 +52,8 @@
       project_src: "/services/wireguard"
       files:
         - "docker-compose.yml"
+
+  - name: Create wireguard users
+    ansible.builtin.include_tasks: users.yml
+    loop: "{{ adminUsers }}"
   when: wireguard.enabled

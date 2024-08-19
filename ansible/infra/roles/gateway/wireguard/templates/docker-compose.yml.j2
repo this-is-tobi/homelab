@@ -9,8 +9,8 @@ services:
       WG_HOST: "{{ wireguard.domain }}"
       PASSWORD: "{{ wireguard.password }}"
       WG_DEFAULT_DNS: "{{ gatewayIp }}, 9.9.9.9"
-      WG_DEFAULT_ADDRESS: "{{ wireguard.ipRange }}"
-      WG_ALLOWED_IPS: "{{ wireguard.allowedIps }}"
+      WG_DEFAULT_ADDRESS: "{{ wireguard.ipRange | default('10.6.0.x') }}"
+      WG_ALLOWED_IPS: "{{ wireguard.allowedIps | default('0.0.0.0/0, ::/0') }}"
       WG_POST_UP: ""
       WG_POST_DOWN: ""
     volumes:

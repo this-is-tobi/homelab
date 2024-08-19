@@ -71,6 +71,19 @@
     - k3s-deploy
     - k3s-workers
 
+- hosts: localhost
+  become: false
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
+  vars_files:
+    - ./inventory/group_vars/all.yml
+  roles:
+    - k3s/users
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-users
+
 # K3S - Destroy
 - hosts: k3s
   become: true
@@ -81,22 +94,3 @@
     - k3s/destroy
   tags:
     - k3s-destroy
-
-# Bastion
-- hosts: bastion
-  become: true
-  vars_files:
-    - ./inventory/group_vars/all.yml
-    - ./inventory/group_vars/k3s.yml
-    - ./inventory/group_vars/bastion.yml
-  roles:
-    - common/hostname
-    - common/locales
-    - common/ssh
-    - common/docker
-    - bastion
-  tags:
-    - k3s
-    - k3s-deploy
-    - k3s-bastion
-    - bastion

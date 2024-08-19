@@ -1,17 +1,20 @@
 - name: Create cert directory
+  delegate_to: localhost
   ansible.builtin.file:
-    path: /home/{{ item.username }}/.crt
+    path: /tmp/homelab/{{ item.username }}/.crt
     state: directory
 
 - name: Generate an OpenSSL private key
+  delegate_to: localhost
   community.crypto.openssl_privatekey:
-    path: /home/{{ item.username }}/.crt/kube.key
+    path: /tmp/homelab/{{ item.username }}/.crt/kube.key
     size: 2048
 
 - name: Generate an OpenSSL Certificate Signing Request
+  delegate_to: localhost
   community.crypto.openssl_csr:
-    path: /home/{{ item.username }}/.crt/kube.csr
-    privatekey_path: /home/{{ item.username }}/.crt/kube.key
+    path: /tmp/homelab/{{ item.username }}/.crt/kube.csr
+    privatekey_path: /tmp/homelab/{{ item.username }}/.crt/kube.key
     common_name: "{{ item.username }}"
 
 - name: Create k8s CertificateRequest
@@ -35,16 +38,18 @@
   kubernetes.core.k8s_info:
     kind: CertificateSigningRequest
     name: user-request-{{ item.username }}
-  register: bastion_user_certificate
+  register: admin_user_certificate
 
 - name: Fetch user certificate
+  delegate_to: localhost
   ansible.builtin.copy:
-    content: "{{ bastion_user_certificate.resources[0].status.certificate | b64decode }}"
-    dest: /home/{{ item.username }}/.crt/kube.crt
+    content: "{{ admin_user_certificate.resources[0].status.certificate | b64decode }}"
+    dest: /tmp/homelab/{{ item.username }}/.crt/kube.crt
 
 - name: Create kube directory
+  delegate_to: localhost
   ansible.builtin.file:
-    path: /home/{{ item.username }}/.kube
+    path: /tmp/homelab/{{ item.username }}/.kube
     state: directory
     owner: "{{ item.username }}"
     group: "{{ item.username }}"
@@ -52,9 +57,10 @@
   become: true
 
 - name: Create kubeconfig
+  delegate_to: localhost
   ansible.builtin.template:
     src: kubeconfig.yml.j2
-    dest: /home/{{ item.username }}/.kube/config
+    dest: /tmp/homelab/{{ item.username }}/.kube/config
     owner: "{{ item.username }}"
     group: "{{ item.username }}"
     mode: 0644

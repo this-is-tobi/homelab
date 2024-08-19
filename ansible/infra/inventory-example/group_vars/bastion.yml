@@ -1,5 +1,0 @@
-bastionUsers:
-  - username: ""
-    sshKey: ""
-    setup: true
-    state: present # absent

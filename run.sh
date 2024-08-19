@@ -16,7 +16,7 @@ ENCRYPT="false"
 UPDATE="false"
 
 # Declare script helper
-TEXT_HELPER="\nThis script aims to install a full homelab with gateway, bastion and k3s cluster.
+TEXT_HELPER="\nThis script aims to install a full homelab with gateway and k3s cluster.
 Following flags are available:
 
   -d    Decrypt data using Sops.

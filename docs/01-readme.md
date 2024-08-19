@@ -2,7 +2,7 @@
 
 This project aims to build a homelab for personal testing on infrastructure, development, CI/CD, etc...
 
-It provides a complete configuration with common web services using ansible as a deployment tool for both infrastructure  (gateway, bastion and [k3s](https://k3s.io) cluster) and applications running mainly in Kubernetes.
+It provides a complete configuration with common web services using ansible as a deployment tool for both infrastructure  (gateway and [k3s](https://k3s.io) cluster) and applications running mainly in Kubernetes.
 
 It is a quick starting point for simple infrastructure needs or for testing various tools such as monitoring, alerting, automated deployment, security testing, etc...
 
@@ -25,7 +25,6 @@ cp -R ./ansible/kube/inventory-example ./ansible/kube/inventory
 __Setup inventory:__
 - [host.yml](../ansible/infra/inventory-example/hosts.yml)
 - [all.yml](../ansible/infra/inventory-example/group_vars/all.yml)
-- [bastion.yml](../ansible/infra/inventory-example/group_vars/bastion.yml)
 - [gateway.yml](../ansible/infra/inventory-example/group_vars/gateway.yml)
 - [k3s.yml](../ansible/infra/inventory-example/group_vars/k3s.yml)
 
