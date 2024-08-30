@@ -1,0 +1,69 @@
+traefik:
+  podAnnotations:
+    prometheus.io/port: "8082"
+    prometheus.io/scrape: "true"
+  providers:
+    kubernetesCRD:
+      enabled: true
+      namespaces: []
+    kubernetesIngress:
+      enabled: true
+      namespaces: []
+      publishedService:
+        enabled: true
+  rbac:
+    enabled: true
+  priorityClassName: "system-cluster-critical"
+  tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+  service:
+    ipFamilyPolicy: "PreferDualStack"
+  ingressClass:
+    enabled: true
+    isDefaultClass: true
+    name: traefik
+  ports:
+    metrics:
+      expose:
+        default: false
+        internal: false
+      exposedPort: 9100
+      port: 9100
+      protocol: TCP
+    traefik:
+      expose:
+        default: false
+        internal: false
+      exposedPort: 9000
+      port: 9000
+      protocol: TCP
+    web:
+      expose:
+        default: true
+        internal: false
+      exposedPort: 80
+      port: 8000
+      protocol: TCP
+      redirectTo:
+        port: websecure
+    websecure:
+      expose:
+        default: true
+        internal: false
+      exposedPort: 443
+      http3:
+        enabled: false
+      middlewares: []
+      port: 8443
+      protocol: TCP
+  metrics:
+    prometheus:
+      service:
+        enabled: true
