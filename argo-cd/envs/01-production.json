@@ -14,6 +14,7 @@
     { "app": "actions-runner-controller", "enabled": "true" },
     { "app": "argo-cd", "enabled": "false" },
     { "app": "argo-workflows", "enabled": "true" },
+    { "app": "cert-manager", "enabled": "false" },
     { "app": "cloudnative-pg", "enabled": "true" },
     { "app": "coder", "enabled": "false" },
     { "app": "dashy", "enabled": "true" },
