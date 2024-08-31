@@ -26,7 +26,7 @@ frontend homelab_entrypoint_lb
 
 frontend k3s_api_server_lb
   bind *:6443
-  acl white_list src {{ (gatewayIp + '/255.255.255.0') | ansible.utils.ipaddr('network/prefix') }} {{ haproxy.extraKubeAllowedIps }}
+  acl white_list src {{ (gatewayIp + '/255.255.0.0') | ansible.utils.ipaddr('network/prefix') }} {{ haproxy.extraKubeAllowedIps }}
   tcp-request connection reject if !white_list
   default_backend k3s_api_server
 
