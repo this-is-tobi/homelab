@@ -23,11 +23,6 @@
         - core
         - longhorn-core
 
-    - name: ./roles/services/core/cert-manager
-      tags:
-        - core
-        - cert-manager-core
-
     - name: ./roles/services/core/vault
       tags:
         - core
@@ -46,6 +41,5 @@
         'core' not in ansible_run_tags and
         'traefik-core' not in ansible_run_tags and
         'longhorn-core' not in ansible_run_tags and
-        'cert-manager-core' not in ansible_run_tags and
         'vault-core' not in ansible_run_tags and
         'argo-cd-core' not in ansible_run_tags

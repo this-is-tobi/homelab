@@ -14,7 +14,7 @@
     { "app": "actions-runner-controller", "enabled": "true", "syncWave": 10 },
     { "app": "argo-cd", "enabled": "false", "syncWave": 20 },
     { "app": "argo-workflows", "enabled": "true", "syncWave": 20 },
-    { "app": "cert-manager", "enabled": "false", "syncWave": -1 },
+    { "app": "cert-manager", "enabled": "true", "syncWave": -1 },
     { "app": "cloudnative-pg", "enabled": "true", "syncWave": 0 },
     { "app": "coder", "enabled": "false", "syncWave": 20 },
     { "app": "dashy", "enabled": "true", "syncWave": 30 },

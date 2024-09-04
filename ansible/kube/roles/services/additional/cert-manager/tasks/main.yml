@@ -1,0 +1,18 @@
+
+- block:
+  # Init
+  - name: Init
+    ansible.builtin.include_role:
+      name: services/utils/initialize
+
+  # Install
+  - name: Refresh application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/refresh.yml
+    vars:
+      argocd_app: cert-manager
+
+  - name: Sync application
+    ansible.builtin.include_tasks: roles/services/utils/synchronize/tasks/sync.yml
+    vars:
+      argocd_app: cert-manager
+  when: '"cert-manager" in enabled_services'

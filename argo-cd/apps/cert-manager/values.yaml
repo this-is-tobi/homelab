@@ -6,5 +6,5 @@ cert-manager:
       enabled: true
 
 clusterIssuer:
-  email: ""
-  ingressClassName: ""
+  email: "this-is-tobi@proton.me"
+  ingressClassName: "traefik"
