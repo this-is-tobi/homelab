@@ -30,6 +30,7 @@ spec:
       name: '{{.app}}{{.suffix.name}}'
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
+        argocd.argoproj.io/sync-wave: '{{.syncWave}}'
       labels:
         platform.env: '{{.env}}'
         platform.provider: '{{.provider}}'
