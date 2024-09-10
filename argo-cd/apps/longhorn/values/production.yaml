@@ -1,0 +1,29 @@
+longhorn:
+  persistence:
+    defaultClass: true
+    defaultFsType: ext4
+    defaultClassReplicaCount: 3
+  defaultSettings:
+    createDefaultDiskLabeledNodes: true
+    defaultDataPath: /storage01
+    storageMinimalAvailablePercentage: 25
+    storageOverProvisioningPercentage: 200
+    storageReservedPercentageForDefaultDisk: 10
+    backupTarget: ""
+    backupTargetCredentialSecret: ""
+  metrics:
+    serviceMonitor:
+      enabled: true
+
+admin:
+  username: ""
+  password: ""
+ingress:
+  enabled: true
+backup:
+  enabled: true
+  s3:
+    accessKey: ""
+    secretKey: ""
+    endpoint: ""
+    virtualHostStyle: "true"
