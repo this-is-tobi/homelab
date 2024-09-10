@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: harbor-dashboard
-  labels:
-    grafana_dashboard: "1"
-data:
-  harbor.json: |
-{{ .Files.Get "grafana-dashboards/harbor.json" | indent 4 }}

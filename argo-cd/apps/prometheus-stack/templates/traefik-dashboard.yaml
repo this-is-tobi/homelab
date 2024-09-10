@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: traefik-dashboard
-  labels:
-    grafana_dashboard: "1"
-data:
-  traefik.json: |
-{{ .Files.Get "grafana-dashboards/traefik.json" | indent 4 }}

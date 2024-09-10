@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: trivy-dashboard
-  labels:
-    grafana_dashboard: "1"
-data:
-  trivy.json: |
-{{ .Files.Get "grafana-dashboards/trivy.json" | indent 4 }}

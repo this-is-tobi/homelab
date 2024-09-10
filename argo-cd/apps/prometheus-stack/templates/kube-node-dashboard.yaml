@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: kube-node-dashboard
-  labels:
-    grafana_dashboard: "1"
-data:
-  kube-node.json: |
-{{ .Files.Get "grafana-dashboards/kube-node.json" | indent 4 }}
