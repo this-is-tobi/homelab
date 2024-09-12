@@ -37,9 +37,6 @@ controller:
     enabled: true
     serviceMonitor:
       enabled: true
-  env:
-  - name: ARGOCD_SYNC_WAVE_DELAY
-    value: "30"
 server:
   replicas: 2
   autoscaling:
@@ -70,9 +67,6 @@ applicationSet:
     enabled: true
     serviceMonitor:
       enabled: true
-  extraEnv:
-  - name: ARGOCD_SYNC_WAVE_DELAY
-    value: "30"
 dex:
   enabled: false
   nodeSelector:
