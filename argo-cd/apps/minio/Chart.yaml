@@ -1,10 +1,10 @@
 apiVersion: v2
 name: minio
 type: application
-version: 14.7.13
-appVersion: "2024.9.22"
+version: 14.7.15
+appVersion: "2024.10.2"
 dependencies:
 - name: minio
   alias: minio
-  version: 14.7.13
+  version: 14.7.15
   repository: https://charts.bitnami.com/bitnami
