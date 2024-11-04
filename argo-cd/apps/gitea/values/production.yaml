@@ -35,16 +35,15 @@ gitea:
       username: <path:secret/data/platforms/production/apps/gitea#admin | jsonPath {.username}>
       password: <path:secret/data/platforms/production/apps/gitea#admin | jsonPath {.password}>
       email: admin@<path:secret/data/platforms/production/apps/gitea#domain>
-    # oauth:
-    # - name: Keycloak
-    #   provider: openidConnect
-    #   active: true
-    #   key: <path:secret/data/platforms/production/apps/gitea#keycloak | jsonPath {.clientId}>
-    #   secret: <path:secret/data/platforms/production/apps/gitea#keycloak | jsonPath {.clientSecret}>
-    #   autoDiscoverUrl: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/.well-known/openid-configuration
-    #   scopes: openid profile email roles groups
-    #   adminGroup: admin
-    #   groupClaimName: groups
+    oauth:
+    - name: Keycloak
+      provider: openidConnect
+      key: <path:secret/data/platforms/production/apps/gitea#keycloak | jsonPath {.clientId}>
+      secret: <path:secret/data/platforms/production/apps/gitea#keycloak | jsonPath {.clientSecret}>
+      autoDiscoverUrl: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/.well-known/openid-configuration
+      scopes: openid profile email roles groups
+      adminGroup: admin
+      groupClaimName: groups
     #   groupTeamMap: ""
     #   groupTeamMapRemoval: true
     config:

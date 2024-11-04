@@ -35,10 +35,9 @@ gitea:
       username: ""
       password: ""
       email: ""
-    # oauth:
+    oauth: []
     # - name: Keycloak
     #   provider: openidConnect
-    #   active: true
     #   key: ""
     #   secret: ""
     #   autoDiscoverUrl: ""
