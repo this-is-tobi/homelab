@@ -38,23 +38,23 @@ dashy:
       sections:
         - name: Services
           icon: fas fa-rocket
-          items:
-            - title: Argo-workflows
-              description: Workflow Engine for Kubernetes
-              url: ""
-              icon: hl-argocd
-            - title: Grafana
-              description: Watch cluster metrics & application logs
-              url: ""
-              icon: hl-grafana
-            - title: Harbor
-              description: Container image registry & Helm chart registry
-              url: ""
-              icon: hl-harbor
-            - title: Minio
-              description: Store data with s3 standard
-              url: ""
-              icon: hl-minio
+          items: []
+            # - title: Argo-workflows
+            #   description: Workflow Engine for Kubernetes
+            #   url: ""
+            #   icon: hl-argocd
+            # - title: Grafana
+            #   description: Watch cluster metrics & application logs
+            #   url: ""
+            #   icon: hl-grafana
+            # - title: Harbor
+            #   description: Container image registry & Helm chart registry
+            #   url: ""
+            #   icon: hl-harbor
+            # - title: Minio
+            #   description: Store data with s3 standard
+            #   url: ""
+            #   icon: hl-minio
           displayData:
             sortBy: alphabetical
             collapsed: false
