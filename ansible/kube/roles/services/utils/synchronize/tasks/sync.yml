@@ -3,7 +3,7 @@
   ansible.builtin.set_fact:
     argocd_platform_name: "{{ lookup('template', '{{ playbook_dir }}/../../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
     argocd_platform_namespace: "{{ lookup('template', '{{ playbook_dir }}/../../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.namespace') }}"
-    argocd_platform_project: "{{ lookup('template', '{{ playbook_dir }}/../../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('spec.project') }}"
+    argocd_platform_project: "{{ lookup('template', '{{ playbook_dir }}/../../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('spec.template.spec.project') }}"
     argocd_app_name: "{{ argocd_app }}{{ platform_env.conf.suffix.name }}"
 
 - name: Synchronize argocd application
@@ -57,7 +57,7 @@
   # until: >
   #   argocd_app_status.json.status.sync.status == 'Synced' and
   #   argocd_app_status.json.status.health.status == 'Healthy'
-  until: argocd_app_status.json.status.health.status == 'Healthy'
+  until: argocd_app_status.json and argocd_app_status.json.status.health.status == 'Healthy'
   retries: 60
   delay: 20
   when: wait_sync | default(true)
