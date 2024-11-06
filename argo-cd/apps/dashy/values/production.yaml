@@ -55,6 +55,10 @@ dashy:
               description: Container image registry & Helm chart registry
               url: https://<path:secret/data/platforms/production/apps/harbor#domain>
               icon: hl-harbor
+            - title: Mattermost
+              description: Team communication service
+              url: https://<path:secret/data/platforms/production/apps/mattermost#domain>
+              icon: hl-mattermost
             - title: Minio
               description: Store data with s3 standard
               url: https://<path:secret/data/platforms/production/apps/minio#domain>
