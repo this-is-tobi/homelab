@@ -4,7 +4,7 @@ type: application
 version: 6.6.63
 appVersion: "10.0.0"
 dependencies:
-- name: mattermost
+- name: mattermost-team-edition
   alias: mattermost
   version: 6.6.63
   repository: https://helm.mattermost.com

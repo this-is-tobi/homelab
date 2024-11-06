@@ -23,7 +23,7 @@
     { "app": "keycloak", "enabled": "true", "syncWave": 10 },
     { "app": "kubernetes-dashboard", "enabled": "false", "syncWave": 20 },
     { "app": "loki", "enabled": "false", "syncWave": 20 },
-    { "app": "mattermost", "enabled": "false", "syncWave": 20 },
+    { "app": "mattermost", "enabled": "true", "syncWave": 20 },
     { "app": "minio", "enabled": "true", "syncWave": 20 },
     { "app": "outline", "enabled": "false", "syncWave": 20 },
     { "app": "prometheus-stack", "enabled": "true", "syncWave": 20 },
