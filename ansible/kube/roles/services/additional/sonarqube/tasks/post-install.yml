@@ -9,7 +9,6 @@
     sonarqube_domain: "{{ current_vault_values.secret.domain }}"
     sonarqube_username: "{{ current_vault_values.secret.admin.username }}"
     sonarqube_password: "{{ current_vault_values.secret.admin.password }}"
-    sonarqube_token: "{{ current_vault_values.secret.admin.token }}"
     sonarqube_client_id: "{{ current_vault_values.secret.keycloak.clientId }}"
     sonarqube_client_secret: "{{ current_vault_values.secret.keycloak.clientSecret }}"
 
