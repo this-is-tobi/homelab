@@ -4,8 +4,8 @@
     name: services/utils/check
 
 - block:
-  # Check configmap
-  - name: Check configmap
+  # Check helm values
+  - name: Check values
     ansible.builtin.include_tasks: check.yml
 
   # Init
