@@ -1,10 +1,10 @@
 apiVersion: v2
 name: mattermost
 type: application
-version: 6.6.63
-appVersion: "10.0.0"
+version: 6.6.66
+appVersion: "10.2.0"
 dependencies:
 - name: mattermost-team-edition
   alias: mattermost
-  version: 6.6.63
+  version: 6.6.66
   repository: https://helm.mattermost.com
