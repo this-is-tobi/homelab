@@ -1,10 +1,10 @@
 apiVersion: v2
 name: sonarqube
 type: application
-version: 10.6.1+3163
-appVersion: "10.6.1"
+version: 10.7.0+3598
+appVersion: "10.7.0"
 dependencies:
 - name: sonarqube
   alias: sonarqube
-  version: 10.6.1+3163
+  version: 10.7.0+3598
   repository: https://SonarSource.github.io/helm-chart-sonarqube
