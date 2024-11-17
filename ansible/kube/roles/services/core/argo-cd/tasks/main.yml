@@ -85,11 +85,6 @@
     state: present
     values: "{{ lookup('template', 'helm-values.yml.j2') | from_yaml }}"
 
-# Setup sso
-- name: Setup SSO
-  ansible.builtin.include_tasks: sso.yml
-  when: argocd.sso.enabled
-
 # Post install
 - name: Deploy argocd admin project
   kubernetes.core.k8s:
@@ -108,10 +103,13 @@
   ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
   vars:
     vault_values:
+      keycloak:
+        domain: null
+        realm: null
+        username: null
+        password: null
       argo-cd:
         domain: "{{ argocd.domain }}"
         keycloak:
-          domain: null
-          realm: null
-          clientId: null
+          clientId: "argo-cd-core"
           clientSecret: null

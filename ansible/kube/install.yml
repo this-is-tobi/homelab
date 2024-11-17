@@ -48,4 +48,9 @@
         'longhorn-core' not in ansible_run_tags and
         'cert-manager-core' not in ansible_run_tags and
         'vault-core' not in ansible_run_tags and
-        'argo-cd-core' not in ansible_run_tags
+        'argo-cd-core' not in ansible_run_tags and
+        'sso-core' not in ansible_run_tags
+
+    - name: ./roles/services/core/sso
+      tags:
+        - sso-core

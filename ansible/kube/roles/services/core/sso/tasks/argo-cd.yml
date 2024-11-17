@@ -1,0 +1,65 @@
+# Setup keycloak client
+- name: Create argo-cd client
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ core_keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ core_keycloak_username }}"
+    auth_password: "{{ core_keycloak_password }}"
+    realm: "{{ core_keycloak_realm }}"
+    client_id: "{{ argo_cd_core_client_id }}"
+    name: "{{ argo_cd_core_client_id }}"
+    always_display_in_console: true
+    frontchannel_logout: true
+    enabled: true
+    redirect_uris:
+      - https://{{ argo_cd_core_domain }}/*
+    web_origins:
+      - https://{{ argo_cd_core_domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: true
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    default_client_scopes:
+      - profile
+      - email
+      - groups
+      - roles
+    state: present
+
+- name: Get argo-cd client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ argo_cd_core_client_id }}"
+    realm: "{{ core_keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ core_keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ core_keycloak_username }}"
+    auth_password: "{{ core_keycloak_password }}"
+  register: argo_cd_core_client_secret
+  no_log: true
+
+- name: Create vault secret
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
+  vars:
+    vault_values:
+      argo-cd:
+        keycloak:
+          clientSecret: "{{ argo_cd_core_client_secret.clientsecret_info.value }}"
+
+# Setup oidc
+- name: Add sso config to argocd
+  kubernetes.core.k8s:
+    kind: ConfigMap
+    name: argocd-cm
+    definition:
+      data:
+        oidc.config: |
+          name: Keycloak
+          issuer: https://<path:secret/data/core/infos#keycloak | jsonPath {.domain}>/realms/<path:secret/data/core/infos#keycloak | jsonPath {.realm}>
+          clientID: <path:secret/data/core/infos#argo-cd | jsonPath {.keycloak.clientId}>
+          clientSecret: <path:secret/data/core/infos#argo-cd | jsonPath {.keycloak.clientSecret}>
+          requestedScopes: ["openid", "profile", "email", "roles", "groups"]
+    state: patched

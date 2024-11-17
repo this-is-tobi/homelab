@@ -1,3 +1,55 @@
+# Setup keycloak client
+- name: Create vault client
+  community.general.keycloak_client:
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ core_keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ core_keycloak_username }}"
+    auth_password: "{{ core_keycloak_password }}"
+    realm: "{{ core_keycloak_realm }}"
+    client_id: "{{ vault_core_client_id }}"
+    name: "{{ vault_core_client_id }}"
+    always_display_in_console: true
+    frontchannel_logout: true
+    enabled: true
+    redirect_uris:
+      - https://{{ vault_core_domain }}/*
+    web_origins:
+      - https://{{ vault_core_domain }}
+    standard_flow_enabled: true
+    implicit_flow_enabled: false
+    direct_access_grants_enabled: true
+    clientAuthenticatorType: client-secret
+    public_client: false
+    protocol: openid-connect
+    default_client_scopes:
+      - profile
+      - email
+      - groups
+      - roles
+    state: present
+
+- name: Get vault client secret
+  community.general.keycloak_clientsecret_info:
+    client_id: "{{ vault_core_client_id }}"
+    realm: "{{ core_keycloak_realm }}"
+    auth_client_id: admin-cli
+    auth_keycloak_url: https://{{ core_keycloak_domain }}
+    auth_realm: master
+    auth_username: "{{ core_keycloak_username }}"
+    auth_password: "{{ core_keycloak_password }}"
+  register: vault_core_client_secret
+  no_log: true
+
+- name: Create vault secret
+  ansible.builtin.include_tasks: roles/services/utils/secrets/tasks/write-infos.yml
+  vars:
+    vault_values:
+      vault:
+        keycloak:
+          clientSecret: "{{ vault_core_client_secret.clientsecret_info.value }}"
+
+# Setup oidc
 - name: Get auth methods
   ansible.builtin.uri:
     validate_certs: true
@@ -5,7 +57,7 @@
     method: GET
     status_code: [200, 400]
     headers:
-      "X-Vault-Token": "{{ vault.token }}"
+      "X-Vault-Token": "{{ vault_token }}"
   register: get_auth_method
 
 - name: Enable oidc auth method
@@ -15,7 +67,7 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault.token }}"
+      "X-Vault-Token": "{{ vault_token }}"
     body:
       "type": "oidc"
     body_format: json
@@ -28,11 +80,11 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault.token }}"
+      "X-Vault-Token": "{{ vault_token }}"
     body:
-      "oidc_discovery_url": "https://{{ keycloak.domain }}/realms/{{ keycloak.realm }}"
-      "oidc_client_id": "{{ keycloak.clientIds.vault }}"
-      "oidc_client_secret": "{{ vault_client_secret }}"
+      "oidc_discovery_url": "https://{{ core_keycloak_domain }}/realms/{{ core_keycloak_realm }}"
+      "oidc_client_id": "{{ vault_core_client_id }}"
+      "oidc_client_secret": "{{ vault_core_client_secret.clientsecret_info.value }}"
       "default_role": "default"
       "type": "oidc"
       "allowed_redirect_uris":
@@ -47,7 +99,7 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault.token }}"
+      "X-Vault-Token": "{{ vault_token }}"
     body:
       "oidc_scopes":
         - "openid"
@@ -56,7 +108,7 @@
         - "roles"
         - "groups"
       "bound_audiences":
-        - "{{ keycloak.clientIds.vault }}"
+        - "{{ vault_core_client_id }}"
       "claim_mappings":
         "prefered_username": "username"
         "email": "email"
@@ -76,7 +128,7 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_core_token }}"
+      "X-Vault-Token": "{{ vault_token }}"
     body: "{{ lookup('ansible.builtin.template', 'superadmin-policy.json.j2') }}"
     body_format: json
 
@@ -87,12 +139,12 @@
     method: POST
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_core_token }}"
+      "X-Vault-Token": "{{ vault_token }}"
     body:
       "name": "admin"
       "type": "external"
       "policies":
-        - "{{ item.admin }}"
+        - "admin"
     body_format: json
 
 - name: Get oidc accessor
@@ -102,7 +154,7 @@
     method: GET
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_core_token }}"
+      "X-Vault-Token": "{{ vault_token }}"
   register: oidc_auth
 
 - name: Get admin group id
@@ -112,7 +164,7 @@
     method: GET
     status_code: [200, 204]
     headers:
-      "X-Vault-Token": "{{ vault_core_token }}"
+      "X-Vault-Token": "{{ vault_token }}"
   register: user_group
 
 - name: Create admin group alias
@@ -122,7 +174,7 @@
     method: POST
     status_code: [200, 400]
     headers:
-      "X-Vault-Token": "{{ vault_core_token }}"
+      "X-Vault-Token": "{{ vault_token }}"
     body:
       "name": "admin"
       "mount_accessor": "{{ oidc_auth.json['oidc/'].accessor }}"
