@@ -23,7 +23,7 @@
 
 - name: Create minio bucket
   amazon.aws.s3_bucket:
-    name: "{{ bucket_name }}"
+    name: "{{ mattermost_s3_bucket_name }}"
     endpoint_url: "https://{{ minio_api_domain }}"
     aws_access_key: "{{ minio_username }}"
     aws_secret_key: "{{ minio_password }}"
@@ -41,7 +41,7 @@
     cmd: |
       mc admin policy create "{{ mc_alias.stdout }}" \
         "{{ mattermost_s3_access_key }}" \
-        "{{ playbook_dir }}/ansible/roles/services/additional/mattermost/templates/minio-policy.json"
+        "{{ playbook_dir }}/roles/services/additional/mattermost/templates/minio-policy.json"
 
 - name: Attach policy to user
   ansible.builtin.shell:
@@ -54,4 +54,4 @@
   ansible.builtin.shell:
     cmd: |
       mc quota set {{ mc_alias.stdout }}/{{ mattermost_s3_bucket_name }} \
-        --size 10Go
+        --size 10g
