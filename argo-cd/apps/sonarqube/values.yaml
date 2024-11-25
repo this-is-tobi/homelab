@@ -17,6 +17,7 @@ sonarqube:
     install:
       - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.22.0/sonarqube-community-branch-plugin-1.22.0.jar
       - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
+      - https://github.com/cnescatlab/sonar-cnes-report/releases/download/5.0.0/sonar-cnes-report-5.0.0.jar
   resources:
     limits:
       cpu: 800m
