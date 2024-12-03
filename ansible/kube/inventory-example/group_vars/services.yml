@@ -35,7 +35,7 @@ traefik:
     repoUrl: "https://traefik.github.io/charts"
     repoName: "traefik"
     chartName: "traefik"
-    chartVersion: "32.1.1"
+    chartVersion: "33.1.0"
   namespace: "traefik-system"
 vault:
   helm:
