@@ -54,11 +54,14 @@ spec:
           {{- end }}
         {{- else }}
         command:
-        - /bin/sh
+        - /bin/bash
         - -c
         args:
         - |
-          echo '{{- tpl (.Files.Get "scripts/vault-setup.sh") . | nindent 10 }}' > /tmp/vault-setup.sh
+          cat <<EOF > /tmp/vault-setup.sh
+          {{- tpl (.Files.Get "scripts/vault-setup.sh") . | nindent 10 }}
+          EOF
+          cat /tmp/vault-setup.sh
           chmod +x /tmp/vault-setup.sh
           /tmp/vault-setup.sh
         {{- end }}

@@ -26,7 +26,7 @@ vault:
     pullPolicy: "IfNotPresent"
     # -- Tag to use for the vault setup-helper.
     ## Overrides the image tag whose default is the chart appVersion.
-    tag: "latest"
+    tag: "1.1.0"
   # -- Annotations for the vault setup-helper deployed jobs.
   jobAnnotations: {}
   # -- Labels for the vault setup-helper deployed jobs.
@@ -59,7 +59,10 @@ vault:
   env:
   # -- Vault server address.
   - name: VAULT_ADDR
-    value: "https://vault-system-active.vault-system.svc.cluster.local:8200"
+    value: "http://vault-system-active.vault-system.svc.cluster.local:8200"
+  # -- Vault key value store name.
+  - name: VAULT_KV
+    value: "secret"
   # -- Vault token.
   - name: VAULT_TOKEN
     value: <path:secret/data/core/infos#vault | jsonPath {.admin.password}>
@@ -86,7 +89,7 @@ vault:
       domain: "gitops.ohmlab.fr"
       admin:
         username: "admin"
-        password: "84VoXrqH60PBDzpBX9Uo"
+        password: "84VoXrqH60PBDzpKs7rB"
       keycloak:
         clientId: "argo-cd"
       smtp:
