@@ -20,7 +20,7 @@ argo-cd:
             hs.status = "Healthy"
             return hs
       oidc.config: |
-        name: Keycloak
+        name: Vault
         issuer: ""
         clientID: ""
         clientSecret: ""

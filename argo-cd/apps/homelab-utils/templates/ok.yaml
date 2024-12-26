@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ok
+spec:
+  template:
+    spec:
+      containers:
+      - name: ok
+        image: ghcr.io/this-is-tobi/tools/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        args:
+        - "echo 'OK'"
+      restartPolicy: Never
+  backoffLimit: 3

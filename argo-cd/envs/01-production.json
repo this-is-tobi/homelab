@@ -20,6 +20,7 @@
     { "app": "dashy", "enabled": "true", "syncWave": 30 },
     { "app": "gitea", "enabled": "true", "syncWave": 20 },
     { "app": "harbor", "enabled": "true", "syncWave": 20 },
+    { "app": "homelab-utils", "enabled": "true", "syncWave": 0 },
     { "app": "keycloak", "enabled": "true", "syncWave": 10 },
     { "app": "kubernetes-dashboard", "enabled": "false", "syncWave": 20 },
     { "app": "loki", "enabled": "false", "syncWave": 20 },
