@@ -2,31 +2,21 @@
 
 # Function to generate a random password
 generate_password() {
-  echo "$(openssl rand -base64 16)" # Customize password length and complexity here
+  openssl rand -base64 15
 }
 
-# Recursive jq filter for processing data
-process_data_jq='
-  def process(data; current):
-    data as $d
-    | to_entries
-    | map(
-        if .value | type == "object" then
-          # Recursively process nested objects
-          .value = process(.value; current[.key] // {})
-        elif .key == "password" then
-          # Generate password if value is null or empty in both current and new data
-          if ((current[.key] == null or current[.key] == "") and ($d[.key] == null or $d[.key] == "")) then
-            .value = "'$(generate_password)'"
-          else
-            .value = (current[.key] // $d[.key])
-          end
-        else
-          .
-        end
-      )
-    | from_entries;
-  process(.data; .current)
+# Jq commands
+merge_json_jq='
+  ($current // {}) + ($data // {})
+'
+
+get_password_path='
+  walk(if type == "object" and has("password") and .password == null then .password = "" else . end) |
+  paths(.password? | select(. == "")) | map(tostring) | join(".") + ".password"
+'
+
+replace_password='
+  setpath($path | split("."); $password)
 '
 
 SECRETS="{{ .Values.vault.setupSecrets | toJson | b64enc }}"
@@ -41,11 +31,24 @@ for SECRET in $(echo "$SECRETS" | base64 -d | jq -c ".[]"); do
     "$VAULT_ADDR/v1/$VAULT_KV/data/$VAULT_PATH" | jq -c ".data.data" 2>/dev/null || echo "{}")
 
   # Process the new data with recursive password handling in jq
-  UPDATED_DATA=$(jq -n \
+  MERGED_DATA=$(jq -nc \
     --argjson data "$VAULT_DATA" \
     --argjson current "$CURRENT_VAULT_DATA" \
-    "$process_data_jq")
+    "$merge_json_jq")
 
+  UPDATED_DATA=$MERGED_DATA
+  for PASSWORD_PATH in $(echo "$MERGED_DATA" | jq -r "$get_password_path"); do
+    UPDATED_DATA=$(echo "$UPDATED_DATA" | jq -c \
+      --arg path "$PASSWORD_PATH" \
+      --arg password "$(generate_password)" \
+      "$replace_password")
+  done
+
+  # Prepare JSON payload
+  JSON_PAYLOAD=$(printf '{"data":%s}' "$UPDATED_DATA")
+
+  echo "CURRENT_VAULT_DATA: $CURRENT_VAULT_DATA"
+  echo "UPDATED_DATA: $UPDATED_DATA"
   # Compare the current Vault data with the updated data
   if [[ "$CURRENT_VAULT_DATA" != "$UPDATED_DATA" ]]; then
     echo "Updating secret at $VAULT_PATH in Vault..."
@@ -55,7 +58,7 @@ for SECRET in $(echo "$SECRETS" | base64 -d | jq -c ".[]"); do
       --header "Content-Type: application/json" \
       --header "X-Vault-Token: $VAULT_TOKEN" \
       --request POST \
-      --data "{ \"data\": $UPDATED_DATA }" \
+      --data "$JSON_PAYLOAD" \
       "$VAULT_ADDR/v1/$VAULT_KV/data/$VAULT_PATH"
   else
     echo "No changes for secret at $VAULT_PATH."

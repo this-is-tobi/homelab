@@ -58,10 +58,9 @@ spec:
         - -c
         args:
         - |
-          cat <<EOF > /tmp/vault-setup.sh
+          cat <<'EOF' > /tmp/vault-setup.sh
           {{- tpl (.Files.Get "scripts/vault-setup.sh") . | nindent 10 }}
           EOF
-          cat /tmp/vault-setup.sh
           chmod +x /tmp/vault-setup.sh
           /tmp/vault-setup.sh
         {{- end }}
