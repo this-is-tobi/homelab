@@ -1,15 +1,15 @@
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: HorizontalRunnerAutoscaler
 metadata:
-  name: cloud-pi-native-hra
+  name: this-is-tobi-hra
 spec:
   scaleDownDelaySecondsAfterScaleOut: 600
   githubAPICredentialsFrom:
     secretRef:
-      name: cloud-pi-native-secret
+      name: this-is-tobi-secret
   scaleTargetRef:
     kind: RunnerDeployment
-    name: cloud-pi-native-runner
+    name: this-is-tobi-runner
   minReplicas: 0 # 2
   maxReplicas: 0 # 4
   scaleUpTriggers:

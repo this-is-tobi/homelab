@@ -1,11 +1,11 @@
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
-  name: cloud-pi-native-runner
+  name: this-is-tobi-runner
 spec:
   template:
     spec:
-      repository: cloud-pi-native/console
+      repository: this-is-tobi/console
       githubAPICredentialsFrom:
         secretRef:
-          name: cloud-pi-native-secret
+          name: this-is-tobi-secret
