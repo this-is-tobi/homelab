@@ -394,7 +394,7 @@ argo-cd:
     extraContainers:
     - name: avp
       command: [/var/run/argocd/argocd-cmp-server]
-      image: quay.io/argoproj/argocd:v2.11.5
+      image: quay.io/argoproj/argocd:v2.13.2
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
@@ -418,7 +418,7 @@ argo-cd:
         mountPath: /usr/local/bin/argocd-vault-plugin
     - name: avp-helm
       command: [/var/run/argocd/argocd-cmp-server]
-      image: quay.io/argoproj/argocd:v2.11.5
+      image: quay.io/argoproj/argocd:v2.13.2
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
@@ -442,7 +442,7 @@ argo-cd:
         mountPath: /usr/local/bin/argocd-vault-plugin
     - name: avp-kustomize
       command: [/var/run/argocd/argocd-cmp-server]
-      image: quay.io/argoproj/argocd:v2.11.5
+      image: quay.io/argoproj/argocd:v2.13.2
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
