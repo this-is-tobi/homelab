@@ -10,12 +10,12 @@ spec:
   scaleTargetRef:
     kind: RunnerDeployment
     name: this-is-tobi-runner
-  minReplicas: 0 # 2
-  maxReplicas: 0 # 4
+  minReplicas: 4
+  maxReplicas: 4
   scaleUpTriggers:
   - githubEvent:
       workflowJob: {}
-    duration: 60m
+    duration: 30m
   # metrics:
   # - type: PercentageRunnersBusy
   #   scaleUpThreshold: '0.75'

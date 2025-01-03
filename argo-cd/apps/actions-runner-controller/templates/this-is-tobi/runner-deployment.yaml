@@ -5,7 +5,7 @@ metadata:
 spec:
   template:
     spec:
-      repository: this-is-tobi/console
+      repository: this-is-tobi/tools
       githubAPICredentialsFrom:
         secretRef:
           name: this-is-tobi-secret
