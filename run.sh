@@ -8,6 +8,7 @@ no_color='\033[0m'
 SCRIPT_PATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
 # Default
+export ANSIBLE_CONFIG="$SCRIPT_PATH/ansible/ansible.cfg"
 FETCH_KUBECONFIG="false"
 PLAYBOOK="false"
 TAGS="all"
@@ -16,7 +17,7 @@ ENCRYPT="false"
 UPDATE="false"
 
 # Declare script helper
-TEXT_HELPER="\nThis script aims to install a full homelab with gateway and k3s cluster.
+TEXT_HELPER="\nThis script aims to install a platform of services on a Kubernetes cluster.
 Following flags are available:
 
   -d    Decrypt data using Sops.
@@ -31,7 +32,7 @@ Following flags are available:
         Playbook should be passed as arg (ex: './run.sh -p ./ansible/kube/install.yml').
 
   -t    Tags to run with playbook, default is '$TAGS'.
-        This flag can be used with a CSV list (ex: -p 'minio,harbor').
+        This flag can be used with a CSV list (ex: -p 'keycloak,mattermost').
 
   -u    Update ansible dependencies.
 
@@ -64,20 +65,20 @@ done
 
 
 if [ "$DECRYPT" = "true" ]; then
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Decrypt data using Sops\n\n"
+  printf "\n\n${red}[kube manager].${no_color} Decrypt data using Sops\n\n"
   find ./argo-cd -name '*.enc.yaml' -exec bash -c 'sops -d {} > $(dirname {})/$(basename {} .enc.yaml).dec.yaml' \;
 fi
 
 
 if [ "$ENCRYPT" = "true" ]; then
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Encrypt data using Sops\n\n"
+  printf "\n\n${red}[kube manager].${no_color} Encrypt data using Sops\n\n"
   find ./argo-cd -name '*.dec.yaml' -exec bash -c 'sops -e {} > $(dirname {})/$(basename {} .dec.yaml).enc.yaml' \;
 fi
 
 
 # Update ansible dependencies
 if [ "$UPDATE" = "true" ]; then
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Update ansible collections\n\n"
+  printf "\n\n${red}[kube manager].${no_color} Update ansible collections\n\n"
   ansible-galaxy collection install -r $SCRIPT_PATH/ansible/infra/collections/requirements.yml --upgrade
   ansible-galaxy collection install -r $SCRIPT_PATH/ansible/kube/collections/requirements.yml --upgrade
 fi
@@ -89,14 +90,14 @@ if [ ! "$PLAYBOOK" = "false" ]; then
   export ANSIBLE_CONFIG="$(dirname $PLAYBOOK)/ansible.cfg"
   if [[ "$PLAYBOOK" =~ ^.*/ansible/kube/.*  ]]; then
     CONTEXT=$(kubectl config current-context)
-    printf "\n\n${red}[Homelab kube Manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
+    printf "\n\n${red}[kube manager].${no_color} You are using kubeconfig context '$CONTEXT', do you want to continue (Y/n)?\n"
     read ANSWER
     if [ "$ANSWER" != "${ANSWER#[Nn]}" ]; then
       exit 1
     fi
   fi
 
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Run ansible playbook\n\n"
+  printf "\n\n${red}[kube manager].${no_color} Run ansible playbook\n\n"
   if [ ! -z "$KUBECONFIG_PATH" ]; then
     ansible-playbook "$PLAYBOOK" --tag "$TAGS" -e K8S_AUTH_KUBECONFIG="$KUBECONFIG_PATH"
   elif [ ! -z "$KUBECONFIG" ]; then
@@ -109,7 +110,7 @@ fi
 
 # Copy kube config to local machine
 if [ "$FETCH_KUBECONFIG" = "true" ]; then
-  printf "\n\n${red}[Homelab kube Manager].${no_color} Copy kube config locally\n\n"
+  printf "\n\n${red}[kube manager].${no_color} Copy kube config locally\n\n"
 
   GATEWAY_IP=$(yq '[.gateway.hosts[][]][0]' ansible/infra/inventory/hosts.yml)
   MASTER_IP=$(yq '[.k3s.children.masters.hosts[][]][0]' ansible/infra/inventory/hosts.yml)
