@@ -1,10 +1,10 @@
 apiVersion: v2
 name: coder
 type: application
-version: 2.18.4
-appVersion: "2.18.4"
+version: 2.18.5
+appVersion: "2.18.5"
 dependencies:
 - name: coder
   alias: coder
-  version: 2.18.4
+  version: 2.18.5
   repository: https://helm.coder.com/v2
