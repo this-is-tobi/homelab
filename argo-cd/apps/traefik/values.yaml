@@ -51,7 +51,7 @@ traefik:
       exposedPort: 80
       port: 8000
       protocol: TCP
-      redirectTo:
+      redirections:
         port: websecure
     websecure:
       expose:
