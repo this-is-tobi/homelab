@@ -1,10 +1,10 @@
 apiVersion: v2
 name: keycloak
 type: application
-version: 24.4.4
+version: 24.4.8
 appVersion: "26.1.0"
 dependencies:
 - name: keycloak
   alias: keycloak
-  version: 24.4.4
+  version: 24.4.8
   repository: https://charts.bitnami.com/bitnami
