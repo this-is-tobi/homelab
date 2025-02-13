@@ -1,4 +1,6 @@
 gitea:
+  image:
+    tag: 1.23.3
   replicaCount: 3
   ingress:
     enabled: true
