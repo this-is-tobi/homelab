@@ -1,0 +1,279 @@
+# -- Provide a name in place of the default application name.
+nameOverride: ""
+# -- String to fully override the default application name.
+fullnameOverride: ""
+
+# Image credentials configuration.
+imageCredentials:
+  # -- Registry to pull images from.
+  registry: ""
+  # -- Username to pull images.
+  username: ""
+  # -- Password to pull images.
+  password: ""
+  # -- Email to pull images.
+  email: ""
+
+# Vault configuration.
+vault:
+  # -- Whether or not vault setup-helper should be enabled.
+  enabled: true
+  ## Vault setup-helper image.
+  image:
+    # -- Repository to use for the vault setup-helper.
+    repository: "ghcr.io/this-is-tobi/tools/homelab-utils"
+    # -- Image pull policy for the vault setup-helper.
+    pullPolicy: "IfNotPresent"
+    # -- Tag to use for the vault setup-helper.
+    ## Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+  # -- Annotations for the vault setup-helper deployed jobs.
+  jobAnnotations: {}
+  # -- Labels for the vault setup-helper deployed jobs.
+  jobLabels: {}
+  # -- Annotations for the vault setup-helper deployed pods.
+  podAnnotations: {}
+  # -- Labels for the vault setup-helper deployed pods.
+  podLabels: {}
+  # -- Restart policy for all containers within the pod.
+  restartPolicy: "OnFailure"
+  # -- Toggle and define pod-level security context.
+  podSecurityContext: {}
+    # fsGroup: 2000
+  container:
+    # -- Vault setup-helper container port.
+    port: 8080
+    # -- Vault setup-helper container command.
+    command: []
+    # -- Vault setup-helper container command args.
+    args: []
+    # -- Toggle and define container-level security context.
+    securityContext: {}
+      # capabilities:
+      #   drop:
+      #   - ALL
+      # readOnlyRootFilesystem: true
+      # runAsNonRoot: true
+      # runAsUser: 1000
+  # -- Vault setup-helper container env variables.
+  env:
+  # -- Vault server address.
+  - name: VAULT_ADDR
+    # value: "http://vault-system-active.vault-system.svc.cluster.local:8200"
+    value: <path:secret/data/core/infos#vault | jsonPath {.domain}>
+  # -- Vault key value store name.
+  - name: VAULT_KV
+    value: "secret"
+  # -- Vault token.
+  - name: VAULT_TOKEN
+    value: <path:secret/data/core/infos#vault | jsonPath {.token}>
+  # -- Vault setup-helper container env variables loaded from configmap or secret reference.
+  envFrom: []
+  # - configMapRef:
+  #     name: my-config
+  # - secretRef:
+  #     name: my-secret
+  resources:
+    requests:
+      # -- Memory request for the vault setup-helper.
+      memory: "128Mi"
+      # -- CPU request for the vault setup-helper.
+      cpu: "100m"
+    limits:
+      # -- Memory limit for the vault setup-helper.
+      memory: "128Mi"
+      # -- CPU limit for the vault setup-helper.
+      cpu: "100m"
+  setup:
+    vaultSecrets:
+    - path: "platforms/production/apps/argo-cd"
+      data:
+        domain: "gitops.tobi-or-not.com"
+        admin:
+          username: "admin"
+          password: ""
+        keycloak:
+          clientId: "argo-cd"
+        smtp:
+          server: ""
+          port: 465
+          username: ""
+          password: ""
+          email: "noreply@tobi-or-not.com"
+
+# Sops configuration.
+sops:
+  # -- Whether or not sops setup-helper should be enabled.
+  enabled: true
+  ## Sops setup-helper image.
+  image:
+    # -- Repository to use for the sops setup-helper.
+    repository: "ghcr.io/this-is-tobi/tools/homelab-utils"
+    # -- Image pull policy for the sops setup-helper.
+    pullPolicy: "IfNotPresent"
+    # -- Tag to use for the sops setup-helper.
+    ## Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+  # -- Annotations for the sops setup-helper deployed jobs.
+  jobAnnotations: {}
+  # -- Labels for the sops setup-helper deployed jobs.
+  jobLabels: {}
+  # -- Annotations for the sops setup-helper deployed pods.
+  podAnnotations: {}
+  # -- Labels for the sops setup-helper deployed pods.
+  podLabels: {}
+  # -- Restart policy for all containers within the pod.
+  restartPolicy: "OnFailure"
+  # -- Toggle and define pod-level security context.
+  podSecurityContext: {}
+    # fsGroup: 2000
+  container:
+    # -- Sops setup-helper container port.
+    port: 8080
+    # -- Sops setup-helper container command.
+    command: []
+    # -- Sops setup-helper container command args.
+    args: []
+    # -- Toggle and define container-level security context.
+    securityContext: {}
+      # capabilities:
+      #   drop:
+      #   - ALL
+      # readOnlyRootFilesystem: true
+      # runAsNonRoot: true
+      # runAsUser: 1000
+  # -- Sops setup-helper container env variables.
+  env:
+  # -- Sops server address.
+  - name: VAULT_ADDR
+    # value: "http://vault-system-active.vault-system.svc.cluster.local:8200"
+    value: <path:secret/data/core/infos#vault | jsonPath {.domain}>
+  # -- Sops key value store name.
+  - name: VAULT_KV
+    value: "secret"
+  # -- Sops token.
+  - name: VAULT_TOKEN
+    value: <path:secret/data/core/infos#vault | jsonPath {.token}>
+  # -- Sops setup-helper container env variables loaded from configmap or secret reference.
+  envFrom: []
+  # - configMapRef:
+  #     name: my-config
+  # - secretRef:
+  #     name: my-secret
+  resources:
+    requests:
+      # -- Memory request for the sops setup-helper.
+      memory: "128Mi"
+      # -- CPU request for the sops setup-helper.
+      cpu: "100m"
+    limits:
+      # -- Memory limit for the sops setup-helper.
+      memory: "128Mi"
+      # -- CPU limit for the sops setup-helper.
+      cpu: "100m"
+  setup:
+    vaultSecretsPath: "platforms/production/apps/sops"
+
+# Keycloak configuration.
+keycloak:
+  # -- Whether or not keycloak setup-helper should be enabled.
+  enabled: true
+  ## Sops setup-helper image.
+  image:
+    # -- Repository to use for the sops setup-helper.
+    repository: "ghcr.io/this-is-tobi/tools/homelab-utils"
+    # -- Image pull policy for the sops setup-helper.
+    pullPolicy: "IfNotPresent"
+    # -- Tag to use for the sops setup-helper.
+    ## Overrides the image tag whose default is the chart appVersion.
+    tag: "latest"
+  # -- Annotations for the sops setup-helper deployed jobs.
+  jobAnnotations: {}
+  # -- Labels for the sops setup-helper deployed jobs.
+  jobLabels: {}
+  # -- Annotations for the sops setup-helper deployed pods.
+  podAnnotations: {}
+  # -- Labels for the sops setup-helper deployed pods.
+  podLabels: {}
+  # -- Restart policy for all containers within the pod.
+  restartPolicy: "OnFailure"
+  # -- Toggle and define pod-level security context.
+  podSecurityContext: {}
+    # fsGroup: 2000
+  container:
+    # -- Sops setup-helper container port.
+    port: 8080
+    # -- Sops setup-helper container command.
+    command: []
+    # -- Sops setup-helper container command args.
+    args: []
+    # -- Toggle and define container-level security context.
+    securityContext: {}
+      # capabilities:
+      #   drop:
+      #   - ALL
+      # readOnlyRootFilesystem: true
+      # runAsNonRoot: true
+      # runAsUser: 1000
+  # -- Sops setup-helper container env variables.
+  env:
+  # -- Sops server address.
+  - name: VAULT_ADDR
+    # value: "http://vault-system-active.vault-system.svc.cluster.local:8200"
+    value: <path:secret/data/core/infos#vault | jsonPath {.domain}>
+  # -- Sops key value store name.
+  - name: VAULT_KV
+    value: "secret"
+  # -- Sops token.
+  - name: VAULT_TOKEN
+    value: <path:secret/data/core/infos#vault | jsonPath {.token}>
+  # -- Sops setup-helper container env variables loaded from configmap or secret reference.
+  envFrom: []
+  # - configMapRef:
+  #     name: my-config
+  # - secretRef:
+  #     name: my-secret
+  resources:
+    requests:
+      # -- Memory request for the sops setup-helper.
+      memory: "128Mi"
+      # -- CPU request for the sops setup-helper.
+      cpu: "100m"
+    limits:
+      # -- Memory limit for the sops setup-helper.
+      memory: "128Mi"
+      # -- CPU limit for the sops setup-helper.
+      cpu: "100m"
+  setup:
+    vaultSecretsPath: "platforms/production/apps/sops"
+    keycloakClients:
+    - id: "3ab1d7a6-dc49-4f33-b571-e307f6186515"
+      clientId: "argo-workflows"
+      name: "argo-workflows"
+      enabled: true
+      clientAuthenticatorType: "client-secret"
+      secret: "**********"
+      redirectUris:
+      - "https://workflows.ohmlab.fr/*"
+      webOrigins:
+      - "https://workflows.ohmlab.fr"
+      consentRequired: false
+      standardFlowEnabled: true
+      implicitFlowEnabled: false
+      directAccessGrantsEnabled: true
+      serviceAccountsEnabled: false
+      publicClient: false
+      frontchannelLogout: true
+      protocol: "openid-connect"
+      attributes:
+        realm_client: "false"
+        backchannel.logout.sessionrequired: "true"
+        backchannel.logout.revoke.offlinetokens: "false"
+      fullScopeAllowed: true
+      defaultClientScopes: 
+      - "profile"
+      - "roles"
+      - "groups"
+      - "basic"
+      - "email"
+      optionalClientScopes: []

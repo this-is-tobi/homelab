@@ -3,8 +3,8 @@ kind: Job
 metadata:
   name: {{ printf "%s-%s" (include "template.fullname" .) "vault" }}
   annotations:
-    # helm.sh/hook: pre-install
-    # helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
     {{- if .Values.vault.jobAnnotations }}
       {{- with .Values.vault.jobAnnotations }}
       {{- toYaml . | nindent 4 }}
@@ -77,10 +77,3 @@ spec:
         {{- end }}
         resources:
           {{- toYaml .Values.vault.resources | nindent 10 }}
-      #   volumeMounts:
-      #   - name: setup-script
-      #     mountPath: /scripts
-      # volumes:
-      # - name: setup-script
-      #   configMap:
-      #     name: {{ printf "%s-%s" (include "template.fullname" .) "vault-setup-script" }}

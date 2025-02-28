@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-%s" (include "template.fullname" .) "keycloak" }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded
+    {{- if .Values.keycloak.jobAnnotations }}
+      {{- with .Values.keycloak.jobAnnotations }}
+      {{- toYaml . | nindent 4 }}
+      {{- end }}
+    {{- end }}
+  labels:
+    {{- include "template.keycloak.selectorLabels" . | nindent 4 }}
+    {{- with .Values.keycloak.jobLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  template:
+    metadata:
+      {{- if .Values.keycloak.podAnnotations }}
+      annotations:
+        {{- with .Values.keycloak.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      labels:
+        {{- include "template.keycloak.selectorLabels" . | nindent 8 }}
+        {{- with .Values.keycloak.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- if and .Values.imageCredentials.username .Values.imageCredentials.password }}
+      imagePullSecrets:
+      - name: {{ include "template.imagePullSecret" . }}
+      {{- end }}
+      restartPolicy: {{ .Values.keycloak.restartPolicy }}
+      {{- if .Values.keycloak.podSecurityContext }}
+      securityContext:
+        {{- toYaml .Values.keycloak.podSecurityContext | nindent 12 }}
+      {{- end }}
+      containers:
+      - name: setup
+        image: {{ printf "%s:%s" .Values.keycloak.image.repository (.Values.keycloak.image.tag | default "latest") }}
+        imagePullPolicy: {{ .Values.keycloak.image.pullPolicy }}
+        {{- if or .Values.keycloak.container.command .Values.keycloak.container.args }}
+        command:
+          {{- range .Values.keycloak.container.command }}
+          - {{ . | quote }}
+          {{- end }}
+        args:
+          {{- range .Values.keycloak.container.args }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- else }}
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - |
+          cat <<'EOF' > /tmp/keycloak-setup.sh
+          {{- tpl (.Files.Get "scripts/keycloak-setup.sh") . | nindent 10 }}
+          EOF
+          chmod +x /tmp/keycloak-setup.sh
+          /tmp/keycloak-setup.sh
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.keycloak.container.port }}
+          protocol: TCP
+        {{- if .Values.keycloak.env }}
+        env:
+          {{- toYaml .Values.keycloak.env | nindent 10 }}
+        {{- end }}
+        {{- if .Values.keycloak.envFrom }}
+        envFrom:
+          {{- toYaml .Values.keycloak.envFrom | nindent 10 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.keycloak.resources | nindent 10 }}

@@ -33,7 +33,7 @@ replace_password='
   setpath($path | split("."); $password)
 '
 
-SECRETS="{{ .Values.vault.setupSecrets | toJson | b64enc }}"
+SECRETS="{{ .Values.vault.setup.vaultSecrets | toJson | b64enc }}"
 
 for SECRET in $(echo "$SECRETS" | base64 -d | jq -c ".[]"); do
   VAULT_PATH=$(echo "$SECRET" | jq -r ".path")
