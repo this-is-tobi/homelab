@@ -60,3 +60,43 @@ mattermost:
     MM_PLUGINSETTINGS_ENABLEUPLOADS: "true"
     MM_PLUGINSETTINGS_CLIENTDIRECTORY: "./client/plugins"
     # MM_PLUGINSETTINGS_PLUGINSTATES: '{"com.mattermost.apps":{"Enable":true},"focalboard":{"Enable":true},"github":{"Enable":true},"com.github.manland.mattermost-plugin-gitlab":{"Enable":true},"com.github.matterpoll.matterpoll":{"Enable":true},"com.github.scottleedavis.mattermost-plugin-remind":{"Enable":true},"com.github.moussetc.mattermost-plugin-giphy":{"Enable":true},"com.mattermost.agenda":{"Enable":true},"alertmanager":{"Enable":true},"com.github.moussetc.mattermost.plugin.giphy":{"Enable":true},"jitsi":{"Enable":true},"com.cpanato.broadcast":{"Enable":true},"com.mattermost.plugin-todo":{"Enable":true}}'
+
+cnpg:
+  fullnameOverride: mattermost-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  dbName: mattermost
+  username: mattermost
+  password: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.app.password}>
+  postgresPassword: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.admin.password}>
+  mode: primary
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 7Gi
+    wal: 1Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  backup:
+    enabled: false
+    endpointURL: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.endpoint}>
+    destinationPath: s3://<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketPrefix}>
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: mattermost-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.accessKey}>
+      secretAccessKey:
+        key: secretAccessKey
+        value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.secretKey}>
+      region:
+        key: region
+        value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.region}>

@@ -8,3 +8,7 @@ dependencies:
   alias: outline
   version: 1.7.2
   repository: https://helm.liam.sh
+- name: cnpg-cluster
+  alias: cnpg
+  version: 0.8.0
+  repository: https://this-is-tobi.github.io/helm-charts

@@ -75,3 +75,42 @@ outline:
     limits:
       memory: 1Gi
       cpu: "1"
+
+cnpg:
+  fullnameOverride: outline-pg-cluster
+  dbName: outline
+  username: outline
+  password: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.app.password}>
+  postgresPassword: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.admin.password}>
+  mode: primary
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 4Gi
+    wal: 1Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  backup:
+    enabled: false
+    endpointURL: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.endpoint}>
+    destinationPath: s3://<path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.bucketPrefix}>
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: outline-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.accessKey}>
+      secretAccessKey:
+        key: secretAccessKey
+        value: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.secretKey}>
+      region:
+        key: region
+        value: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.region}>

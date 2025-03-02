@@ -70,3 +70,43 @@ sonarqube:
     sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
     sonar.auth.oidc.clientId.secured: "<path:secret/data/platforms/production/apps/sonarqube#keycloak | jsonPath {.clientId}>"
     sonar.auth.oidc.clientSecret.secured: "<path:secret/data/platforms/production/apps/sonarqube#keycloak | jsonPath {.clientSecret}>"
+
+cnpg:
+  fullnameOverride: sonarqube-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  dbName: sonarqube
+  username: sonarqube
+  password: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.app.password}>
+  postgresPassword: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.admin.password}>
+  mode: primary
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 7Gi
+    wal: 1Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  backup:
+    enabled: false
+    endpointURL: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.s3.endpoint}>
+    destinationPath: s3://<path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.s3.bucketPrefix}>
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: sonarqube-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.s3.accessKey}>
+      secretAccessKey:
+        key: secretAccessKey
+        value: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.s3.secretKey}>
+      region:
+        key: region
+        value: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.s3.region}>

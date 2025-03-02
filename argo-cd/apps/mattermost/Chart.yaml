@@ -8,3 +8,7 @@ dependencies:
   alias: mattermost
   version: 6.6.71
   repository: https://helm.mattermost.com
+- name: cnpg-cluster
+  alias: cnpg
+  version: 0.8.0
+  repository: https://this-is-tobi.github.io/helm-charts

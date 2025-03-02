@@ -8,3 +8,7 @@ dependencies:
   alias: coder
   version: 2.19.0
   repository: https://helm.coder.com/v2
+- name: cnpg-cluster
+  alias: cnpg
+  version: 0.8.0
+  repository: https://this-is-tobi.github.io/helm-charts
