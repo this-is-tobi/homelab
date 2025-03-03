@@ -42,31 +42,31 @@ dashy:
             - title: Argo-workflows
               description: Workflow Engine for Kubernetes
               url: https://<path:secret/data/platforms/production/apps/argo-workflows#domain>
-              icon: hl-argocd
+              icon: si-argo
             - title: Gitea
               description: Private DevOps Platform including code storage
               url: https://<path:secret/data/platforms/production/apps/gitea#domain>
-              icon: hl-gitea
+              icon: si-gitea
             - title: Grafana
               description: Watch cluster metrics & application logs
               url: https://<path:secret/data/platforms/production/apps/prometheus-stack#domain>
-              icon: hl-grafana
+              icon: si-grafana
             - title: Harbor
               description: Container image registry & Helm chart registry
               url: https://<path:secret/data/platforms/production/apps/harbor#domain>
-              icon: hl-harbor
+              icon: si-harbor
             - title: Mattermost
               description: Team communication service
               url: https://<path:secret/data/platforms/production/apps/mattermost#domain>
-              icon: hl-mattermost
+              icon: si-mattermost
             - title: Minio
               description: Store data with s3 standard
               url: https://<path:secret/data/platforms/production/apps/minio#domain>
-              icon: hl-minio
+              icon: si-minio
             - title: Sonarqube
               description: Code analysis service
               url: https://<path:secret/data/platforms/production/apps/sonarqube#domain>
-              icon: hl-sonarqube
+              icon: si-sonarqube
           displayData:
             sortBy: alphabetical
             collapsed: false
@@ -95,19 +95,19 @@ dashy:
         - name: Services - Admin
           icon: fas fa-cog
           items:
-            - title: Argocd
+            - title: Argo-cd
               description: Admin services deployment manager
               url: https://<path:secret/data/core/infos#argo-cd | jsonPath {.domain}>
-              icon: hl-argocd
+              icon: si-argo
               statusCheck: true
             - title: Keycloak
               description: Single Sign On managment
               url: https://<path:secret/data/platforms/production/apps/keycloak#domain>
-              icon: hl-keycloak
+              icon: si-keycloak
             - title: Vault
               description: Admin secret manager
               url: https://<path:secret/data/core/infos#vault | jsonPath {.domain}>
-              icon: hl-vault
+              icon: si-vault
               statusCheck: true
           displayData:
             sortBy: alphabetical
