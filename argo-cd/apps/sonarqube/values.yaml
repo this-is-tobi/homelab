@@ -1,4 +1,6 @@
 sonarqube:
+  community:
+    enabled: true
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -16,8 +18,9 @@ sonarqube:
   plugins:
     install:
       - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.23.0/sonarqube-community-branch-plugin-1.23.0.jar
-      - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
-      - https://github.com/cnescatlab/sonar-cnes-report/releases/download/5.0.0/sonar-cnes-report-5.0.0.jar
+      # - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
+      - https://github.com/Mbd06b/sonar-auth-oidc/releases/download/3.0.0_dev/sonar-auth-oidc-plugin-3.0.0-SNAPSHOT.jar
+      - https://github.com/cnescatlab/sonar-cnes-report/releases/download/5.0.1/sonar-cnes-report-5.0.1.jar
   resources:
     limits:
       cpu: 800m
