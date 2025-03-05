@@ -21,15 +21,11 @@ keycloak:
   postgresql:
     enabled: false
   externalDatabase:
-    host: keycloak-pg-cluster-rw
-    port: 5432
-    database: keycloak
-    existingSecret: keycloak-pg-cluster-infos
-    existingSecretHostKey: host
-    existingSecretPortKey: port
-    existingSecretDatabaseKey: database
-    existingSecretUserKey: username
-    existingSecretPasswordKey: password
+    host: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.host}>
+    port: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.port}>
+    database: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.database}>
+    user: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.username}>
+    password: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.password}>
   metrics:
     enabled: true
     serviceMonitor:
