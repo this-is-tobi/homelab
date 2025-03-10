@@ -4,12 +4,14 @@ metadata:
   labels:
     pod-security.kubernetes.io/enforce: privileged
   name: system-upgrade
+
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: system-upgrade
   namespace: system-upgrade
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -23,6 +25,7 @@ subjects:
 - kind: ServiceAccount
   name: system-upgrade
   namespace: system-upgrade
+
 ---
 apiVersion: v1
 data:
@@ -31,7 +34,7 @@ data:
   SYSTEM_UPGRADE_JOB_ACTIVE_DEADLINE_SECONDS: "900"
   SYSTEM_UPGRADE_JOB_BACKOFF_LIMIT: "99"
   SYSTEM_UPGRADE_JOB_IMAGE_PULL_POLICY: Always
-  SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: rancher/kubectl:v1.25.4
+  SYSTEM_UPGRADE_JOB_KUBECTL_IMAGE: rancher/kubectl:v1.31.6
   SYSTEM_UPGRADE_JOB_PRIVILEGED: "true"
   SYSTEM_UPGRADE_JOB_TTL_SECONDS_AFTER_FINISH: "900"
   SYSTEM_UPGRADE_PLAN_POLLING_INTERVAL: 15m
@@ -39,6 +42,7 @@ kind: ConfigMap
 metadata:
   name: default-controller-env
   namespace: system-upgrade
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -74,7 +78,7 @@ spec:
         envFrom:
         - configMapRef:
             name: default-controller-env
-        image: rancher/system-upgrade-controller:v0.13.4
+        image: rancher/system-upgrade-controller:v0.14.2
         imagePullPolicy: IfNotPresent
         name: system-upgrade-controller
         securityContext:
