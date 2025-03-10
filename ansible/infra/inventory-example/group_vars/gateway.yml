@@ -1,6 +1,6 @@
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
-  verion: "alpine3.20"
+  verion: "alpine3.21"
   extraKubeAllowedIps: ""
 pihole:
   enabled: false
