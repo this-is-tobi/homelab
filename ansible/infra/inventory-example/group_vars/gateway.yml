@@ -4,7 +4,7 @@ haproxy:
   extraKubeAllowedIps: ""
 pihole:
   enabled: false
-  verion: "2024.07.0"
+  verion: "2025.03.0"
   domain: pihole.{{ localRootDomain }}
   password: ""
 wireguard:
