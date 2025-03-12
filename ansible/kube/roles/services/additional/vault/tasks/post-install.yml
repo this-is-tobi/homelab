@@ -169,6 +169,9 @@
     headers:
       "X-Vault-Token": "{{ vault_token }}"
   register: get_engines
+  timeout: 300
+  retries: 3
+  delay: 10
 
 - name: Create default 'secret/' kv engine
   ansible.builtin.uri:
