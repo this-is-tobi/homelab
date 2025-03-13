@@ -1,0 +1,18 @@
+apiVersion: v2
+name: mlflow
+type: application
+version: 0.13.1
+appVersion: "2.20.2"
+dependencies:
+- name: mlflow
+  alias: mlflow
+  version: 0.13.1
+  repository: https://community-charts.github.io/helm-charts
+- name: cnpg-cluster
+  alias: cnpg
+  version: 0.8.0
+  repository: https://this-is-tobi.github.io/helm-charts
+- name: oauth2-proxy
+  alias: sso
+  version: 7.12.1
+  repository: https://oauth2-proxy.github.io/manifests

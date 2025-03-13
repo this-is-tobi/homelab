@@ -39,10 +39,6 @@ dashy:
         - name: Services
           icon: fas fa-rocket
           items:
-            - title: Argo-workflows
-              description: Workflow Engine for Kubernetes
-              url: https://<path:secret/data/platforms/production/apps/argo-workflows#domain>
-              icon: si-argo
             - title: Gitea
               description: Private DevOps Platform including code storage
               url: https://<path:secret/data/platforms/production/apps/gitea#domain>

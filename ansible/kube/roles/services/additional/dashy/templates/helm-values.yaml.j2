@@ -93,6 +93,13 @@ dashy:
               url: https://<path:secret/data/platforms/{{ platform_env.conf.env }}/apps/minio#domain>
               icon: si-minio
 {% endif %}
+{% if "mlflow" in enabled_services %}
+            - title: Mlflow
+              description: Machine learning lifecycle management service
+              url: https://<path:secret/data/platforms/{{ platform_env.conf.env }}/apps/mlflow#domain>
+              icon: si-mlflow
+              statusCheckAcceptCodes: '401'
+{% endif %}
 {% if "outline" in enabled_services %}
             - title: Outline
               description: Share notes and wiki
