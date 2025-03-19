@@ -102,7 +102,7 @@ repoServer:
   extraContainers:
   - name: avp
     command: [/var/run/argocd/argocd-cmp-server]
-    image: quay.io/argoproj/argocd:v2.14.5
+    image: quay.io/argoproj/argocd:v2.14.7
     securityContext:
       runAsNonRoot: true
       runAsUser: 999
@@ -126,7 +126,7 @@ repoServer:
       mountPath: /usr/local/bin/argocd-vault-plugin
   - name: avp-helm
     command: [/var/run/argocd/argocd-cmp-server]
-    image: quay.io/argoproj/argocd:v2.14.5
+    image: quay.io/argoproj/argocd:v2.14.7
     securityContext:
       runAsNonRoot: true
       runAsUser: 999
@@ -150,7 +150,7 @@ repoServer:
       mountPath: /usr/local/bin/argocd-vault-plugin
   - name: avp-kustomize
     command: [/var/run/argocd/argocd-cmp-server]
-    image: quay.io/argoproj/argocd:v2.14.5
+    image: quay.io/argoproj/argocd:v2.14.7
     securityContext:
       runAsNonRoot: true
       runAsUser: 999
