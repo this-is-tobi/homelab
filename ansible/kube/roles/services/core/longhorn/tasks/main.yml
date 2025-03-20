@@ -39,3 +39,18 @@
     template: "{{ item }}"
   with_items:
     - ingress.yml.j2
+
+- name: Get admin credentials
+  kubernetes.core.k8s_info:
+    kind: Secret
+    namespace: "{{ longhorn.namespace }}"
+    name: longhorn-admin
+  register: longhorn_admin_secret
+
+- name: Deploy admin credentials
+  kubernetes.core.k8s:
+    state: present
+    template: "{{ item }}"
+  with_items:
+    - admin-secret.yml.j2
+  when: longhorn_admin_secret.resources | length == 0
