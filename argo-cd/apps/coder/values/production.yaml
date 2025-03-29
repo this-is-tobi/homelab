@@ -39,9 +39,10 @@ coder:
 cnpg:
   fullnameOverride: coder-pg-cluster
   dbName: coder
-  username: coder
-  password: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.password}>
-  postgresPassword: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.admin.password}>
+  credentials:
+    username: coder
+    password: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.password}>
+    postgresPassword: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.admin.password}>
   mode: primary
   instances: 3
   enableSuperuserAccess: false

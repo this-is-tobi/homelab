@@ -1,14 +1,14 @@
 apiVersion: v2
 name: coder
 type: application
-version: 2.20.0
-appVersion: "2.20.0"
+version: 2.20.2
+appVersion: "2.20.2"
 dependencies:
 - name: coder
   alias: coder
-  version: 2.20.0
+  version: 2.20.2
   repository: https://helm.coder.com/v2
 - name: cnpg-cluster
   alias: cnpg
-  version: 0.8.0
+  version: 0.9.1
   repository: https://this-is-tobi.github.io/helm-charts
