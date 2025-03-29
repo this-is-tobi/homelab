@@ -35,9 +35,10 @@ cnpg:
   fullnameOverride: keycloak-pg-cluster
   imageName: ghcr.io/cloudnative-pg/postgresql:15.4
   dbName: keycloak
-  username: keycloak
-  password: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.password}>
-  postgresPassword: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.admin.password}>
+  credentials:
+    username: keycloak
+    password: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.password}>
+    postgresPassword: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.admin.password}>
   mode: primary
   instances: 3
   enableSuperuserAccess: false
