@@ -67,9 +67,10 @@ cnpg:
   fullnameOverride: harbor-pg-cluster
   imageName: ghcr.io/cloudnative-pg/postgresql:15.4
   dbName: harbor
-  username: harbor
-  password: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.password}>
-  postgresPassword: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.admin.password}>
+  credentials:
+    username: harbor
+    password: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.password}>
+    postgresPassword: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.admin.password}>
   mode: primary
   instances: 3
   enableSuperuserAccess: false

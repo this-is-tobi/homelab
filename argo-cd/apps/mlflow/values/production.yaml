@@ -62,9 +62,10 @@ mlflow:
 cnpg:
   fullnameOverride: mlflow-pg-cluster
   dbName: mlflow
-  username: mlflow
-  password: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.app.password}>
-  postgresPassword: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.admin.password}>
+  credentials:
+    username: mlflow
+    password: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.app.password}>
+    postgresPassword: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.admin.password}>
   mode: primary
   instances: 3
   pvcSize:

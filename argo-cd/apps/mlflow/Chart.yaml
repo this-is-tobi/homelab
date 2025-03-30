@@ -10,7 +10,7 @@ dependencies:
   repository: https://community-charts.github.io/helm-charts
 - name: cnpg-cluster
   alias: cnpg
-  version: 0.8.0
+  version: 0.9.1
   repository: https://this-is-tobi.github.io/helm-charts
 - name: oauth2-proxy
   alias: sso

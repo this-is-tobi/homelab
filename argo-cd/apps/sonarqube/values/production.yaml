@@ -78,9 +78,10 @@ cnpg:
   fullnameOverride: sonarqube-pg-cluster
   imageName: ghcr.io/cloudnative-pg/postgresql:15.4
   dbName: sonarqube
-  username: sonarqube
-  password: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.app.password}>
-  postgresPassword: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.admin.password}>
+  credentials:
+    username: sonarqube
+    password: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.app.password}>
+    postgresPassword: <path:secret/data/platforms/production/apps/sonarqube#postgres | jsonPath {.admin.password}>
   mode: primary
   instances: 3
   enableSuperuserAccess: false

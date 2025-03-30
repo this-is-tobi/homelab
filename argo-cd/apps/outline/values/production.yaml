@@ -79,9 +79,10 @@ outline:
 cnpg:
   fullnameOverride: outline-pg-cluster
   dbName: outline
-  username: outline
-  password: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.app.password}>
-  postgresPassword: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.admin.password}>
+  credentials:
+    username: outline
+    password: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.app.password}>
+    postgresPassword: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.admin.password}>
   mode: primary
   instances: 3
   enableSuperuserAccess: false
