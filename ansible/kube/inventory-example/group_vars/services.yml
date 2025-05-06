@@ -42,7 +42,7 @@ vault:
     repoUrl: "https://helm.releases.hashicorp.com"
     repoName: "hashicorp"
     chartName: "vault"
-    chartVersion: "0.29.1"
+    chartVersion: "0.30.0"
   namespace: "vault-system"
   domain: "vault.admin.{{ rootDomain }}"
   sso:
