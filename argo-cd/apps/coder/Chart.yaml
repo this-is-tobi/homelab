@@ -10,5 +10,5 @@ dependencies:
   repository: https://helm.coder.com/v2
 - name: cnpg-cluster
   alias: cnpg
-  version: 1.0.1
+  version: 1.0.2
   repository: https://this-is-tobi.github.io/helm-charts
