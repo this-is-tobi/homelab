@@ -1,12 +1,12 @@
 apiVersion: v2
 name: keycloak
 type: application
-version: 24.6.7
+version: 24.7.0
 appVersion: "26.2.4"
 dependencies:
 - name: keycloak
   alias: keycloak
-  version: 24.6.7
+  version: 24.7.0
   repository: https://charts.bitnami.com/bitnami
 - name: cnpg-cluster
   alias: cnpg
