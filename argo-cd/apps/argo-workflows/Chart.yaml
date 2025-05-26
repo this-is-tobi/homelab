@@ -1,10 +1,10 @@
 apiVersion: v2
 name: argo-workflows
 type: application
-version: 0.45.10
-appVersion: "3.6.4"
+version: 0.45.15
+appVersion: "3.6.7"
 dependencies:
 - name: argo-workflows
   alias: argo-workflows
-  version: 0.45.10
+  version: 0.45.15
   repository: https://argoproj.github.io/argo-helm
