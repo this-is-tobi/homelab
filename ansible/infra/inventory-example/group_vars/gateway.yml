@@ -1,10 +1,10 @@
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
-  verion: "alpine3.21"
+  verion: "alpine3.22"
   extraKubeAllowedIps: ""
 pihole:
   enabled: false
-  verion: "2025.03.0"
+  verion: "2025.05.1"
   domain: pihole.{{ localRootDomain }}
   password: ""
 wireguard:
