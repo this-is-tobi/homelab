@@ -6,15 +6,16 @@ minio:
   mode: distributed
   statefulset:
     replicaCount: 4
+  console:
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hostname: <path:secret/data/platforms/production/apps/minio#domain>
+      path: /
+      tls: true
   ingress:
-    enabled: true
-    ingressClassName: traefik
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-    hostname: <path:secret/data/platforms/production/apps/minio#domain>
-    path: /
-    tls: true
-  apiIngress:
     enabled: true
     ingressClassName: traefik
     annotations:
