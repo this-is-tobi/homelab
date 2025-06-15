@@ -1,16 +1,3 @@
-actions-runner-controller:
-  replicaCount: 1
-  syncPeriod: 1m
-  authSecret:
-    enabled: true
-    create: false
-    name: "arc-admin"
-  image:
-    actionsRunnerRepositoryAndTag: "docker.io/summerwind/actions-runner:latest"
-    dindSidecarRepositoryAndTag: "docker.io/docker:dind"
-    pullPolicy: Always
-    actionsRunnerImagePullSecrets: []
-  githubWebhookServer:
-    enabled: true
-  imagePullSecrets: []
-  nodeSelector: {}
+arc-controller: {}
+
+arc-runner: {}
