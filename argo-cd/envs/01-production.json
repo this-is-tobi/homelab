@@ -12,7 +12,7 @@
   "targetRevision": "main",
   "apps": [
     { "app": "actions-runner-controller", "enabled": "true", "syncWave": 10 },
-    { "app": "argo-cd", "enabled": "false", "syncWave": 20 },
+    { "app": "argo-cd", "enabled": "true", "syncWave": 20 },
     { "app": "argo-workflows", "enabled": "false", "syncWave": 20 },
     { "app": "cert-manager", "enabled": "false", "syncWave": -1 },
     { "app": "cloudnative-pg", "enabled": "true", "syncWave": 0 },
