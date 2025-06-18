@@ -6,7 +6,7 @@ sonarqube:
     ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
-      nginx.ingress.kubernetes.io/proxy-body-size:
+      nginx.ingress.kubernetes.io/proxy-body-size: ""
       ingressClassName: traefik
     hosts:
       - name: ""
@@ -17,10 +17,9 @@ sonarqube:
         secretName: ""
   plugins:
     install:
-      - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/1.23.0/sonarqube-community-branch-plugin-1.23.0.jar
-      # - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v2.1.1/sonar-auth-oidc-plugin-2.1.1.jar
-      - https://github.com/Mbd06b/sonar-auth-oidc/releases/download/3.0.0_dev/sonar-auth-oidc-plugin-3.0.0-SNAPSHOT.jar
-      - https://github.com/cnescatlab/sonar-cnes-report/releases/download/5.0.1/sonar-cnes-report-5.0.1.jar
+      - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/25.5.0/sonarqube-community-branch-plugin-25.5.0.jar
+      - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v3.0.0/sonar-auth-oidc-plugin-3.0.0.jar
+      - https://github.com/cnescatlab/sonar-cnes-report/releases/download/5.0.2/sonar-cnes-report-5.0.2.jar
   resources:
     limits:
       cpu: 800m
@@ -40,8 +39,8 @@ sonarqube:
     adminPasswordSecretName: sonarqube-admin
   monitoringPasscodeSecretName: sonarqube-monitoring-admin
   monitoringPasscodeSecretKey: password
-  jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.23.0.jar=web"
-  jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-1.23.0.jar=ce"
+  jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.5.0.jar=web"
+  jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.5.0.jar=ce"
   initSysctl:
     vmMaxMapCount: 262144
   prometheusMonitoring:
@@ -73,3 +72,20 @@ sonarqube:
     sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
     sonar.auth.oidc.clientId.secured: ""
     sonar.auth.oidc.clientSecret.secured: ""
+  extraVolumes:
+  - name: webapp
+    emptyDir:
+      sizeLimit: 50Mi
+  extraVolumeMounts:
+  - name: webapp
+    mountPath: /opt/sonarqube/web
+  extraInitContainers:
+  - name: download-webapp
+    image: docker.io/busybox:1.37
+    volumeMounts:
+    - name: webapp
+      mountPath: /web
+    command:
+      - sh
+      - -c
+      - wget -O /tmp/sonarqube-webapp.zip https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/25.5.0/sonarqube-webapp.zip && unzip -o /tmp/sonarqube-webapp.zip -d /web && chmod -R 755 /web && chown -R 1000:0 /web && rm -f /tmp/sonarqube-webapp.zip
