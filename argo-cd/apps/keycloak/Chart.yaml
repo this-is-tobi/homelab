@@ -10,5 +10,5 @@ dependencies:
   repository: https://charts.bitnami.com/bitnami
 - name: cnpg-cluster
   alias: cnpg
-  version: 1.0.2
+  version: 1.0.3
   repository: https://this-is-tobi.github.io/helm-charts
