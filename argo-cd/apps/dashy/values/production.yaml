@@ -39,6 +39,10 @@ dashy:
         - name: Services
           icon: fas fa-rocket
           items:
+            - title: Argo-cd
+              description: Deploy apps using gitops
+              url: https://<path:secret/data/platforms/production/apps/argo-cd#domain>
+              icon: si-argo
             - title: Gitea
               description: Private DevOps Platform including code storage
               url: https://<path:secret/data/platforms/production/apps/gitea#domain>

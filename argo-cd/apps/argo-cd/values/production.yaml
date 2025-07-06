@@ -33,14 +33,14 @@ argo-cd:
       serviceMonitor:
         enabled: true
   notifications:
-    enabled: true
+    enabled: false
     argocdUrl: https://<path:secret/data/platforms/production/apps/argo-cd#domain>
     context:
       provider: self-hosted
       cluster: homelab
       environment: production
     secret:
-      create: true
+      create: false
       items:
         mattermost-token: <path:secret/data/platforms/production/apps/argo-cd#notifications | jsonPath {.mattermost.token}>
         email-username: <path:secret/data/platforms/production/apps/argo-cd#smtp | jsonPath {.username}>
