@@ -1,10 +1,10 @@
 apiVersion: v2
 name: argo-cd
 type: application
-version: 8.0.16
-appVersion: "3.0.5"
+version: 8.1.2
+appVersion: "3.0.6"
 dependencies:
 - name: argo-cd
   alias: argo-cd
-  version: 8.0.16
+  version: 8.1.2
   repository: https://argoproj.github.io/argo-helm
