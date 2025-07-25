@@ -1,11 +1,4 @@
-cert-manager:
-  crds:
-    enabled: true
-    keep: true
-  prometheus:
-    enabled: true
-    servicemonitor:
-      enabled: true
+cert-manager: {}
 
 clusterIssuer:
   email: ""

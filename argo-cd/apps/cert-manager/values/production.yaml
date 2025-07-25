@@ -7,6 +7,16 @@ cert-manager:
     servicemonitor:
       enabled: true
 
+scaleway-certmanager-webhook:
+  secret:
+    accessKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.accessKey}>
+    secretKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.secretKey}>
+
 clusterIssuer:
-  email: ""
-  ingressClassName: ""
+  email: <path:secret/data/platforms/production/apps/cert-manager#email>
+  ingressClassName: "traefik"
+  dns:
+    scaleway:
+      projectID: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.prijectId}>
+      domain: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.domain}>
+      token: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.token}>
