@@ -3,7 +3,7 @@ dashy:
     enabled: true
     className: "traefik"
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     labels: {}
     hosts:
     - "ohmlab.fr"

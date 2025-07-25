@@ -29,7 +29,7 @@ harbor:
     core:
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hostname: <path:secret/data/platforms/production/apps/harbor#domain>
       tls: true
   persistence:

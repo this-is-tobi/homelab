@@ -8,7 +8,7 @@ coder:
       host: "<path:secret/data/platforms/production/apps/coder#domain>"
       wildcardHost: "*.<path:secret/data/platforms/production/apps/coder#domain>"
       annotations:
-        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+        cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
       tls:
         enable: true
         secretName: "<path:secret/data/platforms/production/apps/coder#domain>"

@@ -15,7 +15,7 @@ mattermost:
     enabled: true
     ingressClassName: traefik
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - <path:secret/data/platforms/production/apps/mattermost#domain>
     tls:

@@ -8,7 +8,7 @@ keycloak:
     enabled: true
     ingressClassName: traefik
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hostname: <path:secret/data/platforms/production/apps/keycloak#domain>
     path: /
     tls: true

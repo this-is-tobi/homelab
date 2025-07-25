@@ -3,7 +3,7 @@ mlflow:
     enabled: true
     className: traefik
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
       traefik.ingress.kubernetes.io/router.middlewares: mlflow-oauth2-proxy@kubernetescrd
     hosts:
     - host: <path:secret/data/platforms/production/apps/mlflow#domain>
@@ -113,7 +113,7 @@ sso:
   ingress:
     enabled: true
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     path: /oauth2
     hosts:
     - <path:secret/data/platforms/production/apps/mlflow#domain>

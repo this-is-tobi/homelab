@@ -7,7 +7,7 @@ gitea:
     apiVersion: networking.k8s.io/v1
     className: traefik
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - host: <path:secret/data/platforms/production/apps/gitea#domain>
       paths:

@@ -2,36 +2,61 @@ server:
   enabled: true
   operator:
     enabled: true
-  acme: false
-  acmeEmail: "<path:secret/data/platforms/production/apps/cert-manager#email>"
+  auth:
+    enabled: true
+  proxy:
+    enabled: true
+  proxyListenerMode: "multiplex"
   clusterName: "teleport.ohmlab.fr"
+  acme: false
   highAvailability:
     certManager:
       enabled: true
       issuerKind: "ClusterIssuer"
       issuerName: "letsencrypt-dns-prod"
+      addCommonName: true
     replicaCount: 1
-  annotations:
-    ingress:
-      cert-manager.io/cluster-issuer: "letsencrypt-dns-prod"
   ingress:
     enabled: true
-    suppressAutomaticWildcards: true
+    suppressAutomaticWildcards: false
     spec:
-      ingressClassName: "traefik"
+      ingressClassName: "nginx"
   service:
     type: "ClusterIP"
-  proxyListenerMode: "multiplex"
-  auth:
-    enabled: true
-    teleport:
-      config:
-        teleport:
-          data_dir: "/var/lib/teleport"
-          log:
-            output: "stderr"
-            severity: "INFO"
-        auth_service:
-          enabled: true
-          cluster_name: "teleport.ohmlab.fr"
-          session_recording: "node"
+  log:
+    level: "INFO"
+
+roles:
+  superadmin:
+    allow:
+      rules:
+      - resources: ['users', 'roles', 'session', 'event']
+        verbs: ['list', 'create', 'read', 'update', 'delete']
+      kubernetes_groups:
+      - system:masters
+      kubernetes_labels:
+        '*': '*'
+      kubernetes_resources:
+        - kind: '*'
+          namespace: '*'
+          name: '*'
+          verbs: ['*']
+  admin:
+    allow:
+      kubernetes_groups:
+      - system:masters
+      kubernetes_labels:
+        '*': '*'
+      kubernetes_resources:
+        - kind: '*'
+          namespace: '*'
+          name: '*'
+          verbs: ['*']
+
+users:
+  tobi:
+    roles:
+    - superadmin
+  qit:
+    roles:
+    - admin

@@ -39,7 +39,7 @@ vault:
       enabled: true
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
       - host: ""
         paths:

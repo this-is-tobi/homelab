@@ -1,0 +1,8 @@
+{{- range $key, $value := .Values.users }}
+---
+apiVersion: resources.teleport.dev/v2
+kind: TeleportUser
+metadata:
+  name: {{ $key }}
+spec: {{ $value | toYaml | nindent 2 }}
+{{ end }}

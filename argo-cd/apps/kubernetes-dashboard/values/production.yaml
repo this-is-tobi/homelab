@@ -4,10 +4,10 @@ kubernetes-dashboard:
       enabled: true
       ingressClassName: traefik
       issuer:
-        name: disabled # letsencrypt-prod
+        name: disabled # letsencrypt-http-prod
         scope: cluster
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
       - <path:secret/data/platforms/production/apps/kubernetes-dashboard#domain>
       secretName: <path:secret/data/platforms/production/apps/kubernetes-dashboard#domain>

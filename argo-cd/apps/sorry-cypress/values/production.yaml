@@ -14,7 +14,7 @@ sorry-cypress:
     ingress:
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
       - host: api.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
       tls:
@@ -33,7 +33,7 @@ sorry-cypress:
     ingress:
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
         traefik.ingress.kubernetes.io/router.middlewares: sorry-cypress-auth-middleware@kubernetescrd
       hosts:
       - host: <path:secret/data/platforms/production/apps/sorry-cypress#domain>
@@ -57,7 +57,7 @@ sorry-cypress:
     ingress:
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
       - host: director.<path:secret/data/platforms/production/apps/sorry-cypress#domain>
       tls:

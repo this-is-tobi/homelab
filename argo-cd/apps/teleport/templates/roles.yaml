@@ -1,0 +1,7 @@
+{{- range $key, $value := .Values.roles }}
+apiVersion: resources.teleport.dev/v1
+kind: TeleportRoleV7
+metadata:
+  name: {{ $key }}
+spec: {{ $value | toYaml | nindent 2 }}
+{{ end }}

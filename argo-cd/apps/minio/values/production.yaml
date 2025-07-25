@@ -11,7 +11,7 @@ minio:
       enabled: true
       ingressClassName: traefik
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hostname: <path:secret/data/platforms/production/apps/minio#domain>
       path: /
       tls: true
@@ -19,7 +19,7 @@ minio:
     enabled: true
     ingressClassName: traefik
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hostname: <path:secret/data/platforms/production/apps/minio#domainApi>
     extraHosts:
     - name: "*.<path:secret/data/platforms/production/apps/minio#domainApi>"

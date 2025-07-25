@@ -22,7 +22,7 @@ argo-workflows:
     ingress:
       enabled: true
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-prod
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       ingressClassName: traefik
       hosts:
       - ""
