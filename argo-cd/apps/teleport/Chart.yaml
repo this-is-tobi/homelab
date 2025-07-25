@@ -8,4 +8,3 @@ dependencies:
   alias: server
   version: 18.0.2
   repository: https://charts.releases.teleport.dev
-  condition: server.enabled
