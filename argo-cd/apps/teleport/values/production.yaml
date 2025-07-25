@@ -1,0 +1,37 @@
+server:
+  enabled: true
+  operator:
+    enabled: true
+  acme: false
+  acmeEmail: this-is-tobi@proton.me
+  clusterName: teleport.ohmlab.fr
+  highAvailability:
+    certManager:
+      enabled: true
+      issuerKind: ClusterIssuer
+      issuerName: letsencrypt-staging
+    replicaCount: 1
+  annotations:
+    ingress:
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+  ingress:
+    enabled: true
+    suppressAutomaticWildcards: true
+    spec:
+      ingressClassName: traefik
+  service:
+    type: ClusterIP
+  proxyListenerMode: multiplex
+  auth:
+    enabled: true
+    teleport:
+      config:
+        teleport:
+          data_dir: /var/lib/teleport
+          log:
+            output: stderr
+            severity: INFO
+        auth_service:
+          enabled: true
+          cluster_name: "teleport.ohmlab.fr"
+          session_recording: "node"

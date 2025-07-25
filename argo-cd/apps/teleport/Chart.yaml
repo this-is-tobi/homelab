@@ -1,0 +1,11 @@
+apiVersion: v2
+type: application
+name: teleport
+version: 18.0.2
+appVersion: "18.0.2"
+dependencies:
+- name: teleport-cluster
+  alias: server
+  version: 18.0.2
+  repository: https://charts.releases.teleport.dev
+  condition: server.enabled
