@@ -331,7 +331,7 @@ argo-cd:
     replicas: 1
     ingress:
       enabled: true
-      ingressClassName: traefik
+      ingressClassName: nginx
       hostname: appset.<path:secret/data/platforms/production/apps/argo-cd#domain>
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
@@ -354,7 +354,7 @@ argo-cd:
         enabled: true
     ingress:
       enabled: true
-      ingressClassName: traefik
+      ingressClassName: nginx
       hostname: <path:secret/data/platforms/production/apps/argo-cd#domain>
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod

@@ -2,7 +2,7 @@ kubernetes-dashboard:
   app:
     ingress:
       enabled: true
-      ingressClassName: traefik
+      ingressClassName: nginx
       issuer:
         name: disabled # letsencrypt-http-prod
         scope: cluster

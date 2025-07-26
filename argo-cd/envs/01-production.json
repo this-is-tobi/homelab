@@ -35,7 +35,6 @@
     { "app": "sorry-cypress", "enabled": "false", "syncWave": 20 },
     { "app": "system-upgrade", "enabled": "true", "syncWave": 40 },
     { "app": "teleport", "enabled": "true", "syncWave": 10 },
-    { "app": "traefik", "enabled": "false", "syncWave": -1 },
     { "app": "trivy-operator", "enabled": "false", "syncWave": 40 },
     { "app": "vault", "enabled": "false", "syncWave": 20 },
     { "app": "vaultwarden", "enabled": "false", "syncWave": 20 }

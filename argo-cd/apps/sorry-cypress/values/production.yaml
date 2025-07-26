@@ -12,7 +12,7 @@ sorry-cypress:
         cpu: 100m
         memory: 128Mi
     ingress:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
@@ -31,7 +31,7 @@ sorry-cypress:
         cpu: 100m
         memory: 128Mi
     ingress:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
         traefik.ingress.kubernetes.io/router.middlewares: sorry-cypress-auth-middleware@kubernetescrd
@@ -55,7 +55,7 @@ sorry-cypress:
       executionDriver: "../execution/in-memory"
       screenshotsDriver: "../screenshots/dummy.driver"
     ingress:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:

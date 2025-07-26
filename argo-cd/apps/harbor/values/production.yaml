@@ -27,7 +27,7 @@ harbor:
   externalURL: https://<path:secret/data/platforms/production/apps/harbor#domain>
   ingress:
     core:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hostname: <path:secret/data/platforms/production/apps/harbor#domain>

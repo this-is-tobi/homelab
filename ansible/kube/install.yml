@@ -13,11 +13,6 @@
         - additional
         - prerequisites
 
-    - name: ./roles/services/core/traefik
-      tags:
-        - core
-        - traefik-core
-
     - name: ./roles/services/core/longhorn
       tags:
         - core
@@ -44,7 +39,6 @@
         - always
       when: >
         'core' not in ansible_run_tags and
-        'traefik-core' not in ansible_run_tags and
         'longhorn-core' not in ansible_run_tags and
         'cert-manager-core' not in ansible_run_tags and
         'vault-core' not in ansible_run_tags and

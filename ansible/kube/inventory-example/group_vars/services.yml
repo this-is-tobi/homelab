@@ -1,4 +1,4 @@
-ingressClassName: "traefik"
+ingressClassName: "nginx"
 argocd:
   helm:
     repoUrl: "https://argoproj.github.io/argo-helm"
@@ -30,13 +30,6 @@ longhorn:
     endpoint: ""
     accessKey: ""
     secretKey: ""
-traefik:
-  helm:
-    repoUrl: "https://traefik.github.io/charts"
-    repoName: "traefik"
-    chartName: "traefik"
-    chartVersion: "36.3.0"
-  namespace: "traefik-system"
 vault:
   helm:
     repoUrl: "https://helm.releases.hashicorp.com"

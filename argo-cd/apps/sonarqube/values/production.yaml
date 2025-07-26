@@ -4,11 +4,11 @@ sonarqube:
     buildNumber: 25.6.0.109173
   ingress:
     enabled: true
-    ingressClassName: traefik
+    ingressClassName: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
       nginx.ingress.kubernetes.io/proxy-body-size: ""
-      ingressClassName: traefik
+      ingressClassName: nginx
     hosts:
       - name: <path:secret/data/platforms/production/apps/sonarqube#domain>
         path: /

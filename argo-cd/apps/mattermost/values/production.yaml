@@ -13,7 +13,7 @@ mattermost:
       size: 5Gi
   ingress:
     enabled: true
-    ingressClassName: traefik
+    className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:

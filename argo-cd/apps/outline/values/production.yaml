@@ -4,7 +4,7 @@ outline:
     tag: latest
   ingress:
     enabled: true
-    className: traefik
+    className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:

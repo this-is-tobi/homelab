@@ -15,7 +15,7 @@ waultwarden:
   invitationOrgName: "Homelab"
   ingress:
     enabled: true
-    class: traefik
+    class: nginx
     nginxIngressAnnotations: false
     additionalAnnotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod

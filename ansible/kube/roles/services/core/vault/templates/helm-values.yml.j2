@@ -39,7 +39,7 @@ server:
     node-type: worker
   ingress:
     enabled: true
-    ingressClassName: traefik
+    ingressClassName: {{ ingressClassName }}
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:

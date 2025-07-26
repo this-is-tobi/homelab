@@ -9,7 +9,7 @@ sorry-cypress:
         cpu: 100m
         memory: 128Mi
     ingress:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
@@ -30,7 +30,7 @@ sorry-cypress:
         cpu: 100m
         memory: 128Mi
     ingress:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
@@ -55,7 +55,7 @@ sorry-cypress:
       executionDriver: "../execution/in-memory"
       screenshotsDriver: "../screenshots/dummy.driver"
     ingress:
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:

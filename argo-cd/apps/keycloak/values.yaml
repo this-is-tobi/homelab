@@ -6,7 +6,7 @@ keycloak:
     passwordSecretKey: password
   ingress:
     enabled: true
-    ingressClassName: traefik
+    ingressClassName: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hostname: ""

@@ -24,7 +24,7 @@ kube-prometheus-stack:
     adminPassword: <path:secret/data/platforms/production/apps/prometheus-stack#admin | jsonPath {.password}>
     ingress:
       enabled: true
-      ingressClassName: traefik
+      ingressClassName: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
