@@ -12,11 +12,61 @@ scaleway-certmanager-webhook:
     accessKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.accessKey}>
     secretKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.secretKey}>
 
-clusterIssuer:
-  email: <path:secret/data/platforms/production/apps/cert-manager#email>
-  ingressClassName: "traefik"
-  dns:
-    scaleway:
-      projectID: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.prijectId}>
-      domain: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.domain}>
-      token: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.token}>
+defaultWildcard:
+  enabled: true
+  dnsZone: ohmlab.fr
+  ingressNamespace: ingress-nginx
+  secretName: default-wildcard-tls
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-dns-prod
+
+clusterIssuers:
+- name: letsencrypt-http-staging
+  spec:
+    acme:
+      email: <path:secret/data/platforms/production/apps/cert-manager#email>
+      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      privateKeySecretRef:
+        name: letsencrypt-http-staging-key
+      solvers:
+      - http01:
+          ingress:
+            serviceType: ClusterIP
+            ingressClassName: nginx
+- name: letsencrypt-http-prod
+  spec:
+    acme:
+      email: <path:secret/data/platforms/production/apps/cert-manager#email>
+      server: https://acme-v02.api.letsencrypt.org/directory
+      privateKeySecretRef:
+        name: letsencrypt-http-prod-key
+      solvers:
+      - http01:
+          ingress:
+            serviceType: ClusterIP
+            ingressClassName: nginx
+- name: letsencrypt-dns-staging
+  spec:
+    acme:
+      email: <path:secret/data/platforms/production/apps/cert-manager#email>
+      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      privateKeySecretRef:
+        name: letsencrypt-dns-staging-key
+      solvers:
+      - dns01:
+          webhook:
+            groupName: acme.scaleway.com
+            solverName: scaleway
+- name: letsencrypt-dns-prod
+  spec:
+    acme:
+      email: <path:secret/data/platforms/production/apps/cert-manager#email>
+      server: https://acme-v02.api.letsencrypt.org/directory
+      privateKeySecretRef:
+        name: letsencrypt-dns-prod-key
+      solvers:
+      - dns01:
+          webhook:
+            groupName: acme.scaleway.com
+            solverName: scaleway

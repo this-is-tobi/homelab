@@ -1,5 +1,17 @@
 cert-manager: {}
 
-clusterIssuer:
-  email: ""
-  ingressClassName: ""
+scaleway-certmanager-webhook:
+  secret:
+    accessKey: ""
+    secretKey: ""
+
+defaultWildcard:
+  enabled: true
+  dnsZone: "example.com"
+  ingressNamespace: "ingress-nginx"
+  secretName: "default-wildcard-tls"
+  issuerRef:
+    kind: "ClusterIssuer"
+    name: l"etsencrypt-dns-prod"
+
+clusterIssuers: []

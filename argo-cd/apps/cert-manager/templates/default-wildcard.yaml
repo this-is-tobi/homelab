@@ -1,0 +1,15 @@
+{{- if .Values.defaultWildcard.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  namespace: {{ .Values.defaultWildcard.ingressNamespace }}
+  name: default-wildcard-certificate
+spec:
+  secretName: {{ .Values.defaultWildcard.secretName | default "default-wildcard-tls" }}
+  issuerRef:
+    kind: {{ .Values.defaultWildcard.issuerRef.kind | default "ClusterIssuer" }}
+    name: {{ .Values.defaultWildcard.issuerRef.name | default "letsencrypt-dns-prod" }}
+  commonName: "*.{{ .Values.defaultWildcard.dnsZone }}"
+  dnsNames:
+  - "*.{{ .Values.defaultWildcard.dnsZone }}"
+{{- end }}
