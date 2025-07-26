@@ -30,8 +30,10 @@ roles:
   superadmin:
     allow:
       rules:
-      - resources: ['users', 'roles', 'session', 'event']
-        verbs: ['list', 'create', 'read', 'update', 'delete']
+      - resources:
+        - '*'
+        verbs:
+        - '*'
       kubernetes_groups:
       - system:masters
       kubernetes_labels:
@@ -40,7 +42,8 @@ roles:
         - kind: '*'
           namespace: '*'
           name: '*'
-          verbs: ['*']
+          verbs:
+          - '*'
   admin:
     allow:
       kubernetes_groups:
@@ -51,12 +54,14 @@ roles:
         - kind: '*'
           namespace: '*'
           name: '*'
-          verbs: ['*']
+          verbs:
+          - '*'
 
 users:
   tobi:
     roles:
     - superadmin
+    - admin
   qit:
     roles:
     - admin
