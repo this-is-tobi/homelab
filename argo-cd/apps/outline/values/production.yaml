@@ -87,8 +87,8 @@ cnpg:
   instances: 3
   enableSuperuserAccess: false
   pvcSize:
-    data: 4Gi
-    wal: 1Gi
+    data: 3Gi
+    wal: 2Gi
   resources:
     requests:
       cpu: 250m

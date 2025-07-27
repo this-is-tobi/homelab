@@ -70,7 +70,7 @@ cnpg:
   instances: 3
   pvcSize:
     data: 3Gi
-    wal: 1Gi
+    wal: 2Gi
   resources:
     requests:
       cpu: 250m
