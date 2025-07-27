@@ -43,13 +43,13 @@ server:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
-      - host: {{ vault.domain }}
-        paths:
-          - /
+    - host: {{ vault.domain }}
+      paths:
+        - /
     tls:
-      - hosts:
-          - {{ vault.domain }}
-        secretName: {{ vault.domain }}
+    - hosts:
+      - {{ vault.domain }}
+      secretName: {{ vault.domain }}
 serverTelemetry:
   serviceMonitor:
     enabled: true
