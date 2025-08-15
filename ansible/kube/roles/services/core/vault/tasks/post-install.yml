@@ -160,7 +160,7 @@
   ansible.builtin.uri:
     validate_certs: true
     method: GET
-    url: "https://{{ vault.domain }}/v1/sys/mounts/secret"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/sys/mounts/secret"
     status_code: [200, 400]
     headers:
       "X-Vault-Token": "{{ vault_core_token }}"
@@ -172,7 +172,7 @@
 - name: Create default 'secret/' kv engine
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/mounts/secret"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/sys/mounts/secret"
     method: POST
     status_code: [204]
     headers:

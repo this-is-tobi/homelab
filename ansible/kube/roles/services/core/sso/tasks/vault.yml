@@ -53,7 +53,7 @@
 - name: Get auth methods
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/auth/oidc"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/sys/auth/oidc"
     method: GET
     status_code: [200, 400]
     headers:
@@ -63,7 +63,7 @@
 - name: Enable oidc auth method
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/auth/oidc"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/sys/auth/oidc"
     method: POST
     status_code: [200, 204]
     headers:
@@ -76,7 +76,7 @@
 - name: Configue oidc auth method
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/auth/oidc/config"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/auth/oidc/config"
     method: POST
     status_code: [200, 204]
     headers:
@@ -95,7 +95,7 @@
 - name: Create oidc role
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/auth/oidc/role/default"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/auth/oidc/role/default"
     method: POST
     status_code: [200, 204]
     headers:
@@ -124,7 +124,7 @@
 - name: Create admin access policy
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/policies/acl/admin"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/sys/policies/acl/admin"
     method: POST
     status_code: [200, 204]
     headers:
@@ -135,7 +135,7 @@
 - name: Create admin group
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/identity/group"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/identity/group"
     method: POST
     status_code: [200, 204]
     headers:
@@ -150,7 +150,7 @@
 - name: Get oidc accessor
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/sys/auth"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/sys/auth"
     method: GET
     status_code: [200, 204]
     headers:
@@ -160,7 +160,7 @@
 - name: Get admin group id
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/identity/group/name/admin"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/identity/group/name/admin"
     method: GET
     status_code: [200, 204]
     headers:
@@ -170,7 +170,7 @@
 - name: Create admin group alias
   ansible.builtin.uri:
     validate_certs: true
-    url: "https://{{ vault.domain }}/v1/identity/group-alias"
+    url: "http://{{ vault.namespace }}-active.{{ vault.namespace }}.svc.cluster.local:8200/v1/identity/group-alias"
     method: POST
     status_code: [200, 400]
     headers:

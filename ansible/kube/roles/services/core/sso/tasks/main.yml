@@ -4,7 +4,7 @@
 
 - name: Set fact for vault secrets
   ansible.builtin.set_fact:
-    argo_cd_core_domain: "{{ current_vault_values.secret.argo-cd.domain }}"
+    argo_cd_core_domain: "{{ current_vault_values.secret.[argo-cd.domain }}"
     argo_cd_core_client_id: "{{ current_vault_values.secret.argo-cd.keycloak.clientId }}"
     vault_core_domain: "{{ current_vault_values.secret.vault.domain }}"
     vault_core_client_id: "{{ current_vault_values.secret.vault.keycloak.clientId }}"

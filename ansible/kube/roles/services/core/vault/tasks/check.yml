@@ -1,6 +1,3 @@
-- debug: msg="{{ vault_pod }}"
-- debug: msg="{{ vault.namespace }}"
-
 - name: Get vault status
   kubernetes.core.k8s_exec:
     container: vault
