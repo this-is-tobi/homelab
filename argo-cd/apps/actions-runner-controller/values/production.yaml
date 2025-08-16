@@ -1,6 +1,7 @@
 arc-controller:
   replicaCount: 2
   runnerMaxConcurrentReconciles: 4
+  labels: {}
   serviceAccount:
     name: actions-runner-controller-sa
 
@@ -10,6 +11,7 @@ arc-runner-tools:
   githubConfigSecret: this-is-tobi-gh-app-secret
   minRunners: 2
   maxRunners: 6
+  labels: {}
   controllerServiceAccount:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
@@ -27,7 +29,7 @@ arc-runner-tools:
     spec:
       containers:
       - name: runner
-        image: ghcr.io/this-is-tobi/tools/gh-runner:1.2.1 # ghcr.io/actions/actions-runner:latest
+        image: ghcr.io/this-is-tobi/tools/gh-runner:1.4.1 # ghcr.io/actions/actions-runner:latest
         command: ["/home/runner/run.sh"]
 
 arc-runner-multiarch-mirror:
@@ -36,6 +38,7 @@ arc-runner-multiarch-mirror:
   githubConfigSecret: this-is-tobi-gh-app-secret
   minRunners: 2
   maxRunners: 6
+  labels: {}
   controllerServiceAccount:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
@@ -53,5 +56,5 @@ arc-runner-multiarch-mirror:
     spec:
       containers:
       - name: runner
-        image: ghcr.io/this-is-tobi/tools/gh-runner:1.2.1 # ghcr.io/actions/actions-runner:latest
+        image: ghcr.io/this-is-tobi/tools/gh-runner:1.4.1 # ghcr.io/actions/actions-runner:latest
         command: ["/home/runner/run.sh"]
