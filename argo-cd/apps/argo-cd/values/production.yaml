@@ -8,7 +8,7 @@ argo-cd:
       policy.csv: |
         p, role:none, *, *, */*, deny
         p, role:admin, *, *, */*, allow
-        g, admin, role:admin
+        g, argo-cd-admin, role:admin
     policy.default: role:none
     scopes: "[groups]"
     cm:
