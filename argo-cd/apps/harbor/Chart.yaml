@@ -1,12 +1,12 @@
 apiVersion: v2
 name: harbor
 type: application
-version: 26.3.0
-appVersion: "2.13.1"
+version: 27.0.3
+appVersion: "2.13.2"
 dependencies:
 - name: harbor
   alias: harbor
-  version: 26.3.0
+  version: 27.0.3
   repository: https://charts.bitnami.com/bitnami
 - name: cnpg-cluster
   alias: cnpg
