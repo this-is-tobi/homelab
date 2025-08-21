@@ -1,12 +1,12 @@
 apiVersion: v2
 name: outline
 type: application
-version: 1.7.2
-appVersion: "0.77.2"
+version: 1.10.0
+appVersion: "0.86.1"
 dependencies:
 - name: outline
   alias: outline
-  version: 1.7.2
+  version: 1.10.0
   repository: https://helm.liam.sh
 - name: cnpg-cluster
   alias: cnpg
