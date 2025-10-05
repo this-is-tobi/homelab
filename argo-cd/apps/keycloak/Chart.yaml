@@ -6,8 +6,9 @@ appVersion: "26.3.2"
 dependencies:
 - name: keycloak
   alias: keycloak
-  version: 24.8.1
-  repository: https://charts.bitnami.com/bitnami
+  version: 0.1.10
+  repository: oci://registry-1.docker.io/cloudpirates
+  condition: keycloak.enabled
 - name: cnpg-cluster
   alias: cnpg
   version: 1.0.3
