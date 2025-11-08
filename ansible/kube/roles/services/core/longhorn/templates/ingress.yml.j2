@@ -6,7 +6,7 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-http-prod
     nginx.ingress.kubernetes.io/auth-type: basic
-    nginx.ingress.kubernetes.io/auth-secret: longhorn-admin
+    nginx.ingress.kubernetes.io/auth-secret: longhorn-admin-htpasswd
     nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - Longhorn"
 spec:
   ingressClassName: nginx
