@@ -1,7 +1,7 @@
 mattermost:
   image:
     repository: ghcr.io/this-is-tobi/mirror/mattermost
-    tag: 11.0.2
+    tag: 11.0.4
     imagePullPolicy: Always
   persistence:
     ## This volume persists generated data from users, like images, attachments...
