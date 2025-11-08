@@ -22,7 +22,7 @@ kube-prometheus-stack:
             accessModes: ["ReadWriteMany"]
             resources:
               requests:
-                storage: 100Gi
+                storage: 200Gi
   grafana:
     assertNoLeakedSecrets: false
     adminPassword: <path:secret/data/platforms/production/apps/prometheus-stack#admin | jsonPath {.password}>
