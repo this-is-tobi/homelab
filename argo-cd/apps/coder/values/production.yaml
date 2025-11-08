@@ -48,7 +48,7 @@ cnpg:
   enableSuperuserAccess: false
   pvcSize:
     data: 3Gi
-    wal: 2Gi
+    wal: 3Gi
   resources:
     requests:
       cpu: 250m
