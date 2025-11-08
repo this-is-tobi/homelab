@@ -24,10 +24,10 @@ sonarqube:
   resources:
     limits:
       cpu: 800m
-      memory: 4Gi
+      memory: 3Gi
     requests:
       cpu: 200m
-      memory: 2Gi
+      memory: 3Gi
   postgresql:
     enabled: false
   jdbcOverwrite:
