@@ -1,12 +1,12 @@
 apiVersion: v2
 name: sonarqube
 type: application
-version: 2025.4.1
-appVersion: "25.7.0.110598"
+version: 2025.5.0
+appVersion: "25.9.0.112764"
 dependencies:
 - name: sonarqube
   alias: sonarqube
-  version: 2025.4.1
+  version: 2025.5.0
   repository: https://SonarSource.github.io/helm-chart-sonarqube
 - name: cnpg-cluster
   alias: cnpg
