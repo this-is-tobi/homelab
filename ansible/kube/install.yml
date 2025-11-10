@@ -18,11 +18,6 @@
         - core
         - longhorn-core
 
-    - name: ./roles/services/core/cert-manager
-      tags:
-        - core
-        - cert-manager-core
-
     - name: ./roles/services/core/vault
       tags:
         - core
