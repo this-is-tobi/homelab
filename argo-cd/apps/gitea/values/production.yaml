@@ -107,6 +107,8 @@ cnpg:
     limits:
       cpu: 500m
       memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
   backup:
     enabled: true
     endpointURL: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.endpoint}>

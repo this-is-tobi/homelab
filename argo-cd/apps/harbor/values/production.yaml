@@ -84,6 +84,8 @@ cnpg:
     limits:
       cpu: 500m
       memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
   backup:
     enabled: false
     endpointURL: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.endpoint}>
