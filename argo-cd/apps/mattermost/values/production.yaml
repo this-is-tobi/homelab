@@ -65,7 +65,7 @@ mattermost:
 
 cnpg:
   fullnameOverride: mattermost-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.10
   dbName: mattermost
   credentials:
     username: mattermost
