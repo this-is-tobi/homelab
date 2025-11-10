@@ -65,7 +65,7 @@ harbor:
 
 cnpg:
   fullnameOverride: harbor-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
   dbName: harbor
   credentials:
     username: harbor

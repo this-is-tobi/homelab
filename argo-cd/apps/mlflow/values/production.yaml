@@ -61,6 +61,7 @@ mlflow:
 
 cnpg:
   fullnameOverride: mlflow-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
   dbName: mlflow
   credentials:
     username: mlflow

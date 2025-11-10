@@ -78,6 +78,7 @@ outline:
 
 cnpg:
   fullnameOverride: outline-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
   dbName: outline
   credentials:
     username: outline

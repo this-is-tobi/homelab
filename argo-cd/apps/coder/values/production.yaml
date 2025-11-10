@@ -38,6 +38,7 @@ coder:
 
 cnpg:
   fullnameOverride: coder-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
   dbName: coder
   credentials:
     username: coder

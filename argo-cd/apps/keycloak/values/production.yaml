@@ -61,7 +61,7 @@ keycloak:
 
 cnpg:
   fullnameOverride: keycloak-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:15.4
+  imageName: ghcr.io/cloudnative-pg/postgresql:15.14
   dbName: keycloak
   credentials:
     username: keycloak
