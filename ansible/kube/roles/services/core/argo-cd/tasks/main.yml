@@ -19,6 +19,7 @@
     - name: Hash argocd password
       ansible.builtin.shell:
         cmd: |
+          set -o pipefail
           htpasswd -nbBC 10 "" {{ argocd_password }} | tr -d ':\n' | sed 's/$2y/$2a/'
       register: hash_argocd_password
 
@@ -28,7 +29,7 @@
 
     - name: Deploy argocd admin secret
       kubernetes.core.k8s:
-        template: "{{ item }}"
+        definition: "{{ lookup('template', item) | from_yaml }}"
         state: present
       with_items:
         - secret-admin.yml.j2
@@ -59,7 +60,7 @@
 
 - name: Deploy argocd plugins config
   kubernetes.core.k8s:
-    template: "{{ item }}"
+    definition: "{{ lookup('template', item) | from_yaml }}"
     state: present
   with_items:
     - vault-plugin-cm.yml.j2
