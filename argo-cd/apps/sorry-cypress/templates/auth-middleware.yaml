@@ -1,7 +1,0 @@
-apiVersion: nginx.io/v1alpha1
-kind: Middleware
-metadata:
-  name: auth-middleware
-spec:
-  basicAuth:
-    secret: sorry-cypress-admin
