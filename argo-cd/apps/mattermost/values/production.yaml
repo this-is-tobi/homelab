@@ -88,6 +88,7 @@ cnpg:
     topologyKey: kubernetes.io/hostname
   backup:
     enabled: true
+    legacyMode: false
     endpointURL: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.endpoint}>
     destinationPath: s3://<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketPrefix}>
     cron: 0 0 0 * * *
