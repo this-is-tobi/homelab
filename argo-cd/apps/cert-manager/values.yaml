@@ -12,6 +12,6 @@ defaultWildcard:
   secretName: "default-wildcard-tls"
   issuerRef:
     kind: "ClusterIssuer"
-    name: l"etsencrypt-dns-prod"
+    name: "letsencrypt-dns-prod"
 
 clusterIssuers: []
