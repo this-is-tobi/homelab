@@ -1,18 +1,18 @@
 apiVersion: v2
 name: actions-runner-controller
 type: application
-version: 0.12.1
-appVersion: "0.12.1"
+version: 0.13.0
+appVersion: "0.13.0"
 dependencies:
 - name: gha-runner-scale-set-controller
   alias: arc-controller
-  version: 0.12.1
+  version: 0.13.0
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
 - name: gha-runner-scale-set
   alias: arc-runner-tools
-  version: 0.12.1
+  version: 0.13.0
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
 - name: gha-runner-scale-set
   alias: arc-runner-multiarch-mirror
-  version: 0.12.1
+  version: 0.13.0
   repository: oci://ghcr.io/actions/actions-runner-controller-charts

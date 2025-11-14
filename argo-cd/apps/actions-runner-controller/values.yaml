@@ -1,4 +1,9 @@
-arc-controller: {}
+arc-controller:
+  replicaCount: 2
+  runnerMaxConcurrentReconciles: 4
+  labels: {}
+  serviceAccount:
+    name: actions-runner-controller-sa
 
 arc-runner-tools: {}
 

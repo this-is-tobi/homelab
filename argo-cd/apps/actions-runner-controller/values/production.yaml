@@ -1,16 +1,11 @@
-arc-controller:
-  replicaCount: 2
-  runnerMaxConcurrentReconciles: 4
-  labels: {}
-  serviceAccount:
-    name: actions-runner-controller-sa
+arc-controller: {}
 
 arc-runner-tools:
   runnerScaleSetName: tools
   githubConfigUrl: https://github.com/this-is-tobi/tools
   githubConfigSecret: this-is-tobi-gh-app-secret
-  minRunners: 2
-  maxRunners: 6
+  minRunners: 1
+  maxRunners: 4
   labels: {}
   controllerServiceAccount:
     namespace: actions-runner-controller
@@ -19,7 +14,8 @@ arc-runner-tools:
     type: "dind"  ## type can be set to dind or kubernetes
     ## the following is required when containerMode.type=kubernetes
     kubernetesModeWorkVolumeClaim:
-      accessModes: ["ReadWriteOnce"]
+      accessModes:
+      - "ReadWriteOnce"
       # For local testing, use https://github.com/openebs/dynamic-localpv-provisioner/blob/develop/docs/quickstart.md to provide dynamic provision volume with storageClassName: openebs-hostpath
       storageClassName: ""
       resources:
@@ -29,15 +25,16 @@ arc-runner-tools:
     spec:
       containers:
       - name: runner
-        image: ghcr.io/this-is-tobi/tools/gh-runner:1.4.1 # ghcr.io/actions/actions-runner:latest
-        command: ["/home/runner/run.sh"]
+        image: ghcr.io/this-is-tobi/tools/gh-runner:1.5.0 # ghcr.io/actions/actions-runner:latest
+        command:
+        - "/home/runner/run.sh"
 
 arc-runner-multiarch-mirror:
   runnerScaleSetName: multiarch-mirror
   githubConfigUrl: https://github.com/this-is-tobi/multiarch-mirror
   githubConfigSecret: this-is-tobi-gh-app-secret
-  minRunners: 2
-  maxRunners: 6
+  minRunners: 1
+  maxRunners: 4
   labels: {}
   controllerServiceAccount:
     namespace: actions-runner-controller
@@ -46,7 +43,8 @@ arc-runner-multiarch-mirror:
     type: "dind"  ## type can be set to dind or kubernetes
     ## the following is required when containerMode.type=kubernetes
     kubernetesModeWorkVolumeClaim:
-      accessModes: ["ReadWriteOnce"]
+      accessModes:
+      - "ReadWriteOnce"
       # For local testing, use https://github.com/openebs/dynamic-localpv-provisioner/blob/develop/docs/quickstart.md to provide dynamic provision volume with storageClassName: openebs-hostpath
       storageClassName: ""
       resources:
@@ -56,5 +54,6 @@ arc-runner-multiarch-mirror:
     spec:
       containers:
       - name: runner
-        image: ghcr.io/this-is-tobi/tools/gh-runner:1.4.1 # ghcr.io/actions/actions-runner:latest
-        command: ["/home/runner/run.sh"]
+        image: ghcr.io/this-is-tobi/tools/gh-runner:1.5.0 # ghcr.io/actions/actions-runner:latest
+        command:
+        - "/home/runner/run.sh"
