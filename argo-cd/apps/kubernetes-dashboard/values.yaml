@@ -15,8 +15,6 @@ kubernetes-dashboard:
       paths:
         web: /
         api: /api
-    nodeSelector:
-      node-type: worker
     settings:
       global:
         itemsPerPage: 25

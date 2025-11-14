@@ -1,1 +1,103 @@
-mattermost: {}
+mattermost:
+  persistence:
+    data:
+      enabled: false
+      size: 10Gi
+      accessMode: ReadWriteOnce
+    plugins:
+      enabled: false
+      size: 5Gi
+      accessMode: ReadWriteOnce
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+    hosts:
+    - ""
+    tls:
+    - hosts:
+      - ""
+      secretName: ""
+  mysql:
+    enabled: false
+  externalDB:
+    enabled: true
+    externalDriverType: postgres
+    externalConnectionString: ""
+  securityContext:
+    fsGroup: 2000
+    fsGroupChangePolicy: "OnRootMismatch"
+  serviceAccount:
+    create: true
+    name: mattermost
+  config:
+    MATTERMOST_EDITION: "team"
+    MM_FEATUREFLAGS_STREAMLINEDMARKETPLACE: "false"
+    MM_SERVICESETTINGS_SITEURL: ""
+    MM_SERVICESETTINGS_COLLAPSEDTHREAD: "default_on"
+    MM_SERVICESETTINGS_THREADAUTOFOLLOW: "true"
+    MM_FILESETTINGS_MAXFILESIZE: "26214400000"
+    MM_FILESETTINGS_DRIVERNAME: "amazons3" # local
+    MM_FILESETTINGS_AMAZONS3ACCESSKEYID: ""
+    MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY: ""
+    MM_FILESETTINGS_AMAZONS3BUCKET: ""
+    MM_FILESETTINGS_AMAZONS3PATHPREFIX: ""
+    MM_FILESETTINGS_AMAZONS3REGION: ""
+    MM_FILESETTINGS_AMAZONS3ENDPOINT: ""
+    MM_FILESETTINGS_AMAZONS3SSE: "false"
+    # MM_EMAILSETTINGS_ENABLESMTPAUTH: "true"
+    # MM_EMAILSETTINGS_FEEDBACKEMAIL: ""
+    # MM_EMAILSETTINGS_SMTPUSERNAME: ""
+    # MM_EMAILSETTINGS_SMTPPASSWORD: ""
+    # MM_EMAILSETTINGS_SMTPSERVER: ""
+    # MM_EMAILSETTINGS_SMTPPORT: ""
+    MM_LOCALIZATIONSETTINGS_DEFAULTCLIENTLOCALE: "en"
+    MM_LOGSETTINGS_CONSOLELEVEL: "INFO"
+    MM_PLUGINSETTINGS_ENABLEUPLOADS: "true"
+    MM_PLUGINSETTINGS_CLIENTDIRECTORY: "./client/plugins"
+    # MM_PLUGINSETTINGS_PLUGINSTATES: '{"com.mattermost.apps":{"Enable":true},"focalboard":{"Enable":true},"github":{"Enable":true},"com.github.manland.mattermost-plugin-gitlab":{"Enable":true},"com.github.matterpoll.matterpoll":{"Enable":true},"com.github.scottleedavis.mattermost-plugin-remind":{"Enable":true},"com.github.moussetc.mattermost-plugin-giphy":{"Enable":true},"com.mattermost.agenda":{"Enable":true},"alertmanager":{"Enable":true},"com.github.moussetc.mattermost.plugin.giphy":{"Enable":true},"jitsi":{"Enable":true},"com.cpanato.broadcast":{"Enable":true},"com.mattermost.plugin-todo":{"Enable":true}}'
+
+cnpg:
+  fullnameOverride: mattermost-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: mattermost
+  credentials:
+    username: mattermost
+    password: ""
+    postgresPassword: ""
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 7Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: true
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://<bucket-name>/<bucket-prefix>"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: mattermost-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""

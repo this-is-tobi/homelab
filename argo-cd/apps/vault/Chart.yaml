@@ -8,3 +8,8 @@ dependencies:
   alias: vault
   version: 0.30.1
   repository: https://helm.releases.hashicorp.com
+- name: backup-utils
+  alias: backups-utils
+  version: 2.0.0
+  repository: https://this-is-tobi.github.io/helm-charts
+  condition: backup-utils.enabled

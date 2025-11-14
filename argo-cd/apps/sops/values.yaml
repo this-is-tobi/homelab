@@ -1,10 +1,15 @@
-sops-secrets-operator:
-  image:
-    pullPolicy: IfNotPresent
+sops:
+  replicaCount: 1
   extraEnv:
-    - name: SOPS_AGE_KEY_FILE
-      value: /etc/sops-age-key-file/keys
+  - name: SOPS_AGE_KEY_FILE
+    value: /etc/sops-age-key-file/keys
   secretsAsFiles:
-    - mountPath: /etc/sops-age-key-file/
-      name: sops-age-key-file
-      secretName: sops-age-key-file
+  - mountPath: /etc/sops-age-key-file/
+    name: sops-age-key-file
+    secretName: sops-age-key-file
+  securityContext:
+    enabled: true
+    container:
+      enabled: true
+  metrics:
+    enabled: true

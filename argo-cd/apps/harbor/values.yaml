@@ -2,27 +2,14 @@ harbor:
   adminPassword: ""
   registry:
     replicaCount: 1
-    nodeSelector:
-      node-type: worker
   portal:
     replicaCount: 2
-    nodeSelector:
-      node-type: worker
   core:
-    replicaCount: 3
-    nodeSelector:
-      node-type: worker
+    replicaCount: 2
   jobservice:
-    replicaCount: 1
-    nodeSelector:
-      node-type: worker
+    replicaCount: 2
   trivy:
     replicaCount: 2
-    nodeSelector:
-      node-type: worker
-  exporter:
-    nodeSelector:
-      node-type: worker
   exposureType: ingress
   externalURL: ""
   ingress:
@@ -43,11 +30,11 @@ harbor:
       jobservice:
         size: 10Gi
         accessModes:
-        - ReadWriteMany
+        - ReadWriteOnce
       trivy:
         size: 10Gi
         accessModes:
-        - ReadWriteMany
+        - ReadWriteOnce
   postgresql:
     enabled: false
   externalDatabase:
@@ -62,3 +49,47 @@ harbor:
     serviceMonitor:
       enabled: true
       interval: "30s"
+
+cnpg:
+  fullnameOverride: harbor-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: harbor
+  credentials:
+    username: harbor
+    password: ""
+    postgresPassword: ""
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 7Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: false
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: harbor-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""

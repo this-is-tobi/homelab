@@ -4,105 +4,41 @@ mattermost:
     tag: 11.0.4
     imagePullPolicy: Always
   persistence:
-    ## This volume persists generated data from users, like images, attachments...
     data:
-      enabled: true # false
-      size: 10Gi
-      accessMode: ReadWriteOnce
+      enabled: true
     plugins:
       enabled: true
-      size: 5Gi
-      accessMode: ReadWriteOnce
   ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - <path:secret/data/platforms/production/apps/mattermost#domain>
     tls:
     - hosts:
       - <path:secret/data/platforms/production/apps/mattermost#domain>
       secretName: <path:secret/data/platforms/production/apps/mattermost#domain>
-  mysql:
-    enabled: false
   externalDB:
-    enabled: true
-    externalDriverType: postgres
     externalConnectionString: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.connectionString}>
-  securityContext:
-    fsGroup: 2000
-    fsGroupChangePolicy: "OnRootMismatch"
-  serviceAccount:
-    create: true
-    name: mattermost
   config:
-    MATTERMOST_EDITION: "team"
-    MM_FEATUREFLAGS_STREAMLINEDMARKETPLACE: "false"
     MM_SERVICESETTINGS_SITEURL: "https://<path:secret/data/platforms/production/apps/mattermost#domain>"
-    MM_SERVICESETTINGS_COLLAPSEDTHREAD: "default_on"
-    MM_SERVICESETTINGS_THREADAUTOFOLLOW: "true"
-    MM_FILESETTINGS_MAXFILESIZE: "26214400000"
-    MM_FILESETTINGS_DRIVERNAME: "amazons3" # local
     MM_FILESETTINGS_AMAZONS3ACCESSKEYID: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.accessKey}>"
     MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.secretKey}>"
     MM_FILESETTINGS_AMAZONS3BUCKET: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.bucketName}>"
     MM_FILESETTINGS_AMAZONS3PATHPREFIX: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.bucketPrefix}>"
     MM_FILESETTINGS_AMAZONS3REGION: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.region}>"
     MM_FILESETTINGS_AMAZONS3ENDPOINT: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.endpoint}>"
-    MM_FILESETTINGS_AMAZONS3SSE: "false"
-    # MM_EMAILSETTINGS_ENABLESMTPAUTH: "true"
-    # MM_EMAILSETTINGS_FEEDBACKEMAIL: "<path:secret/data/platforms/production/apps/mattermost#smtp | jsonPath {.email}>"
-    # MM_EMAILSETTINGS_SMTPUSERNAME: "<path:secret/data/platforms/production/apps/mattermost#smtp | jsonPath {.username}>"
-    # MM_EMAILSETTINGS_SMTPPASSWORD: "<path:secret/data/platforms/production/apps/mattermost#smtp | jsonPath {.password}>"
-    # MM_EMAILSETTINGS_SMTPSERVER: "<path:secret/data/platforms/production/apps/mattermost#smtp | jsonPath {.server}>"
-    # MM_EMAILSETTINGS_SMTPPORT: "<path:secret/data/platforms/production/apps/mattermost#smtp | jsonPath {.port}>"
-    MM_LOCALIZATIONSETTINGS_DEFAULTCLIENTLOCALE: "en"
-    MM_LOGSETTINGS_CONSOLELEVEL: "INFO"
-    MM_PLUGINSETTINGS_ENABLEUPLOADS: "true"
-    MM_PLUGINSETTINGS_CLIENTDIRECTORY: "./client/plugins"
-    # MM_PLUGINSETTINGS_PLUGINSTATES: '{"com.mattermost.apps":{"Enable":true},"focalboard":{"Enable":true},"github":{"Enable":true},"com.github.manland.mattermost-plugin-gitlab":{"Enable":true},"com.github.matterpoll.matterpoll":{"Enable":true},"com.github.scottleedavis.mattermost-plugin-remind":{"Enable":true},"com.github.moussetc.mattermost-plugin-giphy":{"Enable":true},"com.mattermost.agenda":{"Enable":true},"alertmanager":{"Enable":true},"com.github.moussetc.mattermost.plugin.giphy":{"Enable":true},"jitsi":{"Enable":true},"com.cpanato.broadcast":{"Enable":true},"com.mattermost.plugin-todo":{"Enable":true}}'
 
 cnpg:
-  fullnameOverride: mattermost-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  dbName: mattermost
+  mode: primary
   credentials:
-    username: mattermost
     password: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.app.password}>
     postgresPassword: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.admin.password}>
-  mode: primary
-  instances: 3
-  enableSuperuserAccess: false
-  pvcSize:
-    data: 7Gi
-    wal: 3Gi
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-  affinity:
-    topologyKey: kubernetes.io/hostname
   backup:
     enabled: true
-    legacyMode: false
     endpointURL: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.endpoint}>
     destinationPath: s3://<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketPrefix}>
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
     s3Credentials:
-      create: true
-      secretName: mattermost-pg-cluster-backup
       accessKeyId:
-        key: accessKeyId
         value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.accessKey}>
       secretAccessKey:
-        key: secretAccessKey
         value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.secretKey}>
       region:
-        key: region
         value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.region}>

@@ -1,121 +1,66 @@
 outline:
-  image:
-    repository: ghcr.io/this-is-tobi/mirror/outline
-    tag: "0.87.4"
   ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - <path:secret/data/platforms/production/apps/outline#domain>
     tls:
     - hosts:
       - <path:secret/data/platforms/production/apps/outline#domain>
       secretName: <path:secret/data/platforms/production/apps/outline#domain>
-  outline:
-    generateEncryptionKeys: false
-    defaultLanguage: en_US
   environment:
-    - name: URL
-      value: "https://<path:secret/data/platforms/production/apps/outline#domain>"
-    - name: DATABASE_URL
-      value: "postgres://<path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.connectionString}>"
-    - name: SECRET_KEY
-      value: "<path:secret/data/platforms/production/apps/outline#admin | jsonPath {.secretKey}>"
-    - name: UTILS_SECRET
-      value: "<path:secret/data/platforms/production/apps/outline#admin | jsonPath {.utilsSecret}>"
-    - name: AWS_ACCESS_KEY_ID
-      value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.accessKey}>"
-    - name: AWS_REGION
-      value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.region}>"
-    - name: AWS_SECRET_ACCESS_KEY
-      value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.secretKey}>"
-    - name: AWS_S3_UPLOAD_BUCKET_URL
-      value: "https://<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.endpoint}>/<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.bucketName}>"
-    - name: AWS_S3_UPLOAD_BUCKET_NAME
-      value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.bucketName}>"
-    - name: AWS_S3_FORCE_PATH_STYLE
-      value: "true"
-    - name: AWS_S3_ACL
-      value: "private"
-    - name: FILE_STORAGE_UPLOAD_MAX_SIZE
-      value: "26214400"
-    - name: OIDC_CLIENT_ID
-      value: "<path:secret/data/platforms/production/apps/outline#keycloak | jsonPath {.clientId}>"
-    - name: OIDC_CLIENT_SECRET
-      value: "<path:secret/data/platforms/production/apps/outline#keycloak | jsonPath {.clientSecret}>"
-    - name: OIDC_AUTH_URI
-      value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/auth"
-    - name: OIDC_TOKEN_URI
-      value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/token"
-    - name: OIDC_USERINFO_URI
-      value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo"
-    - name: OIDC_USERNAME_CLAIM
-      value: "email"
-    - name: OIDC_DISPLAY_NAME
-      value: "Keycloak"
-    - name: OIDC_SCOPES
-      value: "openid profile email groups roles"
-  redis:
-    auth:
-      enabled: false
-  postgresql:
-    enabled: false
-  cnpg:
-    enabled: false
-  minio:
-    enabled: false
-  dex:
-    enabled: false
-  resources:
-    requests:
-      memory: 512Mi
-      cpu: 250m
-    limits:
-      memory: 1Gi
-      cpu: "1"
+  - name: URL
+    value: "https://<path:secret/data/platforms/production/apps/outline#domain>"
+  - name: DATABASE_URL
+    value: "postgres://<path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.connectionString}>"
+  - name: SECRET_KEY
+    value: "<path:secret/data/platforms/production/apps/outline#admin | jsonPath {.secretKey}>"
+  - name: UTILS_SECRET
+    value: "<path:secret/data/platforms/production/apps/outline#admin | jsonPath {.utilsSecret}>"
+  - name: AWS_ACCESS_KEY_ID
+    value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.accessKey}>"
+  - name: AWS_REGION
+    value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.region}>"
+  - name: AWS_SECRET_ACCESS_KEY
+    value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.secretKey}>"
+  - name: AWS_S3_UPLOAD_BUCKET_URL
+    value: "https://<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.endpoint}>/<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.bucketName}>"
+  - name: AWS_S3_UPLOAD_BUCKET_NAME
+    value: "<path:secret/data/platforms/production/apps/outline#s3 | jsonPath {.bucketName}>"
+  - name: AWS_S3_FORCE_PATH_STYLE
+    value: "true"
+  - name: AWS_S3_ACL
+    value: "private"
+  - name: FILE_STORAGE_UPLOAD_MAX_SIZE
+    value: "26214400"
+  - name: OIDC_CLIENT_ID
+    value: "<path:secret/data/platforms/production/apps/outline#keycloak | jsonPath {.clientId}>"
+  - name: OIDC_CLIENT_SECRET
+    value: "<path:secret/data/platforms/production/apps/outline#keycloak | jsonPath {.clientSecret}>"
+  - name: OIDC_AUTH_URI
+    value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/auth"
+  - name: OIDC_TOKEN_URI
+    value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/token"
+  - name: OIDC_USERINFO_URI
+    value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/protocol/openid-connect/userinfo"
+  - name: OIDC_USERNAME_CLAIM
+    value: "email"
+  - name: OIDC_DISPLAY_NAME
+    value: "Keycloak"
+  - name: OIDC_SCOPES
+    value: "openid profile email groups roles"
 
 cnpg:
-  fullnameOverride: outline-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  dbName: outline
+  mode: primary
   credentials:
-    username: outline
     password: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.app.password}>
     postgresPassword: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.admin.password}>
-  mode: primary
-  instances: 3
-  enableSuperuserAccess: false
-  pvcSize:
-    data: 3Gi
-    wal: 3Gi
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-  affinity:
-    topologyKey: kubernetes.io/hostname
   backup:
     enabled: false
-    legacyMode: false
     endpointURL: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.endpoint}>
     destinationPath: s3://<path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.bucketPrefix}>
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
     s3Credentials:
-      create: true
-      secretName: outline-pg-cluster-backup
       accessKeyId:
-        key: accessKeyId
         value: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.accessKey}>
       secretAccessKey:
-        key: secretAccessKey
         value: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.secretKey}>
       region:
-        key: region
         value: <path:secret/data/platforms/production/apps/outline#postgres | jsonPath {.s3.region}>

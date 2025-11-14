@@ -1,7 +1,7 @@
 outline:
   image:
     repository: ghcr.io/this-is-tobi/mirror/outline
-    tag: latest
+    tag: "0.87.4"
   ingress:
     enabled: true
     className: nginx
@@ -17,46 +17,46 @@ outline:
     generateEncryptionKeys: false
     defaultLanguage: en_US
   environment:
-    - name: URL
-      value: ""
-    - name: DATABASE_URL
-      value: ""
-    - name: SECRET_KEY
-      value: ""
-    - name: UTILS_SECRET
-      value: ""
-    - name: AWS_ACCESS_KEY_ID
-      value: ""
-    - name: AWS_REGION
-      value: ""
-    - name: AWS_SECRET_ACCESS_KEY
-      value: ""
-    - name: AWS_S3_UPLOAD_BUCKET_URL
-      value: ""
-    - name: AWS_S3_UPLOAD_BUCKET_NAME
-      value: ""
-    - name: AWS_S3_FORCE_PATH_STYLE
-      value: "true"
-    - name: AWS_S3_ACL
-      value: "private"
-    - name: FILE_STORAGE_UPLOAD_MAX_SIZE
-      value: "26214400"
-    - name: OIDC_CLIENT_ID
-      value: ""
-    - name: OIDC_CLIENT_SECRET
-      value: ""
-    - name: OIDC_AUTH_URI
-      value: ""
-    - name: OIDC_TOKEN_URI
-      value: ""
-    - name: OIDC_USERINFO_URI
-      value: ""
-    - name: OIDC_USERNAME_CLAIM
-      value: "email"
-    - name: OIDC_DISPLAY_NAME
-      value: "Keycloak"
-    - name: OIDC_SCOPES
-      value: "openid profile email groups roles"
+  - name: URL
+    value: ""
+  - name: DATABASE_URL
+    value: ""
+  - name: SECRET_KEY
+    value: ""
+  - name: UTILS_SECRET
+    value: ""
+  - name: AWS_ACCESS_KEY_ID
+    value: ""
+  - name: AWS_REGION
+    value: ""
+  - name: AWS_SECRET_ACCESS_KEY
+    value: ""
+  - name: AWS_S3_UPLOAD_BUCKET_URL
+    value: ""
+  - name: AWS_S3_UPLOAD_BUCKET_NAME
+    value: ""
+  - name: AWS_S3_FORCE_PATH_STYLE
+    value: "true"
+  - name: AWS_S3_ACL
+    value: "private"
+  - name: FILE_STORAGE_UPLOAD_MAX_SIZE
+    value: "26214400"
+  - name: OIDC_CLIENT_ID
+    value: ""
+  - name: OIDC_CLIENT_SECRET
+    value: ""
+  - name: OIDC_AUTH_URI
+    value: ""
+  - name: OIDC_TOKEN_URI
+    value: ""
+  - name: OIDC_USERINFO_URI
+    value: ""
+  - name: OIDC_USERNAME_CLAIM
+    value: "email"
+  - name: OIDC_DISPLAY_NAME
+    value: "Keycloak"
+  - name: OIDC_SCOPES
+    value: "openid profile email groups roles"
   redis:
     auth:
       enabled: false
@@ -75,3 +75,47 @@ outline:
     limits:
       memory: 1Gi
       cpu: "1"
+
+cnpg:
+  fullnameOverride: outline-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: outline
+  credentials:
+    username: outline
+    password:
+    postgresPassword:
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 3Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: false
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://<bucket-name>/<bucket-prefix>"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: outline-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""

@@ -1,6 +1,4 @@
 trivy-operator:
-  nodeSelector:
-    node-type: worker
   operator:
     replicas: 1
     revisionHistoryLimit: 3

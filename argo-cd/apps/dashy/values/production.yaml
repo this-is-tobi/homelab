@@ -1,10 +1,5 @@
 dashy:
   ingress:
-    enabled: true
-    className: "nginx"
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
-    labels: {}
     hosts:
     - "ohmlab.fr"
     tls:
@@ -15,103 +10,75 @@ dashy:
     config:
       pageInfo:
         title: Tobi's Cloud
-        navLinks:
-          - title: GitHub
-            path: https://github.com/this-is-tobi/homelab
-          - title: Documentation
-            path: https://this-is-tobi.com
-      appConfig:
-        theme: adventure-basic
-        startingView: default
-        statusCheck: true
-        statusCheckInterval: 300
-        disableConfigurationForNonAdmin: true
-        webSearch:
-          disableWebSearch: true
-        disableConfiguration: true
-        hideComponents:
-          hideHeading: false
-          hideNav: true
-          hideSearch: true
-          hideSettings: true
-          hideFooter: true
       sections:
-        - name: Services
-          icon: fas fa-rocket
-          items:
-            - title: Argo-cd
-              description: Deploy apps using gitops
-              url: https://<path:secret/data/platforms/production/apps/argo-cd#domain>
-              icon: si-argo
-            - title: Gitea
-              description: Private DevOps Platform including code storage
-              url: https://<path:secret/data/platforms/production/apps/gitea#domain>
-              icon: si-gitea
-            - title: Grafana
-              description: Watch cluster metrics & application logs
-              url: https://<path:secret/data/platforms/production/apps/prometheus-stack#domain>
-              icon: si-grafana
-            - title: Harbor
-              description: Container image registry & Helm chart registry
-              url: https://<path:secret/data/platforms/production/apps/harbor#domain>
-              icon: si-harbor
-            - title: Mattermost
-              description: Team communication service
-              url: https://<path:secret/data/platforms/production/apps/mattermost#domain>
-              icon: si-mattermost
-            - title: Minio
-              description: Store data with s3 standard
-              url: https://<path:secret/data/platforms/production/apps/minio#domain>
-              icon: si-minio
-            - title: Sonarqube
-              description: Code analysis service
-              url: https://<path:secret/data/platforms/production/apps/sonarqube#domain>
-              icon: si-sonarqube
-          displayData:
-            sortBy: alphabetical
-            collapsed: false
-            rows: 5
-            cols: 2
-            itemSize: large
-        - name: Utils
-          icon: fas fa-wrench
-          items:
-            - title: Documentation
-              description: As the saying goes RTFM
-              url: https://this-is-tobi.com
-              icon: fal fa-book
-              statusCheck: false
-            - title: Github
-              description: Source code
-              url: https://github.com/this-is-tobi/homelab
-              icon: fab fa-github
-              statusCheck: false
-          displayData:
-            sortBy: alphabetical
-            collapsed: false
-            rows: 2
-            cols: 1
-            itemSize: large
-        - name: Services - Admin
-          icon: fas fa-cog
-          items:
-            - title: Argo-cd
-              description: Admin services deployment manager
-              url: https://<path:secret/data/core/infos#argo-cd | jsonPath {.domain}>
-              icon: si-argo
-              statusCheck: true
-            - title: Keycloak
-              description: Single Sign On managment
-              url: https://<path:secret/data/platforms/production/apps/keycloak#domain>
-              icon: si-keycloak
-            - title: Vault
-              description: Admin secret manager
-              url: https://<path:secret/data/core/infos#vault | jsonPath {.domain}>
-              icon: si-vault
-              statusCheck: true
-          displayData:
-            sortBy: alphabetical
-            collapsed: true
-            rows: 3
-            cols: 1
-            itemSize: large
+      - name: Services
+        icon: fas fa-rocket
+        items:
+        - title: Argo-cd
+          description: Deploy apps using gitops
+          url: https://<path:secret/data/platforms/production/apps/argo-cd#domain>
+          icon: si-argo
+        - title: Gitea
+          description: Private DevOps Platform including code storage
+          url: https://<path:secret/data/platforms/production/apps/gitea#domain>
+          icon: si-gitea
+        - title: Grafana
+          description: Watch cluster metrics & application logs
+          url: https://<path:secret/data/platforms/production/apps/prometheus-stack#domain>
+          icon: si-grafana
+        - title: Mattermost
+          description: Team communication service
+          url: https://<path:secret/data/platforms/production/apps/mattermost#domain>
+          icon: si-mattermost
+        - title: Minio
+          description: Store data with s3 standard
+          url: https://<path:secret/data/platforms/production/apps/minio#domain>
+          icon: si-minio
+        displayData:
+          sortBy: alphabetical
+          collapsed: false
+          rows: 5
+          cols: 2
+          itemSize: large
+      - name: Utils
+        icon: fas fa-wrench
+        items:
+        - title: Documentation
+          description: As the saying goes RTFM
+          url: https://this-is-tobi.com
+          icon: fal fa-book
+          statusCheck: false
+        - title: Github
+          description: Source code
+          url: https://github.com/this-is-tobi/homelab
+          icon: fab fa-github
+          statusCheck: false
+        displayData:
+          sortBy: alphabetical
+          collapsed: false
+          rows: 2
+          cols: 1
+          itemSize: large
+      - name: Services - Admin
+        icon: fas fa-cog
+        items:
+        - title: Argo-cd
+          description: Admin services deployment manager
+          url: https://<path:secret/data/core/infos#argo-cd | jsonPath {.domain}>
+          icon: si-argo
+          statusCheck: true
+        - title: Keycloak
+          description: Single Sign On managment
+          url: https://<path:secret/data/platforms/production/apps/keycloak#domain>
+          icon: si-keycloak
+        - title: Vault
+          description: Admin secret manager
+          url: https://<path:secret/data/core/infos#vault | jsonPath {.domain}>
+          icon: si-vault
+          statusCheck: true
+        displayData:
+          sortBy: alphabetical
+          collapsed: true
+          rows: 3
+          cols: 1
+          itemSize: large

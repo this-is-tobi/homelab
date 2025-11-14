@@ -2,10 +2,6 @@ cert-manager:
   crds:
     enabled: true
     keep: true
-  prometheus:
-    enabled: true
-    servicemonitor:
-      enabled: true
 
 scaleway-certmanager-webhook:
   secret:
@@ -13,13 +9,7 @@ scaleway-certmanager-webhook:
     secretKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.secretKey}>
 
 defaultWildcard:
-  enabled: true
   dnsZone: ohmlab.fr
-  ingressNamespace: ingress-nginx
-  secretName: default-wildcard-tls
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt-dns-prod
 
 clusterIssuers:
 - name: letsencrypt-http-staging

@@ -3,8 +3,7 @@ loki:
     commonConfig:
       replication_factor: 1
     storage:
-      # type: 'filesystem'
-      type: 's3'
+      type: s3 # filesystem
       bucketNames:
         chunks: loki-chunks
         ruler: loki-ruler

@@ -12,7 +12,6 @@ vault:
             tls_disable = 1
             address = "[::]:8200"
             cluster_address = "[::]:8201"
-            # Enable unauthenticated metrics access (necessary for Prometheus Operator)
             telemetry {
               unauthenticated_metrics_access = "false"
             }
@@ -33,8 +32,6 @@ vault:
     dataStorage:
       enable: true
       size: 10Gi
-    nodeSelector:
-      node-type: worker
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -55,3 +52,6 @@ vault:
     replicas: 3
     metrics:
       enabled: true
+
+backups-utils:
+  enabled: false

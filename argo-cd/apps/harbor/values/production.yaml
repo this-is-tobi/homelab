@@ -1,108 +1,29 @@
 harbor:
   adminPassword: <path:secret/data/platforms/production/apps/harbor#admin | jsonPath {.password}>
-  registry:
-    replicaCount: 1
-    nodeSelector:
-      node-type: worker
-  portal:
-    replicaCount: 2
-    nodeSelector:
-      node-type: worker
-  core:
-    replicaCount: 3
-    nodeSelector:
-      node-type: worker
-  jobservice:
-    replicaCount: 1
-    nodeSelector:
-      node-type: worker
-  trivy:
-    replicaCount: 2
-    nodeSelector:
-      node-type: worker
-  exporter:
-    nodeSelector:
-      node-type: worker
-  exposureType: ingress
   externalURL: https://<path:secret/data/platforms/production/apps/harbor#domain>
   ingress:
     core:
-      ingressClassName: nginx
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hostname: <path:secret/data/platforms/production/apps/harbor#domain>
-      tls: true
-  persistence:
-    enabled: true
-    mountPath: /data
-    persistentVolumeClaim:
-      registry:
-        size: 100Gi
-        accessModes:
-        - ReadWriteMany
-      jobservice:
-        size: 10Gi
-        accessModes:
-        - ReadWriteMany
-      trivy:
-        size: 10Gi
-        accessModes:
-        - ReadWriteMany
-  postgresql:
-    enabled: false
   externalDatabase:
     host: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.host}>
     port: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.port}>
     coreDatabase: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.database}>
     user: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.username}>
     password: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.password}>
-    sslmode: disable
-  metrics:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-      interval: "30s"
 
 cnpg:
-  fullnameOverride: harbor-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  dbName: harbor
+  mode: primary
   credentials:
-    username: harbor
     password: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.app.password}>
     postgresPassword: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.admin.password}>
-  mode: primary
-  instances: 3
-  enableSuperuserAccess: false
-  pvcSize:
-    data: 7Gi
-    wal: 3Gi
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-  affinity:
-    topologyKey: kubernetes.io/hostname
   backup:
     enabled: false
-    legacyMode: false
     endpointURL: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.endpoint}>
     destinationPath: s3://<path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.bucketPrefix}>
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
     s3Credentials:
-      create: true
-      secretName: harbor-pg-cluster-backup
       accessKeyId:
-        key: accessKeyId
         value: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.accessKey}>
       secretAccessKey:
-        key: secretAccessKey
         value: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.secretKey}>
       region:
-        key: region
         value: <path:secret/data/platforms/production/apps/harbor#postgres | jsonPath {.s3.region}>

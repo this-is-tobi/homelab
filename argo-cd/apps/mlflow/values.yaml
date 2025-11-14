@@ -1,1 +1,113 @@
-mlflow: {}
+mlflow:
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      traefik.ingress.kubernetes.io/router.middlewares: mlflow-oauth2-proxy@kubernetescrd
+    hosts:
+    - host: ""
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+    tls:
+    - hosts:
+      - ""
+      secretName: ""
+  service:
+    annotations:
+      traefik.ingress.kubernetes.io/service.passhostheader: "true"
+  backendStore:
+    databaseConnectionCheck: true
+    postgres:
+      enabled: true
+      host: ""
+      port: 5432
+      database: ""
+      user: ""
+      password: ""
+  artifactRoot:
+    proxiedArtifactStorage: false
+    s3:
+      enabled: true
+      bucket: ""
+      path: ""
+      awsAccessKeyId: ""
+      awsSecretAccessKey: ""
+  extraEnvVars:
+    MLFLOW_S3_ENDPOINT_URL: ""
+    AWS_DEFAULT_REGION: ""
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 250m
+    limits:
+      memory: 1Gi
+      cpu: "1"
+
+cnpg:
+  fullnameOverride: mlflow-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: mlflow
+  credentials:
+    username: mlflow
+    password: ""
+    postgresPassword: ""
+  instances: 3
+  pvcSize:
+    data: 3Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: false
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://<bucket>/<prefix>"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: mlflow-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""
+
+sso:
+  config:
+    clientID: ""
+    clientSecret: ""
+    cookieSecret: ""
+    configFile: |-
+      provider = "keycloak-oidc"
+      provider_display_name = "Keycloak"
+      email_domains = [ "*" ]
+      upstreams = [ "http://mlflow.mlflow.svc.cluster.local:5000/" ]
+      redirect_url = ""
+      oidc_issuer_url = ""
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+    path: /oauth2
+    hosts:
+    - ""
+    tls:
+    - secretName: ""
+      hosts:
+      - ""

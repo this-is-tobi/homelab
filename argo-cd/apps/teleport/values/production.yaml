@@ -1,61 +1,7 @@
 server:
-  enabled: true
-  operator:
-    enabled: true
-  auth:
-    enabled: true
-  proxy:
-    enabled: true
-  proxyListenerMode: "multiplex"
   clusterName: "teleport.ohmlab.fr"
-  acme: false
-  highAvailability:
-    certManager:
-      enabled: true
-      issuerKind: "ClusterIssuer"
-      issuerName: "letsencrypt-dns-prod"
-      addCommonName: true
-    replicaCount: 1
-  ingress:
-    enabled: true
-    suppressAutomaticWildcards: false
-    spec:
-      ingressClassName: "nginx"
-  service:
-    type: "ClusterIP"
-  log:
-    level: "INFO"
 
-roles:
-  superadmin:
-    allow:
-      rules:
-      - resources:
-        - '*'
-        verbs:
-        - '*'
-      kubernetes_groups:
-      - system:masters
-      kubernetes_labels:
-        '*': '*'
-      kubernetes_resources:
-        - kind: '*'
-          namespace: '*'
-          name: '*'
-          verbs:
-          - '*'
-  admin:
-    allow:
-      kubernetes_groups:
-      - system:masters
-      kubernetes_labels:
-        '*': '*'
-      kubernetes_resources:
-        - kind: '*'
-          namespace: '*'
-          name: '*'
-          verbs:
-          - '*'
+roles: {}
 
 users:
   tobi:

@@ -1,1 +1,135 @@
-sonarqube: {}
+sonarqube:
+  community:
+    enabled: true
+    buildNumber: 25.9.0.110598
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      ingressClassName: nginx
+    hosts:
+    - name: ""
+      path: /
+    tls:
+    - hosts:
+      - ""
+      secretName: ""
+  plugins:
+    install:
+    - https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/25.9.0/sonarqube-community-branch-plugin-25.9.0.jar
+    - https://github.com/vaulttec/sonar-auth-oidc/releases/download/v3.0.0/sonar-auth-oidc-plugin-3.0.0.jar
+    - https://github.com/cnescatlab/sonar-cnes-report/releases/download/5.0.2/sonar-cnes-report-5.0.2.jar
+  resources:
+    limits:
+      cpu: 800m
+      memory: 3Gi
+    requests:
+      cpu: 200m
+      memory: 3Gi
+  postgresql:
+    enabled: false
+  jdbcOverwrite:
+    enable: true
+    jdbcUrl: ""
+    jdbcUsername: ""
+    jdbcSecretName: sonarqube-pg-cluster-app
+    jdbcSecretPasswordKey: password
+  account:
+    adminPasswordSecretName: sonarqube-admin
+  monitoringPasscodeSecretName: sonarqube-monitoring-admin
+  monitoringPasscodeSecretKey: password
+  jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.9.0.jar=web"
+  jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.9.0.jar=ce"
+  initSysctl:
+    vmMaxMapCount: 262144
+  prometheusMonitoring:
+    podMonitor:
+      enabled: true
+      # namespace: sonarqube
+  prometheusExporter:
+    enabled: true
+  livenessProbe:
+    initialDelaySeconds: 180
+    periodSeconds: 30
+    failureThreshold: 20
+  startupProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 20
+    failureThreshold: 30
+  sonarProperties:
+    sonar.core.serverBaseURL: ""
+    sonar.plugins.risk.consent: "ACCEPTED"
+    sonar.auth.oidc.enabled: "true"
+    sonar.auth.oidc.allowUsersToSignUp: "true"
+    sonar.auth.oidc.autoLogin: "false"
+    sonar.auth.oidc.loginButtonText: "Connect with Keycloak"
+    sonar.auth.oidc.groupsSync.claimName: "groups"
+    sonar.auth.oidc.loginStrategy: "Email"
+    sonar.auth.oidc.groupsSync: "true"
+    sonar.auth.oidc.scopes: "openid profile email roles groups"
+    sonar.auth.oidc.issuerUri: ""
+    sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
+    sonar.auth.oidc.clientId.secured: ""
+    sonar.auth.oidc.clientSecret.secured: ""
+  extraVolumes:
+  - name: webapp
+    emptyDir:
+      sizeLimit: 50Mi
+  extraVolumeMounts:
+  - name: webapp
+    mountPath: /opt/sonarqube/web
+  extraInitContainers:
+  - name: download-webapp
+    image: docker.io/busybox:1.37
+    volumeMounts:
+    - name: webapp
+      mountPath: /web
+    command:
+    - sh
+    - -c
+    - wget -O /tmp/sonarqube-webapp.zip https://github.com/mc1arke/sonarqube-community-branch-plugin/releases/download/25.9.0/sonarqube-webapp.zip && unzip -o /tmp/sonarqube-webapp.zip -d /web && chmod -R 755 /web && chown -R 1000:0 /web && rm -f /tmp/sonarqube-webapp.zip
+
+cnpg:
+  fullnameOverride: sonarqube-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: sonarqube
+  credentials:
+    username: sonarqube
+    password: ""
+    postgresPassword: ""
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 7Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: false
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3:///<bucket-name>/<bucket-prefix>"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: sonarqube-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""

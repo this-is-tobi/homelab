@@ -4,22 +4,21 @@ dashy:
     className: "nginx"
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
-    labels: {}
     hosts:
-    - "ohmlab.fr"
+    - ""
     tls:
-    - secretName: ohmlab.fr-tls
+    - secretName: ""
       hosts:
-      - ohmlab.fr
+      - ""
   server:
     config:
       pageInfo:
-        title: Tobi's Cloud
+        title: ""
         navLinks:
-          - title: GitHub
-            path: https://github.com/this-is-tobi/homelab
-          - title: Documentation
-            path: https://docs.this-is-tobi.com
+        - title: GitHub
+          path: https://github.com/this-is-tobi/homelab
+        - title: Documentation
+          path: https://this-is-tobi.com/homelab
       appConfig:
         theme: adventure-basic
         startingView: default
@@ -35,71 +34,83 @@ dashy:
           hideSearch: true
           hideSettings: true
           hideFooter: true
-      sections:
-        - name: Services
-          icon: fas fa-rocket
-          items: []
-            # - title: Argo-workflows
-            #   description: Workflow Engine for Kubernetes
-            #   url: ""
-            #   icon: hl-argocd
-            # - title: Grafana
-            #   description: Watch cluster metrics & application logs
-            #   url: ""
-            #   icon: hl-grafana
-            # - title: Harbor
-            #   description: Container image registry & Helm chart registry
-            #   url: ""
-            #   icon: hl-harbor
-            # - title: Minio
-            #   description: Store data with s3 standard
-            #   url: ""
-            #   icon: hl-minio
-          displayData:
-            sortBy: alphabetical
-            collapsed: false
-            rows: 5
-            cols: 2
-            itemSize: large
-        - name: Utils
-          icon: fas fa-wrench
-          items:
-            - title: Documentation
-              description: As the saying goes RTFM
-              url: https://docs.this-is-tobi.com
-              icon: fal fa-book
-              statusCheck: false
-            - title: Github
-              description: Source code
-              url: https://github.com/this-is-tobi/homelab
-              icon: fab fa-github
-              statusCheck: false
-          displayData:
-            sortBy: alphabetical
-            collapsed: false
-            rows: 2
-            cols: 1
-            itemSize: large
-        - name: Services - Admin
-          icon: fas fa-cog
-          items:
-            - title: Argocd
-              description: Admin services deployment manager
-              url: ""
-              icon: hl-argocd
-              statusCheck: true
-            - title: Keycloak
-              description: Single Sign On managment
-              url: ""
-              icon: hl-keycloak
-            - title: Vault
-              description: Admin secret manager
-              url: ""
-              icon: hl-vault
-              statusCheck: true
-          displayData:
-            sortBy: alphabetical
-            collapsed: true
-            rows: 3
-            cols: 1
-            itemSize: large
+      sections: []
+      # - name: Services
+      #   icon: fas fa-rocket
+      #   items:
+      #   - title: Argo-cd
+      #     description: Deploy apps using gitops
+      #     url: ""
+      #     icon: si-argo
+      #   - title: Gitea
+      #     description: Private DevOps Platform including code storage
+      #     url: ""
+      #     icon: si-gitea
+      #   - title: Grafana
+      #     description: Watch cluster metrics & application logs
+      #     url: ""
+      #     icon: si-grafana
+      #   - title: Harbor
+      #     description: Container image registry & Helm chart registry
+      #     url: ""
+      #     icon: si-harbor
+      #   - title: Mattermost
+      #     description: Team communication service
+      #     url: ""
+      #     icon: si-mattermost
+      #   - title: Minio
+      #     description: Store data with s3 standard
+      #     url: ""
+      #     icon: si-minio
+      #   - title: Sonarqube
+      #     description: Code analysis service
+      #     url: ""
+      #     icon: si-sonarqube
+      #   displayData:
+      #     sortBy: alphabetical
+      #     collapsed: false
+      #     rows: 5
+      #     cols: 2
+      #     itemSize: large
+      # - name: Utils
+      #   icon: fas fa-wrench
+      #   items:
+      #   - title: Documentation
+      #     description: As the saying goes RTFM
+      #     url: https://this-is-tobi.com
+      #     icon: fal fa-book
+      #     statusCheck: false
+      #   - title: Github
+      #     description: Source code
+      #     url: https://github.com/this-is-tobi/homelab
+      #     icon: fab fa-github
+      #     statusCheck: false
+      #   displayData:
+      #     sortBy: alphabetical
+      #     collapsed: false
+      #     rows: 2
+      #     cols: 1
+      #     itemSize: large
+      # - name: Services - Admin
+      #   icon: fas fa-cog
+      #   items:
+      #   - title: Argo-cd
+      #     description: Admin services deployment manager
+      #     url: ""
+      #     icon: si-argo
+      #     statusCheck: true
+      #   - title: Keycloak
+      #     description: Single Sign On managment
+      #     url: ""
+      #     icon: si-keycloak
+      #   - title: Vault
+      #     description: Admin secret manager
+      #     url: ""
+      #     icon: si-vault
+      #     statusCheck: true
+      #   displayData:
+      #     sortBy: alphabetical
+      #     collapsed: true
+      #     rows: 3
+      #     cols: 1
+      #     itemSize: large

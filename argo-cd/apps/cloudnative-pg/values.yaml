@@ -1,1 +1,4 @@
-cloudnative-pg: {}
+cloudnative-pg:
+  crds:
+    create: true
+  replicaCount: 1

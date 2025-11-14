@@ -1,81 +1,47 @@
 coder:
   coder:
-    service:
-      type: "ClusterIP"
     ingress:
-      enable: true
-      className: "nginx"
       host: "<path:secret/data/platforms/production/apps/coder#domain>"
       wildcardHost: "*.<path:secret/data/platforms/production/apps/coder#domain>"
-      annotations:
-        cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
       tls:
-        enable: true
         secretName: "<path:secret/data/platforms/production/apps/coder#domain>"
-        # wildcardSecretName: "wild-<path:secret/data/platforms/production/apps/coder#domain>"
+        wildcardSecretName: "<path:secret/data/platforms/production/apps/coder#domain>-wild"
     envUseClusterAccessURL: false
     env:
-      - name: CODER_PG_CONNECTION_URL
-        value: "postgres://<path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.connectionString}>"
-      - name: CODER_ACCESS_URL
-        value: "https://<path:secret/data/platforms/production/apps/coder#domain>"
-      - name: CODER_OIDC_ISSUER_URL
-        value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>"
-      - name: CODER_OIDC_CLIENT_ID
-        value: "<path:secret/data/platforms/production/apps/coder#keycloak | jsonPath {.clientId}>"
-      - name: CODER_OIDC_CLIENT_SECRET
-        value: "<path:secret/data/platforms/production/apps/coder#keycloak | jsonPath {.clientSecret}>"
-      - name: CODER_OIDC_SIGN_IN_TEXT
-        value: "Login with Keycloak"
-      - name: CODER_OIDC_SCOPES
-        value: "openid,profile,email,groups,roles"
-      - name: CODER_OIDC_GROUP_FIELD
-        value: "groups"
-      - name: CODER_OIDC_ADMIN_GROUP
-        value: "admin"
-      - name: CODER_OIDC_GROUP_AUTO_CREATE
-        value: "true"
+    - name: CODER_PG_CONNECTION_URL
+      value: "postgres://<path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.connectionString}>"
+    - name: CODER_ACCESS_URL
+      value: "https://<path:secret/data/platforms/production/apps/coder#domain>"
+    - name: CODER_OIDC_ISSUER_URL
+      value: "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>"
+    - name: CODER_OIDC_CLIENT_ID
+      value: "<path:secret/data/platforms/production/apps/coder#keycloak | jsonPath {.clientId}>"
+    - name: CODER_OIDC_CLIENT_SECRET
+      value: "<path:secret/data/platforms/production/apps/coder#keycloak | jsonPath {.clientSecret}>"
+    - name: CODER_OIDC_SIGN_IN_TEXT
+      value: "Login with Keycloak"
+    - name: CODER_OIDC_SCOPES
+      value: "openid,profile,email,groups,roles"
+    - name: CODER_OIDC_GROUP_FIELD
+      value: "groups"
+    - name: CODER_OIDC_ADMIN_GROUP
+      value: "admin"
+    - name: CODER_OIDC_GROUP_AUTO_CREATE
+      value: "true"
 
 cnpg:
-  fullnameOverride: coder-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  dbName: coder
+  mode: primary
   credentials:
-    username: coder
     password: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.app.password}>
     postgresPassword: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.admin.password}>
-  mode: primary
-  instances: 3
-  enableSuperuserAccess: false
-  pvcSize:
-    data: 3Gi
-    wal: 3Gi
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-  affinity:
-    topologyKey: kubernetes.io/hostname
   backup:
     enabled: false
-    legacyMode: false
     endpointURL: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.endpoint}>
     destinationPath: s3://<path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.bucketPrefix}>
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
     s3Credentials:
-      create: true
-      secretName: coder-pg-cluster-backup
       accessKeyId:
-        key: accessKeyId
         value: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.accessKey}>
       secretAccessKey:
-        key: secretAccessKey
         value: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.secretKey}>
       region:
-        key: region
         value: <path:secret/data/platforms/production/apps/coder#postgres | jsonPath {.s3.region}>

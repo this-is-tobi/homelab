@@ -1,6 +1,4 @@
 gitea:
-  image:
-    tag: 1.23.3
   replicaCount: 3
   ingress:
     enabled: true
@@ -16,7 +14,7 @@ gitea:
     tls:
     - secretName: ""
       hosts:
-        - ""
+      - ""
   resources:
     requests:
       cpu: 100m
@@ -37,17 +35,17 @@ gitea:
       username: ""
       password: ""
       email: ""
-    oauth: []
-    # - name: Keycloak
-    #   provider: openidConnect
-    #   key: ""
-    #   secret: ""
-    #   autoDiscoverUrl: ""
-    #   scopes: openid profile email roles groups
-    #   adminGroup: admin
-    #   groupClaimName: groups
-    #   groupTeamMap: ""
-    #   groupTeamMapRemoval: true
+    oauth:
+    - name: Keycloak
+      provider: openidConnect
+      key: ""
+      secret: ""
+      autoDiscoverUrl: ""
+      scopes: openid profile email roles groups
+      adminGroup: admin
+      groupClaimName: groups
+      # groupTeamMap: ""
+      # groupTeamMapRemoval: true
     config:
       database:
         DB_TYPE: postgres
@@ -55,7 +53,6 @@ gitea:
         NAME: ""
         USER: ""
         PASSWD: ""
-        ENABLE_AUTO_REGISTRATION: "true"
       cron.GIT_GC_REPOS:
         ENABLED: false
       server:
@@ -71,11 +68,11 @@ gitea:
         DISABLE_REGISTRATION: true
         ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       oauth2_client:
-        OPENID_CONNECT_SCOPES: openid profile email roles groups
+        OPENID_CONNECT_SCOPES: "openid profile email roles groups"
         REGISTER_EMAIL_CONFIRM: false
         ENABLE_AUTO_REGISTRATION: true
-        ACCOUNT_LINKING: auto
-        USERNAME: email
+        ACCOUNT_LINKING: "auto"
+        USERNAME: "email"
     metrics:
       enabled: true
       serviceMonitor:
@@ -85,3 +82,47 @@ gitea:
     primary:
       persistence:
         size: 25Gi
+
+cnpg:
+  fullnameOverride: gitea-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: gitea
+  credentials:
+    username: gitea
+    password: ""
+    postgresPassword: ""
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 7Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: true
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: gitea-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""

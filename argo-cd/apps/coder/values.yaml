@@ -6,32 +6,76 @@ coder:
       enable: true
       className: "nginx"
       host: ""
-      wildcardHost: ""
+      wildcardHost: "*."
       annotations:
         cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
       tls:
         enable: true
         secretName: ""
-        # wildcardSecretName: ""
+        wildcardSecretName: ""
     envUseClusterAccessURL: false
     env:
-      - name: CODER_PG_CONNECTION_URL
+    - name: CODER_PG_CONNECTION_URL
+      value: ""
+    - name: CODER_ACCESS_URL
+      value: ""
+    - name: CODER_OIDC_ISSUER_URL
+      value: ""
+    - name: CODER_OIDC_CLIENT_ID
+      value: ""
+    - name: CODER_OIDC_CLIENT_SECRET
+      value: ""
+    - name: CODER_OIDC_SIGN_IN_TEXT
+      value: "Login with Keycloak"
+    - name: CODER_OIDC_SCOPES
+      value: "openid,profile,email,groups,roles"
+    - name: CODER_OIDC_GROUP_FIELD
+      value: "groups"
+    - name: CODER_OIDC_ADMIN_GROUP
+      value: "admin"
+    - name: CODER_OIDC_GROUP_AUTO_CREATE
+      value: "true"
+
+cnpg:
+  fullnameOverride: coder-pg-cluster
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
+  mode: primary
+  dbName: coder
+  credentials:
+    username: coder
+    password: ""
+    postgresPassword: ""
+  instances: 3
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 3Gi
+    wal: 3Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: false
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://"
+    cron: 0 0 0 * * *
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: coder-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
         value: ""
-      - name: CODER_ACCESS_URL
+      secretAccessKey:
+        key: secretAccessKey
         value: ""
-      - name: CODER_OIDC_ISSUER_URL
+      region:
+        key: region
         value: ""
-      - name: CODER_OIDC_CLIENT_ID
-        value: ""
-      - name: CODER_OIDC_CLIENT_SECRET
-        value: ""
-      - name: CODER_OIDC_SIGN_IN_TEXT
-        value: "Login with Keycloak"
-      - name: CODER_OIDC_SCOPES
-        value: "openid,profile,email,groups,roles"
-      - name: CODER_OIDC_GROUP_FIELD
-        value: "groups"
-      - name: CODER_OIDC_ADMIN_GROUP
-        value: "admin"
-      - name: CODER_OIDC_GROUP_AUTO_CREATE
-        value: "true"

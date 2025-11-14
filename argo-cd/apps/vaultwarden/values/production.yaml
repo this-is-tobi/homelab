@@ -3,22 +3,12 @@ waultwarden:
   adminToken:
     value: <path:secret/data/platforms/production/apps/vaultwarden#admin | jsonPath {.token}>
   database:
-    type: postgresql
     host: <path:secret/data/platforms/production/apps/vaultwarden#postgres | jsonPath {.host}>
     port: <path:secret/data/platforms/production/apps/vaultwarden#postgres | jsonPath {.port}>
     username: <path:secret/data/platforms/production/apps/vaultwarden#postgres | jsonPath {.app.username}>
     password: <path:secret/data/platforms/production/apps/vaultwarden#postgres | jsonPath {.app.password}>
     dbName: <path:secret/data/platforms/production/apps/vaultwarden#postgres | jsonPath {.database}>
-  signupsAllowed: true
-  signupsVerify: true
-  invitationsAllowed: true
-  invitationOrgName: "Homelab"
+  invitationOrgName: "Ohmlab"
   ingress:
-    enabled: true
-    class: nginx
-    nginxIngressAnnotations: false
-    additionalAnnotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hostname: <path:secret/data/platforms/production/apps/vaultwarden#domain>
-    tls: true
     tlsSecret: <path:secret/data/platforms/production/apps/vaultwarden#domain>

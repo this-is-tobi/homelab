@@ -1,45 +1,8 @@
 vault:
   server:
     ha:
-      enabled: true
-      replicas: 3
       apiAddr: "<path:secret/data/platforms/production/apps/vault#domain>"
-      raft:
-        enabled: true
-        config: |
-          ui = true
-          listener "tcp" {
-            tls_disable = 1
-            address = "[::]:8200"
-            cluster_address = "[::]:8201"
-            # Enable unauthenticated metrics access (necessary for Prometheus Operator)
-            telemetry {
-              unauthenticated_metrics_access = "false"
-            }
-          }
-          storage "raft" {
-            path = "/vault/data"
-          }
-          service_registration "kubernetes" {}
-          telemetry {
-            prometheus_retention_time = "10m"
-            disable_hostname = true
-          }
-    standalone:
-      enabled: false
-    auditStorage:
-      enable: true
-      size: 10Gi
-    dataStorage:
-      enable: true
-      size: 10Gi
-    nodeSelector:
-      node-type: worker
     ingress:
-      enabled: true
-      ingressClassName: nginx
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
       - host: <path:secret/data/platforms/production/apps/vault#domain>
         paths:
@@ -47,11 +10,4 @@ vault:
       tls:
       - hosts:
         - <path:secret/data/platforms/production/apps/vault#domain>
-        secretName: <path:secret/data/platforms/production/apps/vault#domain>
-  serverTelemetry:
-    serviceMonitor:
-      enabled: true
-  injector:
-    replicas: 3
-    metrics:
-      enabled: true
+        secretName: <path:secret/data/platforms/production/apps/vault#domain>-tls

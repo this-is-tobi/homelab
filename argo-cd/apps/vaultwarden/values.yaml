@@ -12,7 +12,7 @@ waultwarden:
   signupsAllowed: true
   signupsVerify: true
   invitationsAllowed: true
-  invitationOrgName: "Homelab"
+  invitationOrgName: ""
   ingress:
     enabled: true
     class: nginx

@@ -1,16 +1,20 @@
 kube-prometheus-stack:
+  crds:
+    upgradeJob:
+      enabled: true
+      forceConflicts: true
   prometheus:
     prometheusSpec:
       scrapeConfigSelector:
-        matchLabels: null
+        matchLabels: {}
       ruleSelector:
-        matchLabels: null
+        matchLabels: {}
       probeSelector:
-        matchLabels: null
+        matchLabels: {}
       serviceMonitorSelector:
-        matchLabels: null
+        matchLabels: {}
       podMonitorSelector:
-        matchLabels: null
+        matchLabels: {}
       retention: 30d
       storageSpec:
         volumeClaimTemplate:
@@ -57,7 +61,7 @@ kube-prometheus-stack:
       enabled: true
       type: sts
       accessModes:
-        - ReadWriteMany
+      - ReadWriteMany
       size: 3Gi
       finalizers:
-        - kubernetes.io/pvc-protection
+      - kubernetes.io/pvc-protection

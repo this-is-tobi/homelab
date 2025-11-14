@@ -1,4 +1,11 @@
-cert-manager: {}
+cert-manager:
+  crds:
+    enabled: true
+    keep: true
+  prometheus:
+    enabled: true
+    servicemonitor:
+      enabled: true
 
 scaleway-certmanager-webhook:
   secret:
@@ -7,7 +14,7 @@ scaleway-certmanager-webhook:
 
 defaultWildcard:
   enabled: true
-  dnsZone: "example.com"
+  dnsZone: ""
   ingressNamespace: "ingress-nginx"
   secretName: "default-wildcard-tls"
   issuerRef:
@@ -15,3 +22,51 @@ defaultWildcard:
     name: "letsencrypt-dns-prod"
 
 clusterIssuers: []
+# - name: letsencrypt-http-staging
+#   spec:
+#     acme:
+#       email: ""
+#       server: https://acme-staging-v02.api.letsencrypt.org/directory
+#       privateKeySecretRef:
+#         name: letsencrypt-http-staging-key
+#       solvers:
+#       - http01:
+#           ingress:
+#             serviceType: ClusterIP
+#             ingressClassName: nginx
+# - name: letsencrypt-http-prod
+#   spec:
+#     acme:
+#       email: ""
+#       server: https://acme-v02.api.letsencrypt.org/directory
+#       privateKeySecretRef:
+#         name: letsencrypt-http-prod-key
+#       solvers:
+#       - http01:
+#           ingress:
+#             serviceType: ClusterIP
+#             ingressClassName: nginx
+# - name: letsencrypt-dns-staging
+#   spec:
+#     acme:
+#       email: ""
+#       server: https://acme-staging-v02.api.letsencrypt.org/directory
+#       privateKeySecretRef:
+#         name: letsencrypt-dns-staging-key
+#       solvers:
+#       - dns01:
+#           webhook:
+#             groupName: acme.scaleway.com
+#             solverName: scaleway
+# - name: letsencrypt-dns-prod
+#   spec:
+#     acme:
+#       email: ""
+#       server: https://acme-v02.api.letsencrypt.org/directory
+#       privateKeySecretRef:
+#         name: letsencrypt-dns-prod-key
+#       solvers:
+#       - dns01:
+#           webhook:
+#             groupName: acme.scaleway.com
+#             solverName: scaleway

@@ -1,13 +1,5 @@
 gitea:
-  image:
-    tag: 1.23.3
-  replicaCount: 3
   ingress:
-    enabled: true
-    apiVersion: networking.k8s.io/v1
-    className: nginx
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - host: <path:secret/data/platforms/production/apps/gitea#domain>
       paths:
@@ -16,22 +8,7 @@ gitea:
     tls:
     - secretName: <path:secret/data/platforms/production/apps/gitea#domain>
       hosts:
-        - <path:secret/data/platforms/production/apps/gitea#domain>
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
-  serviceAccount:
-    create: true
-    automountServiceAccountToken: true
-  persistence:
-    enabled: true
-    size: 25Gi
-    accessModes:
-      - ReadWriteMany
+      - <path:secret/data/platforms/production/apps/gitea#domain>
   gitea:
     admin:
       username: <path:secret/data/platforms/production/apps/gitea#admin | jsonPath {.username}>
@@ -43,89 +20,36 @@ gitea:
       key: <path:secret/data/platforms/production/apps/gitea#keycloak | jsonPath {.clientId}>
       secret: <path:secret/data/platforms/production/apps/gitea#keycloak | jsonPath {.clientSecret}>
       autoDiscoverUrl: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>/.well-known/openid-configuration
-      scopes: openid profile email roles groups
-      adminGroup: admin
-      groupClaimName: groups
-    #   groupTeamMap: ""
-    #   groupTeamMapRemoval: true
+      scopes: "openid profile email roles groups"
+      adminGroup: "admin"
+      groupClaimName: "groups"
+      # groupTeamMap: ""
+      # groupTeamMapRemoval: true
     config:
       database:
-        DB_TYPE: postgres
         HOST: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.host}>:<path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.port}>
         NAME: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.database}>
         USER: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.app.username}>
         PASSWD: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.app.password}>
-        ENABLE_AUTO_REGISTRATION: "true"
-      cron.GIT_GC_REPOS:
-        ENABLED: false
       server:
         DOMAIN: <path:secret/data/platforms/production/apps/gitea#domain>
         ROOT_URL: https://<path:secret/data/platforms/production/apps/gitea#domain>
-        SSH_LISTEN_PORT: 2222
       openid:
-        ENABLE_OPENID_SIGNIN: true
-        ENABLE_OPENID_SIGNUP: true
         WHITELISTED_URIS: <path:secret/data/platforms/production/apps/keycloak#domain>
-      service:
-        SHOW_REGISTRATION_BUTTON: false
-        DISABLE_REGISTRATION: true
-        ALLOW_ONLY_EXTERNAL_REGISTRATION: true
-      oauth2_client:
-        OPENID_CONNECT_SCOPES: openid profile email roles groups
-        REGISTER_EMAIL_CONFIRM: false
-        ENABLE_AUTO_REGISTRATION: true
-        ACCOUNT_LINKING: auto
-        USERNAME: email
-    metrics:
-      enabled: true
-      serviceMonitor:
-        enabled: true
-  postgresql-ha:
-    enabled: false
-    primary:
-      persistence:
-        size: 25Gi
 
 cnpg:
-  fullnameOverride: gitea-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  dbName: gitea
+  mode: primary
   credentials:
-    username: gitea
     password: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.app.password}>
     postgresPassword: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.admin.password}>
-  mode: primary
-  instances: 3
-  enableSuperuserAccess: false
-  pvcSize:
-    data: 7Gi
-    wal: 3Gi
-  resources:
-    requests:
-      cpu: 250m
-      memory: 512Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-  affinity:
-    topologyKey: kubernetes.io/hostname
   backup:
     enabled: true
-    legacyMode: false
     endpointURL: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.endpoint}>
     destinationPath: s3://<path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.bucketPrefix}>
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
     s3Credentials:
-      create: true
-      secretName: gitea-pg-cluster-backup
       accessKeyId:
-        key: accessKeyId
         value: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.accessKey}>
       secretAccessKey:
-        key: secretAccessKey
         value: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.secretKey}>
       region:
-        key: region
         value: <path:secret/data/platforms/production/apps/gitea#postgres | jsonPath {.s3.region}>

@@ -5,6 +5,6 @@ version: 0.24.0
 appVersion: "0.17.2"
 dependencies:
 - name: sops-secrets-operator
-  alias: sops-secrets-operator
+  alias: sops
   version: 0.24.0
   repository: https://isindir.github.io/sops-secrets-operator
