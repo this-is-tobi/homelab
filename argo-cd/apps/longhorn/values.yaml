@@ -1,0 +1,24 @@
+longhorn:
+  ingress:
+    enabled: false
+    ingressClassName: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+    hosts:
+    - ""
+    tls: true
+    tlsSecret: longhorn-tls
+  persistence:
+    defaultClass: true
+    defaultFsType: "ext4"
+    defaultClassReplicaCount: 3
+  defaultSettings:
+    createDefaultDiskLabeledNodes: true
+    defaultDataPath: "/storage01"
+    storageMinimalAvailablePercentage: 25
+    storageOverProvisioningPercentage: 200
+    storageReservedPercentageForDefaultDisk: 10
+    backupTargetCredentialSecret: longhorn-s3
+  metrics:
+    serviceMonitor:
+      enabled: true
