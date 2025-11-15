@@ -23,7 +23,6 @@
     { "app": "ingress-nginx", "enabled": "true", "syncWave": -1 },
     { "app": "keycloak", "enabled": "true", "syncWave": 10 },
     { "app": "kubernetes-dashboard", "enabled": "false", "syncWave": 20 },
-    { "app": "loki", "enabled": "false", "syncWave": 20 },
     { "app": "mattermost", "enabled": "true", "syncWave": 20 },
     { "app": "mlflow", "enabled": "false", "syncWave": 20 },
     { "app": "minio", "enabled": "true", "syncWave": 20 },

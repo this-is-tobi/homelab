@@ -1,7 +1,0 @@
-loki:
-  loki:
-    storage:
-      s3:
-        endpoint: <path:secret/data/platforms/production/apps/loki#s3 | jsonPath {.endpoint}>
-        secretAccessKey: <path:secret/data/platforms/production/apps/loki#s3 | jsonPath {.accessKey}>
-        accessKeyId: <path:secret/data/platforms/production/apps/loki#s3 | jsonPath {.secretKey}>
