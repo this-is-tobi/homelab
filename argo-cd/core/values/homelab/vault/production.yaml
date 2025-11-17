@@ -1,0 +1,82 @@
+vault:
+  server:
+    ha:
+      apiAddr: "vault.ohmlab.fr"
+    ingress:
+      hosts:
+      - host: "vault.ohmlab.fr"
+        paths:
+        - "/"
+      tls:
+      - hosts:
+        - "vault.ohmlab.fr"
+        secretName: "vault.ohmlab.fr-tls"
+
+# Vault Secret Operator configuration
+vso:
+  enabled: true
+
+  controller:
+    replicas: 2  # HA setup
+
+    manager:
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+
+      # Security context
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 65532
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
+
+    # Pod Security
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      fsGroup: 65532
+      seccompProfile:
+        type: RuntimeDefault
+
+    # RBAC
+    rbac:
+      create: true
+
+    # ServiceAccount
+    serviceAccount:
+      create: true
+      name: vault-secrets-operator
+
+  # Default Vault connection (global)
+  defaultVaultConnection:
+    enabled: true
+    address: "http://vault.vault.svc.cluster.local:8200"
+    skipTLSVerify: false
+
+  # Default auth method using Kubernetes auth
+  defaultAuthMethod:
+    enabled: true
+    method: kubernetes
+    mount: kubernetes
+    kubernetes:
+      role: ""  # Set per VaultAuth resource
+      serviceAccount: default
+      tokenAudiences:
+        - vault
+
+  # Metrics
+  metrics:
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8080

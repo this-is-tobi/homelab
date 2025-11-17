@@ -1,0 +1,45 @@
+keycloak:
+  keycloak:
+    hostnameAdmin: "https://keycloak.staging.core.example.com"
+    hostname: "https://keycloak.staging.core.example.com"
+  database:
+    host: "keycloak-pg-cluster-rw"
+    port: 5432
+    name: "keycloak"
+    existingSecret: "keycloak-cluster-pg-app"
+    secretKeys:
+      usernameKey: "username"
+      passwordKey: "password"
+  ingress:
+    hosts:
+    - host: "keycloak.staging.core.example.com"
+      paths:
+      - path: "/"
+        pathType: "Prefix"
+    tls:
+    - secretName: "keycloak.staging.core.example.com-tls"
+      hosts:
+      - "keycloak.staging.core.example.com"
+
+cnpg:
+  mode: "primary"
+  credentials:
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "keycloak-pg-cluster-admin"
+      app:
+        secretName: "keycloak-pg-cluster-app"
+  backup:
+    enabled: false
+    endpointURL: "https://s3.pre-production.example.com"
+    destinationPath: "s3://backups/cnpg"
+    s3Credentials:
+      create: false
+      secretName: "keycloak-pg-cluster-backup"
+      accessKeyId:
+        key: "S3_ACCESS_KEY"
+      secretAccessKey:
+        key: "S3_SECRET_KEY"
+      region:
+        key: "S3_REGION"

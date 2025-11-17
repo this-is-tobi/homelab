@@ -1,0 +1,76 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: platform-manager
+  # namespace: argocd-system
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - "missingkey=error"
+  ignoreApplicationDifferences:
+  - jqPathExpressions:
+    - .spec.source.plugin.env[] | select(.name == "HELM_VALUES").value
+  generators:
+  - matrix:
+      generators:
+      - git:
+          repoURL: https://github.com/this-is-tobi/homelab.git
+          revision: main
+          files:
+          - path: './argo-cd/platforms/instances/**/*'
+      - list:
+          elementsYaml: "{{ .apps | toJson }}"
+        selector:
+          matchExpressions:
+          - key: enabled
+            operator: In
+            values:
+            - "true"
+  template:
+    metadata:
+      name: '{{.prefix.name}}{{.app}}{{.suffix.name}}'
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
+        argocd.argoproj.io/sync-wave: '{{.syncWave}}'
+      labels:
+        ohmlab/platform.name: '{{.name}}'
+        ohmlab/platform.env: '{{.env}}'
+        ohmlab/platform.provider: '{{.provider}}'
+        ohmlab/platform.region: '{{.region}}'
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: platforms
+      revisionHistoryLimit: 3
+      sources:
+      - repoURL: https://github.com/this-is-tobi/homelab.git
+        path: './argo-cd/apps/{{.app}}'
+        targetRevision: '{{.targetRevision}}'
+        plugin:
+          env:
+          - name: AVP_SECRET
+            value: vault-plugin-secret
+          - name: HELM_ARGS
+            value: -f values/{{.env}}.yaml # -f $values/argo-cd/platforms/values/{{.app}}.yaml
+          - name: HELM_VALUES
+            value: ''
+        # helm:
+        #   valueFiles:
+        #   - $values/argo-cd/platforms/values/{{.app}}/{{.env}}.yaml
+      # - repoURL: https://github.com/this-is-tobi/homelab.git
+      #   ref: values
+      #   targetRevision: '{{.targetRevision}}'
+      destination:
+        server: '{{.destination.server}}'
+        namespace: '{{.prefix.namespace}}{{.app}}{{.suffix.namespace}}'
+      syncPolicy:
+        # automated:
+        #   selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+        - ServerSideApply=true
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+    # automated:
+    #   selfHeal: true

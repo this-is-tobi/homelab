@@ -1,0 +1,69 @@
+mlflow:
+  ingress:
+    hosts:
+    - host: "mlflow.ohmlab.fr"
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+    tls:
+    - hosts:
+      - "mlflow.ohmlab.fr"
+      secretName: "mlflow.ohmlab.fr-tls"
+  backendStore:
+    postgres:
+      host: "mlflow-pg-cluster-rw"
+      database: "mlflow"
+      user: "mlflow"
+      password: ""
+  artifactRoot:
+    s3:
+      bucket: "mlflow"
+      path: ""
+  extraEnvVars:
+    MLFLOW_S3_ENDPOINT_URL: "https://s3.ohmlab.fr"
+    AWS_DEFAULT_REGION: "fr-par"
+  extraSecretNamesForEnvFrom:
+  - mlflow-s3 # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+
+cnpg:
+  mode: "primary"
+  credentials:
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "mlflow-pg-cluster-admin"
+      app:
+        secretName: "mlflow-pg-cluster-app"
+  backup:
+    enabled: true
+    endpointURL: "https://s3.ohmlab.fr"
+    destinationPath: "s3://backups/cnpg"
+    s3Credentials:
+      create: false
+      secretName: "mlflow-pg-cluster-backup"
+      accessKeyId:
+        key: "S3_ACCESS_KEY"
+      secretAccessKey:
+        key: "S3_SECRET_KEY"
+      region:
+        key: "S3_REGION"
+
+sso:
+  config:
+    clientID: "mlflow"
+    clientSecret: ""
+    cookieSecret: ""
+    configFile: |-
+      provider = "keycloak-oidc"
+      provider_display_name = "Keycloak"
+      email_domains = [ "*" ]
+      upstreams = [ "http://mlflow.mlflow.svc.cluster.local:5000/" ]
+      redirect_url = "https://mlflow.ohmlab.fr/oauth2/callback"
+      oidc_issuer_url = "https://sso.ohmlab.fr/realms/homelab"
+  ingress:
+    hosts:
+    - "mlflow.ohmlab.fr"
+    tls:
+    - secretName: "mlflow.ohmlab.fr"
+      hosts:
+      - "mlflow.ohmlab.fr"

@@ -1,0 +1,30 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 100Gi
+  grafana:
+    admin:
+      existingSecret: "prometheus-stack-grafana-admin"
+      userKey: "username"
+      passwordKey: "password"
+    ingress:
+      hosts:
+      - "monitoring.staging.core.example.com"
+      tls:
+      - hosts:
+        - "monitoring.staging.core.example.com"
+        secretName: "monitoring.staging.core.example.com"
+    grafana.ini:
+      server:
+        root_url: "https://monitoring.staging.core.example.com"
+      auth.generic_oauth:
+        client_id: "grafana"
+        client_secret: ""
+        auth_url: "https://keycloak.staging.core.example.com/realms/homelab/protocol/openid-connect/auth"
+        token_url: "https://keycloak.staging.core.example.com/realms/homelab/protocol/openid-connect/token"
+        api_url: "https://keycloak.staging.core.example.com/realms/homelab/protocol/openid-connect/userinfo"

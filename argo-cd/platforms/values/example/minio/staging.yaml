@@ -1,0 +1,11 @@
+minio:
+  console:
+    ingress:
+      hostname: "minio.staging.example.com"
+  ingress:
+    hostname: "s3.staging.example.com"
+    extraHosts:
+    - name: "*.s3.staging.example.com"
+      path: "/"
+  persistence:
+    size: "250Gi"

@@ -1,0 +1,6 @@
+kubernetes-dashboard:
+  app:
+    ingress:
+      hosts:
+      - "kubernetes.core.example.com"
+      secretName: "kubernetes.core.example.com"

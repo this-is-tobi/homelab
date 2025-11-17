@@ -1,0 +1,61 @@
+mattermost:
+  image:
+    repository: ghcr.io/this-is-tobi/mirror/mattermost
+    tag: "11.0.4"
+  persistence:
+    data:
+      enabled: true
+    plugins:
+      enabled: true
+  ingress:
+    hosts:
+    - "mattermost.example.com"
+    tls:
+    - hosts:
+      - "mattermost.example.com"
+      secretName: "mattermost.example.com-tls"
+  config:
+    MM_SERVICESETTINGS_SITEURL: "https://mattermost.example.com"
+    MM_FILESETTINGS_AMAZONS3BUCKET: "mattermost"
+    MM_FILESETTINGS_AMAZONS3PATHPREFIX: ""
+    MM_FILESETTINGS_AMAZONS3REGION: "fr-par"
+    MM_FILESETTINGS_AMAZONS3ENDPOINT: "https://s3.example.com"
+  extraEnvVars:
+  - name: "MM_SQLSETTINGS_DATASOURCE"
+    valueFrom:
+      secretKeyRef:
+        name: "mattermost-pg-cluster-infos"
+        key: "connectionString"
+  - name: "MM_FILESETTINGS_AMAZONS3ACCESSKEYID"
+    valueFrom:
+      secretKeyRef:
+        name: "mattermost-s3"
+        key: "S3_ACCESS_KEY"
+  - name: "MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY"
+    valueFrom:
+      secretKeyRef:
+        name: "mattermost-s3"
+        key: "S3_SECRET_KEY"
+
+cnpg:
+  mode: "primary"
+  credentials:
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "mattermost-pg-cluster-admin"
+      app:
+        secretName: "mattermost-pg-cluster-app"
+  backup:
+    enabled: true
+    endpointURL: "https://s3.example.com"
+    destinationPath: "s3://backups/cnpg"
+    s3Credentials:
+      create: false
+      secretName: "mattermost-pg-cluster-backup"
+      accessKeyId:
+        key: "S3_ACCESS_KEY"
+      secretAccessKey:
+        key: "S3_SECRET_KEY"
+      region:
+        key: "S3_REGION"

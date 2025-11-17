@@ -1,0 +1,11 @@
+minio:
+  console:
+    ingress:
+      hostname: "minio.ohmlab.fr"
+  ingress:
+    hostname: "s3.ohmlab.fr"
+    extraHosts:
+    - name: "*.s3.ohmlab.fr"
+      path: "/"
+  persistence:
+    size: "250Gi"

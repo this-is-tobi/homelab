@@ -1,0 +1,57 @@
+arc-controller: {}
+
+arc-runner-tools:
+  runnerScaleSetName: "tools"
+  githubConfigUrl: "https://github.com/this-is-tobi/tools"
+  githubConfigSecret: "this-is-tobi-gh-app-secret"
+  minRunners: 1
+  maxRunners: 4
+  labels: {}
+  controllerServiceAccount:
+    namespace: "actions-runner-controller"
+    name: "actions-runner-controller-sa"
+  containerMode:
+    type: "dind" # kubernetes
+    # the following is required when containerMode.type=kubernetes
+    kubernetesModeWorkVolumeClaim:
+      accessModes:
+      - "ReadWriteOnce"
+      storageClassName: ""
+      resources:
+        requests:
+          storage: "5Gi"
+  template:
+    spec:
+      containers:
+      - name: "runner"
+        image: "ghcr.io/this-is-tobi/tools/gh-runner:1.5.0" # ghcr.io/actions/actions-runner:latest
+        command:
+        - "/home/runner/run.sh"
+
+arc-runner-multiarch-mirror:
+  runnerScaleSetName: "multiarch-mirror"
+  githubConfigUrl: "https://github.com/this-is-tobi/multiarch-mirror"
+  githubConfigSecret: "this-is-tobi-gh-app-secret"
+  minRunners: 1
+  maxRunners: 4
+  labels: {}
+  controllerServiceAccount:
+    namespace: "actions-runner-controller"
+    name: "actions-runner-controller-sa"
+  containerMode:
+    type: "dind" # kubernetes
+    # the following is required when containerMode.type=kubernetes
+    kubernetesModeWorkVolumeClaim:
+      accessModes:
+      - "ReadWriteOnce"
+      storageClassName: ""
+      resources:
+        requests:
+          storage: "5Gi"
+  template:
+    spec:
+      containers:
+      - name: "runner"
+        image: "ghcr.io/this-is-tobi/tools/gh-runner:1.5.0" # ghcr.io/actions/actions-runner:latest
+        command:
+        - "/home/runner/run.sh"

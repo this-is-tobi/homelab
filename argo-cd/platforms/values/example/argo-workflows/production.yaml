@@ -1,0 +1,15 @@
+argo-workflows:
+  server:
+    ingress:
+      hosts:
+      - "argo-worflows.example.com"
+      tls:
+      - secretName: "argo-worflows.example.com-tls"
+        hosts:
+        - "argo-worflows.example.com"
+    sso:
+      issuer: "https://keycloak.example.com/realms/homelab"
+      redirectUrl: https://argo-worflows.example.com/oauth2/callback
+  crds:
+    install: true
+    keep: true

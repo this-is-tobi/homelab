@@ -1,0 +1,39 @@
+waultwarden:
+  domain: "https://vaultwarden.example.com"
+  adminToken:
+    existingSecret: "vaultwarden-admin"
+    existingSecretKey: "token"
+  database:
+    host: "vaultwarden-pg-cluster-rw"
+    port: 5432
+    dbName: "vaultwarden"
+    existingSecret: "vaultwarden-pg-cluster-app"
+    existingSecretUserKey: "username"
+    existingSecretPasswordKey: "password"
+  invitationOrgName: "Ohmlab"
+  ingress:
+    hostname: "vaultwarden.example.com"
+    tlsSecret: "vaultwarden.example.com-tls"
+
+cnpg:
+  mode: "primary"
+  credentials:
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "vaultwarden-pg-cluster-admin"
+      app:
+        secretName: "vaultwarden-pg-cluster-app"
+  backup:
+    enabled: true
+    endpointURL: "https://s3.example.com"
+    destinationPath: "s3://backups/cnpg"
+    s3Credentials:
+      create: false
+      secretName: "vaultwarden-pg-cluster-backup"
+      accessKeyId:
+        key: "S3_ACCESS_KEY"
+      secretAccessKey:
+        key: "S3_SECRET_KEY"
+      region:
+        key: "S3_REGION"

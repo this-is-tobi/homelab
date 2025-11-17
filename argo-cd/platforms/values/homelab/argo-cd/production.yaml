@@ -1,0 +1,48 @@
+argo-cd:
+  configs:
+    secret:
+      argocdServerAdminPassword: "$argo-cd-admin:password"
+    cm:
+      url: "https://gitops.ohmlab.fr"
+      oidc.config: |
+        name: "Keycloak"
+        issuer: "https://sso.ohmlab.fr/realms/homelab"
+        clientID: "argo-cd"
+        clientSecret: ""
+        # clientSecret: "$argo-cd-sso:clientSecret"
+        requestedScopes: ["openid", "profile", "email", "groups"]
+  notifications:
+    enabled: false
+    argocdUrl: "https://gitops.ohmlab.fr"
+    context:
+      provider: "self-hosted"
+      cluster: "homelab"
+      environment: "production"
+    secret:
+      create: false
+      items:
+        mattermost-token: ""
+        email-username: ""
+        email-password: ""
+        # mattermost-token: "$argo-cd-config:mattermost-token"
+        # email-username: "$argo-cd-config:email-username"
+        # email-password: "$argo-cd-config:email-password"
+    notifiers:
+      service.email: |
+        username: $email-username
+        password: $email-password
+        host: "smtp.ohmlab.fr"
+        port: 465
+        from: "no-reply@ohmlab.fr"
+      service.mattermost: |
+        apiURL: "https://mattermost.ohmlab.fr"
+        token: $mattermost-token
+  applicationSet:
+    ingress:
+      hostname: "appset.gitops.ohmlab.fr"
+  server:
+    ingress:
+      hostname: "gitops.ohmlab.fr"
+  crds:
+    install: false
+    keep: true

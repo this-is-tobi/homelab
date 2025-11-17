@@ -1,0 +1,25 @@
+server:
+  clusterName: "teleport.ohmlab.fr"
+
+roles:
+  user:
+    allow:
+      kubernetes_groups:
+      - "system:masters"
+      kubernetes_labels:
+        "*": "*"
+      kubernetes_resources:
+      - kind: "*"
+        namespace: "user-namespace"
+        name: "*"
+        verbs:
+        - "*"
+
+users:
+  jane:
+    roles:
+    - "superadmin"
+    - "admin"
+  john:
+    roles:
+    - "user"

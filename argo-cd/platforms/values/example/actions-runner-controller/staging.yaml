@@ -1,0 +1,7 @@
+arc-controller: {}
+
+arc-runner-tools:
+  enabled: false
+
+arc-runner-multiarch-mirror:
+  enabled: false

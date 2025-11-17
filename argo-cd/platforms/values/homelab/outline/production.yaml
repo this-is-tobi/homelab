@@ -1,0 +1,93 @@
+outline:
+  ingress:
+    hosts:
+    - "outline.ohmlab.fr"
+    tls:
+    - hosts:
+      - "outline.ohmlab.fr"
+      secretName: "outline.ohmlab.fr-tls"
+  environment:
+  - name: "URL"
+    value: "https://outline.ohmlab.fr"
+  - name: "DATABASE_URL"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-pg-cluster-infos"
+        key: "CONNECTION_STRING"
+  - name: "SECRET_KEY"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-config"
+        key: "SECRET_KEY"
+  - name: "UTILS_SECRET"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-config"
+        key: "UTILS_SECRET"
+  - name: "AWS_ACCESS_KEY_ID"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-config"
+        key: "S3_ACCESS_KEY"
+  - name: "AWS_REGION"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-config"
+        key: "S3_REGION"
+  - name: "AWS_SECRET_ACCESS_KEY"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-config"
+        key: "S3_SECRET_KEY"
+  - name: "AWS_S3_UPLOAD_BUCKET_URL"
+    value: "https://s3.ohmlab.fr/outline"
+  - name: "AWS_S3_UPLOAD_BUCKET_NAME"
+    value: "outline"
+  - name: "AWS_S3_FORCE_PATH_STYLE"
+    value: "true"
+  - name: "AWS_S3_ACL"
+    value: "private"
+  - name: "FILE_STORAGE_UPLOAD_MAX_SIZE"
+    value: "26214400"
+  - name: "OIDC_CLIENT_ID"
+    value: "outline"
+  - name: "OIDC_CLIENT_SECRET"
+    valueFrom:
+      secretKeyRef:
+        name: "outline-sso"
+        key: "OIDC_CLIENT_SECRET"
+  - name: "OIDC_AUTH_URI"
+    value: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
+  - name: "OIDC_TOKEN_URI"
+    value: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
+  - name: "OIDC_USERINFO_URI"
+    value: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"
+  - name: "OIDC_USERNAME_CLAIM"
+    value: "email"
+  - name: "OIDC_DISPLAY_NAME"
+    value: "Keycloak"
+  - name: "OIDC_SCOPES"
+    value: "openid profile email groups roles"
+
+cnpg:
+  mode: "primary"
+  credentials:
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: outline-pg-cluster-admin
+      app:
+        secretName: outline-pg-cluster-app
+  backup:
+    enabled: true
+    endpointURL: "https://s3.ohmlab.fr"
+    destinationPath: "s3://backups/cnpg"
+    s3Credentials:
+      create: false
+      secretName: "outline-pg-cluster-backup"
+      accessKeyId:
+        key: "S3_ACCESS_KEY"
+      secretAccessKey:
+        key: "S3_SECRET_KEY"
+      region:
+        key: "S3_REGION"

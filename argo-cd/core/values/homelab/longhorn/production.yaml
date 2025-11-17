@@ -1,0 +1,13 @@
+longhorn:
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+      nginx.ingress.kubernetes.io/auth-realm: "Authentication Required - Longhorn"
+      nginx.ingress.kubernetes.io/auth-secret: "longhorn-admin-htpasswd"
+      nginx.ingress.kubernetes.io/auth-type: "basic"
+    hosts:
+    - "longhorn.ohmlab.fr"
+    tls: true
+    tlsSecret: "longhorn.ohmlab.fr-tls"

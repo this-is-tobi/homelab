@@ -1,0 +1,15 @@
+argo-workflows:
+  server:
+    ingress:
+      hosts:
+      - "worflows.ohmlab.fr"
+      tls:
+      - secretName: "worflows.ohmlab.fr-tls"
+        hosts:
+        - "worflows.ohmlab.fr"
+    sso:
+      issuer: "https://sso.ohmlab.fr/realms/homelab"
+      redirectUrl: https://worflows.ohmlab.fr/oauth2/callback
+  crds:
+    install: true
+    keep: true

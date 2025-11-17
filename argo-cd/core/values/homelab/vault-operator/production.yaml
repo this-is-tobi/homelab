@@ -1,0 +1,309 @@
+# Vault instance configuration using Bank Vaults operator
+# This replaces the need for vault-init.sh scripts!
+
+vault:
+  enabled: true
+  name: vault
+  size: 3  # 3-node HA cluster
+
+  # Vault image
+  image:
+    repository: hashicorp/vault
+    tag: 1.20.1
+
+  # Bank Vaults sidecar image
+  bankVaultsImage: ghcr.io/bank-vaults/bank-vaults:latest
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9102"
+
+  # Storage (Raft integrated storage)
+  storage:
+    raft:
+      enabled: true
+      size: 10Gi
+      storageClass: longhorn  # or your storage class
+
+  # Auto-unseal configuration
+  unseal:
+    kubernetes:
+      enabled: true
+      secretName: vault-unseal-keys
+    # Or use cloud KMS:
+    # aws:
+    #   kmsKeyId: ""
+    #   region: us-east-1
+    # gcp:
+    #   kmsCryptoKey: ""
+    #   kmsKeyRing: ""
+    #   kmsProject: ""
+    # azure:
+    #   tenantId: ""
+    #   vaultName: ""
+    #   keyName: ""
+
+  # Vault configuration
+  config:
+    ui: true
+    tls:
+      enabled: false  # Set to true for production
+    telemetry:
+      unauthenticated: false
+      retention: 10m
+      disableHostname: true
+
+  # External configuration (GitOps!)
+  externalConfig:
+    # Policies - no more shell scripts!
+    policies:
+      - name: cert-manager
+        rules: |
+          path "homelab/data/cert-manager/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: prometheus
+        rules: |
+          path "homelab/data/prometheus/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: gitea
+        rules: |
+          path "homelab/data/gitea/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: harbor
+        rules: |
+          path "homelab/data/harbor/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: keycloak
+        rules: |
+          path "homelab/data/keycloak/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: mattermost
+        rules: |
+          path "homelab/data/mattermost/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: minio
+        rules: |
+          path "homelab/data/minio/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: argocd
+        rules: |
+          path "homelab/data/argocd/*" {
+            capabilities = ["read", "list"]
+          }
+
+    # Auth methods - configured declaratively!
+    auth:
+      - type: kubernetes
+        roles:
+          # cert-manager role
+          - name: cert-manager
+            bound_service_account_names: ["cert-manager"]
+            bound_service_account_namespaces: ["cert-manager"]
+            policies: ["cert-manager"]
+            ttl: 1h
+
+          # prometheus role
+          - name: prometheus
+            bound_service_account_names: ["kube-prometheus-stack-prometheus"]
+            bound_service_account_namespaces: ["prometheus-stack"]
+            policies: ["prometheus"]
+            ttl: 1h
+
+          # gitea role
+          - name: gitea
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["gitea"]
+            policies: ["gitea"]
+            ttl: 1h
+
+          # harbor role
+          - name: harbor
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["harbor"]
+            policies: ["harbor"]
+            ttl: 1h
+
+          # keycloak role
+          - name: keycloak
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["keycloak"]
+            policies: ["keycloak"]
+            ttl: 1h
+
+          # mattermost role
+          - name: mattermost
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["mattermost"]
+            policies: ["mattermost"]
+            ttl: 1h
+
+          # minio role
+          - name: minio
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["minio"]
+            policies: ["minio"]
+            ttl: 1h
+
+          # argocd role
+          - name: argocd
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["argocd"]
+            policies: ["argocd"]
+            ttl: 1h
+
+    # Secret engines
+    secrets:
+      - path: homelab
+        type: kv
+        description: Homelab secrets KV store
+        options:
+          version: 2
+
+    # Startup secrets (optional - for initial bootstrap)
+    # WARNING: Only use for non-sensitive initial values
+    # Real secrets should be populated via sealed-secrets or external-secrets
+    startupSecrets: []
+      # Example:
+      # - type: kv
+      #   path: homelab/data/cert-manager/admin
+      #   data:
+      #     username: admin@example.com
+      #     password: CHANGEME
+
+  # Resources
+  resources:
+    vault:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 512Mi
+    bankVaults:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 100
+    fsGroup: 1000
+
+  # Service account
+  serviceAccount: vault
+
+  # Ingress
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    host: vault.core.ohmlab.fr
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    tls:
+      enabled: true
+      secretName: vault-tls
+
+  # Service Monitor for Prometheus
+  serviceMonitor:
+    enabled: true
+
+  # Statsd (optional metrics exporter)
+  statsd:
+    enabled: true
+    image: prom/statsd-exporter:latest
+
+  # Vault agent (for sidecar injection)
+  agent:
+    enabled: true
+
+
+# Vault Secret Operator configuration
+vso:
+  enabled: true
+
+  controller:
+    replicas: 2  # HA setup
+
+    manager:
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+
+      # Security context
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        runAsNonRoot: true
+        runAsUser: 65532
+        capabilities:
+          drop:
+            - ALL
+        seccompProfile:
+          type: RuntimeDefault
+
+    # Pod Security
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      fsGroup: 65532
+      seccompProfile:
+        type: RuntimeDefault
+
+    # RBAC
+    rbac:
+      create: true
+
+    # ServiceAccount
+    serviceAccount:
+      create: true
+      name: vault-secrets-operator
+
+  # Default Vault connection (global)
+  defaultVaultConnection:
+    enabled: true
+    address: "http://vault.vault-system.svc.cluster.local:8200"
+    skipTLSVerify: false
+
+  # Default auth method using Kubernetes auth
+  defaultAuthMethod:
+    enabled: true
+    method: kubernetes
+    mount: kubernetes
+    kubernetes:
+      role: ""  # Set per VaultAuth resource
+      serviceAccount: default
+      tokenAudiences:
+        - vault
+
+  # Metrics
+  metrics:
+    service:
+      enabled: true
+      type: ClusterIP
+      port: 8080

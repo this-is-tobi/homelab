@@ -1,0 +1,30 @@
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            resources:
+              requests:
+                storage: 100Gi
+  grafana:
+    admin:
+      existingSecret: "prometheus-stack-grafana-admin"
+      userKey: "username"
+      passwordKey: "password"
+    ingress:
+      hosts:
+      - "monitoring.ohmlab.fr"
+      tls:
+      - hosts:
+        - "monitoring.ohmlab.fr"
+        secretName: "monitoring.ohmlab.fr"
+    grafana.ini:
+      server:
+        root_url: "https://monitoring.ohmlab.fr"
+      auth.generic_oauth:
+        client_id: "grafana"
+        client_secret: ""
+        auth_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
+        token_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
+        api_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"

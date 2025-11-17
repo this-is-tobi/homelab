@@ -1,0 +1,48 @@
+argo-cd:
+  configs:
+    secret:
+      argocdServerAdminPassword: "$argo-cd-admin:password"
+    cm:
+      url: "https://argo-cd.example.com"
+      oidc.config: |
+        name: "Keycloak"
+        issuer: "https://keycloak.example.com/realms/homelab"
+        clientID: "argo-cd"
+        clientSecret: ""
+        # clientSecret: "$argo-cd-sso:clientSecret"
+        requestedScopes: ["openid", "profile", "email", "groups"]
+  notifications:
+    enabled: false
+    argocdUrl: "https://argo-cd.example.com"
+    context:
+      provider: "self-hosted"
+      cluster: "homelab"
+      environment: "production"
+    secret:
+      create: false
+      items:
+        mattermost-token: ""
+        email-username: ""
+        email-password: ""
+        # mattermost-token: "$argo-cd-config:mattermost-token"
+        # email-username: "$argo-cd-config:email-username"
+        # email-password: "$argo-cd-config:email-password"
+    notifiers:
+      service.email: |
+        username: $email-username
+        password: $email-password
+        host: "smtp.example.com"
+        port: 465
+        from: "no-reply@example.com"
+      service.mattermost: |
+        apiURL: "https://mattermost.example.com"
+        token: $mattermost-token
+  applicationSet:
+    ingress:
+      hostname: "appset.argo-cd.example.com"
+  server:
+    ingress:
+      hostname: "argo-cd.example.com"
+  crds:
+    install: false
+    keep: true

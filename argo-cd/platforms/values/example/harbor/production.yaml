@@ -1,0 +1,37 @@
+harbor:
+  adminPassword: ""
+  externalURL: "https://harbor.example.com"
+  ingress:
+    core:
+      hostname: "harbor.example.com"
+  externalDatabase:
+    host: "harbor-pg-cluster-rw"
+    port: 5432
+    coreDatabase: "harbor"
+    user: "harbor"
+    password: ""
+
+cnpg:
+  mode: "primary"
+  credentials:
+    password: ""
+    postgresPassword: ""
+    # existingSecrets:
+    #   enabled: true
+    #   postgres:
+    #     secretName: "harbor-pg-cluster-admin"
+    #   app:
+    #     secretName: "harbor-pg-cluster-app"
+  backup:
+    enabled: false
+    endpointURL: "https://s3.example.com"
+    destinationPath: "s3://backups/cnpg"
+    s3Credentials:
+      # create: false
+      secretName: "harbor-pg-cluster-backup"
+      accessKeyId:
+        value: ""
+      secretAccessKey:
+        value: ""
+      region:
+        value: "fr-par"

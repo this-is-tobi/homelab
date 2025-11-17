@@ -1,0 +1,61 @@
+cert-manager:
+  crds:
+    enabled: true
+    keep: true
+
+scaleway-certmanager-webhook:
+  secret:
+    externalSecretName: "scaleway-creds" # SCW_ACCESS_KEY / SCW_SECRET_KEY
+
+defaultWildcard:
+  dnsZone: "ohmlab.fr"
+
+clusterIssuers:
+- name: "letsencrypt-http-staging"
+  spec:
+    acme:
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      privateKeySecretRef:
+        name: "letsencrypt-http-staging-key"
+      solvers:
+      - http01:
+          ingress:
+            serviceType: "ClusterIP"
+            ingressClassName: "nginx"
+- name: "letsencrypt-http-prod"
+  spec:
+    acme:
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-v02.api.letsencrypt.org/directory"
+      privateKeySecretRef:
+        name: "letsencrypt-http-prod-key"
+      solvers:
+      - http01:
+          ingress:
+            serviceType: "ClusterIP"
+            ingressClassName: "nginx"
+- name: "letsencrypt-dns-staging"
+  spec:
+    acme:
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      privateKeySecretRef:
+        name: "letsencrypt-dns-staging-key"
+      solvers:
+      - dns01:
+          webhook:
+            groupName: "acme.scaleway.com"
+            solverName: "scaleway"
+- name: "letsencrypt-dns-prod"
+  spec:
+    acme:
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-v02.api.letsencrypt.org/directory"
+      privateKeySecretRef:
+        name: "letsencrypt-dns-prod-key"
+      solvers:
+      - dns01:
+          webhook:
+            groupName: "acme.scaleway.com"
+            solverName: "scaleway"
