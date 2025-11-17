@@ -1,14 +1,15 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: platform-manager
+  name: core-manager
   namespace: argocd-system
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
-  ignoreApplicationDifferences:
-  - jqPathExpressions:
-    - .spec.source.plugin.env[] | select(.name == "HELM_VALUES").value
+  goTemplateOptions:
+  - "missingkey=error"
+  # ignoreApplicationDifferences:
+  # - jqPathExpressions:
+  #   - .spec.source.plugin.env[] | select(.name == "HELM_VALUES").value
   generators:
   - matrix:
       generators:
@@ -28,6 +29,7 @@ spec:
   template:
     metadata:
       name: '{{.prefix.name}}{{.app}}{{.suffix.name}}'
+      # namespace: argocd-system
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
         argocd.argoproj.io/sync-wave: '{{.syncWave}}'
@@ -47,7 +49,7 @@ spec:
         targetRevision: '{{.targetRevision}}'
         helm:
           valueFiles:
-          - $values/argo-cd/core/values/{{.name}}/{{.app}}.yaml
+          - $values/argo-cd/core/values/{{.name}}/{{.app}}/{{.env}}.yaml
         # plugin:
         #   env:
         #   - name: AVP_SECRET

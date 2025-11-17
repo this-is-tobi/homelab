@@ -16,21 +16,21 @@
   },
   "targetRevision": "main",
   "apps": [
-    { "app": "cert-manager", "enabled": "true", "syncWave": 0 },
+    { "app": "cert-manager", "enabled": "false", "syncWave": 0 },
     { "app": "cloudnative-pg", "enabled": "false", "syncWave": 10 },
     { "app": "dashy", "enabled": "false", "syncWave": 30 },
     { "app": "homelab-utils", "enabled": "false", "syncWave":40 },
-    { "app": "ingress-nginx", "enabled": "true", "syncWave": 0 },
+    { "app": "ingress-nginx", "enabled": "false", "syncWave": 0 },
     { "app": "keycloak", "enabled": "false", "syncWave": 20 },
     { "app": "kubernetes-dashboard", "enabled": "false", "syncWave": 10 },
-    { "app": "longhorn", "enabled": "true", "syncWave": 0 },
-    { "app": "prometheus-stack", "enabled": "true", "syncWave": 10 },
+    { "app": "longhorn", "enabled": "false", "syncWave": 0 },
+    { "app": "prometheus-stack", "enabled": "false", "syncWave": 10 },
     { "app": "sops", "enabled": "false", "syncWave": 0 },
     { "app": "system-upgrade", "enabled": "false", "syncWave": 50 },
     { "app": "teleport", "enabled": "false", "syncWave": 10 },
-    { "app": "trivy-operator", "enabled": "true", "syncWave": 50 },
+    { "app": "trivy-operator", "enabled": "false", "syncWave": 50 },
     { "app": "vault", "enabled": "false", "syncWave": 10 },
-    { "app": "vault-operator", "enabled": "true", "syncWave": "1" },
+    { "app": "vault-operator", "enabled": "false", "syncWave": "1" },
     { "app": "vaultwarden", "enabled": "false", "syncWave": 20 }
   ]
 }

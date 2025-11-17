@@ -7,7 +7,7 @@ description: Bank Vaults operator for GitOps-native Vault management
 dependencies:
 - name: vault-operator
   version: 1.22.2
-  repository: https://kubernetes-charts.banzaicloud.com
+  repository: oci://ghcr.io/bank-vaults/helm-charts
 - name: vault-secrets-operator
   alias: vso
   version: 1.0.1
