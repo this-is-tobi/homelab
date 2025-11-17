@@ -1,12 +1,13 @@
 arc-controller: {}
 
-arc-runner-tools:
+runner-group-001:
   runnerScaleSetName: tools
   githubConfigUrl: https://github.com/this-is-tobi/tools
   githubConfigSecret: this-is-tobi-gh-app-secret
   minRunners: 1
   maxRunners: 4
-  labels: {}
+  labels:
+    github-repo: tools
   controllerServiceAccount:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
@@ -29,13 +30,14 @@ arc-runner-tools:
         command:
         - "/home/runner/run.sh"
 
-arc-runner-multiarch-mirror:
+runner-group-002:
   runnerScaleSetName: multiarch-mirror
   githubConfigUrl: https://github.com/this-is-tobi/multiarch-mirror
   githubConfigSecret: this-is-tobi-gh-app-secret
   minRunners: 1
   maxRunners: 4
-  labels: {}
+  labels:
+    github-repo: multiarch-mirror
   controllerServiceAccount:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa

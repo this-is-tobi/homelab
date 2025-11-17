@@ -9,10 +9,10 @@ dependencies:
   version: 0.13.0
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
 - name: gha-runner-scale-set
-  alias: arc-runner-tools
+  alias: runner-group-001 # TODO: make generic with labels to qualify the target repo
   version: 0.13.0
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
 - name: gha-runner-scale-set
-  alias: arc-runner-multiarch-mirror
+  alias: runner-group-002 # TODO: make generic with labels to qualify the target repo
   version: 0.13.0
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
