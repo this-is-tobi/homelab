@@ -1,0 +1,20 @@
+apiVersion: v2
+name: vault-operator
+type: application
+version: 1.22.2
+appVersion: "1.22.2"
+description: Bank Vaults operator for GitOps-native Vault management
+dependencies:
+- name: vault-operator
+  version: 1.22.2
+  repository: https://kubernetes-charts.banzaicloud.com
+- name: vault-secrets-operator
+  alias: vso
+  version: 1.0.1
+  repository: https://helm.releases.hashicorp.com
+  condition: vso.enabled
+- name: backup-utils
+  alias: backups-utils
+  version: 2.0.0
+  repository: https://this-is-tobi.github.io/helm-charts
+  condition: backup-utils.enabled

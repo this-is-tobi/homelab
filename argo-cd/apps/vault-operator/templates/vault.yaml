@@ -1,0 +1,181 @@
+{{- if .Values.vault.enabled }}
+---
+apiVersion: vault.banzaicloud.com/v1alpha1
+kind: Vault
+metadata:
+  name: {{ .Values.vault.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  # Vault cluster size
+  size: {{ .Values.vault.size }}
+
+  # Vault image
+  image: {{ .Values.vault.image.repository }}:{{ .Values.vault.image.tag }}
+
+  # Bank Vaults image (sidecar for auto-unseal, config)
+  bankVaultsImage: {{ .Values.vault.bankVaultsImage }}
+
+  # Service configuration
+  serviceType: {{ .Values.vault.service.type }}
+  {{- if .Values.vault.service.annotations }}
+  serviceAnnotations:
+    {{- toYaml .Values.vault.service.annotations | nindent 4 }}
+  {{- end }}
+
+  # Storage configuration
+  {{- if .Values.vault.storage.raft.enabled }}
+  # Integrated storage (Raft)
+  volumeClaimTemplates:
+    - metadata:
+        name: vault-raft
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- if .Values.vault.storage.raft.storageClass }}
+        storageClassName: {{ .Values.vault.storage.raft.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.vault.storage.raft.size }}
+  {{- end }}
+
+  # Auto-unseal configuration
+  unsealConfig:
+    {{- if .Values.vault.unseal.kubernetes.enabled }}
+    kubernetes:
+      secretNamespace: {{ .Release.Namespace }}
+      secretName: {{ .Values.vault.unseal.kubernetes.secretName }}
+    {{- end }}
+    {{- if .Values.vault.unseal.aws }}
+    aws:
+      {{- toYaml .Values.vault.unseal.aws | nindent 6 }}
+    {{- end }}
+    {{- if .Values.vault.unseal.gcp }}
+    gcp:
+      {{- toYaml .Values.vault.unseal.gcp | nindent 6 }}
+    {{- end }}
+    {{- if .Values.vault.unseal.azure }}
+    azure:
+      {{- toYaml .Values.vault.unseal.azure | nindent 6 }}
+    {{- end }}
+
+  # Vault configuration (HCL)
+  config:
+    ui: {{ .Values.vault.config.ui }}
+
+    listener:
+      - tcp:
+          address: "0.0.0.0:8200"
+          {{- if .Values.vault.config.tls.enabled }}
+          tls_cert_file: /vault/tls/tls.crt
+          tls_key_file: /vault/tls/tls.key
+          {{- else }}
+          tls_disable: true
+          {{- end }}
+          telemetry:
+            unauthenticated_metrics_access: {{ .Values.vault.config.telemetry.unauthenticated }}
+
+    storage:
+      {{- if .Values.vault.storage.raft.enabled }}
+      raft:
+        path: /vault/data
+        {{- if gt (.Values.vault.size | int) 1 }}
+        retry_join:
+          {{- range $i := until (.Values.vault.size | int) }}
+          - leader_api_addr: http://{{ $.Values.vault.name }}-{{ $i }}.{{ $.Values.vault.name }}-headless:8200
+          {{- end }}
+        {{- end }}
+      {{- else if .Values.vault.storage.file }}
+      file:
+        path: /vault/file
+      {{- end }}
+
+    service_registration:
+      kubernetes: {}
+
+    telemetry:
+      prometheus_retention_time: {{ .Values.vault.config.telemetry.retention }}
+      disable_hostname: {{ .Values.vault.config.telemetry.disableHostname }}
+
+  # External configuration (policies, auth, secrets) - GitOps!
+  externalConfig:
+    {{- if .Values.vault.externalConfig.policies }}
+    policies:
+      {{- toYaml .Values.vault.externalConfig.policies | nindent 6 }}
+    {{- end }}
+
+    {{- if .Values.vault.externalConfig.auth }}
+    auth:
+      {{- toYaml .Values.vault.externalConfig.auth | nindent 6 }}
+    {{- end }}
+
+    {{- if .Values.vault.externalConfig.secrets }}
+    secrets:
+      {{- toYaml .Values.vault.externalConfig.secrets | nindent 6 }}
+    {{- end }}
+
+    {{- if .Values.vault.externalConfig.startupSecrets }}
+    startupSecrets:
+      {{- toYaml .Values.vault.externalConfig.startupSecrets | nindent 6 }}
+    {{- end }}
+
+  # Resource limits
+  {{- if .Values.vault.resources }}
+  resources:
+    {{- toYaml .Values.vault.resources | nindent 4 }}
+  {{- end }}
+
+  # Security context
+  {{- if .Values.vault.securityContext }}
+  securityContext:
+    {{- toYaml .Values.vault.securityContext | nindent 4 }}
+  {{- end }}
+
+  # Service account
+  serviceAccount: {{ .Values.vault.serviceAccount }}
+
+  # Ingress
+  {{- if .Values.vault.ingress.enabled }}
+  ingress:
+    annotations:
+      {{- toYaml .Values.vault.ingress.annotations | nindent 6 }}
+    spec:
+      ingressClassName: {{ .Values.vault.ingress.ingressClassName }}
+      rules:
+        - host: {{ .Values.vault.ingress.host }}
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: {{ .Values.vault.name }}
+                    port:
+                      number: 8200
+      {{- if .Values.vault.ingress.tls.enabled }}
+      tls:
+        - hosts:
+            - {{ .Values.vault.ingress.host }}
+          secretName: {{ .Values.vault.ingress.tls.secretName }}
+      {{- end }}
+  {{- end }}
+
+  # Service monitor for Prometheus
+  {{- if .Values.vault.serviceMonitor.enabled }}
+  serviceMonitorEnabled: true
+  {{- end }}
+
+  # Statsd for metrics
+  {{- if .Values.vault.statsd.enabled }}
+  statsdDisabled: false
+  statsdImage: {{ .Values.vault.statsd.image }}
+  {{- end }}
+
+  # Vault agent for sidecar injection
+  {{- if .Values.vault.agent.enabled }}
+  vaultAnnotations:
+    vault.security.banzaicloud.io/vault-addr: "https://{{ .Values.vault.name }}:8200"
+    vault.security.banzaicloud.io/vault-role: "default"
+    vault.security.banzaicloud.io/vault-skip-verify: "{{ not .Values.vault.config.tls.enabled }}"
+  {{- end }}
+{{- end }}

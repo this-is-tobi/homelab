@@ -1,0 +1,35 @@
+# Bank Vaults Operator Configuration
+vault-operator:
+  image:
+    repository: ghcr.io/bank-vaults/vault-operator
+    tag: 1.22.2
+    pullPolicy: IfNotPresent
+
+  replicaCount: 1
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Enable webhooks for validation
+  webhook:
+    enabled: true
+    replicas: 2
+
+  # Metrics
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Vault Secrets Operator (VSO)
+vso:
+  enabled: false
+
+# Backup utilities
+backups-utils:
+  enabled: false
