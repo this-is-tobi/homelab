@@ -1,0 +1,45 @@
+{{- if .Values.vault.enabled }}
+{{- if .Values.vault.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.vault.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+    # User-defined annotations
+    {{- toYaml .Values.vault.ingress.annotations | nindent 4 }}
+    # Force HTTP backend protocol (Vault listener has tls_disable: true)
+    # This annotation must be set to HTTP even though ingress has TLS
+    # because TLS terminates at nginx, not at Vault
+    {{- if not .Values.vault.config.tls.enabled }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    {{- else }}
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.vault.ingress.ingressClassName }}
+  {{- if .Values.vault.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.vault.ingress.host }}
+      secretName: {{ .Values.vault.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.vault.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.vault.name }}
+                port:
+                  number: 8200
+{{- end }}
+{{- end }}

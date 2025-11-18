@@ -72,6 +72,7 @@ spec:
 
   # Vault container security - IPC_LOCK capability for memory locking
   vaultContainerSpec:
+    name: vault
     securityContext:
       capabilities:
         add:
@@ -81,6 +82,30 @@ spec:
         mountPath: /vault/config
       - name: vault-raft
         mountPath: /vault/data
+    # Health probes - use HTTP when TLS is disabled, HTTPS when enabled
+    {{- if not .Values.vault.config.tls.enabled }}
+    startupProbe:
+      httpGet:
+        path: /v1/sys/init
+        port: 8200
+        scheme: HTTP
+      failureThreshold: 18
+      periodSeconds: 10
+    livenessProbe:
+      httpGet:
+        path: /v1/sys/health?standbyok=true
+        port: 8200
+        scheme: HTTP
+      periodSeconds: 10
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /v1/sys/health?standbyok=true&perfstandbyok=true&drsecondarycode=299
+        port: 8200
+        scheme: HTTP
+      periodSeconds: 5
+      failureThreshold: 2
+    {{- end }}
 
   # Vault configuration (HCL)
   config:
@@ -104,9 +129,6 @@ spec:
             unauthenticated_metrics_access: {{ .Values.vault.config.telemetry.unauthenticated }}
           cluster_address: "0.0.0.0:8201"
 
-    api_addr: "http://$(POD_NAME).{{ .Values.vault.name }}-headless:8200"
-    cluster_addr: "http://$(POD_NAME).{{ .Values.vault.name }}-headless:8201"
-
     storage:
       {{- if .Values.vault.storage.raft.enabled }}
       raft:
@@ -114,7 +136,7 @@ spec:
         {{- if gt (.Values.vault.size | int) 1 }}
         retry_join:
           {{- range $i := until (.Values.vault.size | int) }}
-          - leader_api_addr: http://{{ $.Values.vault.name }}-{{ $i }}.{{ $.Values.vault.name }}-headless:8200
+          - leader_api_addr: http://{{ $.Values.vault.name }}-{{ $i }}.{{ $.Release.Namespace }}.svc.cluster.local:8200
           {{- end }}
         {{- end }}
       {{- else if .Values.vault.storage.file }}
@@ -170,35 +192,47 @@ spec:
       valueFrom:
         fieldRef:
           fieldPath: metadata.name
+    {{- if not .Values.vault.config.tls.enabled }}
+    - name: VAULT_API_ADDR
+      value: "http://$(POD_NAME).{{ .Release.Namespace }}.svc.cluster.local:8200"
+    - name: VAULT_CLUSTER_ADDR
+      value: "http://$(POD_NAME).{{ .Release.Namespace }}.svc.cluster.local:8201"
+    {{- else }}
+    - name: VAULT_API_ADDR
+      value: "https://$(POD_NAME).{{ .Release.Namespace }}.svc.cluster.local:8200"
+    - name: VAULT_CLUSTER_ADDR
+      value: "https://$(POD_NAME).{{ .Release.Namespace }}.svc.cluster.local:8201"
+    {{- end }}
+
+  # Environment variables for bank-vaults sidecar
+  # Override VAULT_ADDR to match Vault's actual TLS configuration (not ingress TLS)
+  sidecarEnvsConfig:
+    {{- if not .Values.vault.config.tls.enabled }}
+    - name: VAULT_ADDR
+      value: "http://127.0.0.1:8200"
+    {{- else }}
+    - name: VAULT_ADDR
+      value: "https://127.0.0.1:8200"
+    {{- end }}
 
   # Service account
   serviceAccount: {{ .Values.vault.serviceAccount }}
 
-  # Ingress
-  {{- if .Values.vault.ingress.enabled }}
-  ingress:
-    annotations:
-      {{- toYaml .Values.vault.ingress.annotations | nindent 6 }}
-    spec:
-      ingressClassName: {{ .Values.vault.ingress.ingressClassName }}
-      rules:
-        - host: {{ .Values.vault.ingress.host }}
-          http:
-            paths:
-              - path: /
-                pathType: Prefix
-                backend:
-                  service:
-                    name: {{ .Values.vault.name }}
-                    port:
-                      number: 8200
-      {{- if .Values.vault.ingress.tls.enabled }}
-      tls:
-        - hosts:
-            - {{ .Values.vault.ingress.host }}
-          secretName: {{ .Values.vault.ingress.tls.secretName }}
-      {{- end }}
-  {{- end }}
+  # Vault Configurer Pod - override environment to use correct protocol
+  vaultConfigurerPodSpec:
+    containers:
+      - name: vault-configurer
+        env:
+          {{- if not .Values.vault.config.tls.enabled }}
+          - name: VAULT_ADDR
+            value: "http://vault.{{ .Release.Namespace }}:8200"
+          {{- else }}
+          - name: VAULT_ADDR
+            value: "https://vault.{{ .Release.Namespace }}:8200"
+          {{- end }}
+
+  # Ingress managed by operator is disabled - we create our own to avoid annotation conflicts
+  # See vault-ingress.yaml for the actual ingress configuration
 
   # Service monitor for Prometheus
   {{- if .Values.vault.serviceMonitor.enabled }}
