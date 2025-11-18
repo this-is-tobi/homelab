@@ -1,0 +1,94 @@
+{{- if false }}
+---
+# Example VaultAuth resource for applications
+# This template is disabled by default (if false)
+# Copy this to your application namespace and customize
+
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultAuth
+metadata:
+  name: vault-auth
+  namespace: cert-manager  # Change to your application namespace
+spec:
+  # Reference to VaultConnection (created by VSO defaultVaultConnection)
+  vaultConnectionRef: default
+
+  # Kubernetes auth method configuration
+  method: kubernetes
+  mount: kubernetes
+
+  kubernetes:
+    # Vault role name (must match externalConfig.auth.roles in production.yaml)
+    role: cert-manager  # Change to your app role
+
+    # ServiceAccount to use for authentication
+    serviceAccount: cert-manager  # Change to your app ServiceAccount
+
+    # Audiences for the ServiceAccount token
+    audiences:
+      - vault
+
+---
+# Example VaultStaticSecret resource
+# Use this to sync secrets from Vault to Kubernetes
+
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultStaticSecret
+metadata:
+  name: cert-manager-cloudflare
+  namespace: cert-manager  # Change to your application namespace
+spec:
+  # Reference to VaultAuth
+  vaultAuthRef: vault-auth
+
+  # Vault path configuration
+  mount: homelab
+  type: kv-v2
+  path: cert-manager/cloudflare  # Change to your secret path
+
+  # Destination Kubernetes secret
+  destination:
+    create: true
+    name: cloudflare-api-token
+    type: Opaque
+
+  # Refresh interval
+  refreshAfter: 30s
+
+  # Optional: Restart deployments when secret changes
+  rolloutRestartTargets:
+    - kind: Deployment
+      name: cert-manager
+
+---
+# Example VaultDynamicSecret resource
+# Use this for dynamic credentials (databases, cloud providers, etc.)
+
+apiVersion: secrets.hashicorp.com/v1beta1
+kind: VaultDynamicSecret
+metadata:
+  name: postgres-creds
+  namespace: gitea  # Change to your application namespace
+spec:
+  # Reference to VaultAuth
+  vaultAuthRef: vault-auth
+
+  # Vault path for dynamic secret
+  mount: database
+  path: creds/postgres-gitea  # Change to your database role
+
+  # Destination Kubernetes secret
+  destination:
+    create: true
+    name: postgres-creds
+    type: Opaque
+
+  # Renewal configuration
+  renewalPercent: 67  # Renew at 67% of lease duration
+  revoke: true  # Revoke lease on deletion
+
+  # Optional: Restart deployments when secret changes
+  rolloutRestartTargets:
+    - kind: Deployment
+      name: gitea
+{{- end }}

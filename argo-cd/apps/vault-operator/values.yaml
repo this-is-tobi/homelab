@@ -1,10 +1,5 @@
 # Bank Vaults Operator Configuration
 vault-operator:
-  image:
-    repository: ghcr.io/bank-vaults/vault-operator
-    tag: 1.22.2
-    pullPolicy: IfNotPresent
-
   replicaCount: 1
 
   resources:

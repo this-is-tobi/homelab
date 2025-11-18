@@ -5,6 +5,8 @@ kind: Vault
 metadata:
   name: {{ .Values.vault.name }}
   namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   # Vault cluster size
   size: {{ .Values.vault.size }}
@@ -15,12 +17,21 @@ spec:
   # Bank Vaults image (sidecar for auto-unseal, config)
   bankVaultsImage: {{ .Values.vault.bankVaultsImage }}
 
+  # Annotations for Vault pods and services
+  {{- if or .Values.vault.service.annotations .Values.vault.agent.enabled }}
+  vaultAnnotations:
+    {{- if .Values.vault.service.annotations }}
+    {{- toYaml .Values.vault.service.annotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.vault.agent.enabled }}
+    vault.security.banzaicloud.io/vault-addr: "https://{{ .Values.vault.name }}:8200"
+    vault.security.banzaicloud.io/vault-role: "default"
+    vault.security.banzaicloud.io/vault-skip-verify: "{{ not .Values.vault.config.tls.enabled }}"
+    {{- end }}
+  {{- end }}
+
   # Service configuration
   serviceType: {{ .Values.vault.service.type }}
-  {{- if .Values.vault.service.annotations }}
-  serviceAnnotations:
-    {{- toYaml .Values.vault.service.annotations | nindent 4 }}
-  {{- end }}
 
   # Storage configuration
   {{- if .Values.vault.storage.raft.enabled }}
@@ -59,9 +70,26 @@ spec:
       {{- toYaml .Values.vault.unseal.azure | nindent 6 }}
     {{- end }}
 
+  # Vault container security - IPC_LOCK capability for memory locking
+  vaultContainerSpec:
+    securityContext:
+      capabilities:
+        add:
+          - IPC_LOCK
+    volumeMounts:
+      - name: vault-config
+        mountPath: /vault/config
+      - name: vault-raft
+        mountPath: /vault/data
+
   # Vault configuration (HCL)
   config:
     ui: {{ .Values.vault.config.ui }}
+
+    # disable_mlock controls memory locking to prevent sensitive data from swapping to disk
+    # false = secure (requires IPC_LOCK capability) - prevents memory swapping
+    # true = permissive (no capability needed) - allows memory swapping
+    disable_mlock: false
 
     listener:
       - tcp:
@@ -74,6 +102,10 @@ spec:
           {{- end }}
           telemetry:
             unauthenticated_metrics_access: {{ .Values.vault.config.telemetry.unauthenticated }}
+          cluster_address: "0.0.0.0:8201"
+
+    api_addr: "http://$(POD_NAME).{{ .Values.vault.name }}-headless:8200"
+    cluster_addr: "http://$(POD_NAME).{{ .Values.vault.name }}-headless:8201"
 
     storage:
       {{- if .Values.vault.storage.raft.enabled }}
@@ -91,7 +123,8 @@ spec:
       {{- end }}
 
     service_registration:
-      kubernetes: {}
+      kubernetes:
+        namespace: {{ .Release.Namespace }}
 
     telemetry:
       prometheus_retention_time: {{ .Values.vault.config.telemetry.retention }}
@@ -131,6 +164,13 @@ spec:
     {{- toYaml .Values.vault.securityContext | nindent 4 }}
   {{- end }}
 
+  # Environment variables for Vault container
+  vaultEnvsConfig:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+
   # Service account
   serviceAccount: {{ .Values.vault.serviceAccount }}
 
@@ -169,13 +209,5 @@ spec:
   {{- if .Values.vault.statsd.enabled }}
   statsdDisabled: false
   statsdImage: {{ .Values.vault.statsd.image }}
-  {{- end }}
-
-  # Vault agent for sidecar injection
-  {{- if .Values.vault.agent.enabled }}
-  vaultAnnotations:
-    vault.security.banzaicloud.io/vault-addr: "https://{{ .Values.vault.name }}:8200"
-    vault.security.banzaicloud.io/vault-role: "default"
-    vault.security.banzaicloud.io/vault-skip-verify: "{{ not .Values.vault.config.tls.enabled }}"
   {{- end }}
 {{- end }}

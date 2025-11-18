@@ -205,9 +205,9 @@ vault:
         memory: 64Mi
 
   # Security context
+  # Note: Vault needs specific capabilities (IPC_LOCK, SETFCAP) which are added by the operator
+  # Don't set runAsNonRoot/runAsUser here - let the operator handle it
   securityContext:
-    runAsNonRoot: true
-    runAsUser: 100
     fsGroup: 1000
 
   # Service account
@@ -285,21 +285,26 @@ vso:
       name: vault-secrets-operator
 
   # Default Vault connection (global)
+  # Creates a VaultConnection CR that can be referenced by VaultAuth resources
   defaultVaultConnection:
     enabled: true
-    address: "http://vault.vault-system.svc.cluster.local:8200"
+    address: "http://vault.vault-operator-system.svc.cluster.local:8200"
     skipTLSVerify: false
 
   # Default auth method using Kubernetes auth
+  # NOTE: Disabled because role must be specified per namespace
+  # Applications should create their own VaultAuth resources with specific roles
   defaultAuthMethod:
-    enabled: true
-    method: kubernetes
-    mount: kubernetes
-    kubernetes:
-      role: ""  # Set per VaultAuth resource
-      serviceAccount: default
-      tokenAudiences:
-        - vault
+    enabled: false
+    # Uncomment to enable global auth (not recommended for multi-tenant)
+    # namespace: "vault-operator-system"
+    # method: kubernetes
+    # mount: kubernetes
+    # allowedNamespaces: ["*"]
+    # kubernetes:
+    #   role: "default"  # Must exist in Vault
+    #   serviceAccount: default
+    #   tokenAudiences: ["vault"]
 
   # Metrics
   metrics:
