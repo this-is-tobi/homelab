@@ -50,7 +50,7 @@ vault:
   config:
     ui: true
     tls:
-      enabled: false  # Set to true for production
+      enabled: true  # Enable TLS for Vault pods (operator auto-generates certificates)
     telemetry:
       unauthenticated: false
       retention: 10m
@@ -220,10 +220,10 @@ vault:
     host: vault.core.ohmlab.fr
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     tls:
       enabled: true
-      secretName: vault-tls
+      secretName: vault-ingress-tls  # Separate from vault-tls (used internally by operator)
 
   # Service Monitor for Prometheus
   serviceMonitor:
