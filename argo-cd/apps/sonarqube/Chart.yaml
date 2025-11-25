@@ -10,5 +10,5 @@ dependencies:
   repository: https://SonarSource.github.io/helm-chart-sonarqube
 - name: cnpg-cluster
   alias: cnpg
-  version: 1.3.0
+  version: 1.5.2
   repository: https://this-is-tobi.github.io/helm-charts
