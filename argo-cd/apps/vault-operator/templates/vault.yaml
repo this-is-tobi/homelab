@@ -219,8 +219,8 @@ spec:
   {{- end }}
 
   # Statsd for metrics
+  statsdDisabled: {{ not .Values.vault.statsd.enabled }}
   {{- if .Values.vault.statsd.enabled }}
-  statsdDisabled: false
   statsdImage: {{ .Values.vault.statsd.image }}
   {{- end }}
 {{- end }}

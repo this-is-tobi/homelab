@@ -60,15 +60,21 @@ vault:
   externalConfig:
     # Policies - no more shell scripts!
     policies:
+      - name: argo-cd
+        rules: |
+          path "homelab/data/argo-cd/*" {
+            capabilities = ["read", "list"]
+          }
+
       - name: cert-manager
         rules: |
           path "homelab/data/cert-manager/*" {
             capabilities = ["read", "list"]
           }
 
-      - name: prometheus
+      - name: coder
         rules: |
-          path "homelab/data/prometheus/*" {
+          path "homelab/data/coder/*" {
             capabilities = ["read", "list"]
           }
 
@@ -102,9 +108,21 @@ vault:
             capabilities = ["read", "list"]
           }
 
-      - name: argocd
+      - name: prometheus-stack
         rules: |
-          path "homelab/data/argocd/*" {
+          path "homelab/data/prometheus-stack/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: sonarqube
+        rules: |
+          path "homelab/data/sonarqube/*" {
+            capabilities = ["read", "list"]
+          }
+
+      - name: sops
+        rules: |
+          path "homelab/data/sops/*" {
             capabilities = ["read", "list"]
           }
 
@@ -112,6 +130,13 @@ vault:
     auth:
       - type: kubernetes
         roles:
+          # argo-cd role
+          - name: argo-cd
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["argo-cd"]
+            policies: ["argo-cd"]
+            ttl: 1h
+
           # cert-manager role
           - name: cert-manager
             bound_service_account_names: ["cert-manager"]
@@ -119,11 +144,11 @@ vault:
             policies: ["cert-manager"]
             ttl: 1h
 
-          # prometheus role
-          - name: prometheus
-            bound_service_account_names: ["kube-prometheus-stack-prometheus"]
-            bound_service_account_namespaces: ["prometheus-stack"]
-            policies: ["prometheus"]
+          # coder role
+          - name: coder
+            bound_service_account_names: ["coder"]
+            bound_service_account_namespaces: ["coder"]
+            policies: ["coder"]
             ttl: 1h
 
           # gitea role
@@ -161,11 +186,18 @@ vault:
             policies: ["minio"]
             ttl: 1h
 
-          # argocd role
-          - name: argocd
+          # prometheus role
+          - name: prometheus-stack
+            bound_service_account_names: ["kube-prometheus-stack-prometheus"]
+            bound_service_account_namespaces: ["prometheus-stack"]
+            policies: ["prometheus-stack"]
+            ttl: 1h
+
+          # sonarqube role
+          - name: sonarqube
             bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["argocd"]
-            policies: ["argocd"]
+            bound_service_account_namespaces: ["sonarqube"]
+            policies: ["sonarqube"]
             ttl: 1h
 
     # Secret engines
@@ -191,7 +223,7 @@ vault:
   resources:
     vault:
       limits:
-        cpu: 1000m
+        cpu: '1'
         memory: 1Gi
       requests:
         cpu: 500m
