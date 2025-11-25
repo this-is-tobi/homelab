@@ -14,7 +14,7 @@ dependencies:
   repository: https://helm.releases.hashicorp.com
   condition: vso.enabled
 - name: backup-utils
-  alias: backups-utils
-  version: 2.0.0
+  alias: backup-utils
+  version: 2.2.3
   repository: https://this-is-tobi.github.io/helm-charts
   condition: backup-utils.enabled

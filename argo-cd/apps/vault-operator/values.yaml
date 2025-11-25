@@ -26,5 +26,6 @@ vso:
   enabled: false
 
 # Backup utilities
-backups-utils:
+backup-utils:
+  fullnameOverride: "backup"
   enabled: false

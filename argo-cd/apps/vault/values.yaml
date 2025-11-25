@@ -52,6 +52,3 @@ vault:
     replicas: 3
     metrics:
       enabled: true
-
-backups-utils:
-  enabled: false
