@@ -1,37 +1,172 @@
 keycloak:
   keycloak:
-    hostnameAdmin: https://<path:secret/data/platforms/production/apps/keycloak#domain>
-    hostname: https://<path:secret/data/platforms/production/apps/keycloak#domain>
+    hostnameAdmin: "https://sso.ohmlab.fr"
+    hostname: "https://sso.ohmlab.fr"
+    existingSecret: "keycloak-admin"
+    secretKeys:
+      adminPasswordKey: "password"
   database:
-    host: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.host}>
-    port: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.port}>
-    name: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.database}>
-    username: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.username}>
-    password: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.password}>
+    host: "keycloak-pg-cluster-rw"
+    port: "5432"
+    name: "keycloak"
+    existingSecret: "keycloak-pg-cluster-app"
+    secretKeys:
+      usernameKey: "username"
+      passwordKey: "password"
   ingress:
     hosts:
-    - host: <path:secret/data/platforms/production/apps/keycloak#domain>
+    - host: "sso.ohmlab.fr"
       paths:
-      - path: /
-        pathType: Prefix
+      - path: "/"
+        pathType: "Prefix"
     tls:
-    - secretName: <path:secret/data/platforms/production/apps/keycloak#domain>-tls
+    - secretName: "sso.ohmlab.fr-tls"
       hosts:
-      - <path:secret/data/platforms/production/apps/keycloak#domain>
+      - "sso.ohmlab.fr"
 
 cnpg:
-  mode: primary
+  mode: "primary"
   credentials:
-    password: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.app.password}>
-    postgresPassword: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.admin.password}>
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "keycloak-pg-cluster-admin"
+      app:
+        secretName: "keycloak-pg-cluster-app"
   backup:
     enabled: true
-    endpointURL: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.s3.endpoint}>
-    destinationPath: s3://<path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.s3.bucketPrefix}>
+    endpointURL: "https://s3.fr-par.scw.cloud"
+    destinationPath: "s3://backups/cnpg"
     s3Credentials:
+      secretName: "keycloak-pg-cluster-backup"
       accessKeyId:
-        value: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.s3.accessKey}>
+        key: "S3_ACCESS_KEY"
       secretAccessKey:
-        value: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.s3.secretKey}>
+        key: "S3_SECRET_KEY"
       region:
-        value: <path:secret/data/platforms/production/apps/keycloak#postgres | jsonPath {.s3.region}>
+        key: "S3_REGION"
+
+# VSO configuration using vso-utils helper chart
+vso:
+  # VaultAuth resource for Kubernetes authentication
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "keycloak"
+        serviceAccount: "default"
+  # VaultConnection resource for Vault server details
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  # VaultStaticSecret resources for each secret
+  vaultStaticSecrets:
+    # Keycloak admin credentials
+    keycloakAdmin:
+      mount: "homelab"
+      path: "platforms/production/apps/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    # Database app credentials
+    keycloakDbAdmin:
+      mount: "homelab"
+      path: "platforms/production/apps/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    keycloakDb:
+      mount: "homelab"
+      path: "platforms/production/apps/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    # Keycloak configuration (domain, realm)
+    keycloakConfig:
+      mount: "homelab"
+      path: "platforms/production/apps/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-config"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            KEYCLOAK_DOMAIN:
+              text: '{{ get .Secrets "domain" }}'
+            KEYCLOAK_REALM:
+              text: '{{ get .Secrets "extras" | dig "realm" "" }}'
+    # S3 backup configuration
+    keycloakPgBackup:
+      mount: "homelab"
+      path: "platforms/production/apps/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-pg-cluster-backup"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            s3-bucket-prefix:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
