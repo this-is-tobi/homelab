@@ -6,7 +6,7 @@ keycloak:
     host: "keycloak-pg-cluster-rw"
     port: 5432
     name: "keycloak"
-    existingSecret: "keycloak-cluster-pg-app"
+    existingSecret: "keycloak-pg-cluster-app"
     secretKeys:
       usernameKey: "username"
       passwordKey: "password"
