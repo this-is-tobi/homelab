@@ -27,18 +27,6 @@ vault:
     kubernetes:
       enabled: true
       secretName: vault-unseal-keys
-    # Or use cloud KMS:
-    # aws:
-    #   kmsKeyId: ""
-    #   region: us-east-1
-    # gcp:
-    #   kmsCryptoKey: ""
-    #   kmsKeyRing: ""
-    #   kmsProject: ""
-    # azure:
-    #   tenantId: ""
-    #   vaultName: ""
-    #   keyName: ""
   # Vault configuration
   config:
     ui: true
@@ -54,57 +42,90 @@ vault:
     policies:
       - name: argo-cd
         rules: |
-          path "homelab/data/argo-cd/*" {
+          path "homelab/data/platforms/production/argo-cd" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/argo-cd/*" {
             capabilities = ["read", "list"]
           }
       - name: cert-manager
         rules: |
-          path "homelab/data/cert-manager/*" {
+          path "homelab/data/platforms/production/cert-manager" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/cert-manager/*" {
             capabilities = ["read", "list"]
           }
       - name: coder
         rules: |
-          path "homelab/data/coder/*" {
+          path "homelab/data/platforms/production/coder" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/coder/*" {
             capabilities = ["read", "list"]
           }
       - name: gitea
         rules: |
-          path "homelab/data/gitea/*" {
+          path "homelab/data/platforms/production/gitea" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/gitea/*" {
             capabilities = ["read", "list"]
           }
       - name: harbor
         rules: |
-          path "homelab/data/harbor/*" {
+          path "homelab/data/platforms/production/harbor" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/harbor/*" {
             capabilities = ["read", "list"]
           }
       - name: keycloak
         rules: |
-          path "homelab/data/keycloak/*" {
+          path "homelab/data/platforms/production/keycloak" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/keycloak/*" {
             capabilities = ["read", "list"]
           }
       - name: mattermost
         rules: |
-          path "homelab/data/mattermost/*" {
+          path "homelab/data/platforms/production/mattermost" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/mattermost/*" {
             capabilities = ["read", "list"]
           }
       - name: minio
         rules: |
-          path "homelab/data/minio/*" {
+          path "homelab/data/platforms/production/minio" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/minio/*" {
             capabilities = ["read", "list"]
           }
       - name: prometheus-stack
         rules: |
-          path "homelab/data/prometheus-stack/*" {
+          path "homelab/data/platforms/production/prometheus-stack" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/prometheus-stack/*" {
             capabilities = ["read", "list"]
           }
       - name: sonarqube
         rules: |
-          path "homelab/data/sonarqube/*" {
+          path "homelab/data/platforms/production/sonarqube" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/sonarqube/*" {
             capabilities = ["read", "list"]
           }
       - name: sops
         rules: |
-          path "homelab/data/sops/*" {
+          path "homelab/data/platforms/production/sops" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/sops/*" {
             capabilities = ["read", "list"]
           }
     # Auth methods - configured declaratively!
@@ -276,8 +297,8 @@ vso:
   # Creates a VaultConnection CR that can be referenced by VaultAuth resources
   defaultVaultConnection:
     enabled: true
-    address: "http://vault.vault-operator-system.svc.cluster.local:8200"
-    skipTLSVerify: false
+    address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+    skipTLSVerify: true
   # Default auth method using Kubernetes auth
   # NOTE: Disabled because role must be specified per namespace
   # Applications should create their own VaultAuth resources with specific roles

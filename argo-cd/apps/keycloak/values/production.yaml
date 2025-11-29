@@ -162,7 +162,7 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
             S3_BUCKET_NAME:
               text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
-            s3-bucket-prefix:
+            S3_BUCKET_PREFIX:
               text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
             S3_ACCESS_KEY:
               text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
