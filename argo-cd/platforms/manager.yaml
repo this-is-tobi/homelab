@@ -31,6 +31,7 @@ spec:
       name: '{{.prefix.name}}{{.app}}{{.suffix.name}}'
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
+        argocd.argoproj.io/hook: '{{.hook}}'
         argocd.argoproj.io/sync-wave: '{{.syncWave}}'
       labels:
         ohmlab/platform.name: '{{.name}}'

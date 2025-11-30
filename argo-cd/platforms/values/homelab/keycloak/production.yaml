@@ -38,6 +38,7 @@ cnpg:
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
+      create: false
       secretName: "keycloak-pg-cluster-backup"
       accessKeyId:
         key: "S3_ACCESS_KEY"
@@ -66,7 +67,7 @@ vso:
     # Keycloak admin credentials
     keycloakAdmin:
       mount: "homelab"
-      path: "platforms/production/apps/keycloak"
+      path: "platforms/production/keycloak"
       type: "kv-v2"
       vaultAuthRef: "keycloak-vso-default"
       refreshAfter: "1h"
@@ -83,49 +84,10 @@ vso:
               text: '{{ get .Secrets "admin" | dig "username" "" }}'
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
-    # Database app credentials
-    keycloakDbAdmin:
-      mount: "homelab"
-      path: "platforms/production/apps/keycloak"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-pg-cluster-admin"
-        create: true
-        type: "kubernetes.io/basic-auth"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            username:
-              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
-            password:
-              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
-    keycloakDb:
-      mount: "homelab"
-      path: "platforms/production/apps/keycloak"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-pg-cluster-app"
-        create: true
-        type: "kubernetes.io/basic-auth"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            username:
-              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
-            password:
-              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     # Keycloak configuration (domain, realm)
     keycloakConfig:
       mount: "homelab"
-      path: "platforms/production/apps/keycloak"
+      path: "platforms/production/keycloak"
       type: "kv-v2"
       vaultAuthRef: "keycloak-vso-default"
       refreshAfter: "1h"
@@ -142,10 +104,49 @@ vso:
               text: '{{ get .Secrets "domain" }}'
             KEYCLOAK_REALM:
               text: '{{ get .Secrets "extras" | dig "realm" "" }}'
+    # Database credentials
+    keycloakDbAdmin:
+      mount: "homelab"
+      path: "platforms/production/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    keycloakDbApp:
+      mount: "homelab"
+      path: "platforms/production/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     # S3 backup configuration
     keycloakPgBackup:
       mount: "homelab"
-      path: "platforms/production/apps/keycloak"
+      path: "platforms/production/keycloak"
       type: "kv-v2"
       vaultAuthRef: "keycloak-vso-default"
       refreshAfter: "1h"
