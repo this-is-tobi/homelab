@@ -59,7 +59,7 @@ cnpg:
   backup:
     enabled: true
     endpointURL: "https://s3.ohmlab.fr"
-    destinationPath: "s3://backups/cnpg"
+    destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
       create: false
       secretName: "gitea-pg-cluster-backup"

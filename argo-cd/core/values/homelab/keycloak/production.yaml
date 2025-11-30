@@ -33,7 +33,7 @@ cnpg:
   backup:
     enabled: false
     endpointURL: "https://s3.ohmlab.fr"
-    destinationPath: "s3://backups/cnpg"
+    destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
       create: false
       secretName: "keycloak-pg-cluster-backup"
