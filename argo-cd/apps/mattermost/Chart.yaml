@@ -2,7 +2,7 @@ apiVersion: v2
 name: mattermost
 type: application
 version: 6.6.86
-appVersion: "11.0.4"
+appVersion: "11.0.6"
 dependencies:
 - name: mattermost-team-edition
   alias: mattermost
@@ -11,4 +11,8 @@ dependencies:
 - name: cnpg-cluster
   alias: cnpg
   version: 1.5.2
+  repository: https://this-is-tobi.github.io/helm-charts
+- name: vso-utils
+  alias: vso
+  version: 1.1.4
   repository: https://this-is-tobi.github.io/helm-charts

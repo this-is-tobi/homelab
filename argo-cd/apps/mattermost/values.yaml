@@ -2,17 +2,17 @@ mattermost:
   persistence:
     data:
       enabled: false
-      size: 10Gi
-      accessMode: ReadWriteOnce
+      size: "10Gi"
+      accessMode: "ReadWriteOnce"
     plugins:
       enabled: false
-      size: 5Gi
-      accessMode: ReadWriteOnce
+      size: "5Gi"
+      accessMode: "ReadWriteOnce"
   ingress:
     enabled: true
-    className: nginx
+    className: "nginx"
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
     hosts:
     - ""
     tls:
@@ -23,14 +23,14 @@ mattermost:
     enabled: false
   externalDB:
     enabled: true
-    externalDriverType: postgres
+    externalDriverType: "postgres"
     externalConnectionString: ""
   securityContext:
     fsGroup: 2000
     fsGroupChangePolicy: "OnRootMismatch"
   serviceAccount:
     create: true
-    name: mattermost
+    name: "mattermost"
   config:
     MATTERMOST_EDITION: "team"
     MM_FEATUREFLAGS_STREAMLINEDMARKETPLACE: "false"
@@ -45,6 +45,7 @@ mattermost:
     MM_FILESETTINGS_AMAZONS3PATHPREFIX: ""
     MM_FILESETTINGS_AMAZONS3REGION: ""
     MM_FILESETTINGS_AMAZONS3ENDPOINT: ""
+    MM_SQLSETTINGS_DRIVERNAME: "postgres"
     MM_FILESETTINGS_AMAZONS3SSE: "false"
     # MM_EMAILSETTINGS_ENABLESMTPAUTH: "true"
     # MM_EMAILSETTINGS_FEEDBACKEMAIL: ""
@@ -59,45 +60,45 @@ mattermost:
     # MM_PLUGINSETTINGS_PLUGINSTATES: '{"com.mattermost.apps":{"Enable":true},"focalboard":{"Enable":true},"github":{"Enable":true},"com.github.manland.mattermost-plugin-gitlab":{"Enable":true},"com.github.matterpoll.matterpoll":{"Enable":true},"com.github.scottleedavis.mattermost-plugin-remind":{"Enable":true},"com.github.moussetc.mattermost-plugin-giphy":{"Enable":true},"com.mattermost.agenda":{"Enable":true},"alertmanager":{"Enable":true},"com.github.moussetc.mattermost.plugin.giphy":{"Enable":true},"jitsi":{"Enable":true},"com.cpanato.broadcast":{"Enable":true},"com.mattermost.plugin-todo":{"Enable":true}}'
 
 cnpg:
-  fullnameOverride: mattermost-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  mode: primary
-  dbName: mattermost
+  fullnameOverride: "mattermost-pg-cluster"
+  imageName: "ghcr.io/cloudnative-pg/postgresql:17.6"
+  mode: "primary"
+  dbName: "mattermost"
   credentials:
-    username: mattermost
+    username: "mattermost"
     password: ""
     postgresPassword: ""
   instances: 3
   enableSuperuserAccess: false
   pvcSize:
-    data: 7Gi
-    wal: 3Gi
+    data: "7Gi"
+    wal: "3Gi"
   resources:
     requests:
-      cpu: 250m
-      memory: 512Mi
+      cpu: "250m"
+      memory: "512Mi"
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: "500m"
+      memory: "1Gi"
   affinity:
-    topologyKey: kubernetes.io/hostname
+    topologyKey: "kubernetes.io/hostname"
   backup:
     enabled: true
     legacyMode: false
     endpointURL: ""
     destinationPath: "s3://<bucket-name>/<bucket-prefix>"
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
+    cron: "0 0 0 * * *"
+    retentionPolicy: "30d"
+    compression: "gzip"
     s3Credentials:
       create: true
-      secretName: mattermost-pg-cluster-backup
+      secretName: "mattermost-pg-cluster-backup"
       accessKeyId:
-        key: accessKeyId
+        key: "accessKeyId"
         value: ""
       secretAccessKey:
-        key: secretAccessKey
+        key: "secretAccessKey"
         value: ""
       region:
-        key: region
+        key: "region"
         value: ""

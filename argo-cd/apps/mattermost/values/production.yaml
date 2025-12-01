@@ -1,8 +1,7 @@
 mattermost:
   image:
-    repository: ghcr.io/this-is-tobi/mirror/mattermost
-    tag: 11.0.4
-    imagePullPolicy: Always
+    repository: "ghcr.io/this-is-tobi/mirror/mattermost"
+    tag: "11.0.6"
   persistence:
     data:
       enabled: true
@@ -10,35 +9,187 @@ mattermost:
       enabled: true
   ingress:
     hosts:
-    - <path:secret/data/platforms/production/apps/mattermost#domain>
+    - "mattermost.ohmlab.fr"
     tls:
     - hosts:
-      - <path:secret/data/platforms/production/apps/mattermost#domain>
-      secretName: <path:secret/data/platforms/production/apps/mattermost#domain>
-  externalDB:
-    externalConnectionString: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.connectionString}>
+      - "mattermost.ohmlab.fr"
+      secretName: "mattermost.ohmlab.fr-tls"
   config:
-    MM_SERVICESETTINGS_SITEURL: "https://<path:secret/data/platforms/production/apps/mattermost#domain>"
-    MM_FILESETTINGS_AMAZONS3ACCESSKEYID: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.accessKey}>"
-    MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.secretKey}>"
-    MM_FILESETTINGS_AMAZONS3BUCKET: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.bucketName}>"
-    MM_FILESETTINGS_AMAZONS3PATHPREFIX: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.bucketPrefix}>"
-    MM_FILESETTINGS_AMAZONS3REGION: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.region}>"
-    MM_FILESETTINGS_AMAZONS3ENDPOINT: "<path:secret/data/platforms/production/apps/mattermost#s3 | jsonPath {.endpoint}>"
+    MM_SERVICESETTINGS_SITEURL: "https://mattermost.ohmlab.fr"
+    MM_FILESETTINGS_AMAZONS3BUCKET: "mattermost"
+    MM_FILESETTINGS_AMAZONS3PATHPREFIX: ""
+    MM_FILESETTINGS_AMAZONS3REGION: "fr-par"
+    MM_FILESETTINGS_AMAZONS3ENDPOINT: "s3.fr-par.scw.cloud"
+  extraEnvVars:
+  - name: "MM_SQLSETTINGS_DATASOURCE"
+    valueFrom:
+      secretKeyRef:
+        name: "mattermost-db-infos"
+        key: "DB_URL"
+  - name: "MM_FILESETTINGS_AMAZONS3ACCESSKEYID"
+    valueFrom:
+      secretKeyRef:
+        name: "mattermost-s3"
+        key: "S3_ACCESS_KEY"
+  - name: "MM_FILESETTINGS_AMAZONS3SECRETACCESSKEY"
+    valueFrom:
+      secretKeyRef:
+        name: "mattermost-s3"
+        key: "S3_SECRET_KEY"
+  # - name: "MM_CONFIG" # Used to disable db default connection string (chart issue)
+  #   value: ""
+
 
 cnpg:
-  mode: primary
+  mode: "primary"
   credentials:
-    password: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.app.password}>
-    postgresPassword: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.admin.password}>
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "mattermost-pg-cluster-admin"
+      app:
+        secretName: "mattermost-pg-cluster-app"
   backup:
     enabled: true
-    endpointURL: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.endpoint}>
-    destinationPath: s3://<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.bucketPrefix}>
+    endpointURL: "https://s3.ohmlab.fr"
+    destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
+      create: false
+      secretName: "mattermost-pg-cluster-backup"
       accessKeyId:
-        value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.accessKey}>
+        key: "S3_ACCESS_KEY"
       secretAccessKey:
-        value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.secretKey}>
+        key: "S3_SECRET_KEY"
       region:
-        value: <path:secret/data/platforms/production/apps/mattermost#postgres | jsonPath {.s3.region}>
+        key: "S3_REGION"
+
+# VSO configuration using vso-utils helper chart
+vso:
+  # VaultAuth resource for Kubernetes authentication
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "mattermost"
+        serviceAccount: "default"
+  # VaultConnection resource for Vault server details
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  # VaultStaticSecret resources for each secret
+  vaultStaticSecrets:
+    # Mattermost configuration
+    mattermostDbInfos:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-db-infos"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            DB_URL:
+              text: '{{ get .Secrets "postgres" | dig "connectionString" "" }}'
+    # Database credentials
+    mattermostDbAdmin:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    mattermostDbApp:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    # S3 configuration
+    mattermostS3:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-s3"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "s3" | dig "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "s3" | dig "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "s3" | dig "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "s3" | dig "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "s3" | dig "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "s3" | dig "region" "" }}'
+    # S3 backup configuration
+    mattermostPgBackup:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-pg-cluster-backup"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'

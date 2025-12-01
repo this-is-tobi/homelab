@@ -41,7 +41,7 @@ gitea:
     # - configMap:
     #     name: "gitea-app-ini-plaintext"
     additionalConfigFromEnvs:
-    - name: "GITEA__DATABASE__PASSWD"
+    - name: "GITEA__database__PASSWD"
       valueFrom:
         secretKeyRef:
           name: "gitea-pg-cluster-app"

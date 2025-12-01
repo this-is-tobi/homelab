@@ -2,53 +2,53 @@ gitea:
   replicaCount: 3
   ingress:
     enabled: true
-    apiVersion: networking.k8s.io/v1
-    className: nginx
+    apiVersion: "networking.k8s.io/v1"
+    className: "nginx"
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
     hosts:
     - host: ""
       paths:
-      - path: /
-        pathType: Prefix
+      - path: "/"
+        pathType: "Prefix"
     tls:
     - secretName: ""
       hosts:
       - ""
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: "100m"
+      memory: "128Mi"
   limits:
-    cpu: 500m
-    memory: 512Mi
+    cpu: "500m"
+    memory: "512Mi"
   serviceAccount:
     create: true
     automountServiceAccountToken: true
   persistence:
     enabled: true
-    size: 25Gi
+    size: "25Gi"
     accessModes:
-      - ReadWriteMany
+    - "ReadWriteMany"
   gitea:
     admin:
       username: ""
       password: ""
       email: ""
     oauth:
-    - name: Keycloak
-      provider: openidConnect
+    - name: "Keycloak"
+      provider: "openidConnect"
       key: ""
       secret: ""
       autoDiscoverUrl: ""
-      scopes: openid profile email roles groups
-      adminGroup: admin
-      groupClaimName: groups
+      scopes: "openid profile email roles groups"
+      adminGroup: "admin"
+      groupClaimName: "groups"
       # groupTeamMap: ""
       # groupTeamMapRemoval: true
     config:
       database:
-        DB_TYPE: postgres
+        DB_TYPE: "postgres"
         HOST: ""
         NAME: ""
         USER: ""
@@ -81,48 +81,48 @@ gitea:
     enabled: false
     primary:
       persistence:
-        size: 25Gi
+        size: "25Gi"
 
 cnpg:
-  fullnameOverride: gitea-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.6
-  mode: primary
-  dbName: gitea
+  fullnameOverride: "gitea-pg-cluster"
+  imageName: "ghcr.io/cloudnative-pg/postgresql:17.6"
+  mode: "primary"
+  dbName: "gitea"
   credentials:
-    username: gitea
+    username: "gitea"
     password: ""
     postgresPassword: ""
   instances: 3
   enableSuperuserAccess: false
   pvcSize:
-    data: 7Gi
-    wal: 3Gi
+    data: "7Gi"
+    wal: "3Gi"
   resources:
     requests:
-      cpu: 250m
-      memory: 512Mi
+      cpu: "250m"
+      memory: "512Mi"
     limits:
-      cpu: 500m
-      memory: 1Gi
+      cpu: "500m"
+      memory: "1Gi"
   affinity:
-    topologyKey: kubernetes.io/hostname
+    topologyKey: "kubernetes.io/hostname"
   backup:
     enabled: true
     legacyMode: false
     endpointURL: ""
     destinationPath: "s3://"
-    cron: 0 0 0 * * *
-    retentionPolicy: 30d
-    compression: gzip
+    cron: "0 0 0 * * *"
+    retentionPolicy: "30d"
+    compression: "gzip"
     s3Credentials:
       create: true
-      secretName: gitea-pg-cluster-backup
+      secretName: "gitea-pg-cluster-backup"
       accessKeyId:
-        key: accessKeyId
+        key: "accessKeyId"
         value: ""
       secretAccessKey:
-        key: secretAccessKey
+        key: "secretAccessKey"
         value: ""
       region:
-        key: region
+        key: "region"
         value: ""

@@ -12,3 +12,8 @@ dependencies:
   alias: cnpg
   version: 1.5.2
   repository: https://this-is-tobi.github.io/helm-charts
+- name: vso-utils
+  alias: vso
+  version: 1.1.4
+  repository: https://this-is-tobi.github.io/helm-charts
+
