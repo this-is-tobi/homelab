@@ -58,7 +58,7 @@ sonarqube:
     periodSeconds: 20
     failureThreshold: 30
   sonarProperties:
-    sonar.core.serverBaseURL: ""
+    # sonar.core.serverBaseURL: ""
     sonar.plugins.risk.consent: "ACCEPTED"
     sonar.auth.oidc.enabled: "true"
     sonar.auth.oidc.allowUsersToSignUp: "true"
@@ -68,10 +68,10 @@ sonarqube:
     sonar.auth.oidc.loginStrategy: "Email"
     sonar.auth.oidc.groupsSync: "true"
     sonar.auth.oidc.scopes: "openid profile email roles groups"
-    sonar.auth.oidc.issuerUri: ""
+    # sonar.auth.oidc.issuerUri: ""
     sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
     sonar.auth.oidc.clientId.secured: ""
-    sonar.auth.oidc.clientSecret.secured: ""
+    # sonar.auth.oidc.clientSecret.secured: ""
   extraVolumes:
   - name: webapp
     emptyDir:

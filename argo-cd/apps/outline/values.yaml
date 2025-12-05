@@ -57,9 +57,20 @@ outline:
     value: "Keycloak"
   - name: OIDC_SCOPES
     value: "openid profile email groups roles"
+  - name: SMTP_HOST
+    value: ""
+  - name: SMTP_PORT
+    value: ""
+  - name: SMTP_USERNAME
+    value: ""
+  - name: SMTP_PASSWORD
+    value: ""
+  - name: SMTP_FROM_EMAIL
+    value: ""
+  - name: REDIS_URL
+    value: "redis://outline-redis:6379"
   redis:
-    auth:
-      enabled: false
+    enabled: false
   postgresql:
     enabled: false
   cnpg:
@@ -70,11 +81,59 @@ outline:
     enabled: false
   resources:
     requests:
-      memory: 512Mi
-      cpu: 250m
+      memory: "512Mi"
+      cpu: "250m"
     limits:
-      memory: 1Gi
+      memory: "1Gi"
       cpu: "1"
+
+redis:
+  enabled: true
+  fullnameOverride: "outline-redis"
+  architecture: "replication"
+  replicaCount: 1
+  auth:
+    enabled: false
+    # existingSecret: mysecret
+    # existingSecretPasswordKey: MY_KEY
+  # config:
+  #   content: ""
+  persistence:
+    enabled: true
+    size: "2Gi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  # podSecurityContext:
+  #   runAsNonRoot: true
+  #   fsGroup: 10001
+  #   seccompProfile:
+  #     type: "RuntimeDefault"
+  # containerSecurityContext:
+  #   runAsUser: 10001
+  #   allowPrivilegeEscalation: false
+  #   capabilities:
+  #     drop: ["ALL"]
+  #   runAsNonRoot: true
+  #   seccompProfile:
+  #     type: RuntimeDefault
+  sentinel:
+    enabled: false
+    masterName: outline-redis
+    quorum: 2
+    downAfterMilliseconds: 30000
+    failoverTimeout: 180000
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
 
 cnpg:
   fullnameOverride: outline-pg-cluster

@@ -10,9 +10,7 @@ minio:
   persistence:
     size: "500Gi"
 
-# VSO configuration using vso-utils helper chart
 vso:
-  # VaultAuth resource for Kubernetes authentication
   vaultAuth:
     default:
       method: "kubernetes"
@@ -20,14 +18,11 @@ vso:
       kubernetes:
         role: "minio"
         serviceAccount: "default"
-  # VaultConnection resource for Vault server details
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: true
-  # VaultStaticSecret resources for each secret
   vaultStaticSecrets:
-    # Minio admin credentials
     minioAdmin:
       mount: "homelab"
       path: "platforms/production/minio"
@@ -47,7 +42,6 @@ vso:
               text: '{{ get .Secrets "admin" | dig "username" "" }}'
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
-    # Minio configuration
     minioConfig:
       mount: "homelab"
       path: "platforms/production/minio"

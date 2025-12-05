@@ -104,6 +104,14 @@ vault:
           path "homelab/data/platforms/production/minio/*" {
             capabilities = ["read", "list"]
           }
+      - name: outline
+        rules: |
+          path "homelab/data/platforms/production/outline" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/outline/*" {
+            capabilities = ["read", "list"]
+          }
       - name: prometheus-stack
         rules: |
           path "homelab/data/platforms/production/prometheus-stack" {
@@ -179,6 +187,12 @@ vault:
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["minio"]
             policies: ["minio"]
+            ttl: 1h
+          # outline role
+          - name: outline
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["outline"]
+            policies: ["outline"]
             ttl: 1h
           # prometheus role
           - name: prometheus-stack

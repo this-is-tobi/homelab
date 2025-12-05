@@ -14,17 +14,7 @@ gitea:
       username: "admin"
       email: "admin@ohmlab.fr"
       existingSecret: "gitea-admin"
-    oauth:
-    - name: "Keycloak"
-      provider: "openidConnect"
-      key: "gitea"
-      secret: ""
-      autoDiscoverUrl: "https://sso.ohmlab.fr/realms/homelab/.well-known/openid-configuration"
-      scopes: "openid profile email roles groups"
-      adminGroup: "admin"
-      groupClaimName: "groups"
-      # groupTeamMap: ""
-      # groupTeamMapRemoval: true
+    oauth: []
     config:
       database:
         HOST: "gitea-pg-cluster-rw"
@@ -104,9 +94,7 @@ cnpg:
       region:
         key: "S3_REGION"
 
-# VSO configuration using vso-utils helper chart
 vso:
-  # VaultAuth resource for Kubernetes authentication
   vaultAuth:
     default:
       method: "kubernetes"
@@ -114,14 +102,11 @@ vso:
       kubernetes:
         role: "gitea"
         serviceAccount: "default"
-  # VaultConnection resource for Vault server details
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: true
-  # VaultStaticSecret resources for each secret
   vaultStaticSecrets:
-    # Gitea configuration
     giteaAdmin:
       mount: "homelab"
       path: "platforms/production/gitea"
@@ -141,7 +126,6 @@ vso:
               text: '{{ get .Secrets "admin" | dig "username" "" }}'
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
-    # Database credentials
     giteaDbAdmin:
       mount: "homelab"
       path: "platforms/production/gitea"
@@ -180,7 +164,6 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
-    # S3 backup configuration
     giteaPgBackup:
       mount: "homelab"
       path: "platforms/production/gitea"
@@ -208,7 +191,6 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
-    # S3 backup configuration
     giteaSso:
       mount: "homelab"
       path: "platforms/production/gitea"

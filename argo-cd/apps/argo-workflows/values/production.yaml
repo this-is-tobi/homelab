@@ -2,14 +2,47 @@ argo-workflows:
   server:
     ingress:
       hosts:
-      - <path:secret/data/platforms/production/apps/argo-workflows#domain>
+      - "worflows.ohmlab.fr"
       tls:
-      - secretName: <path:secret/data/platforms/production/apps/argo-workflows#domain>-tls
+      - secretName: "worflows.ohmlab.fr-tls"
         hosts:
-        - <path:secret/data/platforms/production/apps/argo-workflows#domain>
+        - "worflows.ohmlab.fr"
     sso:
-      issuer: https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>
-      redirectUrl: https://<path:secret/data/platforms/production/apps/argo-workflows#domain>/oauth2/callback
+      issuer: "https://sso.ohmlab.fr/realms/homelab"
+      redirectUrl: "https://worflows.ohmlab.fr/oauth2/callback"
   crds:
     install: true
     keep: true
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "argo-workflows"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    argoWorkflowsSso:
+      mount: "homelab"
+      path: "platforms/production/argo-workflows"
+      type: "kv-v2"
+      vaultAuthRef: "argo-workflows-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-workflows-sso"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

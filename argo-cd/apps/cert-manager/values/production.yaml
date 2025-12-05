@@ -5,58 +5,90 @@ cert-manager:
 
 scaleway-certmanager-webhook:
   secret:
-    accessKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.accessKey}>
-    secretKey: <path:secret/data/platforms/production/apps/cert-manager#scaleway | jsonPath {.secretKey}>
+    externalSecretName: "scw-creds" # SCW_ACCESS_KEY / SCW_SECRET_KEY
 
 defaultWildcard:
-  dnsZone: ohmlab.fr
+  dnsZone: "ohmlab.fr"
 
 clusterIssuers:
-- name: letsencrypt-http-staging
+- name: "letsencrypt-http-staging"
   spec:
     acme:
-      email: <path:secret/data/platforms/production/apps/cert-manager#email>
-      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-staging-v02.api.letsencrypt.org/directory"
       privateKeySecretRef:
-        name: letsencrypt-http-staging-key
+        name: "letsencrypt-http-staging-key"
       solvers:
       - http01:
           ingress:
-            serviceType: ClusterIP
-            ingressClassName: nginx
-- name: letsencrypt-http-prod
+            serviceType: "ClusterIP"
+            ingressClassName: "nginx"
+- name: "letsencrypt-http-prod"
   spec:
     acme:
-      email: <path:secret/data/platforms/production/apps/cert-manager#email>
-      server: https://acme-v02.api.letsencrypt.org/directory
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-v02.api.letsencrypt.org/directory"
       privateKeySecretRef:
-        name: letsencrypt-http-prod-key
+        name: "letsencrypt-http-prod-key"
       solvers:
       - http01:
           ingress:
-            serviceType: ClusterIP
-            ingressClassName: nginx
-- name: letsencrypt-dns-staging
+            serviceType: "ClusterIP"
+            ingressClassName: "nginx"
+- name: "letsencrypt-dns-staging"
   spec:
     acme:
-      email: <path:secret/data/platforms/production/apps/cert-manager#email>
-      server: https://acme-staging-v02.api.letsencrypt.org/directory
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-staging-v02.api.letsencrypt.org/directory"
       privateKeySecretRef:
-        name: letsencrypt-dns-staging-key
+        name: "letsencrypt-dns-staging-key"
       solvers:
       - dns01:
           webhook:
-            groupName: acme.scaleway.com
-            solverName: scaleway
-- name: letsencrypt-dns-prod
+            groupName: "acme.scaleway.com"
+            solverName: "scaleway"
+- name: "letsencrypt-dns-prod"
   spec:
     acme:
-      email: <path:secret/data/platforms/production/apps/cert-manager#email>
-      server: https://acme-v02.api.letsencrypt.org/directory
+      email: "this-is-tobi@proton.me"
+      server: "https://acme-v02.api.letsencrypt.org/directory"
       privateKeySecretRef:
-        name: letsencrypt-dns-prod-key
+        name: "letsencrypt-dns-prod-key"
       solvers:
       - dns01:
           webhook:
-            groupName: acme.scaleway.com
-            solverName: scaleway
+            groupName: "acme.scaleway.com"
+            solverName: "scaleway"
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "cert-manager"
+        serviceAccount: "cert-manager"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    scwCreds:
+      mount: "homelab"
+      path: "platforms/production/cert-manager"
+      type: "kv-v2"
+      vaultAuthRef: "cert-manager-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "scw-creds"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            SCW_ACCESS_KEY:
+              text: '{{ get .Secrets "scaleway" | dig "accessKey" "" }}'
+            SCW_SECRET_KEY:
+              text: '{{ get .Secrets "scaleway" | dig "secretKey" "" }}'

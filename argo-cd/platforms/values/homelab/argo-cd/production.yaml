@@ -1,15 +1,14 @@
 argo-cd:
   configs:
     secret:
-      argocdServerAdminPassword: "$argo-cd-admin:password"
+      argocdServerAdminPassword: "$argo-cd-config:PASSWORD_HASHED"
     cm:
       url: "https://gitops.ohmlab.fr"
       oidc.config: |
         name: "Keycloak"
         issuer: "https://sso.ohmlab.fr/realms/homelab"
         clientID: "argo-cd"
-        clientSecret: ""
-        # clientSecret: "$argo-cd-sso:clientSecret"
+        clientSecret: "$argo-cd-sso:OIDC_CLIENT_SECRET"
         requestedScopes: ["openid", "profile", "email", "groups"]
   notifications:
     enabled: false
@@ -46,3 +45,76 @@ argo-cd:
   crds:
     install: false
     keep: true
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "argo-cd"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    argoCdAdmin:
+      mount: "homelab"
+      path: "platforms/production/argo-cd"
+      type: "kv-v2"
+      vaultAuthRef: "argo-cd-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-cd-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    argoCdConfig:
+      mount: "homelab"
+      path: "platforms/production/argo-cd"
+      type: "kv-v2"
+      vaultAuthRef: "argo-cd-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-cd-config"
+        create: true
+        type: "Opaque"
+        labels:
+          app.kubernetes.io/part-of: argocd
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            PASSWORD_HASHED:
+              text: '{{ get .Secrets "admin" | dig "passwordHashed" "" }}'
+    argoCdSso:
+      mount: "homelab"
+      path: "platforms/production/argo-cd"
+      type: "kv-v2"
+      vaultAuthRef: "argo-cd-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-cd-sso"
+        create: true
+        type: "Opaque"
+        labels:
+          app.kubernetes.io/part-of: argocd
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

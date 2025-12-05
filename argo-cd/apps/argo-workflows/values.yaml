@@ -5,16 +5,16 @@ argo-workflows:
       # limit: 10
       # burst: 1
     workflowNamespaces:
-    - argo-workflows
+    - "argo-workflows"
     replicas: 3
     serviceMonitor:
       enabled: true
   server:
     replicas: 3
     authModes:
-    # - server
-    - client
-    - sso
+    # - "server"
+    - "client"
+    - "sso"
     serviceAccount:
       annotations:
         workflows.argoproj.io/rbac-rule: '"admin" in groups'
@@ -22,8 +22,8 @@ argo-workflows:
     ingress:
       enabled: true
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      ingressClassName: nginx
+        cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+      ingressClassName: "nginx"
       hosts:
       - ""
       tls:
@@ -34,22 +34,22 @@ argo-workflows:
       enabled: true
       issuer: ""
       clientId:
-        name: argo-workflows-sso
-        key: clientId
+        name: "argo-workflows-sso"
+        key: "OIDC_CLIENT_ID"
       clientSecret:
-        name: argo-workflows-sso
-        key: clientSecret
+        name: "argo-workflows-sso"
+        key: "OIDC_CLIENT_SECRET"
       redirectUrl: ""
       rbac:
         enabled: true
         secretWhitelist: []
       scopes:
-      - profile
-      - email
-      - groups
-      - roles
+      - "profile"
+      - "email"
+      - "groups"
+      - "roles"
       sessionExpiry: "24h"
-      customGroupClaimName: groups
+      customGroupClaimName: "groups"
       userInfoPath: ""
       insecureSkipVerify: false
       filterGroupsRegex: []

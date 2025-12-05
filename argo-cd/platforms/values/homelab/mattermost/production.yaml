@@ -62,9 +62,7 @@ cnpg:
       region:
         key: "S3_REGION"
 
-# VSO configuration using vso-utils helper chart
 vso:
-  # VaultAuth resource for Kubernetes authentication
   vaultAuth:
     default:
       method: "kubernetes"
@@ -72,14 +70,38 @@ vso:
       kubernetes:
         role: "mattermost"
         serviceAccount: "default"
-  # VaultConnection resource for Vault server details
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: true
-  # VaultStaticSecret resources for each secret
   vaultStaticSecrets:
-    # Mattermost configuration
+    mattermostS3:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-s3"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "s3" | dig "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "s3" | dig "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "s3" | dig "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "s3" | dig "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "s3" | dig "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "s3" | dig "region" "" }}'
     mattermostDbInfos:
       mount: "homelab"
       path: "platforms/production/mattermost"
@@ -97,7 +119,6 @@ vso:
           templates:
             DB_URL:
               text: '{{ get .Secrets "postgres" | dig "connectionString" "" }}'
-    # Database credentials
     mattermostDbAdmin:
       mount: "homelab"
       path: "platforms/production/mattermost"
@@ -136,35 +157,6 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
-    # S3 configuration
-    mattermostS3:
-      mount: "homelab"
-      path: "platforms/production/mattermost"
-      type: "kv-v2"
-      vaultAuthRef: "mattermost-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "mattermost-s3"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            S3_ENDPOINT:
-              text: '{{ get .Secrets "s3" | dig "endpoint" "" }}'
-            S3_BUCKET_NAME:
-              text: '{{ get .Secrets "s3" | dig "bucketName" "" }}'
-            S3_BUCKET_PREFIX:
-              text: '{{ get .Secrets "s3" | dig "bucketPrefix" "" }}'
-            S3_ACCESS_KEY:
-              text: '{{ get .Secrets "s3" | dig "accessKey" "" }}'
-            S3_SECRET_KEY:
-              text: '{{ get .Secrets "s3" | dig "secretKey" "" }}'
-            S3_REGION:
-              text: '{{ get .Secrets "s3" | dig "region" "" }}'
-    # S3 backup configuration
     mattermostPgBackup:
       mount: "homelab"
       path: "platforms/production/mattermost"
