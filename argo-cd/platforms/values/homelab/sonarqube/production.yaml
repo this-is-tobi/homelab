@@ -53,6 +53,29 @@ vso:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: true
   vaultStaticSecrets:
+    sonarqubeAdmin:
+      mount: "homelab"
+      path: "platforms/production/sonarqube"
+      type: "kv-v2"
+      vaultAuthRef: "sonarqube-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "sonarqube-pg-cluster-admin"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+            currentPassword:
+              text: '{{ get .Secrets "admin" | dig "initialPassword" "" }}'
+            monitoringPasscode:
+              text: '{{ get .Secrets "admin" | dig "monitoringPassword" "" }}'
     sonarqubeProperties:
       mount: "homelab"
       path: "platforms/production/sonarqube"

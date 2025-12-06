@@ -6,7 +6,7 @@ kube-prometheus-stack:
           spec:
             resources:
               requests:
-                storage: 100Gi
+                storage: 200Gi
   grafana:
     admin:
       existingSecret: "monitoring-admin"
@@ -23,14 +23,14 @@ kube-prometheus-stack:
           key: "OIDC_CLIENT_SECRET"
     ingress:
       hosts:
-      - "monitoring.core.ohmlab.fr"
+      - "monitoring.ohmlab.fr"
       tls:
       - hosts:
-        - "monitoring.core.ohmlab.fr"
-        secretName: "monitoring.core.ohmlab.fr"
+        - "monitoring.ohmlab.fr"
+        secretName: "monitoring.ohmlab.fr"
     grafana.ini:
       server:
-        root_url: "https://monitoring.core.ohmlab.fr"
+        root_url: "https://monitoring.ohmlab.fr"
       auth.generic_oauth:
         auth_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
         token_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
@@ -51,7 +51,7 @@ vso:
   vaultStaticSecrets:
     monitoringAdmin:
       mount: "homelab"
-      path: "core/production/prometheus-stack"
+      path: "platforms/production/prometheus-stack"
       type: "kv-v2"
       vaultAuthRef: "prometheus-stack-vso-default"
       refreshAfter: "1h"
@@ -70,7 +70,7 @@ vso:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
     monitoringSso:
       mount: "homelab"
-      path: "core/production/prometheus-stack"
+      path: "platforms/production/prometheus-stack"
       type: "kv-v2"
       vaultAuthRef: "prometheus-stack-vso-default"
       refreshAfter: "1h"

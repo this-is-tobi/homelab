@@ -1,173 +1,217 @@
 # Vault instance configuration using Bank Vaults operator
 # This replaces the need for vault-init.sh scripts!
-
 vault:
   enabled: true
   name: vault
   size: 3  # 3-node HA cluster
-
   # Vault image
   image:
     repository: hashicorp/vault
     tag: 1.20.1
-
   # Bank Vaults sidecar image
   bankVaultsImage: ghcr.io/bank-vaults/bank-vaults:latest
-
   # Service configuration
   service:
     type: ClusterIP
     annotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9102"
-
   # Storage (Raft integrated storage)
   storage:
     raft:
       enabled: true
       size: 10Gi
       storageClass: longhorn  # or your storage class
-
   # Auto-unseal configuration
   unseal:
     kubernetes:
       enabled: true
       secretName: vault-unseal-keys
-    # Or use cloud KMS:
-    # aws:
-    #   kmsKeyId: ""
-    #   region: us-east-1
-    # gcp:
-    #   kmsCryptoKey: ""
-    #   kmsKeyRing: ""
-    #   kmsProject: ""
-    # azure:
-    #   tenantId: ""
-    #   vaultName: ""
-    #   keyName: ""
-
   # Vault configuration
   config:
     ui: true
     tls:
-      enabled: false  # Set to true for production
+      enabled: true  # Enable TLS for Vault pods (operator auto-generates certificates)
     telemetry:
       unauthenticated: false
       retention: 10m
       disableHostname: true
-
   # External configuration (GitOps!)
   externalConfig:
     # Policies - no more shell scripts!
     policies:
+      - name: argo-cd
+        rules: |
+          path "homelab/data/platforms/production/argo-cd" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/argo-cd/*" {
+            capabilities = ["read", "list"]
+          }
       - name: cert-manager
         rules: |
-          path "homelab/data/cert-manager/*" {
+          path "homelab/data/platforms/production/cert-manager" {
             capabilities = ["read", "list"]
           }
-
-      - name: prometheus
+          path "homelab/data/platforms/production/cert-manager/*" {
+            capabilities = ["read", "list"]
+          }
+      - name: coder
         rules: |
-          path "homelab/data/prometheus/*" {
+          path "homelab/data/platforms/production/coder" {
             capabilities = ["read", "list"]
           }
-
+          path "homelab/data/platforms/production/coder/*" {
+            capabilities = ["read", "list"]
+          }
       - name: gitea
         rules: |
-          path "homelab/data/gitea/*" {
+          path "homelab/data/platforms/production/gitea" {
             capabilities = ["read", "list"]
           }
-
+          path "homelab/data/platforms/production/gitea/*" {
+            capabilities = ["read", "list"]
+          }
       - name: harbor
         rules: |
-          path "homelab/data/harbor/*" {
+          path "homelab/data/platforms/production/harbor" {
             capabilities = ["read", "list"]
           }
-
+          path "homelab/data/platforms/production/harbor/*" {
+            capabilities = ["read", "list"]
+          }
       - name: keycloak
         rules: |
-          path "homelab/data/keycloak/*" {
+          path "homelab/data/platforms/production/keycloak" {
             capabilities = ["read", "list"]
           }
-
+          path "homelab/data/platforms/production/keycloak/*" {
+            capabilities = ["read", "list"]
+          }
       - name: mattermost
         rules: |
-          path "homelab/data/mattermost/*" {
+          path "homelab/data/platforms/production/mattermost" {
             capabilities = ["read", "list"]
           }
-
+          path "homelab/data/platforms/production/mattermost/*" {
+            capabilities = ["read", "list"]
+          }
       - name: minio
         rules: |
-          path "homelab/data/minio/*" {
+          path "homelab/data/platforms/production/minio" {
             capabilities = ["read", "list"]
           }
-
-      - name: argocd
+          path "homelab/data/platforms/production/minio/*" {
+            capabilities = ["read", "list"]
+          }
+      - name: outline
         rules: |
-          path "homelab/data/argocd/*" {
+          path "homelab/data/platforms/production/outline" {
             capabilities = ["read", "list"]
           }
-
+          path "homelab/data/platforms/production/outline/*" {
+            capabilities = ["read", "list"]
+          }
+      - name: prometheus-stack
+        rules: |
+          path "homelab/data/platforms/production/prometheus-stack" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/prometheus-stack/*" {
+            capabilities = ["read", "list"]
+          }
+      - name: sonarqube
+        rules: |
+          path "homelab/data/platforms/production/sonarqube" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/sonarqube/*" {
+            capabilities = ["read", "list"]
+          }
+      - name: sops
+        rules: |
+          path "homelab/data/platforms/production/sops" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/sops/*" {
+            capabilities = ["read", "list"]
+          }
     # Auth methods - configured declaratively!
     auth:
       - type: kubernetes
         roles:
+          # argo-cd role
+          - name: argo-cd
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["argo-cd"]
+            policies: ["argo-cd"]
+            ttl: 1h
           # cert-manager role
           - name: cert-manager
             bound_service_account_names: ["cert-manager"]
             bound_service_account_namespaces: ["cert-manager"]
             policies: ["cert-manager"]
             ttl: 1h
-
-          # prometheus role
-          - name: prometheus
-            bound_service_account_names: ["kube-prometheus-stack-prometheus"]
-            bound_service_account_namespaces: ["prometheus-stack"]
-            policies: ["prometheus"]
+          # coder role
+          - name: coder
+            bound_service_account_names: ["coder"]
+            bound_service_account_namespaces: ["coder"]
+            policies: ["coder"]
             ttl: 1h
-
           # gitea role
           - name: gitea
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["gitea"]
             policies: ["gitea"]
             ttl: 1h
-
           # harbor role
           - name: harbor
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["harbor"]
             policies: ["harbor"]
             ttl: 1h
-
           # keycloak role
           - name: keycloak
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["keycloak"]
             policies: ["keycloak"]
             ttl: 1h
-
           # mattermost role
           - name: mattermost
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["mattermost"]
             policies: ["mattermost"]
             ttl: 1h
-
           # minio role
           - name: minio
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["minio"]
             policies: ["minio"]
             ttl: 1h
-
-          # argocd role
-          - name: argocd
+          # outline role
+          - name: outline
             bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["argocd"]
-            policies: ["argocd"]
+            bound_service_account_namespaces: ["outline"]
+            policies: ["outline"]
             ttl: 1h
-
+          # prometheus role
+          - name: prometheus-stack
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["prometheus-stack"]
+            policies: ["prometheus-stack"]
+            ttl: 1h
+          # sonarqube role
+          - name: sonarqube
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["sonarqube"]
+            policies: ["sonarqube"]
+            ttl: 1h
+          # sops role
+          - name: sops
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["sops"]
+            policies: ["sops"]
+            ttl: 1h
     # Secret engines
     secrets:
       - path: homelab
@@ -175,7 +219,6 @@ vault:
         description: Homelab secrets KV store
         options:
           version: 2
-
     # Startup secrets (optional - for initial bootstrap)
     # WARNING: Only use for non-sensitive initial values
     # Real secrets should be populated via sealed-secrets or external-secrets
@@ -186,12 +229,11 @@ vault:
       #   data:
       #     username: admin@example.com
       #     password: CHANGEME
-
   # Resources
   resources:
     vault:
       limits:
-        cpu: 1000m
+        cpu: '1'
         memory: 1Gi
       requests:
         cpu: 500m
@@ -203,37 +245,31 @@ vault:
       requests:
         cpu: 50m
         memory: 64Mi
-
   # Security context
+  # Note: Vault needs specific capabilities (IPC_LOCK, SETFCAP) which are added by the operator
+  # Don't set runAsNonRoot/runAsUser here - let the operator handle it
   securityContext:
-    runAsNonRoot: true
-    runAsUser: 100
     fsGroup: 1000
-
   # Service account
   serviceAccount: vault
-
   # Ingress
   ingress:
     enabled: true
     ingressClassName: nginx
-    host: vault.core.ohmlab.fr
+    host: vault.core.example.com
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     tls:
       enabled: true
-      secretName: vault-tls
-
+      secretName: vault-ingress-tls  # Separate from vault-tls (used internally by operator)
   # Service Monitor for Prometheus
   serviceMonitor:
     enabled: true
-
   # Statsd (optional metrics exporter)
   statsd:
     enabled: true
     image: prom/statsd-exporter:latest
-
   # Vault agent (for sidecar injection)
   agent:
     enabled: true
@@ -242,10 +278,8 @@ vault:
 # Vault Secret Operator configuration
 vso:
   enabled: true
-
   controller:
     replicas: 2  # HA setup
-
     manager:
       resources:
         requests:
@@ -254,7 +288,6 @@ vso:
         limits:
           memory: "512Mi"
           cpu: "500m"
-
       # Security context
       securityContext:
         allowPrivilegeEscalation: false
@@ -266,7 +299,6 @@ vso:
             - ALL
         seccompProfile:
           type: RuntimeDefault
-
     # Pod Security
     podSecurityContext:
       runAsNonRoot: true
@@ -274,36 +306,62 @@ vso:
       fsGroup: 65532
       seccompProfile:
         type: RuntimeDefault
-
     # RBAC
     rbac:
       create: true
-
     # ServiceAccount
     serviceAccount:
       create: true
       name: vault-secrets-operator
-
   # Default Vault connection (global)
+  # Creates a VaultConnection CR that can be referenced by VaultAuth resources
   defaultVaultConnection:
     enabled: true
-    address: "http://vault.vault-system.svc.cluster.local:8200"
-    skipTLSVerify: false
-
+    address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+    skipTLSVerify: true
   # Default auth method using Kubernetes auth
+  # NOTE: Disabled because role must be specified per namespace
+  # Applications should create their own VaultAuth resources with specific roles
   defaultAuthMethod:
-    enabled: true
-    method: kubernetes
-    mount: kubernetes
-    kubernetes:
-      role: ""  # Set per VaultAuth resource
-      serviceAccount: default
-      tokenAudiences:
-        - vault
-
+    enabled: false
+    # Uncomment to enable global auth (not recommended for multi-tenant)
+    # namespace: "vault-operator-system"
+    # method: kubernetes
+    # mount: kubernetes
+    # allowedNamespaces: ["*"]
+    # kubernetes:
+    #   role: "default"  # Must exist in Vault
+    #   serviceAccount: default
+    #   tokenAudiences: ["vault"]
   # Metrics
   metrics:
     service:
       enabled: true
-      type: ClusterIP
+      type: "ClusterIP"
       port: 8080
+
+backup-utils:
+  enabled: true
+  backups:
+    vaultSnapshot:
+      enabled: true
+      type: "vault"
+      job:
+        schedule: "0 0 * * *"
+        successfulJobsHistoryLimit: 3
+      env:
+        VAULT_ADDR: "https://vault.vault-operator-system.svc.cluster.local:8200"
+        # VAULT_EXTRA_ARGS: ""
+        VAULT_SKIP_VERIFY: "true"
+        S3_PATH_STYLE: "true"
+        RETENTION: "30d"
+      secrets: {}
+        # VAULT_TOKEN: ""
+        # S3_ENDPOINT: "https://s3.fr-par.scw.cloud"
+        # S3_BUCKET_NAME: "ohmlab-backups"
+        # S3_BUCKET_PREFIX: "vault"
+        # S3_ACCESS_KEY: ""
+        # S3_SECRET_KEY: ""
+      envFrom:
+      - secretRef:
+          name: "vault-backup"

@@ -1,15 +1,62 @@
 harbor:
-  adminPassword: ""
+  registry:
+    replicas: 1
+    registry:
+      image:
+        repository: "ghcr.io/octohelm/harbor/registry-photon"
+    controller:
+      image:
+        repository: "ghcr.io/octohelm/harbor/harbor-registryctl"
+  portal:
+    replicas: 2
+    repository: "ghcr.io/octohelm/harbor/harbor-portal"
+  nginx:
+    replicas: 2
+    repository: "ghcr.io/octohelm/harbor/nginx-photon"
+  core:
+    replicas: 2
+    repository: "ghcr.io/octohelm/harbor/harbor-core"
+  jobservice:
+    replicas: 2
+    repository: "ghcr.io/octohelm/harbor/harbor-jobservice"
+  trivy:
+    replicas: 2
+    image:
+      repository: "ghcr.io/octohelm/harbor/trivy-adapter-photon"
+  redis:
+    internal:
+      image:
+        repository: "ghcr.io/octohelm/harbor/redis-photon"
+  exporter:
+    replicas: 2
   externalURL: "https://registry.ohmlab.fr"
   ingress:
-    core:
-      hostname: "registry.ohmlab.fr"
-  externalDatabase:
-    host: "harbor-pg-cluster-rw"
-    port: 5432
-    coreDatabase: "harbor"
-    user: "harbor"
-    password: ""
+    hosts:
+      core: "registry.ohmlab.fr"
+    tls:
+      secret:
+        secretName: "registry.ohmlab.fr-tls"
+  persistence:
+    persistentVolumeClaim:
+      registry:
+        accessMode: "ReadWriteOnce"
+        size: "5Gi"
+      jobservice:
+        accessMode: "ReadWriteOnce"
+        size: "1Gi"
+      redis:
+        accessMode: "ReadWriteOnce"
+        size: "1Gi"
+      trivy:
+        accessMode: "ReadWriteOnce"
+        size: "1Gi"
+    imageChartStorage:
+      disableredirect: true
+    s3:
+      existingSecret: "harbor-s3" # REGISTRY_STORAGE_S3_ACCESSKEY / REGISTRY_STORAGE_S3_SECRETKEY
+      region: "fr-par"
+      bucket: "harbor"
+      regionendpoint: "https://s3.fr-par.scw.cloud"
 
 cnpg:
   mode: "primary"
@@ -22,7 +69,7 @@ cnpg:
         secretName: "harbor-pg-cluster-app"
   backup:
     enabled: true
-    endpointURL: "https://s3.ohmlab.fr"
+    endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
       create: false
@@ -33,3 +80,181 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "harbor"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    harborAdmin:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-admin"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    harborSecretkey:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-secretkey"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            secretKey:
+              text: '{{ get .Secrets "admin" | dig "secretKey" "" }}'
+    harborS3:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-s3"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "s3" | dig "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "s3" | dig "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "s3" | dig "bucketPrefix" "" }}'
+            REGISTRY_STORAGE_S3_ACCESSKEY:
+              text: '{{ get .Secrets "s3" | dig "accessKey" "" }}'
+            REGISTRY_STORAGE_S3_SECRETKEY:
+              text: '{{ get .Secrets "s3" | dig "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "s3" | dig "region" "" }}'
+    harborDbInfos:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-db-infos"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            DB_URL:
+              text: '{{ get .Secrets "postgres" | dig "connectionString" "" }}'
+    harborDbAdmin:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    harborDbApp:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    harborPgBackup:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-pg-cluster-backup"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
+    harborSso:
+      mount: "homelab"
+      path: "platforms/production/harbor"
+      type: "kv-v2"
+      vaultAuthRef: "harbor-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "harbor-sso"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

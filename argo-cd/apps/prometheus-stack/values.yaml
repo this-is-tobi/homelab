@@ -45,15 +45,15 @@ kube-prometheus-stack:
         enabled: true
         name: Keycloak
         allow_sign_up: true
-        client_id: ""
-        client_secret: ""
+        # client_id: ""
+        # client_secret: ""
         scopes: openid email profile roles groups
         email_attribute_path: email
         login_attribute_path: username
         name_attribute_path: full_name
-        auth_url: ""
-        token_url: ""
-        api_url: ""
+        # auth_url: ""
+        # token_url: ""
+        # api_url: ""
         allow_assign_grafana_admin: true
         groups_attribute_path: groups
         role_attribute_path: contains(groups[*], 'admin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(resource_access.grafana.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana.roles[*], 'editor') && 'Editor' || 'Viewer'

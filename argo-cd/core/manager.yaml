@@ -26,16 +26,15 @@ spec:
   template:
     metadata:
       name: '{{.prefix.name}}{{.app}}{{.suffix.name}}'
-      # namespace: argocd-system
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
         argocd.argoproj.io/hook: '{{.hook}}'
         argocd.argoproj.io/sync-wave: '{{.syncWave}}'
       labels:
-        ohmlab/platform.name: '{{.name}}'
-        ohmlab/platform.env: '{{.env}}'
-        ohmlab/platform.provider: '{{.provider}}'
-        ohmlab/platform.region: '{{.region}}'
+        ohmlab.fr/platform-name: '{{.name}}'
+        ohmlab.fr/platform-env: '{{.env}}'
+        ohmlab.fr/platform-provider: '{{.provider}}'
+        ohmlab.fr/platform-region: '{{.region}}'
       finalizers:
       - resources-finalizer.argocd.argoproj.io
     spec:

@@ -26,7 +26,7 @@ cnpg:
         secretName: "vaultwarden-pg-cluster-app"
   backup:
     enabled: false
-    endpointURL: "https://s3.ohmlab.fr"
+    endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
       create: false
