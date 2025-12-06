@@ -196,7 +196,7 @@ vault:
             ttl: 1h
           # prometheus role
           - name: prometheus-stack
-            bound_service_account_names: ["kube-prometheus-stack-prometheus"]
+            bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["prometheus-stack"]
             policies: ["prometheus-stack"]
             ttl: 1h
@@ -205,6 +205,12 @@ vault:
             bound_service_account_names: ["default"]
             bound_service_account_namespaces: ["sonarqube"]
             policies: ["sonarqube"]
+            ttl: 1h
+          # sops role
+          - name: sops
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["sops"]
+            policies: ["sops"]
             ttl: 1h
     # Secret engines
     secrets:

@@ -26,7 +26,6 @@ spec:
   template:
     metadata:
       name: '{{.prefix.name}}{{.app}}{{.suffix.name}}'
-      # namespace: argocd-system
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
         argocd.argoproj.io/hook: '{{.hook}}'

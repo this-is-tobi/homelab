@@ -3,7 +3,7 @@ waultwarden:
   adminToken:
     value: ""
   database:
-    type: postgresql
+    type: "postgresql"
     host: ""
     port: ""
     username: ""
@@ -15,10 +15,10 @@ waultwarden:
   invitationOrgName: ""
   ingress:
     enabled: true
-    class: nginx
+    class: "nginx"
     nginxIngressAnnotations: false
     additionalAnnotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
     hostname: ""
     tls: true
     tlsSecret: ""

@@ -9,22 +9,81 @@ kube-prometheus-stack:
                 storage: 100Gi
   grafana:
     admin:
-      existingSecret: "prometheus-stack-grafana-admin"
+      existingSecret: "monitoring-admin"
       userKey: "username"
       passwordKey: "password"
+    envValueFrom:
+      GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
+        secretKeyRef:
+          name: "monitoring-sso"
+          key: "OIDC_CLIENT_ID"
+      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
+        secretKeyRef:
+          name: "monitoring-sso"
+          key: "OIDC_CLIENT_SECRET"
     ingress:
       hosts:
-      - "monitoring.ohmlab.fr"
+      - "monitoring.core.ohmlab.fr"
       tls:
       - hosts:
-        - "monitoring.ohmlab.fr"
-        secretName: "monitoring.ohmlab.fr"
+        - "monitoring.core.ohmlab.fr"
+        secretName: "monitoring.core.ohmlab.fr"
     grafana.ini:
       server:
-        root_url: "https://monitoring.ohmlab.fr"
+        root_url: "https://monitoring.core.ohmlab.fr"
       auth.generic_oauth:
-        client_id: "grafana"
-        client_secret: ""
         auth_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
         token_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
         api_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "prometheus-stack"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    monitoringAdmin:
+      mount: "homelab"
+      path: "core/production/prometheus-stack"
+      type: "kv-v2"
+      vaultAuthRef: "prometheus-stack-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "monitoring-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    monitoringSso:
+      mount: "homelab"
+      path: "core/production/prometheus-stack"
+      type: "kv-v2"
+      vaultAuthRef: "prometheus-stack-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "monitoring-sso"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

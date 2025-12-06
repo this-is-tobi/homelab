@@ -2,5 +2,5 @@ kubernetes-dashboard:
   app:
     ingress:
       hosts:
-      - <path:secret/data/platforms/production/apps/kubernetes-dashboard#domain>
-      secretName: <path:secret/data/platforms/production/apps/kubernetes-dashboard#domain>
+      - "admin.kubernetes.ohmlab.fr"
+      secretName: "admin.kubernetes.ohmlab.fr"

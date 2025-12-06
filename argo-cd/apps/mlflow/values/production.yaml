@@ -1,63 +1,230 @@
 mlflow:
   ingress:
     hosts:
-    - host: <path:secret/data/platforms/production/apps/mlflow#domain>
+    - host: "mlflow.ohmlab.fr"
       paths:
       - path: /
         pathType: ImplementationSpecific
     tls:
     - hosts:
-      - <path:secret/data/platforms/production/apps/mlflow#domain>
-      secretName: <path:secret/data/platforms/production/apps/mlflow#domain>
+      - "mlflow.ohmlab.fr"
+      secretName: "mlflow.ohmlab.fr-tls"
   backendStore:
     postgres:
-      host: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.host}>
-      database: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.database}>
-      user: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.app.username}>
-      password: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.app.password}>
+      host: "mlflow-pg-cluster-rw"
+      database: "mlflow"
+      user: "mlflow"
+      password: ""
   artifactRoot:
     s3:
-      bucket: <path:secret/data/platforms/production/apps/mlflow#s3 | jsonPath {.bucketName}>
-      path: <path:secret/data/platforms/production/apps/mlflow#s3 | jsonPath {.bucketPrefix}>
-      awsAccessKeyId: <path:secret/data/platforms/production/apps/mlflow#s3 | jsonPath {.accessKey}>
-      awsSecretAccessKey: <path:secret/data/platforms/production/apps/mlflow#s3 | jsonPath {.secretKey}>
+      bucket: "mlflow"
+      path: ""
   extraEnvVars:
-    MLFLOW_S3_ENDPOINT_URL: <path:secret/data/platforms/production/apps/mlflow#s3 | jsonPath {.endpoint}>
-    AWS_DEFAULT_REGION: <path:secret/data/platforms/production/apps/mlflow#s3 | jsonPath {.region}>
+    MLFLOW_S3_ENDPOINT_URL: "https://s3.fr-par.scw.cloud"
+    AWS_DEFAULT_REGION: "fr-par"
+  extraSecretNamesForEnvFrom:
+  - mlflow-s3 # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
 
 cnpg:
-  mode: primary
+  mode: "primary"
   credentials:
-    password: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.app.password}>
-    postgresPassword: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.admin.password}>
+    existingSecrets:
+      enabled: true
+      postgres:
+        secretName: "mlflow-pg-cluster-admin"
+      app:
+        secretName: "mlflow-pg-cluster-app"
   backup:
-    enabled: false
-    endpointURL: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.s3.endpoint}>
-    destinationPath: s3://<path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.s3.bucketName}>/<path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.s3.bucketPrefix}>
+    enabled: true
+    endpointURL: "https://s3.fr-par.scw.cloud"
+    destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
+      create: false
+      secretName: "mlflow-pg-cluster-backup"
       accessKeyId:
-        value: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.s3.accessKey}>
+        key: "S3_ACCESS_KEY"
       secretAccessKey:
-        value: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.s3.secretKey}>
+        key: "S3_SECRET_KEY"
       region:
-        value: <path:secret/data/platforms/production/apps/mlflow#postgres | jsonPath {.s3.region}>
+        key: "S3_REGION"
 
 sso:
   config:
-    clientID: "<path:secret/data/platforms/production/apps/mlflow#keycloak | jsonPath {.clientId}>"
-    clientSecret: "<path:secret/data/platforms/production/apps/mlflow#keycloak | jsonPath {.clientSecret}>"
-    cookieSecret: "<path:secret/data/platforms/production/apps/mlflow#keycloak | jsonPath {.cookieSecret}>"
+    clientID: "mlflow"
+    clientSecret: ""
+    cookieSecret: ""
     configFile: |-
       provider = "keycloak-oidc"
       provider_display_name = "Keycloak"
       email_domains = [ "*" ]
       upstreams = [ "http://mlflow.mlflow.svc.cluster.local:5000/" ]
-      redirect_url = "https://<path:secret/data/platforms/production/apps/mlflow#domain>/oauth2/callback"
-      oidc_issuer_url = "https://<path:secret/data/platforms/production/apps/keycloak#domain>/realms/<path:secret/data/platforms/production/apps/keycloak#extras | jsonPath {.realm}>"
+      redirect_url = "https://mlflow.ohmlab.fr/oauth2/callback"
+      oidc_issuer_url = "https://sso.ohmlab.fr/realms/homelab"
   ingress:
     hosts:
-    - <path:secret/data/platforms/production/apps/mlflow#domain>
+    - "mlflow.ohmlab.fr"
     tls:
-    - secretName: <path:secret/data/platforms/production/apps/mlflow#domain>
+    - secretName: "mlflow.ohmlab.fr"
       hosts:
-      - <path:secret/data/platforms/production/apps/mlflow#domain>
+      - "mlflow.ohmlab.fr"
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "mlflow"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    mlflowAdmin:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-admin"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    mlflowS3:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-s3"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "s3" | dig "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "s3" | dig "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "s3" | dig "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "s3" | dig "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "s3" | dig "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "s3" | dig "region" "" }}'
+    mlflowDbInfos:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-db-infos"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            DB_URL:
+              text: '{{ get .Secrets "postgres" | dig "connectionString" "" }}'
+    mlflowDbAdmin:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    mlflowDbApp:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    mlflowPgBackup:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-pg-cluster-backup"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
+    mlflowSso:
+      mount: "homelab"
+      path: "platforms/production/mlflow"
+      type: "kv-v2"
+      vaultAuthRef: "mlflow-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mlflow-sso"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

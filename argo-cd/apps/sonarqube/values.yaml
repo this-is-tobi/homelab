@@ -35,10 +35,18 @@ sonarqube:
     jdbcUsername: ""
     jdbcSecretName: sonarqube-pg-cluster-app
     jdbcSecretPasswordKey: password
-  account:
-    adminPasswordSecretName: sonarqube-admin
-  monitoringPasscodeSecretName: sonarqube-monitoring-admin
-  monitoringPasscodeSecretKey: password
+  setAdminPassword:
+    passwordSecretName: "sonarqube-admin"
+    # securityContext: {}
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+  monitoringPasscodeSecretName: sonarqube-admin
+  monitoringPasscodeSecretKey: monitoringPasscode
   jvmOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.9.0.jar=web"
   jvmCeOpts: "-javaagent:/opt/sonarqube/extensions/plugins/sonarqube-community-branch-plugin-25.9.0.jar=ce"
   initSysctl:

@@ -1,49 +1,68 @@
 harbor:
-  adminPassword: ""
+  existingSecretAdminPassword: "harbor-admin"
+  existingSecretAdminPasswordKey: "password"
+  existingSecretSecretKey: "harbor-secretkey"
   registry:
-    replicaCount: 1
+    replicas: 1
   portal:
-    replicaCount: 2
+    replicas: 2
+  nginx:
+    replicas: 2
   core:
-    replicaCount: 2
+    replicas: 2
   jobservice:
-    replicaCount: 2
+    replicas: 2
   trivy:
-    replicaCount: 2
-  exposureType: ingress
+    replicas: 2
+  exporter:
+    replicas: 2
+  expose:
+    type: "ingress"
   externalURL: ""
   ingress:
-    core:
-      ingressClassName: nginx
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      hostname: ""
-      tls: true
+    hosts:
+      core: ""
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+    tls:
+      enabled: true
+      certSource: "secret"
+      secret:
+        secretName: ""
   persistence:
     enabled: true
-    mountPath: /data
+    resourcePolicy: "keep"
     persistentVolumeClaim:
       registry:
-        size: 100Gi
-        accessModes:
-        - ReadWriteMany
+        accessMode: "ReadWriteOnce"
+        size: "5Gi"
       jobservice:
-        size: 10Gi
-        accessModes:
-        - ReadWriteOnce
+        accessMode: "ReadWriteOnce"
+        size: "1Gi"
+      redis:
+        accessMode: "ReadWriteOnce"
+        size: "1Gi"
       trivy:
-        size: 10Gi
-        accessModes:
-        - ReadWriteOnce
-  postgresql:
-    enabled: false
-  externalDatabase:
-    host: ""
-    port: ""
-    coreDatabase: ""
-    user: ""
-    password: ""
-    sslmode: disable
+        accessMode: "ReadWriteOnce"
+        size: "1Gi"
+    imageChartStorage:
+      disableredirect: true
+    type: "s3"
+    s3:
+      existingSecret: "" # REGISTRY_STORAGE_S3_ACCESSKEY / REGISTRY_STORAGE_S3_SECRETKEY
+      region: ""
+      bucket: ""
+      regionendpoint: "https://s3.example.com"
+  database:
+    type: "external"
+    external:
+      host: "harbor-pg-cluster-rw"
+      port: "5432"
+      coreDatabase: "harbor"
+      user: "harbor"
+      existingSecret: "harbor-pg-cluster-app"
+      sslmode: disable
   metrics:
     enabled: true
     serviceMonitor:
