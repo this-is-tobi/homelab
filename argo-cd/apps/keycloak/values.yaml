@@ -107,3 +107,486 @@ cnpg:
       region:
         key: region
         value: ""
+
+keycloakConfigCli:
+  enabled: true
+  fullnameOverride: keycloak-config-cli
+  backoffLimit: 3
+  env:
+    KEYCLOAK_URL: "http://keycloak:8080"
+    KEYCLOAK_USER: "admin"
+    IMPORT_FILES_LOCATIONS: "/config/"
+    IMPORT_FORCE: "false"
+    IMPORT_VAR_SUBSTITUTION_ENABLED: "true"
+    IMPORT_VAR_SUBSTITUTION_UNDEFINED_IS_ERROR: "true"
+    LOGGING_LEVEL_ROOT: "INFO"
+  existingSecret: "keycloak-admin"
+  existingSecretKey: "password"
+  resources:
+    requests: {}
+    #   cpu: 100m
+    #   memory: 256Mi
+    # limits:
+    #   cpu: 500m
+    #   memory: 512Mi
+  extraEnv:
+  - name: KEYCLOAK_DOMAIN
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-config
+        key: KEYCLOAK_DOMAIN
+  - name: KEYCLOAK_REALM
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-config
+        key: KEYCLOAK_REALM
+  - name: GITEA_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-gitea
+        key: CLIENT_SECRET
+  - name: GRAFANA_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-grafana
+        key: CLIENT_SECRET
+  - name: ARGOCD_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-argocd
+        key: CLIENT_SECRET
+  - name: ARGOWORKFLOWS_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-argoworkflows
+        key: CLIENT_SECRET
+  - name: CODER_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-coder
+        key: CLIENT_SECRET
+  - name: OUTLINE_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-outline
+        key: CLIENT_SECRET
+  - name: MLFLOW_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-mlflow
+        key: CLIENT_SECRET
+  - name: SONARQUBE_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-sonarqube
+        key: CLIENT_SECRET
+  - name: MINIO_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-minio
+        key: CLIENT_SECRET
+  - name: HARBOR_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-harbor
+        key: CLIENT_SECRET
+  - name: VAULTWARDEN_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-vaultwarden
+        key: CLIENT_SECRET
+  config:
+    homelab:
+      inline:
+        realm: "$(KEYCLOAK_REALM)"
+        enabled: true
+        displayName: "Homelab"
+        displayNameHtml: "<b>Homelab</b> Identity"
+        registrationAllowed: false
+        registrationEmailAsUsername: true
+        editUsernameAllowed: false
+        resetPasswordAllowed: true
+        rememberMe: true
+        verifyEmail: false
+        loginWithEmailAllowed: true
+        duplicateEmailsAllowed: false
+        ssoSessionIdleTimeout: 1800
+        ssoSessionMaxLifespan: 36000
+        offlineSessionIdleTimeout: 2592000
+        accessTokenLifespan: 300
+        bruteForceProtected: true
+        permanentLockout: false
+        maxFailureWaitSeconds: 900
+        minimumQuickLoginWaitSeconds: 60
+        waitIncrementSeconds: 60
+        quickLoginCheckMilliSeconds: 1000
+        maxDeltaTimeSeconds: 43200
+        failureFactor: 5
+        clients:
+        - clientId: "gitea"
+          name: "Gitea"
+          description: "Git hosting platform"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(GITEA_CLIENT_SECRET)"
+          redirectUris:
+          - "https://git.$(KEYCLOAK_DOMAIN)/*"
+          - "https://git.$(KEYCLOAK_DOMAIN)/user/oauth2/keycloak/callback"
+          webOrigins:
+          - "https://git.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "grafana"
+          name: "Grafana"
+          description: "Monitoring dashboards"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(GRAFANA_CLIENT_SECRET)"
+          redirectUris:
+          - "https://monitoring.$(KEYCLOAK_DOMAIN)/*"
+          - "https://monitoring.$(KEYCLOAK_DOMAIN)/login/generic_oauth"
+          webOrigins:
+          - "https://monitoring.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "argo-cd"
+          name: "Argo CD"
+          description: "GitOps continuous delivery"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(ARGOCD_CLIENT_SECRET)"
+          redirectUris:
+          - "https://gitops.$(KEYCLOAK_DOMAIN)/*"
+          - "https://gitops.$(KEYCLOAK_DOMAIN)/auth/callback"
+          webOrigins:
+          - "https://gitops.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "argo-workflows"
+          name: "Argo Workflows"
+          description: "Workflow engine"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(ARGOWORKFLOWS_CLIENT_SECRET)"
+          redirectUris:
+          - "https://worflows.$(KEYCLOAK_DOMAIN)/*"
+          - "https://worflows.$(KEYCLOAK_DOMAIN)/oauth2/callback"
+          webOrigins:
+          - "https://worflows.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "coder"
+          name: "Coder"
+          description: "Development workspaces"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(CODER_CLIENT_SECRET)"
+          redirectUris:
+          - "https://coder.$(KEYCLOAK_DOMAIN)/*"
+          - "https://coder.$(KEYCLOAK_DOMAIN)/oauth2/callback"
+          webOrigins:
+          - "https://coder.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "outline"
+          name: "Outline"
+          description: "Team wiki"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(OUTLINE_CLIENT_SECRET)"
+          redirectUris:
+          - "https://wiki.$(KEYCLOAK_DOMAIN)/*"
+          - "https://wiki.$(KEYCLOAK_DOMAIN)/auth/oidc.callback"
+          webOrigins:
+          - "https://wiki.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "mlflow"
+          name: "MLflow"
+          description: "ML experiment tracking"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(MLFLOW_CLIENT_SECRET)"
+          redirectUris:
+          - "https://mlflow.$(KEYCLOAK_DOMAIN)/*"
+          - "https://mlflow.$(KEYCLOAK_DOMAIN)/oauth2/callback"
+          webOrigins:
+          - "https://mlflow.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "sonarqube"
+          name: "SonarQube"
+          description: "Code quality analysis"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(SONARQUBE_CLIENT_SECRET)"
+          redirectUris:
+          - "https://sonarqube.$(KEYCLOAK_DOMAIN)/*"
+          - "https://sonarqube.$(KEYCLOAK_DOMAIN)/oauth2/callback/oidc"
+          webOrigins:
+          - "https://sonarqube.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "minio"
+          name: "MinIO"
+          description: "Object storage"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(MINIO_CLIENT_SECRET)"
+          redirectUris:
+          - "https://minio.$(KEYCLOAK_DOMAIN)/*"
+          - "https://minio.$(KEYCLOAK_DOMAIN)/oauth_callback"
+          webOrigins:
+          - "https://minio.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "harbor"
+          name: "Harbor"
+          description: "Container registry"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(HARBOR_CLIENT_SECRET)"
+          redirectUris:
+          - "https://registry.$(KEYCLOAK_DOMAIN)/*"
+          - "https://registry.$(KEYCLOAK_DOMAIN)/c/oidc/callback"
+          webOrigins:
+          - "https://registry.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "vaultwarden"
+          name: "Vaultwarden"
+          description: "Password manager"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(VAULTWARDEN_CLIENT_SECRET)"
+          redirectUris:
+          - "https://vaultwarden.$(KEYCLOAK_DOMAIN)/*"
+          - "https://vaultwarden.$(KEYCLOAK_DOMAIN)/identity/connect/oidc-signin"
+          webOrigins:
+          - "https://vaultwarden.$(KEYCLOAK_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            "pkce.code.challenge.method": "S256"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        clientScopes:
+        - name: "groups"
+          description: "User groups"
+          protocol: "openid-connect"
+          attributes:
+            "include.in.token.scope": "true"
+            "display.on.consent.screen": "true"
+          protocolMappers:
+          - name: "groups"
+            protocol: "openid-connect"
+            protocolMapper: "oidc-group-membership-mapper"
+            consentRequired: false
+            config:
+              "full.path": "false"
+              "id.token.claim": "true"
+              "access.token.claim": "true"
+              "claim.name": "groups"
+              "userinfo.token.claim": "true"
+        roles:
+          realm:
+          - name: "admin"
+            description: "Administrator role"
+          - name: "user"
+            description: "Standard user role"
+        users: []
+        groups: []

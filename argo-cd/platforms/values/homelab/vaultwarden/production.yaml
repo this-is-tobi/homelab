@@ -86,7 +86,7 @@ vso:
           - ".*"
           templates:
             DB_URL:
-              text: '{{ get .Secrets "postgres" | dig "connectionString" "" }}'
+              text: 'postgresql://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}'
     vaultwardenDbAdmin:
       mount: "homelab"
       path: "platforms/production/vaultwarden"

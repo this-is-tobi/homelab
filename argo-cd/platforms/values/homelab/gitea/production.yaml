@@ -126,6 +126,23 @@ vso:
               text: '{{ get .Secrets "admin" | dig "username" "" }}'
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    giteaDbInfos:
+      mount: "homelab"
+      path: "platforms/production/gitea"
+      type: "kv-v2"
+      vaultAuthRef: "gitea-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "gitea-db-infos"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            DB_URL:
+              text: 'postgresql://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}'
     giteaDbAdmin:
       mount: "homelab"
       path: "platforms/production/gitea"

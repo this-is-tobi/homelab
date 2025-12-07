@@ -1,285 +1,1045 @@
-# Vault instance configuration using Bank Vaults operator
-# This replaces the need for vault-init.sh scripts!
 vault:
   enabled: true
-  name: vault
-  size: 3  # 3-node HA cluster
-  # Vault image
+  name: "vault"
+  size: 3
   image:
-    repository: hashicorp/vault
-    tag: 1.20.1
-  # Bank Vaults sidecar image
-  bankVaultsImage: ghcr.io/bank-vaults/bank-vaults:latest
-  # Service configuration
+    repository: "hashicorp/vault"
+    tag: "1.20.1"
+  bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:latest"
   service:
-    type: ClusterIP
+    type: "ClusterIP"
     annotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9102"
-  # Storage (Raft integrated storage)
   storage:
     raft:
       enabled: true
-      size: 10Gi
-      storageClass: longhorn  # or your storage class
-  # Auto-unseal configuration
+      size: "10Gi"
+      storageClass: "longhorn"
   unseal:
     kubernetes:
       enabled: true
-      secretName: vault-unseal-keys
-  # Vault configuration
+      secretName: "vault-unseal-keys"
   config:
     ui: true
     tls:
-      enabled: true  # Enable TLS for Vault pods (operator auto-generates certificates)
+      enabled: true
     telemetry:
       unauthenticated: false
-      retention: 10m
+      retention: "10m"
       disableHostname: true
-  # External configuration (GitOps!)
   externalConfig:
-    # Policies - no more shell scripts!
     policies:
-      - name: argo-cd
-        rules: |
-          path "homelab/data/platforms/production/argo-cd" {
-            capabilities = ["read", "list"]
+    - name: "vault-init-secrets"
+      rules: |
+        # Allow creating/updating secrets in platforms/production path
+        path "homelab/data/*" {
+          capabilities = ["create", "update", "read"]
+        }
+        # Allow listing to check if secrets exist
+        path "homelab/metadata/*" {
+          capabilities = ["list", "read"]
+        }
+    - name: "argo-cd"
+      rules: |
+        path "homelab/data/platforms/production/argo-cd" {
+          capabilities = ["read", "list"]
+        }
+    - name: "cert-manager"
+      rules: |
+        path "homelab/data/platforms/production/cert-manager" {
+          capabilities = ["read", "list"]
+        }
+    - name: "coder"
+      rules: |
+        path "homelab/data/platforms/production/coder" {
+          capabilities = ["read", "list"]
+        }
+    - name: "gitea"
+      rules: |
+        path "homelab/data/platforms/production/gitea" {
+          capabilities = ["read", "list"]
+        }
+    - name: "harbor"
+      rules: |
+        path "homelab/data/platforms/production/harbor" {
+          capabilities = ["read", "list"]
+        }
+    - name: "keycloak"
+      rules: |
+        path "homelab/data/platforms/production/keycloak" {
+          capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/argo-cd" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-          path "homelab/data/platforms/production/argo-cd/*" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/argo-workflows" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-      - name: cert-manager
-        rules: |
-          path "homelab/data/platforms/production/cert-manager" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/coder" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-          path "homelab/data/platforms/production/cert-manager/*" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/gitea" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-      - name: coder
-        rules: |
-          path "homelab/data/platforms/production/coder" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/harbor" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-          path "homelab/data/platforms/production/coder/*" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/mlflow" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-      - name: gitea
-        rules: |
-          path "homelab/data/platforms/production/gitea" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/mattermost" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-          path "homelab/data/platforms/production/gitea/*" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/outline" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-      - name: harbor
-        rules: |
-          path "homelab/data/platforms/production/harbor" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/sonarqube" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-          path "homelab/data/platforms/production/harbor/*" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/vault" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-      - name: keycloak
-        rules: |
-          path "homelab/data/platforms/production/keycloak" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/vaultwarden" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-          path "homelab/data/platforms/production/keycloak/*" {
-            capabilities = ["read", "list"]
+        }
+        path "homelab/data/platforms/production/prometheus-stack" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
           }
-      - name: mattermost
-        rules: |
-          path "homelab/data/platforms/production/mattermost" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/mattermost/*" {
-            capabilities = ["read", "list"]
-          }
-      - name: minio
-        rules: |
-          path "homelab/data/platforms/production/minio" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/minio/*" {
-            capabilities = ["read", "list"]
-          }
-      - name: outline
-        rules: |
-          path "homelab/data/platforms/production/outline" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/outline/*" {
-            capabilities = ["read", "list"]
-          }
-      - name: prometheus-stack
-        rules: |
-          path "homelab/data/platforms/production/prometheus-stack" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/prometheus-stack/*" {
-            capabilities = ["read", "list"]
-          }
-      - name: sonarqube
-        rules: |
-          path "homelab/data/platforms/production/sonarqube" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/sonarqube/*" {
-            capabilities = ["read", "list"]
-          }
-      - name: sops
-        rules: |
-          path "homelab/data/platforms/production/sops" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/sops/*" {
-            capabilities = ["read", "list"]
-          }
-    # Auth methods - configured declaratively!
+        }
+    - name: "mattermost"
+      rules: |
+        path "homelab/data/platforms/production/mattermost" {
+          capabilities = ["read", "list"]
+        }
+    - name: "minio"
+      rules: |
+        path "homelab/data/platforms/production/minio" {
+          capabilities = ["read", "list"]
+        }
+    - name: "outline"
+      rules: |
+        path "homelab/data/platforms/production/outline" {
+          capabilities = ["read", "list"]
+        }
+    - name: "prometheus-stack"
+      rules: |
+        path "homelab/data/platforms/production/prometheus-stack" {
+          capabilities = ["read", "list"]
+        }
+    - name: "sonarqube"
+      rules: |
+        path "homelab/data/platforms/production/sonarqube" {
+          capabilities = ["read", "list"]
+        }
+    - name: "sops"
+      rules: |
+        path "homelab/data/platforms/production/sops" {
+          capabilities = ["read", "list"]
+        }
     auth:
-      - type: kubernetes
-        roles:
-          # argo-cd role
-          - name: argo-cd
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["argo-cd"]
-            policies: ["argo-cd"]
-            ttl: 1h
-          # cert-manager role
-          - name: cert-manager
-            bound_service_account_names: ["cert-manager"]
-            bound_service_account_namespaces: ["cert-manager"]
-            policies: ["cert-manager"]
-            ttl: 1h
-          # coder role
-          - name: coder
-            bound_service_account_names: ["coder"]
-            bound_service_account_namespaces: ["coder"]
-            policies: ["coder"]
-            ttl: 1h
-          # gitea role
-          - name: gitea
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["gitea"]
-            policies: ["gitea"]
-            ttl: 1h
-          # harbor role
-          - name: harbor
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["harbor"]
-            policies: ["harbor"]
-            ttl: 1h
-          # keycloak role
-          - name: keycloak
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["keycloak"]
-            policies: ["keycloak"]
-            ttl: 1h
-          # mattermost role
-          - name: mattermost
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["mattermost"]
-            policies: ["mattermost"]
-            ttl: 1h
-          # minio role
-          - name: minio
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["minio"]
-            policies: ["minio"]
-            ttl: 1h
-          # outline role
-          - name: outline
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["outline"]
-            policies: ["outline"]
-            ttl: 1h
-          # prometheus role
-          - name: prometheus-stack
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["prometheus-stack"]
-            policies: ["prometheus-stack"]
-            ttl: 1h
-          # sonarqube role
-          - name: sonarqube
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["sonarqube"]
-            policies: ["sonarqube"]
-            ttl: 1h
-          # sops role
-          - name: sops
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["sops"]
-            policies: ["sops"]
-            ttl: 1h
-    # Secret engines
+    - type: "kubernetes"
+      roles:
+        - name: "vault-init-secrets"
+          bound_service_account_names: ["vault-init-secrets"]
+          bound_service_account_namespaces: ["vault-operator-system"]
+          policies: ["vault-init-secrets"]
+          ttl: "10m"
+        - name: "argo-cd"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["argo-cd"]
+          policies: ["argo-cd"]
+          ttl: "1h"
+        - name: "cert-manager"
+          bound_service_account_names: ["cert-manager"]
+          bound_service_account_namespaces: ["cert-manager"]
+          policies: ["cert-manager"]
+          ttl: "1h"
+        - name: "coder"
+          bound_service_account_names: ["coder"]
+          bound_service_account_namespaces: ["coder"]
+          policies: ["coder"]
+          ttl: "1h"
+        - name: "gitea"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["gitea"]
+          policies: ["gitea"]
+          ttl: "1h"
+        - name: "harbor"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["harbor"]
+          policies: ["harbor"]
+          ttl: "1h"
+        - name: "keycloak"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["keycloak"]
+          policies: ["keycloak"]
+          ttl: "1h"
+        - name: "mattermost"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["mattermost"]
+          policies: ["mattermost"]
+          ttl: "1h"
+        - name: "minio"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["minio"]
+          policies: ["minio"]
+          ttl: "1h"
+        - name: "outline"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["outline"]
+          policies: ["outline"]
+          ttl: "1h"
+        - name: "prometheus-stack"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["prometheus-stack"]
+          policies: ["prometheus-stack"]
+          ttl: "1h"
+        - name: "sonarqube"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["sonarqube"]
+          policies: ["sonarqube"]
+          ttl: "1h"
+        - name: "sops"
+          bound_service_account_names: ["default"]
+          bound_service_account_namespaces: ["sops"]
+          policies: ["sops"]
+          ttl: "1h"
     secrets:
-      - path: homelab
-        type: kv
-        description: Homelab secrets KV store
-        options:
-          version: 2
-    # Startup secrets (optional - for initial bootstrap)
-    # WARNING: Only use for non-sensitive initial values
-    # Real secrets should be populated via sealed-secrets or external-secrets
-    startupSecrets: []
-      # Example:
-      # - type: kv
-      #   path: homelab/data/cert-manager/admin
-      #   data:
-      #     username: admin@example.com
-      #     password: CHANGEME
-  # Resources
+    - path: "homelab"
+      type: "kv"
+      description: "Homelab secrets KV store"
+      options:
+        version: 2
+  startupSecrets: []
+  initSecrets:
+    enabled: true
+    vaultRole: "vault-init-secrets"
+    skipTLSVerify: true
+    backoffLimit: 3
+    ttlSecondsAfterFinished: 86400
+    image: "ghcr.io/this-is-tobi/tools/backup:latest"
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "64Mi"
+      limits:
+        cpu: "200m"
+        memory: "128Mi"
+    # Secrets to initialize
+    # Each secret supports three data types:
+    # - random: generates random alphanumeric string (specify length)
+    # - uuid: generates UUID v4
+    # - static: uses provided value
+    # Supports nested JSON structure for organizing related secrets
+    secrets:
+    # Example: ArgoCD secrets with nested structure
+    - path: "homelab/platforms/production/cert-manager-test"
+      data:
+        email:
+          type: "static"
+          value: "this-is-tobi@proton.me"
+        scaleway:
+          accessKey:
+            type: "static"
+            value: ""
+          secretKey:
+            type: "static"
+            value: ""
+          projectId:
+            type: "static"
+            value: ""
+          domain:
+            type: "static"
+            length: "ohmlab.fr"
+    - path: "homelab/platforms/production/argo-cd-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "argo-cd"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/argo-workflows-test"
+      data:
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "argo-workflows"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/coder-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "coder"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "coder"
+          host:
+            type: "static"
+            value: "coder-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "coder"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/gitea-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "gitea"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "gitea"
+          host:
+            type: "static"
+            value: "gitea-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "gitea"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/harbor-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "harbor"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "harbor"
+          host:
+            type: "static"
+            value: "harbor-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        s3:
+          accessKey:
+            type: "static"
+            value: ""
+          bucketName:
+            type: "static"
+            value: "ohmlab-backups"
+          bucketPrefix:
+            type: "static"
+            value: "cnpg"
+          endpoint:
+            type: "static"
+            value: "https://s3.fr-par.scw.cloud"
+          region:
+            type: "static"
+            value: "fr-par"
+          secretKey:
+            type: "static"
+            value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "harbor"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/mattermost-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "mattermost"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "mattermost"
+          host:
+            type: "static"
+            value: "mattermost-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        s3:
+          accessKey:
+            type: "static"
+            value: ""
+          bucketName:
+            type: "static"
+            value: "ohmlab-backups"
+          bucketPrefix:
+            type: "static"
+            value: "cnpg"
+          endpoint:
+            type: "static"
+            value: "https://s3.fr-par.scw.cloud"
+          region:
+            type: "static"
+            value: "fr-par"
+          secretKey:
+            type: "static"
+            value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "mattermost"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/minio-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+    - path: "homelab/platforms/production/mlflow-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "mlflow"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "mlflow"
+          host:
+            type: "static"
+            value: "mlflow-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        s3:
+          accessKey:
+            type: "static"
+            value: ""
+          bucketName:
+            type: "static"
+            value: "ohmlab-backups"
+          bucketPrefix:
+            type: "static"
+            value: "cnpg"
+          endpoint:
+            type: "static"
+            value: "https://s3.fr-par.scw.cloud"
+          region:
+            type: "static"
+            value: "fr-par"
+          secretKey:
+            type: "static"
+            value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "mlflow"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/outline-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "outline"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "outline"
+          host:
+            type: "static"
+            value: "outline-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        s3:
+          accessKey:
+            type: "static"
+            value: ""
+          bucketName:
+            type: "static"
+            value: "ohmlab-backups"
+          bucketPrefix:
+            type: "static"
+            value: "cnpg"
+          endpoint:
+            type: "static"
+            value: "https://s3.fr-par.scw.cloud"
+          region:
+            type: "static"
+            value: "fr-par"
+          secretKey:
+            type: "static"
+            value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "outline"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/sonarqube-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "sonarqube"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "sonarqube"
+          host:
+            type: "static"
+            value: "sonarqube-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "sonarqube"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/vault-test"
+      data:
+        admin:
+          token:
+            type: "static"
+            value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "vault"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/vault-operator-test"
+      data:
+        admin:
+          token:
+            type: "static"
+            length: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "vault-operator"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/vaultwarden-test"
+      data:
+        admin:
+          token:
+            type: "random"
+            length: 24
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "vaultwarden"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "vaultwarden"
+          host:
+            type: "static"
+            value: "vaultwarden-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "vaultwarden"
+          clientSecret:
+            type: "random"
+            length: 32
+    - path: "homelab/platforms/production/prometheus-stack-test"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        keycloak:
+          endpoint:
+            type: "static"
+            value: "https://sso.ohmlab.fr"
+          realm:
+            type: "static"
+            value: "homelab"
+          clientId:
+            type: "static"
+            value: "grafana"
+          clientSecret:
+            type: "random"
+            length: 32
   resources:
     vault:
       limits:
-        cpu: '1'
-        memory: 1Gi
+        cpu: "1"
+        memory: "1Gi"
       requests:
-        cpu: 500m
-        memory: 512Mi
+        cpu: "500m"
+        memory: "512Mi"
     bankVaults:
       limits:
-        cpu: 100m
-        memory: 128Mi
+        cpu: "100m"
+        memory: "128Mi"
       requests:
-        cpu: 50m
-        memory: 64Mi
-  # Security context
+        cpu: "50m"
+        memory: "64Mi"
   # Note: Vault needs specific capabilities (IPC_LOCK, SETFCAP) which are added by the operator
   # Don't set runAsNonRoot/runAsUser here - let the operator handle it
   securityContext:
     fsGroup: 1000
-  # Service account
-  serviceAccount: vault
-  # Ingress
+  serviceAccount: "vault"
   ingress:
     enabled: true
-    ingressClassName: nginx
-    host: vault.core.ohmlab.fr
+    ingressClassName: "nginx"
+    host: "vault.core.ohmlab.fr"
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     tls:
       enabled: true
-      secretName: vault-ingress-tls  # Separate from vault-tls (used internally by operator)
-  # Service Monitor for Prometheus
+      secretName: "vault-ingress-tls"  # Separate from vault-tls (used internally by operator)
   serviceMonitor:
     enabled: true
-  # Statsd (optional metrics exporter)
   statsd:
     enabled: true
-    image: prom/statsd-exporter:latest
-  # Vault agent (for sidecar injection)
+    image: "prom/statsd-exporter:latest"
   agent:
     enabled: true
 
-
-# Vault Secret Operator configuration
 vso:
   enabled: true
   controller:
-    replicas: 2  # HA setup
+    replicas: 2
     manager:
       resources:
         requests:
@@ -288,7 +1048,6 @@ vso:
         limits:
           memory: "512Mi"
           cpu: "500m"
-      # Security context
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
@@ -296,32 +1055,24 @@ vso:
         runAsUser: 65532
         capabilities:
           drop:
-            - ALL
+          - "ALL"
         seccompProfile:
-          type: RuntimeDefault
-    # Pod Security
+          type: "RuntimeDefault"
     podSecurityContext:
       runAsNonRoot: true
       runAsUser: 65532
       fsGroup: 65532
       seccompProfile:
-        type: RuntimeDefault
-    # RBAC
+        type: "RuntimeDefault"
     rbac:
       create: true
-    # ServiceAccount
     serviceAccount:
       create: true
-      name: vault-secrets-operator
-  # Default Vault connection (global)
-  # Creates a VaultConnection CR that can be referenced by VaultAuth resources
+      name: "vault-secrets-operator"
   defaultVaultConnection:
     enabled: true
     address: "https://vault.vault-operator-system.svc.cluster.local:8200"
     skipTLSVerify: true
-  # Default auth method using Kubernetes auth
-  # NOTE: Disabled because role must be specified per namespace
-  # Applications should create their own VaultAuth resources with specific roles
   defaultAuthMethod:
     enabled: false
     # Uncomment to enable global auth (not recommended for multi-tenant)
@@ -333,7 +1084,6 @@ vso:
     #   role: "default"  # Must exist in Vault
     #   serviceAccount: default
     #   tokenAudiences: ["vault"]
-  # Metrics
   metrics:
     service:
       enabled: true

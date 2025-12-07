@@ -11,6 +11,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -23,21 +24,22 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-1"
 rules:
-  # Required for Vault to read its own config from secrets
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "list", "create", "update", "delete"]
-  # Required for Vault Kubernetes auth
-  - apiGroups: [""]
-    resources: ["serviceaccounts"]
-    verbs: ["get"]
-  - apiGroups: [""]
-    resources: ["serviceaccounts/token"]
-    verbs: ["create"]
-  # Required for Vault service registration in Kubernetes
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "list", "watch", "patch"]
+# Required for Vault to read its own config from secrets
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "create", "update", "delete"]
+# Required for Vault Kubernetes auth
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["serviceaccounts/token"]
+  verbs: ["create"]
+# Required for Vault service registration in Kubernetes
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "patch"]
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -54,9 +56,10 @@ roleRef:
   kind: Role
   name: {{ .Values.vault.serviceAccount }}
 subjects:
-  - kind: ServiceAccount
-    name: {{ .Values.vault.serviceAccount }}
-    namespace: {{ .Release.Namespace }}
+- kind: ServiceAccount
+  name: {{ .Values.vault.serviceAccount }}
+  namespace: {{ .Release.Namespace }}
+
 ---
 # ClusterRoleBinding for Kubernetes auth delegation
 apiVersion: rbac.authorization.k8s.io/v1
@@ -73,7 +76,7 @@ roleRef:
   kind: ClusterRole
   name: system:auth-delegator
 subjects:
-  - kind: ServiceAccount
-    name: {{ .Values.vault.serviceAccount }}
-    namespace: {{ .Release.Namespace }}
+- kind: ServiceAccount
+  name: {{ .Values.vault.serviceAccount }}
+  namespace: {{ .Release.Namespace }}
 {{- end }}
