@@ -98,6 +98,27 @@ vso:
               text: '{{ get .Secrets "domain" }}'
             KEYCLOAK_REALM:
               text: '{{ get .Secrets "extras" | dig "realm" "" }}'
+    keycloakDbInfos:
+      mount: "homelab"
+      path: "platforms/production/keycloak"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-db-infos"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            DB_URL:
+              text: 'postgresql://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}'
+            DB_HOST:
+              text: '{{ get .Secrets "postgres" | dig "host" "" }}'
+            DB_PORT:
+              text: '{{ get .Secrets "postgres" | dig "port" "" }}'
     keycloakDbAdmin:
       mount: "homelab"
       path: "platforms/production/keycloak"
@@ -201,7 +222,7 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientArgoCD:
+    clientArgoCd:
       mount: "homelab"
       path: "platforms/production/argo-cd"
       type: "kv-v2"
@@ -220,102 +241,102 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientArgoWorkflows:
-      mount: "homelab"
-      path: "platforms/production/argo-workflows"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-argoworkflows"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientCoder:
-      mount: "homelab"
-      path: "platforms/production/coder"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-coder"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientOutline:
-      mount: "homelab"
-      path: "platforms/production/outline"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-outline"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientMLflow:
-      mount: "homelab"
-      path: "platforms/production/mlflow"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-mlflow"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientSonarQube:
-      mount: "homelab"
-      path: "platforms/production/sonarqube"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-sonarqube"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientMinIO:
+    # clientArgoWorkflows:
+    #   mount: "homelab"
+    #   path: "platforms/production/argo-workflows"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-argoworkflows"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    # clientCoder:
+    #   mount: "homelab"
+    #   path: "platforms/production/coder"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-coder"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    # clientOutline:
+    #   mount: "homelab"
+    #   path: "platforms/production/outline"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-outline"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    # clientMLflow:
+    #   mount: "homelab"
+    #   path: "platforms/production/mlflow"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-mlflow"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    # clientSonarQube:
+    #   mount: "homelab"
+    #   path: "platforms/production/sonarqube"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-sonarqube"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    clientMinio:
       mount: "homelab"
       path: "platforms/production/minio"
       type: "kv-v2"
@@ -334,41 +355,41 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientHarbor:
-      mount: "homelab"
-      path: "platforms/production/harbor"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-harbor"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientVaultwarden:
-      mount: "homelab"
-      path: "platforms/production/vaultwarden"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-vaultwarden"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    # clientHarbor:
+    #   mount: "homelab"
+    #   path: "platforms/production/harbor"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-harbor"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    # clientVaultwarden:
+    #   mount: "homelab"
+    #   path: "platforms/production/vaultwarden"
+    #   type: "kv-v2"
+    #   vaultAuthRef: "keycloak-vso-default"
+    #   refreshAfter: "1h"
+    #   hmacSecretData: true
+    #   destination:
+    #     name: "keycloak-clients-vaultwarden"
+    #     create: true
+    #     type: "Opaque"
+    #     transformation:
+    #       excludes:
+    #       - ".*"
+    #       templates:
+    #         CLIENT_ID:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+    #         CLIENT_SECRET:
+    #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

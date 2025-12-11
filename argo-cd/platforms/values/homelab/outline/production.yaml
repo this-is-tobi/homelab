@@ -179,6 +179,10 @@ vso:
           templates:
             DB_URL:
               text: 'postgresql://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}'
+            DB_HOST:
+              text: '{{ get .Secrets "postgres" | dig "host" "" }}'
+            DB_PORT:
+              text: '{{ get .Secrets "postgres" | dig "port" "" }}'
     outlineDbAdmin:
       mount: "homelab"
       path: "platforms/production/outline"
