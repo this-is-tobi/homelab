@@ -1,6 +1,8 @@
 kube-prometheus-stack:
   prometheus:
     prometheusSpec:
+      minReadySeconds: 1800
+      maximumStartupDurationSeconds: 1800
       storageSpec:
         volumeClaimTemplate:
           spec:

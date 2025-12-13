@@ -186,6 +186,15 @@ spec:
                       "__RANDOM_" + ($len | tostring) + "__"
                     elif .type == "uuid" then
                       "__UUID__"
+                    elif .type == "age" then
+                      # Generate age key pair
+                      if .field == "secret" then
+                        "__AGE_SECRET__"
+                      elif .field == "public" then
+                        "__AGE_PUBLIC__"
+                      else
+                        "__AGE_SECRET__"
+                      end
                     elif .type == "static" then
                       .value
                     else
@@ -216,6 +225,18 @@ spec:
               uuid_val=$(cat /proc/sys/kernel/random/uuid)
               result=$(echo "$result" | sed "s/__UUID__/${uuid_val}/")
             done
+
+            # Replace all AGE key placeholders (generate once, extract both secret and public)
+            if echo "$result" | grep -q '__AGE_'; then
+              # Generate age key pair once
+              age_output=$(age-keygen 2>&1)
+              age_secret=$(echo "$age_output" | grep '^AGE-SECRET-KEY-' | tr -d '\n')
+              age_public=$(echo "$age_output" | grep '^# public key:' | sed 's/^# public key: //')
+
+              # Replace all AGE placeholders
+              result=$(echo "$result" | sed "s/__AGE_SECRET__/${age_secret}/g")
+              result=$(echo "$result" | sed "s/__AGE_PUBLIC__/${age_public}/g")
+            fi
 
             echo "$result"
           }

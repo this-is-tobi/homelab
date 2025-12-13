@@ -1,4 +1,9 @@
 minio:
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    repository: "bitnamilegacy/minio"
   auth:
     existingSecret: "minio-admin"
     rootUserSecretKey: "username"
@@ -18,6 +23,8 @@ minio:
       path: "/"
     tls: true
   console:
+    image:
+      repository: "bitnamilegacy/minio-object-browser"
     ingress:
       enabled: true
       ingressClassName: "nginx"

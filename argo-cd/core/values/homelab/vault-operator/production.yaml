@@ -91,6 +91,13 @@ vault:
             "data/keycloak/clientSecret" = []
           }
         }
+        path "homelab/data/platforms/production/minio" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
+          }
+        }
         path "homelab/data/platforms/production/gitea" {
           capabilities = ["read", "list"]
           allowed_parameters = {
@@ -198,12 +205,12 @@ vault:
           policies: ["argo-cd"]
           ttl: "1h"
         - name: "cert-manager"
-          bound_service_account_names: ["cert-manager"]
+          bound_service_account_names: ["default"]
           bound_service_account_namespaces: ["cert-manager"]
           policies: ["cert-manager"]
           ttl: "1h"
         - name: "coder"
-          bound_service_account_names: ["coder"]
+          bound_service_account_names: ["default"]
           bound_service_account_namespaces: ["coder"]
           policies: ["coder"]
           ttl: "1h"
@@ -277,11 +284,11 @@ vault:
     # Each secret supports three data types:
     # - random: generates random alphanumeric string (specify length)
     # - uuid: generates UUID v4
+    # - age: generates age key pair
     # - static: uses provided value
     # Supports nested JSON structure for organizing related secrets
     secrets:
-    # Example: ArgoCD secrets with nested structure
-    - path: "homelab/platforms/production/cert-manager-test"
+    - path: "homelab/platforms/production/cert-manager"
       data:
         email:
           type: "static"
@@ -299,7 +306,7 @@ vault:
           domain:
             type: "static"
             length: "ohmlab.fr"
-    - path: "homelab/platforms/production/argo-cd-test"
+    - path: "homelab/platforms/production/argo-cd"
       data:
         admin:
           username:
@@ -321,87 +328,7 @@ vault:
           clientSecret:
             type: "random"
             length: 32
-    - path: "homelab/platforms/production/argo-workflows-test"
-      data:
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "argo-workflows"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/coder-test"
-      data:
-        admin:
-          username:
-            type: "static"
-            value: "admin"
-          password:
-            type: "random"
-            length: 24
-        postgres:
-          admin:
-            username:
-              type: "static"
-              value: "postgres"
-            password:
-              type: "random"
-              length: 24
-          app:
-            username:
-              type: "static"
-              value: "coder"
-            password:
-              type: "random"
-              length: 24
-          database:
-            type: "static"
-            value: "coder"
-          host:
-            type: "static"
-            value: "coder-pg-cluster-rw"
-          port:
-            type: "static"
-            value: "5432"
-          s3:
-            accessKey:
-              type: "static"
-              value: ""
-            bucketName:
-              type: "static"
-              value: "ohmlab-backups"
-            bucketPrefix:
-              type: "static"
-              value: "cnpg"
-            endpoint:
-              type: "static"
-              value: "https://s3.fr-par.scw.cloud"
-            region:
-              type: "static"
-              value: "fr-par"
-            secretKey:
-              type: "static"
-              value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "coder"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/gitea-test"
+    - path: "homelab/platforms/production/gitea"
       data:
         admin:
           username:
@@ -466,91 +393,7 @@ vault:
           clientSecret:
             type: "random"
             length: 32
-    - path: "homelab/platforms/production/harbor-test"
-      data:
-        admin:
-          username:
-            type: "static"
-            value: "admin"
-          password:
-            type: "random"
-            length: 24
-        postgres:
-          admin:
-            username:
-              type: "static"
-              value: "postgres"
-            password:
-              type: "random"
-              length: 24
-          app:
-            username:
-              type: "static"
-              value: "harbor"
-            password:
-              type: "random"
-              length: 24
-          database:
-            type: "static"
-            value: "harbor"
-          host:
-            type: "static"
-            value: "harbor-pg-cluster-rw"
-          port:
-            type: "static"
-            value: "5432"
-          s3:
-            accessKey:
-              type: "static"
-              value: ""
-            bucketName:
-              type: "static"
-              value: "ohmlab-backups"
-            bucketPrefix:
-              type: "static"
-              value: "cnpg"
-            endpoint:
-              type: "static"
-              value: "https://s3.fr-par.scw.cloud"
-            region:
-              type: "static"
-              value: "fr-par"
-            secretKey:
-              type: "static"
-              value: ""
-        s3:
-          accessKey:
-            type: "static"
-            value: ""
-          bucketName:
-            type: "static"
-            value: "ohmlab-backups"
-          bucketPrefix:
-            type: "static"
-            value: "cnpg"
-          endpoint:
-            type: "static"
-            value: "https://s3.fr-par.scw.cloud"
-          region:
-            type: "static"
-            value: "fr-par"
-          secretKey:
-            type: "static"
-            value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "harbor"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/mattermost-test"
+    - path: "homelab/platforms/production/mattermost"
       data:
         admin:
           username:
@@ -634,7 +477,7 @@ vault:
           clientSecret:
             type: "random"
             length: 32
-    - path: "homelab/platforms/production/minio-test"
+    - path: "homelab/platforms/production/minio"
       data:
         admin:
           username:
@@ -643,340 +486,7 @@ vault:
           password:
             type: "random"
             length: 24
-    - path: "homelab/platforms/production/mlflow-test"
-      data:
-        admin:
-          username:
-            type: "static"
-            value: "admin"
-          password:
-            type: "random"
-            length: 24
-        postgres:
-          admin:
-            username:
-              type: "static"
-              value: "postgres"
-            password:
-              type: "random"
-              length: 24
-          app:
-            username:
-              type: "static"
-              value: "mlflow"
-            password:
-              type: "random"
-              length: 24
-          database:
-            type: "static"
-            value: "mlflow"
-          host:
-            type: "static"
-            value: "mlflow-pg-cluster-rw"
-          port:
-            type: "static"
-            value: "5432"
-          s3:
-            accessKey:
-              type: "static"
-              value: ""
-            bucketName:
-              type: "static"
-              value: "ohmlab-backups"
-            bucketPrefix:
-              type: "static"
-              value: "cnpg"
-            endpoint:
-              type: "static"
-              value: "https://s3.fr-par.scw.cloud"
-            region:
-              type: "static"
-              value: "fr-par"
-            secretKey:
-              type: "static"
-              value: ""
-        s3:
-          accessKey:
-            type: "static"
-            value: ""
-          bucketName:
-            type: "static"
-            value: "ohmlab-backups"
-          bucketPrefix:
-            type: "static"
-            value: "cnpg"
-          endpoint:
-            type: "static"
-            value: "https://s3.fr-par.scw.cloud"
-          region:
-            type: "static"
-            value: "fr-par"
-          secretKey:
-            type: "static"
-            value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "mlflow"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/outline-test"
-      data:
-        admin:
-          username:
-            type: "static"
-            value: "admin"
-          password:
-            type: "random"
-            length: 24
-        postgres:
-          admin:
-            username:
-              type: "static"
-              value: "postgres"
-            password:
-              type: "random"
-              length: 24
-          app:
-            username:
-              type: "static"
-              value: "outline"
-            password:
-              type: "random"
-              length: 24
-          database:
-            type: "static"
-            value: "outline"
-          host:
-            type: "static"
-            value: "outline-pg-cluster-rw"
-          port:
-            type: "static"
-            value: "5432"
-          s3:
-            accessKey:
-              type: "static"
-              value: ""
-            bucketName:
-              type: "static"
-              value: "ohmlab-backups"
-            bucketPrefix:
-              type: "static"
-              value: "cnpg"
-            endpoint:
-              type: "static"
-              value: "https://s3.fr-par.scw.cloud"
-            region:
-              type: "static"
-              value: "fr-par"
-            secretKey:
-              type: "static"
-              value: ""
-        s3:
-          accessKey:
-            type: "static"
-            value: ""
-          bucketName:
-            type: "static"
-            value: "ohmlab-backups"
-          bucketPrefix:
-            type: "static"
-            value: "cnpg"
-          endpoint:
-            type: "static"
-            value: "https://s3.fr-par.scw.cloud"
-          region:
-            type: "static"
-            value: "fr-par"
-          secretKey:
-            type: "static"
-            value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "outline"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/sonarqube-test"
-      data:
-        admin:
-          username:
-            type: "static"
-            value: "admin"
-          password:
-            type: "random"
-            length: 24
-        postgres:
-          admin:
-            username:
-              type: "static"
-              value: "postgres"
-            password:
-              type: "random"
-              length: 24
-          app:
-            username:
-              type: "static"
-              value: "sonarqube"
-            password:
-              type: "random"
-              length: 24
-          database:
-            type: "static"
-            value: "sonarqube"
-          host:
-            type: "static"
-            value: "sonarqube-pg-cluster-rw"
-          port:
-            type: "static"
-            value: "5432"
-          s3:
-            accessKey:
-              type: "static"
-              value: ""
-            bucketName:
-              type: "static"
-              value: "ohmlab-backups"
-            bucketPrefix:
-              type: "static"
-              value: "cnpg"
-            endpoint:
-              type: "static"
-              value: "https://s3.fr-par.scw.cloud"
-            region:
-              type: "static"
-              value: "fr-par"
-            secretKey:
-              type: "static"
-              value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "sonarqube"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/vault-test"
-      data:
-        admin:
-          token:
-            type: "static"
-            value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "vault"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/vault-operator-test"
-      data:
-        admin:
-          token:
-            type: "static"
-            length: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "vault-operator"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/vaultwarden-test"
-      data:
-        admin:
-          token:
-            type: "random"
-            length: 24
-        postgres:
-          admin:
-            username:
-              type: "static"
-              value: "postgres"
-            password:
-              type: "random"
-              length: 24
-          app:
-            username:
-              type: "static"
-              value: "vaultwarden"
-            password:
-              type: "random"
-              length: 24
-          database:
-            type: "static"
-            value: "vaultwarden"
-          host:
-            type: "static"
-            value: "vaultwarden-pg-cluster-rw"
-          port:
-            type: "static"
-            value: "5432"
-          s3:
-            accessKey:
-              type: "static"
-              value: ""
-            bucketName:
-              type: "static"
-              value: "ohmlab-backups"
-            bucketPrefix:
-              type: "static"
-              value: "cnpg"
-            endpoint:
-              type: "static"
-              value: "https://s3.fr-par.scw.cloud"
-            region:
-              type: "static"
-              value: "fr-par"
-            secretKey:
-              type: "static"
-              value: ""
-        keycloak:
-          endpoint:
-            type: "static"
-            value: "https://sso.ohmlab.fr"
-          realm:
-            type: "static"
-            value: "homelab"
-          clientId:
-            type: "static"
-            value: "vaultwarden"
-          clientSecret:
-            type: "random"
-            length: 32
-    - path: "homelab/platforms/production/prometheus-stack-test"
+    - path: "homelab/platforms/production/prometheus-stack"
       data:
         admin:
           username:
@@ -998,6 +508,567 @@ vault:
           clientSecret:
             type: "random"
             length: 32
+    - path: "homelab/platforms/production/keycloak"
+      data:
+        admin:
+          username:
+            type: "static"
+            value: "admin"
+          password:
+            type: "random"
+            length: 24
+        extras:
+          realm:
+            type: "static"
+            value: "homelab"
+          rootDomain:
+            type: "static"
+            value: "ohmlab.fr"
+        postgres:
+          admin:
+            username:
+              type: "static"
+              value: "postgres"
+            password:
+              type: "random"
+              length: 24
+          app:
+            username:
+              type: "static"
+              value: "keycloak"
+            password:
+              type: "random"
+              length: 24
+          database:
+            type: "static"
+            value: "keycloak"
+          host:
+            type: "static"
+            value: "keycloak-pg-cluster-rw"
+          port:
+            type: "static"
+            value: "5432"
+          s3:
+            accessKey:
+              type: "static"
+              value: ""
+            bucketName:
+              type: "static"
+              value: "ohmlab-backups"
+            bucketPrefix:
+              type: "static"
+              value: "cnpg"
+            endpoint:
+              type: "static"
+              value: "https://s3.fr-par.scw.cloud"
+            region:
+              type: "static"
+              value: "fr-par"
+            secretKey:
+              type: "static"
+              value: ""
+    - path: "homelab/platforms/production/sops-test"
+      data:
+        extras:
+          keys:
+            type: "age"
+    # - path: "homelab/platforms/production/argo-workflows"
+    #   data:
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "argo-workflows"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/coder"
+    #   data:
+    #     admin:
+    #       username:
+    #         type: "static"
+    #         value: "admin"
+    #       password:
+    #         type: "random"
+    #         length: 24
+    #     postgres:
+    #       admin:
+    #         username:
+    #           type: "static"
+    #           value: "postgres"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       app:
+    #         username:
+    #           type: "static"
+    #           value: "coder"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       database:
+    #         type: "static"
+    #         value: "coder"
+    #       host:
+    #         type: "static"
+    #         value: "coder-pg-cluster-rw"
+    #       port:
+    #         type: "static"
+    #         value: "5432"
+    #       s3:
+    #         accessKey:
+    #           type: "static"
+    #           value: ""
+    #         bucketName:
+    #           type: "static"
+    #           value: "ohmlab-backups"
+    #         bucketPrefix:
+    #           type: "static"
+    #           value: "cnpg"
+    #         endpoint:
+    #           type: "static"
+    #           value: "https://s3.fr-par.scw.cloud"
+    #         region:
+    #           type: "static"
+    #           value: "fr-par"
+    #         secretKey:
+    #           type: "static"
+    #           value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "coder"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/harbor"
+    #   data:
+    #     admin:
+    #       username:
+    #         type: "static"
+    #         value: "admin"
+    #       password:
+    #         type: "random"
+    #         length: 24
+    #     postgres:
+    #       admin:
+    #         username:
+    #           type: "static"
+    #           value: "postgres"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       app:
+    #         username:
+    #           type: "static"
+    #           value: "harbor"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       database:
+    #         type: "static"
+    #         value: "harbor"
+    #       host:
+    #         type: "static"
+    #         value: "harbor-pg-cluster-rw"
+    #       port:
+    #         type: "static"
+    #         value: "5432"
+    #       s3:
+    #         accessKey:
+    #           type: "static"
+    #           value: ""
+    #         bucketName:
+    #           type: "static"
+    #           value: "ohmlab-backups"
+    #         bucketPrefix:
+    #           type: "static"
+    #           value: "cnpg"
+    #         endpoint:
+    #           type: "static"
+    #           value: "https://s3.fr-par.scw.cloud"
+    #         region:
+    #           type: "static"
+    #           value: "fr-par"
+    #         secretKey:
+    #           type: "static"
+    #           value: ""
+    #     s3:
+    #       accessKey:
+    #         type: "static"
+    #         value: ""
+    #       bucketName:
+    #         type: "static"
+    #         value: "ohmlab-backups"
+    #       bucketPrefix:
+    #         type: "static"
+    #         value: "cnpg"
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://s3.fr-par.scw.cloud"
+    #       region:
+    #         type: "static"
+    #         value: "fr-par"
+    #       secretKey:
+    #         type: "static"
+    #         value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "harbor"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/mlflow"
+    #   data:
+    #     admin:
+    #       username:
+    #         type: "static"
+    #         value: "admin"
+    #       password:
+    #         type: "random"
+    #         length: 24
+    #     postgres:
+    #       admin:
+    #         username:
+    #           type: "static"
+    #           value: "postgres"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       app:
+    #         username:
+    #           type: "static"
+    #           value: "mlflow"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       database:
+    #         type: "static"
+    #         value: "mlflow"
+    #       host:
+    #         type: "static"
+    #         value: "mlflow-pg-cluster-rw"
+    #       port:
+    #         type: "static"
+    #         value: "5432"
+    #       s3:
+    #         accessKey:
+    #           type: "static"
+    #           value: ""
+    #         bucketName:
+    #           type: "static"
+    #           value: "ohmlab-backups"
+    #         bucketPrefix:
+    #           type: "static"
+    #           value: "cnpg"
+    #         endpoint:
+    #           type: "static"
+    #           value: "https://s3.fr-par.scw.cloud"
+    #         region:
+    #           type: "static"
+    #           value: "fr-par"
+    #         secretKey:
+    #           type: "static"
+    #           value: ""
+    #     s3:
+    #       accessKey:
+    #         type: "static"
+    #         value: ""
+    #       bucketName:
+    #         type: "static"
+    #         value: "ohmlab-backups"
+    #       bucketPrefix:
+    #         type: "static"
+    #         value: "cnpg"
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://s3.fr-par.scw.cloud"
+    #       region:
+    #         type: "static"
+    #         value: "fr-par"
+    #       secretKey:
+    #         type: "static"
+    #         value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "mlflow"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/outline"
+    #   data:
+    #     admin:
+    #       username:
+    #         type: "static"
+    #         value: "admin"
+    #       password:
+    #         type: "random"
+    #         length: 24
+    #     postgres:
+    #       admin:
+    #         username:
+    #           type: "static"
+    #           value: "postgres"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       app:
+    #         username:
+    #           type: "static"
+    #           value: "outline"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       database:
+    #         type: "static"
+    #         value: "outline"
+    #       host:
+    #         type: "static"
+    #         value: "outline-pg-cluster-rw"
+    #       port:
+    #         type: "static"
+    #         value: "5432"
+    #       s3:
+    #         accessKey:
+    #           type: "static"
+    #           value: ""
+    #         bucketName:
+    #           type: "static"
+    #           value: "ohmlab-backups"
+    #         bucketPrefix:
+    #           type: "static"
+    #           value: "cnpg"
+    #         endpoint:
+    #           type: "static"
+    #           value: "https://s3.fr-par.scw.cloud"
+    #         region:
+    #           type: "static"
+    #           value: "fr-par"
+    #         secretKey:
+    #           type: "static"
+    #           value: ""
+    #     s3:
+    #       accessKey:
+    #         type: "static"
+    #         value: ""
+    #       bucketName:
+    #         type: "static"
+    #         value: "ohmlab-backups"
+    #       bucketPrefix:
+    #         type: "static"
+    #         value: "cnpg"
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://s3.fr-par.scw.cloud"
+    #       region:
+    #         type: "static"
+    #         value: "fr-par"
+    #       secretKey:
+    #         type: "static"
+    #         value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "outline"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/sonarqube"
+    #   data:
+    #     admin:
+    #       username:
+    #         type: "static"
+    #         value: "admin"
+    #       password:
+    #         type: "random"
+    #         length: 24
+    #     postgres:
+    #       admin:
+    #         username:
+    #           type: "static"
+    #           value: "postgres"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       app:
+    #         username:
+    #           type: "static"
+    #           value: "sonarqube"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       database:
+    #         type: "static"
+    #         value: "sonarqube"
+    #       host:
+    #         type: "static"
+    #         value: "sonarqube-pg-cluster-rw"
+    #       port:
+    #         type: "static"
+    #         value: "5432"
+    #       s3:
+    #         accessKey:
+    #           type: "static"
+    #           value: ""
+    #         bucketName:
+    #           type: "static"
+    #           value: "ohmlab-backups"
+    #         bucketPrefix:
+    #           type: "static"
+    #           value: "cnpg"
+    #         endpoint:
+    #           type: "static"
+    #           value: "https://s3.fr-par.scw.cloud"
+    #         region:
+    #           type: "static"
+    #           value: "fr-par"
+    #         secretKey:
+    #           type: "static"
+    #           value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "sonarqube"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/vault"
+    #   data:
+    #     admin:
+    #       token:
+    #         type: "static"
+    #         value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "vault"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/vault-operator"
+    #   data:
+    #     admin:
+    #       token:
+    #         type: "static"
+    #         length: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "vault-operator"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
+    # - path: "homelab/platforms/production/vaultwarden"
+    #   data:
+    #     admin:
+    #       token:
+    #         type: "random"
+    #         length: 24
+    #     postgres:
+    #       admin:
+    #         username:
+    #           type: "static"
+    #           value: "postgres"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       app:
+    #         username:
+    #           type: "static"
+    #           value: "vaultwarden"
+    #         password:
+    #           type: "random"
+    #           length: 24
+    #       database:
+    #         type: "static"
+    #         value: "vaultwarden"
+    #       host:
+    #         type: "static"
+    #         value: "vaultwarden-pg-cluster-rw"
+    #       port:
+    #         type: "static"
+    #         value: "5432"
+    #       s3:
+    #         accessKey:
+    #           type: "static"
+    #           value: ""
+    #         bucketName:
+    #           type: "static"
+    #           value: "ohmlab-backups"
+    #         bucketPrefix:
+    #           type: "static"
+    #           value: "cnpg"
+    #         endpoint:
+    #           type: "static"
+    #           value: "https://s3.fr-par.scw.cloud"
+    #         region:
+    #           type: "static"
+    #           value: "fr-par"
+    #         secretKey:
+    #           type: "static"
+    #           value: ""
+    #     keycloak:
+    #       endpoint:
+    #         type: "static"
+    #         value: "https://sso.ohmlab.fr"
+    #       realm:
+    #         type: "static"
+    #         value: "homelab"
+    #       clientId:
+    #         type: "static"
+    #         value: "vaultwarden"
+    #       clientSecret:
+    #         type: "random"
+    #         length: 32
   resources:
     vault:
       limits:
