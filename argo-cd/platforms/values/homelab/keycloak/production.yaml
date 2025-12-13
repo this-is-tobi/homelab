@@ -94,6 +94,8 @@ vso:
           excludes:
           - ".*"
           templates:
+            ROOT_DOMAIN:
+              text: '{{ get .Secrets "extras" | dig "rootDomain" "" }}'
             KEYCLOAK_DOMAIN:
               text: '{{ get .Secrets "domain" }}'
             KEYCLOAK_REALM:
@@ -241,6 +243,25 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    clientMinio:
+      mount: "homelab"
+      path: "platforms/production/minio"
+      type: "kv-v2"
+      vaultAuthRef: "keycloak-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "keycloak-clients-minio"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
     # clientArgoWorkflows:
     #   mount: "homelab"
     #   path: "platforms/production/argo-workflows"
@@ -336,25 +357,6 @@ vso:
     #           text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
     #         CLIENT_SECRET:
     #           text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientMinio:
-      mount: "homelab"
-      path: "platforms/production/minio"
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-minio"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
     # clientHarbor:
     #   mount: "homelab"
     #   path: "platforms/production/harbor"

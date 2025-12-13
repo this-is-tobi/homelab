@@ -67,7 +67,7 @@ vso:
       mount: "kubernetes"
       kubernetes:
         role: "cert-manager"
-        serviceAccount: "cert-manager"
+        serviceAccount: "default"
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
