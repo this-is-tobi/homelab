@@ -1,0 +1,29 @@
+rustfs:
+  ingress:
+    hosts:
+    - host: "s3.ohmlab.fr"
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - secretName: rustfs-tls
+      hosts:
+      - s3.ohmlab.fr
+  consoleIngress:
+    hosts:
+    - host: "console.s3.ohmlab.fr"
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - secretName: rustfs-console-tls
+      hosts:
+      - console.s3.ohmlab.fr
+  dataPersistence:
+    size: 250Gi
+
+vso:
+  vaultStaticSecrets:
+    rustfsAdmin:
+      mount: "homelab"
+      path: "platforms/production/rustfs"

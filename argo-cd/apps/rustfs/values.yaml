@@ -1,0 +1,111 @@
+rustfs:
+  deploymentType: "statefulset"
+  replicaCount: 4
+  podManagementPolicy: "Parallel"
+  auth:
+    existingSecret: "rustfs-admin"
+    existingSecretAccessKeyKey: "accessKey"
+    existingSecretSecretKeyKey: "secretKey"
+  config:
+    logLevel: "info"
+    consoleEnabled: true
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+    hosts:
+    - host: ""
+      paths:
+      - path: /
+        pathType: Prefix
+    tls: []
+  consoleIngress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+    hosts:
+    - host: ""
+      paths:
+      - path: /
+        pathType: Prefix
+    tls: []
+  dataPersistence:
+    enabled: true
+    size: 100Gi
+    accessModes:
+    - ReadWriteOnce
+  logsPersistence:
+    enabled: false
+    size: 5Gi
+    accessModes:
+    - ReadWriteOnce
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+  podSecurityContext:
+    fsGroup: 1001
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    runAsUser: 1001
+    runAsGroup: 1001
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+      - ALL
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - rustfs
+          topologyKey: kubernetes.io/hostname
+  service:
+    type: ClusterIP
+    port: 9000
+    consolePort: 9001
+  consoleService:
+    enabled: true
+    type: ClusterIP
+    port: 9000
+    consolePort: 9001
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "rustfs"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    rustfsAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "rustfs-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "rustfs-admin"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludeRaw: true
+          includes:
+          - "admin"

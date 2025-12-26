@@ -1,0 +1,14 @@
+apiVersion: v2
+name: rustfs
+type: application
+version: 0.1.1
+appVersion: "1.0.0"
+dependencies:
+- name: rustfs
+  alias: rustfs
+  version: 0.1.1
+  repository: oci://registry-1.docker.io/cloudpirates
+- name: vso-utils
+  alias: vso
+  version: 1.1.4
+  repository: https://this-is-tobi.github.io/helm-charts

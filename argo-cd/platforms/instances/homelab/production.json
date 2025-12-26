@@ -34,6 +34,7 @@
     { "app": "minio", "enabled": "true", "hook": "Sync", "syncWave": 40 },
     { "app": "mlflow", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "outline", "enabled": "false", "hook": "Sync", "syncWave": 40 },
+    { "app": "rustfs", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "sonarqube", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "teleport", "enabled": "true", "hook": "Sync", "syncWave": 40 },
     { "app": "vault", "enabled": "false", "hook": "Sync", "syncWave": 40 },

@@ -160,6 +160,11 @@ keycloakConfigCli:
       secretKeyRef:
         name: keycloak-clients-minio
         key: CLIENT_SECRET
+  - name: RUSTFS_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-rustfs
+        key: CLIENT_SECRET
   # - name: ARGOWORKFLOWS_CLIENT_SECRET
   #   valueFrom:
   #     secretKeyRef:
@@ -242,6 +247,17 @@ keycloakConfigCli:
               description: "MinIO read-write access"
             - name: "writeonly"
               description: "MinIO write-only access"
+            rustfs:
+            - name: "consoleAdmin"
+              description: "RustFS console administrator"
+            - name: "diagnostics"
+              description: "RustFS diagnostics role"
+            - name: "readonly"
+              description: "RustFS read-only access"
+            - name: "readwrite"
+              description: "RustFS read-write access"
+            - name: "writeonly"
+              description: "RustFS write-only access"
         groups:
         - name: "admin"
           path: "/admin"
@@ -249,6 +265,12 @@ keycloakConfigCli:
             grafana:
             - "grafanaadmin"
             minio:
+            - "consoleAdmin"
+            - "diagnostics"
+            - "readonly"
+            - "readwrite"
+            - "writeonly"
+            rustfs:
             - "consoleAdmin"
             - "diagnostics"
             - "readonly"
@@ -389,6 +411,55 @@ keycloakConfigCli:
               "jsonType.label": "String"
               "aggregate.attrs": "true"
               "client_id": "minio"
+              "multivalued": "true"
+          defaultClientScopes:
+          - "web-origins"
+          - "acr"
+          - "profile"
+          - "roles"
+          - "email"
+          - "groups"
+          optionalClientScopes:
+          - "address"
+          - "phone"
+          - "offline_access"
+          - "microprofile-jwt"
+        - clientId: "rustfs"
+          name: "RustFS"
+          description: "S3-compatible object storage"
+          enabled: true
+          clientAuthenticatorType: "client-secret"
+          secret: "$(env:RUSTFS_CLIENT_SECRET)"
+          redirectUris:
+          - "https://s3.$(env:ROOT_DOMAIN)/*"
+          - "https://s3.$(env:ROOT_DOMAIN)/oauth_callback"
+          - "https://s3-console.$(env:ROOT_DOMAIN)/*"
+          - "https://s3-console.$(env:ROOT_DOMAIN)/oauth_callback"
+          webOrigins:
+          - "https://s3.$(env:ROOT_DOMAIN)"
+          - "https://s3-console.$(env:ROOT_DOMAIN)"
+          protocol: "openid-connect"
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: true
+          serviceAccountsEnabled: false
+          attributes:
+            "use.jwks.url": "true"
+            "jwks.url": "https://sso.$(env:ROOT_DOMAIN)/realms/$(env:KEYCLOAK_REALM)/protocol/openid-connect/certs"
+          protocolMappers:
+          - name: "rustfs-policy-mapper"
+            protocol: "openid-connect"
+            protocolMapper: "oidc-usermodel-client-role-mapper"
+            consentRequired: false
+            config:
+              "id.token.claim": "true"
+              "access.token.claim": "true"
+              "claim.name": "rustfs-policy"
+              "userinfo.token.claim": "true"
+              "jsonType.label": "String"
+              "aggregate.attrs": "true"
+              "client_id": "rustfs"
               "multivalued": "true"
           defaultClientScopes:
           - "web-origins"
