@@ -1,0 +1,25 @@
+---
+# Ansible-lint configuration for homelab project
+
+# Exclude paths from linting
+exclude_paths:
+  - .cache/
+  - .git/
+
+# Skip rules that require major refactoring of existing variable names
+# The inventory uses camelCase variables (k3sVersion, rootDomain, etc.)
+# which are used throughout the project and would be breaking changes
+skip_list:
+  - var-naming[pattern]  # Skip camelCase variable naming in inventory files
+  - role-name[path]  # Project uses nested role structure (common/*, gateway/*, k3s/*)
+
+# Warn only for certain rules
+warn_list:
+  - var-naming[no-role-prefix]  # Warn but don't fail for role prefix naming
+  - yaml[line-length]  # Warn for long lines but don't fail (some base64 data is unavoidable)
+
+# Enable offline mode to speed up linting
+offline: false
+
+# Set profile to basic
+profile: basic

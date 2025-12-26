@@ -1,0 +1,14 @@
+- name: Get the list of mounted filesystems
+  ansible.builtin.shell: set -o pipefail && cat /proc/mounts | awk '{ print $2}' | grep -E "^{{ mounted_fs }}"
+  register: k3s_get_mounted_filesystems
+  args:
+    executable: /bin/bash
+  failed_when: false
+  changed_when: k3s_get_mounted_filesystems.stdout | length > 0
+  check_mode: false
+
+- name: Umount filesystem
+  ansible.posix.mount:
+    path: "{{ item }}"
+    state: unmounted
+  with_items: "{{ k3s_get_mounted_filesystems.stdout_lines | reverse | list }}"

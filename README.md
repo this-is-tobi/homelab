@@ -2,7 +2,9 @@
 
 This project aims to build a homelab for personal testing on infrastructure, development, CI/CD, etc...
 
-It provides a complete configuration with common web services using ansible as a deployment tool for both infrastructure  (gateway and [k3s](https://k3s.io) cluster) and applications running mainly in Kubernetes.
+It provides a complete configuration with common web services using:
+- **Ansible** for infrastructure deployment (gateway and [k3s](https://k3s.io) cluster)
+- **GitOps** (ArgoCD) for Kubernetes applications deployment
 
 It is a quick starting point for simple infrastructure needs or for testing various tools such as monitoring, alerting, automated deployment, security testing, etc...
 
@@ -28,36 +30,40 @@ __Setup directory:__
 git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git && git init
 
 # Copy inventory example to inventory
-cp -R ./ansible/infra/inventory-example ./ansible/infra/inventory
-cp -R ./ansible/kube/inventory-example ./ansible/kube/inventory
+cp -R ./ansible/inventory-example ./ansible/inventory
 ```
 
-### Infra
+### Infrastructure
 
 __Setup inventory:__
-- [host.yml](./ansible/infra/inventory-example/hosts.yml)
-- [all.yml](./ansible/infra/inventory-example/group_vars/all.yml)
-- [gateway.yml](./ansible/infra/inventory-example/group_vars/gateway.yml)
-- [k3s.yml](./ansible/infra/inventory-example/group_vars/k3s.yml)
+- [hosts.yml](./ansible/inventory-example/hosts.yml)
+- [all.yml](./ansible/inventory-example/group_vars/all.yml)
+- [gateway.yml](./ansible/inventory-example/group_vars/gateway.yml)
+- [k3s.yml](./ansible/inventory-example/group_vars/k3s.yml)
 
 __Install:__
-
 ```sh
-# Install infra
-./run.sh -p ./ansible/infra/install.yml -u -k
+# Deploy gateway and K3s cluster, fetch kubeconfig
+./run.sh -p ./ansible/install.yml -u -k
 ```
 
-### Kubernetes
+### Kubernetes Services (GitOps)
 
-__Setup inventory:__
-- [services.yml](./ansible/kube/inventory-example/group_vars/services.yml)
+__Setup configuration:__
+- Enable/disable apps in [./argo-cd/core/instances/homelab/production.json](./argo-cd/core/instances/homelab/production.json)
+- Configure values in [./argo-cd/core/values/homelab/](./argo-cd/core/values/homelab/)
 
 __Install:__
-
 ```sh
-# Set kube context
-kubectl config set-context homelab
+# Set kubectl context
+kubectl config use-context homelab
 
-# Install services
-./run.sh -p ./ansible/kube/install.yml -u
+# Bootstrap ArgoCD
+./run.sh -b
+
+# Apply core services (Longhorn, Vault, Cert-Manager, etc.)
+./run.sh -c homelab
+
+# Apply platform services (Keycloak, Gitea, Harbor, etc.)
+./run.sh -s homelab
 ```

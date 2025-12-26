@@ -1,0 +1,22 @@
+- name: Login to wireguard
+  delegate_to: localhost
+  ansible.builtin.uri:
+    url: http://{{ gatewayIp }}:51821/api/session
+    force_basic_auth: true
+    body_format: json
+    body:
+      "password": "{{ wireguard.password }}"
+    status_code: [200]
+  register: gateway_wireguard_login
+
+- name: Create wireguard user
+  delegate_to: localhost
+  ansible.builtin.uri:
+    url: http://{{ gatewayIp }}:51821/api/wireguard/client
+    force_basic_auth: true
+    body_format: json
+    body:
+      "name": "{{ item.username }}"
+    status_code: [200]
+    headers:
+      Cookie: "{{ gateway_wireguard_login.cookies_string.stdout }}"

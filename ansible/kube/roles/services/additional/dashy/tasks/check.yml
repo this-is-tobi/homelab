@@ -1,8 +1,0 @@
-- name: Setup vars
-  ansible.builtin.set_fact:
-    argocd_platform_name: "{{ lookup('template', '{{ playbook_dir }}/../../argo-cd/platform-manager.yaml', variable_start_string='[[', variable_end_string=']]') | from_yaml | json_query('metadata.name') }}"
-
-- name: Update dashy values
-  ansible.builtin.template:
-    src: "helm-values.yaml.j2"
-    dest: "{{ playbook_dir }}/../../argo-cd/apps/dashy/values/{{ platform_env.conf.env }}.yaml"

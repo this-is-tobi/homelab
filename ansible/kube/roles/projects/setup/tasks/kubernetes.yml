@@ -1,9 +1,0 @@
-- name: Create project namespace
-  kubernetes.core.k8s:
-    kind: Namespace
-    name: "{{ namespace }}"
-    state: present
-  loop_control:
-    loop_var: namespace
-  with_items: 
-    - "{{ item.namespaces }}"

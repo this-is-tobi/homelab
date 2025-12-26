@@ -1,3 +1,0 @@
-# Check prometheus crds
-- name: Check prometheus crds
-  ansible.builtin.include_tasks: prometheus-stack.yml

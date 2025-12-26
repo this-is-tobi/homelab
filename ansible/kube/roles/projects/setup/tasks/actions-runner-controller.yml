@@ -1,7 +1,0 @@
-- name: Deploy Github Actions runners
-  kubernetes.core.k8s:
-    state: present
-    template: runner.yml.j2
-  loop_control: 
-    loop_var: runner
-  with_items: "{{ item.actionsRunnerController.runners | map('combine', { \"namespace\": \"item.name\" }) }}"

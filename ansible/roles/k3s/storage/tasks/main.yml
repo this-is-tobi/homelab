@@ -1,0 +1,37 @@
+- name: Install utility packages
+  ansible.builtin.apt:
+    update_cache: true
+    state: present
+    pkg:
+      - open-iscsi
+      - bash
+      - curl
+      - grep
+      - util-linux
+      - nfs-common
+      - jq
+
+- name: Enable service iscsid
+  ansible.builtin.service:
+    name: iscsid
+    enabled: true
+    state: started
+
+- name: Get disk UUID
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      DISK="$(lsblk --tree -o PATH,MOUNTPOINT -J | jq -r '.blockdevices[] | select(.children == null) | .path' | head -n 1)"
+      lsblk -n -o UUID "$DISK"
+    executable: /bin/bash
+  register: k3s_sda_uuid
+  when: (additional_disk is defined) and additional_disk | bool
+  changed_when: false
+
+- name: Mount storage device by UUID
+  ansible.posix.mount:
+    path: /storage01
+    src: UUID={{ k3s_sda_uuid.stdout_lines[0] }}
+    fstype: ext4
+    state: mounted
+  when: (additional_disk is defined) and additional_disk | bool and (k3s_sda_uuid is succeeded)

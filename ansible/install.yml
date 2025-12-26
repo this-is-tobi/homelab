@@ -1,0 +1,103 @@
+# All
+- name: OS Upgrade
+  hosts: all
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+  serial: 1
+  roles:
+    - role: common/upgrade
+  tags:
+    - os-upgrade
+    - never
+
+# Gateway
+- name: Setup Gateway
+  hosts: gateway
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/gateway.yml
+  roles:
+    - role: common/hostname
+    - role: common/locales
+    - role: common/ssh
+    - role: common/docker
+    - role: gateway/haproxy
+    - role: gateway/wireguard
+    - role: gateway/pihole
+  tags:
+    - gateway
+
+# K3S - Deploy
+- name: Setup K3S Prerequisites
+  hosts: k3s
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - role: common/hostname
+    - role: common/locales
+    - role: common/ssh
+    - role: k3s/prereq
+    - role: k3s/download
+    - role: k3s/storage
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-init
+
+- name: Deploy K3S Masters
+  hosts: masters
+  become: true
+  serial: 1
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - role: k3s/deploy/masters
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-masters
+
+- name: Deploy K3S Workers
+  hosts: workers
+  become: true
+  serial: 1
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - role: k3s/deploy/workers
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-workers
+
+- name: Setup K3S Users
+  hosts: localhost
+  become: false
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
+  vars_files:
+    - ./inventory/group_vars/all.yml
+  roles:
+    - role: k3s/users
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-users
+
+# K3S - Destroy
+- name: Destroy K3S Cluster
+  hosts: k3s
+  become: true
+  vars_files:
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - role: k3s/destroy
+  tags:
+    - k3s-destroy

@@ -1,0 +1,13 @@
+- name: Ensure "/etc/rancher/k3s" directory exists
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s"
+    state: directory
+    mode: "0755"
+
+- name: Copy registries yaml file
+  ansible.builtin.template:
+    src: "registries.yml.j2"
+    dest: "/etc/rancher/k3s/registries.yml"
+    owner: root
+    group: root
+    mode: "0755"

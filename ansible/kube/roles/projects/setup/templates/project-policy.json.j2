@@ -1,3 +1,0 @@
-{
-  "policy": "path \"secret/{{ item.name }}/*\"\n{\n  capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]\n}\n\npath \"sys/mounts\"\n{\n  capabilities = [\"read\"]\n}\n\npath \"sys/health\"\n{\n  capabilities = [\"read\", \"sudo\"]\n}"
-}

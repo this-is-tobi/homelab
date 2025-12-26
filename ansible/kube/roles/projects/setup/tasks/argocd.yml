@@ -1,4 +1,0 @@
-- name: Deploy Agocd project
-  kubernetes.core.k8s:
-    state: present
-    template: argocd-project.yml.j2
