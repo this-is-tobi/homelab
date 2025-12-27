@@ -67,3 +67,27 @@ sso:
     - secretName: "mlflow.staging.example.com"
       hosts:
       - "mlflow.staging.example.com"
+
+vso:
+  vaultStaticSecrets:
+    mlflowAdmin:
+      mount: "example"
+      path: "platforms/staging/mlflow"
+    mlflowS3:
+      mount: "example"
+      path: "platforms/staging/mlflow"
+    mlflowDbInfos:
+      mount: "example"
+      path: "platforms/staging/mlflow"
+    mlflowDbAdmin:
+      mount: "example"
+      path: "platforms/staging/mlflow"
+    mlflowDbApp:
+      mount: "example"
+      path: "platforms/staging/mlflow"
+    mlflowPgBackup:
+      mount: "example"
+      path: "platforms/staging/mlflow"
+    mlflowSso:
+      mount: "example"
+      path: "platforms/staging/mlflow"

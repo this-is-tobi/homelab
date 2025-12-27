@@ -46,3 +46,15 @@ argo-cd:
   crds:
     install: false
     keep: true
+
+vso:
+  vaultStaticSecrets:
+    argoCdAdmin:
+      mount: "example"
+      path: "platforms/production/argo-cd"
+    argoCdConfig:
+      mount: "example"
+      path: "platforms/production/argo-cd"
+    argoCdSso:
+      mount: "example"
+      path: "platforms/production/argo-cd"

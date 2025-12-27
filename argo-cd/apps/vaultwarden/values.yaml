@@ -22,3 +22,141 @@ waultwarden:
     hostname: ""
     tls: true
     tlsSecret: ""
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "vaultwarden"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    vaultwardenAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "vaultwarden-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "vaultwarden-admin"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    vaultwardenDbInfos:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "vaultwarden-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "vaultwarden-db-infos"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            DB_URL:
+              text: 'postgresql://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}'
+            DB_HOST:
+              text: '{{ get .Secrets "postgres" | dig "host" "" }}'
+            DB_PORT:
+              text: '{{ get .Secrets "postgres" | dig "port" "" }}'
+    vaultwardenDbAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "vaultwarden-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "vaultwarden-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    vaultwardenDbApp:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "vaultwarden-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "vaultwarden-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    vaultwardenPgBackup:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "vaultwarden-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "vaultwarden-pg-cluster-backup"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
+    vaultwardenSso:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "vaultwarden-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "vaultwarden-sso"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

@@ -13,3 +13,34 @@ sops:
       enabled: true
   metrics:
     enabled: true
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "sops"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    sopsAgeKeyFile:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "sops-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "sops-age-key-file"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            keys:
+              text: '{{ get .Secrets "extras" | dig "keys" "" | b64dec }}'

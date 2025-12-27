@@ -13,3 +13,9 @@ argo-workflows:
   crds:
     install: true
     keep: true
+
+vso:
+  vaultStaticSecrets:
+    argoWorkflowsSso:
+      mount: "example"
+      path: "platforms/production/argo-workflows"

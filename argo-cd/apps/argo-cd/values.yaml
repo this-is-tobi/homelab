@@ -376,3 +376,76 @@ argo-cd:
   crds:
     install: true
     keep: true
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "argo-cd"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    argoCdAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "argo-cd-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-cd-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    argoCdConfig:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "argo-cd-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-cd-config"
+        create: true
+        type: "Opaque"
+        labels:
+          app.kubernetes.io/part-of: argocd
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            PASSWORD_HASHED:
+              text: '{{ get .Secrets "admin" | dig "passwordHashed" "" }}'
+    argoCdSso:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "argo-cd-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "argo-cd-sso"
+        create: true
+        type: "Opaque"
+        labels:
+          app.kubernetes.io/part-of: argocd
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

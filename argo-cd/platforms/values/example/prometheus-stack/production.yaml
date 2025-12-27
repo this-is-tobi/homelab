@@ -25,24 +25,24 @@ kube-prometheus-stack:
           key: "OIDC_CLIENT_SECRET"
     ingress:
       hosts:
-      - "monitoring.ohmlab.fr"
+      - "monitoring.example.com"
       tls:
       - hosts:
-        - "monitoring.ohmlab.fr"
-        secretName: "monitoring.ohmlab.fr"
+        - "monitoring.example.com"
+        secretName: "monitoring.example.com"
     grafana.ini:
       server:
-        root_url: "https://monitoring.ohmlab.fr"
+        root_url: "https://monitoring.example.com"
       auth.generic_oauth:
-        auth_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
-        token_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
-        api_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"
+        auth_url: "https://keycloak.example.com/realms/homelab/protocol/openid-connect/auth"
+        token_url: "https://keycloak.example.com/realms/homelab/protocol/openid-connect/token"
+        api_url: "https://keycloak.example.com/realms/homelab/protocol/openid-connect/userinfo"
 
 vso:
   vaultStaticSecrets:
     monitoringAdmin:
-      mount: "homelab"
+      mount: "example"
       path: "platforms/production/prometheus-stack"
     monitoringSso:
-      mount: "homelab"
+      mount: "example"
       path: "platforms/production/prometheus-stack"

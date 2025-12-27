@@ -35,3 +35,30 @@ cnpg:
         value: ""
       region:
         value: "fr-par"
+
+vso:
+  vaultStaticSecrets:
+    harborAdmin:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborSecretkey:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborS3:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborDbInfos:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborDbAdmin:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborDbApp:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborPgBackup:
+      mount: "example"
+      path: "platforms/production/harbor"
+    harborSso:
+      mount: "example"
+      path: "platforms/production/harbor"

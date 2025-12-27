@@ -69,3 +69,24 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    giteaAdmin:
+      mount: "example"
+      path: "platforms/production/gitea"
+    giteaDbInfos:
+      mount: "example"
+      path: "platforms/production/gitea"
+    giteaDbAdmin:
+      mount: "example"
+      path: "platforms/production/gitea"
+    giteaDbApp:
+      mount: "example"
+      path: "platforms/production/gitea"
+    giteaPgBackup:
+      mount: "example"
+      path: "platforms/production/gitea"
+    giteaSso:
+      mount: "example"
+      path: "platforms/production/gitea"

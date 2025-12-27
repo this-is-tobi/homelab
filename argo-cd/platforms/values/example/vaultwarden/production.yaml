@@ -37,3 +37,24 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    vaultwardenAdmin:
+      mount: "example"
+      path: "platforms/production/vaultwarden"
+    vaultwardenDbInfos:
+      mount: "example"
+      path: "platforms/production/vaultwarden"
+    vaultwardenDbAdmin:
+      mount: "example"
+      path: "platforms/production/vaultwarden"
+    vaultwardenDbApp:
+      mount: "example"
+      path: "platforms/production/vaultwarden"
+    vaultwardenPgBackup:
+      mount: "example"
+      path: "platforms/production/vaultwarden"
+    vaultwardenSso:
+      mount: "example"
+      path: "platforms/production/vaultwarden"

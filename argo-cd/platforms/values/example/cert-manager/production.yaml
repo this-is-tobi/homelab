@@ -58,3 +58,9 @@ clusterIssuers:
           webhook:
             groupName: "acme.scaleway.com"
             solverName: "scaleway"
+
+vso:
+  vaultStaticSecrets:
+    scwCreds:
+      mount: "example"
+      path: "platforms/production/cert-manager"

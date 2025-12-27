@@ -61,34 +61,7 @@ clusterIssuers:
             solverName: "scaleway"
 
 vso:
-  vaultAuth:
-    default:
-      method: "kubernetes"
-      mount: "kubernetes"
-      kubernetes:
-        role: "cert-manager"
-        serviceAccount: "default"
-  vaultConnection:
-    default:
-      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-      skipTLSVerify: true
   vaultStaticSecrets:
     scwCreds:
       mount: "homelab"
       path: "platforms/production/cert-manager"
-      type: "kv-v2"
-      vaultAuthRef: "cert-manager-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "scw-creds"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            SCW_ACCESS_KEY:
-              text: '{{ get .Secrets "scaleway" | dig "accessKey" "" }}'
-            SCW_SECRET_KEY:
-              text: '{{ get .Secrets "scaleway" | dig "secretKey" "" }}'

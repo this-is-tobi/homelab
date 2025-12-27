@@ -43,3 +43,39 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    keycloakAdmin:
+      mount: "example"
+      path: "platforms/staging/keycloak"
+    keycloakConfig:
+      mount: "example"
+      path: "platforms/staging/keycloak"
+    keycloakDbInfos:
+      mount: "example"
+      path: "platforms/staging/keycloak"
+    keycloakDbAdmin:
+      mount: "example"
+      path: "platforms/staging/keycloak"
+    keycloakDbApp:
+      mount: "example"
+      path: "platforms/staging/keycloak"
+    keycloakPgBackup:
+      mount: "example"
+      path: "platforms/staging/keycloak"
+    clientGitea:
+      mount: "example"
+      path: "platforms/staging/gitea"
+    clientGrafana:
+      mount: "example"
+      path: "platforms/staging/prometheus-stack"
+    clientArgoCd:
+      mount: "example"
+      path: "platforms/staging/argo-cd"
+    clientMinio:
+      mount: "example"
+      path: "platforms/staging/minio"
+    clientRustfs:
+      mount: "example"
+      path: "platforms/staging/rustfs"

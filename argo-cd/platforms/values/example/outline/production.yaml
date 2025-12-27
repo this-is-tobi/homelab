@@ -91,3 +91,24 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    outlineS3:
+      mount: "example"
+      path: "platforms/production/outline"
+    outlineDbInfos:
+      mount: "example"
+      path: "platforms/production/outline"
+    outlineDbAdmin:
+      mount: "example"
+      path: "platforms/production/outline"
+    outlineDbApp:
+      mount: "example"
+      path: "platforms/production/outline"
+    outlinePgBackup:
+      mount: "example"
+      path: "platforms/production/outline"
+    outlineSso:
+      mount: "example"
+      path: "platforms/production/outline"

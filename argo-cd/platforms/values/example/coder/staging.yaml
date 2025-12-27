@@ -64,3 +64,21 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    coderDbInfos:
+      mount: "example"
+      path: "platforms/staging/coder"
+    coderDbAdmin:
+      mount: "example"
+      path: "platforms/staging/coder"
+    coderDbApp:
+      mount: "example"
+      path: "platforms/staging/coder"
+    coderPgBackup:
+      mount: "example"
+      path: "platforms/staging/coder"
+    coderSso:
+      mount: "example"
+      path: "platforms/staging/coder"

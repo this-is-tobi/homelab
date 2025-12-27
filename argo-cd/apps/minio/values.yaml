@@ -83,3 +83,65 @@ minio:
       - "/minio/v2/metrics/node"
       - "/minio/v2/metrics/bucket"
       - "/minio/v2/metrics/resource"
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "minio"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    minioAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "minio-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "minio-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    minioConfig:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "minio-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "minio-config"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            MINIO_IDENTITY_OPENID_CONFIG_URL:
+              text: ""
+            MINIO_IDENTITY_OPENID_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            MINIO_IDENTITY_OPENID_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+            MINIO_IDENTITY_OPENID_KEYCLOAK_ADMIN_URL:
+              text: ""
+            MINIO_IDENTITY_OPENID_KEYCLOAK_REALM:
+              text: ""
+            MINIO_DOMAIN:
+              text: ""
+            MINIO_BROWSER_REDIRECT_URL:
+              text: ""

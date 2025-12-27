@@ -65,3 +65,55 @@ kube-prometheus-stack:
       size: 3Gi
       finalizers:
       - kubernetes.io/pvc-protection
+
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "prometheus-stack"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    monitoringAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "prometheus-stack-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "monitoring-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "admin" | dig "username" "" }}'
+            password:
+              text: '{{ get .Secrets "admin" | dig "password" "" }}'
+    monitoringSso:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "prometheus-stack-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "monitoring-sso"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

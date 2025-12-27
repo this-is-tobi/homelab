@@ -1,0 +1,7 @@
+sops: {}
+
+vso:
+  vaultStaticSecrets:
+    sopsAgeKeyFile:
+      mount: "example"
+      path: "platforms/staging/sops"

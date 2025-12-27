@@ -59,3 +59,21 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    mattermostS3:
+      mount: "example"
+      path: "platforms/production/mattermost"
+    mattermostDbInfos:
+      mount: "example"
+      path: "platforms/production/mattermost"
+    mattermostDbAdmin:
+      mount: "example"
+      path: "platforms/production/mattermost"
+    mattermostDbApp:
+      mount: "example"
+      path: "platforms/production/mattermost"
+    mattermostPgBackup:
+      mount: "example"
+      path: "platforms/production/mattermost"

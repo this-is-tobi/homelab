@@ -38,3 +38,27 @@ cnpg:
         key: "S3_SECRET_KEY"
       region:
         key: "S3_REGION"
+
+vso:
+  vaultStaticSecrets:
+    sonarqubeAdmin:
+      mount: "example"
+      path: "platforms/production/sonarqube"
+    sonarqubeProperties:
+      mount: "example"
+      path: "platforms/production/sonarqube"
+    sonarqubeDbInfos:
+      mount: "example"
+      path: "platforms/production/sonarqube"
+    sonarqubeDbAdmin:
+      mount: "example"
+      path: "platforms/production/sonarqube"
+    sonarqubeDbApp:
+      mount: "example"
+      path: "platforms/production/sonarqube"
+    sonarqubePgBackup:
+      mount: "example"
+      path: "platforms/production/sonarqube"
+    sonarqubeSso:
+      mount: "example"
+      path: "platforms/production/sonarqube"
