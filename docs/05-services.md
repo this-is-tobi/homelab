@@ -34,7 +34,7 @@ Gateway web interface services are deployed and accessible for admin purpose, th
 | Pihole dashboard    | <http://192.168.1.99:5353>  |
 | Wireguard dashboard | <http://192.168.1.99:51821> |
 
-> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../ansible/infra/inventory-example/hosts.yml).*
+> *__Notes:__ Replace `192.168.1.99` with the gateway's ip address set in [hosts.yml](../ansible/inventory-example/hosts.yml).*
 
 ## Kubernetes
 
@@ -46,35 +46,52 @@ The following services are deployed in the cluster :
 | --------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Actions-runner-controller](https://github.com/actions/actions-runner-controller) | Github Actions runners controller               | [actions-runner-controller/actions-runner-controller](https://artifacthub.io/packages/helm/actions-runner-controller/actions-runner-controller) |
 | [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)                               | GitOps continuous delivery tool                 | [argo/argo-cd](https://artifacthub.io/packages/helm/argo/argo-cd)                                                                               |
-| [Coder](https://coder.com/)                                                       | Remote selfhosted development environments      | [coder-v2/coder](https://artifacthub.io/packages/helm/coder-v2/coder)                                                                           |
+| [Argo-workflows](https://argoproj.github.io/workflows/)                           | Workflow automation engine                      | [argo/argo-workflows](https://artifacthub.io/packages/helm/argo/argo-workflows)                                                                 |
 | [Cert-manager](https://cert-manager.io/)                                          | Cloud native certificate management             | [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager)                                                     |
 | [Cloud-native-postgres](https://cloudnative-pg.io/)                               | Cloud native postgres database management       | [cnpg/cloudnative-pg](https://artifacthub.io/packages/helm/cloudnative-pg/cloudnative-pg)                                                       |
+| [Coder](https://coder.com/)                                                       | Remote selfhosted development environments      | [coder-v2/coder](https://artifacthub.io/packages/helm/coder-v2/coder)                                                                           |
 | [Dashy](https://github.com/Lissy93/dashy)                                         | Home dashboard                                  | -                                                                                                                                               |
 | [Gitea](https://about.gitea.com/)                                                 | Private, Fast, Reliable DevOps Platform         | [gitea/gitea](https://artifacthub.io/packages/helm/gitea/gitea)                                                                                 |
 | [Harbor](https://goharbor.io/)                                                    | Cloud native registry                           | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                                                           |
+| [Ingress-nginx](https://kubernetes.github.io/ingress-nginx/)                      | Kubernetes ingress controller                   | [ingress-nginx/ingress-nginx](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx)                                                 |
 | [Keycloak](https://keycloak.org)                                                  | Single Sign On service                          | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                                                       |
 | [Kubernetes-dashboard](https://github.com/kubernetes/dashboard)                   | Kubernetes dashboard                            | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard)                                   |
 | [Longhorn](https://longhorn.io/)                                                  | Cloud native distributed block storage          | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                                                     |
 | [Mattermost](https://mattermost.com/)                                             | Chat service with file sharing and integrations | [mattermost/mattermost-team-edition](https://artifacthub.io/packages/helm/mattermost/mattermost-team-edition)                                   |
 | [Minio](https://min.io/)                                                          | High Performance Object Storage                 | [bitnami/minio](https://artifacthub.io/packages/helm/bitnami/minio)                                                                             |
+| [MLflow](https://mlflow.org/)                                                     | ML experiment tracking and model registry       | [community-charts/mlflow](https://artifacthub.io/packages/helm/community-charts/mlflow)                                                         |
 | [Outline](https://www.getoutline.com/)                                            | Share notes and wiki with your team             | [lrstanley/outline](https://artifacthub.io/packages/helm/lrstanley/outline)                                                                     |
 | [Prometheus-stack](https://prometheus.io/)                                        | Open-source monitoring solution                 | [prometheus-community/kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)                   |
+| [RustFS](https://rustfs.com/)                                                     | High Performance Object Storage                 | -                                                                                                                                               |
 | [Sonarqube](https://www.sonarsource.com/products/sonarqube/)                      | Code quality analysis service                   | [sonarqube/sonarqube](https://artifacthub.io/packages/helm/sonarqube/sonarqube)                                                                 |
 | [Sops](https://github.com/isindir/sops-secrets-operator)                          | Secret manager that decode on the fly           | [sops-secrets-operator/sops-secrets-operator](https://artifacthub.io/packages/helm/sops-secrets-operator/sops-secrets-operator)                 |
 | [System-upgrade-controller](https://github.com/rancher/system-upgrade-controller) | K3S upgrade controller                          | -                                                                                                                                               |
+| [Teleport](https://goteleport.com/)                                               | Secure access and identity for infrastructure   | [teleport/teleport-cluster](https://artifacthub.io/packages/helm/teleport/teleport-cluster)                                                     |
 | [Trivy-operator](https://aquasecurity.github.io/trivy-operator/latest/)           | Kubernetes-native security toolkit              | [aqua/trivy-operator](https://aquasecurity.github.io/helm-charts/)                                                                              |
 | [Vault](https://www.vaultproject.io/)                                             | Secret management service                       | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                                                         |
+| [Vault-operator](https://developer.hashicorp.com/vault/docs/platform/k8s/vso)     | Vault Secrets Operator for Kubernetes           | [hashicorp/vault-secrets-operator](https://artifacthub.io/packages/helm/hashicorp/vault-secrets-operator)                                       |
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden)                         | Password management service                     | [vaultwarden/vaultwarden](https://artifacthub.io/packages/helm/vaultwarden/vaultwarden)                                                         |
 
 ### Versions
 
-To improve administrator experience, all services helm charts and versions can be managed thought the `groups_vars/services.yml` file for __core services only__.
-
-Additional services are managed through gitops flow with sources available [here](../argo-cd/envs/production/applicationset.yaml).
+All services helm charts and versions are managed through ArgoCD ApplicationSets with configuration stored in:
+- **App charts**: [./argo-cd/apps/](../argo-cd/apps/) - Each app has its own `Chart.yaml` defining the version
+- **Core instances**: [./argo-cd/core/instances/](../argo-cd/core/instances/) - Enable/disable core services
+- **Platform instances**: [./argo-cd/platforms/instances/](../argo-cd/platforms/instances/) - Enable/disable platform services
 
 ### Management
 
-Additional services activation/deactivation is managed by Ansible directly in the [applicationset file](../argo-cd/envs/production/applicationset.yaml), by commenting the blocks in the `.spec.sources` section.
+Services are managed via GitOps using ArgoCD ApplicationSets:
+
+1. **Core services** - Managed by [core/manager.yaml](../argo-cd/core/manager.yaml):
+   - Enable/disable apps in [./argo-cd/core/instances/\<instance\>/\<env\>.json](../argo-cd/core/instances/homelab/production.json)
+   - Configure values in [./argo-cd/core/values/\<instance\>/\<app\>/\<env\>.yaml](../argo-cd/core/values/homelab/)
+
+2. **Platform services** - Managed by [platforms/manager.yaml](../argo-cd/platforms/manager.yaml):
+   - Enable/disable apps in [./argo-cd/platforms/instances/\<instance\>/\<env\>.json](../argo-cd/platforms/instances/)
+   - Configure values in [./argo-cd/platforms/values/\<instance\>/\<app\>/\<env\>.yaml](../argo-cd/platforms/values/)
+
+To enable/disable a service, edit the corresponding JSON instance file and set `"enabled": "true"` or `"enabled": "false"`.
 
 ### Access
 
@@ -108,7 +125,7 @@ Kubernetes services that are available through user interfaces are centralized o
 | Vault                | <https://vault.domain.com>       |
 | Vaultwarden          | <https://vaultwarden.domain.com> |
 
-> *__Notes:__ Replace `domain.com` by your own domain set in [all.yml](../ansible/kube/inventory-example/group_vars/all.yml).*
+> *__Notes:__ Replace `domain.com` by your own domain configured in your values files.*
 
 ### Single sign on
 
@@ -136,22 +153,21 @@ Following services are connected through sso :
 
 The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Minio, Argocd and Trivy-operator to increase metrics coming from these applications.
 
-Some dashboards are already delivered with the installation but more can be added in `argo-cd/apps/prometheus-stack/templates`, they will be automatically loaded on Argocd synchronization. Already added dashboards are :
+Some dashboards are already delivered with the installation but more can be added in [argo-cd/apps/prometheus-stack/grafana-dashboards/](../argo-cd/apps/prometheus-stack/grafana-dashboards/), they will be automatically loaded on ArgoCD synchronization via the [dashboards.yaml](../argo-cd/apps/prometheus-stack/templates/dashboards.yaml) template. Already added dashboards are:
 
-| Repository source                                                                                         | Grafana dashboard ID                                                                                          |
-| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [argocd-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/argo-cd-dashboard.yaml)                | [14584](https://grafana.com/grafana/dashboards/14584-argo-cd/)                                                |
-| [cert-manager-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/cert-manager-dashboard.yaml)     | [20340](https://grafana.com/grafana/dashboards/20340-cert-manager/)                                           |
-| [cloudnative-pg-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/cloudnative-pg-dashboard.yaml) | [20417](https://grafana.com/grafana/dashboards/20417-cloudnativepg/)                                          |
-| [gitea-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/gitea-dashboard.yaml)                   | [17802](https://grafana.com/grafana/dashboards/17802-gitea-dashbaord/)                                        |
-| [harbor-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/harbor-dashboard.yaml)                 | *- ( [source](https://github.com/goharbor/harbor/blob/main/contrib/grafana-dashboard/metrics-example.json) )* |
-| [k3s-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/k3s-dashboard.yaml)                       | [15282](https://grafana.com/grafana/dashboards/15282-k8s-rke-cluster-monitoring/)                             |
-| [kube-global-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-global-dashboard.yaml)       | [15757](https://grafana.com/grafana/dashboards/15757-kubernetes-views-global/)                                |
-| [kube-node-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-node-dashboard.yaml)           | [15759](https://grafana.com/grafana/dashboards/15759-kubernetes-views-nodes/)                                 |
-| [kube-ns-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-ns-dashboard.yaml)               | [15758](https://grafana.com/grafana/dashboards/15758-kubernetes-views-namespaces/)                            |
-| [kube-pod-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/kube-pod-dashboard.yaml)             | [15760](https://grafana.com/grafana/dashboards/15760-kubernetes-views-pods/)                                  |
-| [longhorn-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/longhorn-dashboard.yaml)             | [13032](https://grafana.com/grafana/dashboards/13032-longhorn-example-v1-1-0/)                                |
-| [minio-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/minio-dashboard.yaml)                   | [13502](https://grafana.com/grafana/dashboards/13502-minio-dashboard/)                                        |
-| [traefik-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/traefik-dashboard.yaml)               | [17346](https://grafana.com/grafana/dashboards/17346-traefik-official-standalone-dashboard/)                  |
-| [trivy-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/trivy-dashboard.yaml)                   | [16337](https://grafana.com/grafana/dashboards/16337-trivy-operator-vulnerabilities/)                         |
-| [vault-dashboard.yaml](../argo-cd/apps/prometheus-stack/templates/vault-dashboard.yaml)                   | [12904](https://grafana.com/grafana/dashboards/12904-hashicorp-vault/)                                        |
+| Dashboard file                                                                                     | Grafana dashboard ID                                                                                          |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [argo-cd.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/argo-cd.json)                   | [14584](https://grafana.com/grafana/dashboards/14584-argo-cd/)                                                |
+| [cert-manager.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/cert-manager.json)         | [20340](https://grafana.com/grafana/dashboards/20340-cert-manager/)                                           |
+| [cloudnative-pg.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/cloudnative-pg.json)     | [20417](https://grafana.com/grafana/dashboards/20417-cloudnativepg/)                                          |
+| [gitea.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/gitea.json)                       | [17802](https://grafana.com/grafana/dashboards/17802-gitea-dashbaord/)                                        |
+| [harbor.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/harbor.json)                     | *- ( [source](https://github.com/goharbor/harbor/blob/main/contrib/grafana-dashboard/metrics-example.json) )* |
+| [k3s.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/k3s.json)                           | [15282](https://grafana.com/grafana/dashboards/15282-k8s-rke-cluster-monitoring/)                             |
+| [kube-global.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/kube-global.json)           | [15757](https://grafana.com/grafana/dashboards/15757-kubernetes-views-global/)                                |
+| [kube-node.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/kube-node.json)               | [15759](https://grafana.com/grafana/dashboards/15759-kubernetes-views-nodes/)                                 |
+| [kube-ns.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/kube-ns.json)                   | [15758](https://grafana.com/grafana/dashboards/15758-kubernetes-views-namespaces/)                            |
+| [kube-pod.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/kube-pod.json)                 | [15760](https://grafana.com/grafana/dashboards/15760-kubernetes-views-pods/)                                  |
+| [longhorn.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/longhorn.json)                 | [13032](https://grafana.com/grafana/dashboards/13032-longhorn-example-v1-1-0/)                                |
+| [minio.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/minio.json)                       | [13502](https://grafana.com/grafana/dashboards/13502-minio-dashboard/)                                        |
+| [trivy.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/trivy.json)                       | [16337](https://grafana.com/grafana/dashboards/16337-trivy-operator-vulnerabilities/)                         |
+| [vault.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/vault.json)                       | [12904](https://grafana.com/grafana/dashboards/12904-hashicorp-vault/)                                        |

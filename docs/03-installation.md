@@ -1,114 +1,150 @@
 # Installation
 
-The whole installation is performed with [ansible](https://www.ansible.com/) so it is required to install it on the computer that will run playbooks. Also, ssh access to all hosts need to be setup.
+The installation is performed in two phases:
+1. **Infrastructure** deployment with [Ansible](https://www.ansible.com/) for gateway and K3s cluster setup
+2. **Applications** deployment with [ArgoCD](https://argo-cd.readthedocs.io/) following a GitOps approach
 
 ## Prerequisites
 
-Following tools needs to be installed on the computer running the playbook :
+Following tools need to be installed on the computer running the deployment:
 - [ansible](https://ansible.com) *- infrastructure as code software tools.*
 - [age](https://github.com/FiloSottile/age) *- simple, modern and secure encryption tool.*
-- [htpasswd](https://httpd.apache.org/docs/2.4/en/programs/htpasswd.html) *- user files for basic authentication managerment.*
-- [jq](https://jqlang.github.io/jq/) *- lightweight and flexible command-line JSON processor.*
-- [mc](https://min.io/docs/minio/linux/reference/minio-mc.html) *- command-line tool that allows you to manage your s3.*
-- [openssl](https://www.openssl.org/) *- cryptography and SSL/TLS toolkit.*
-- [hvac](https://hvac.readthedocs.io/en/stable/overview.html) *- HashiCorp Vault API client for Python 3.x.*
+- [helm](https://helm.sh/) *- Kubernetes package manager.*
+- [kubectl](https://kubernetes.io/docs/reference/kubectl/) *- Kubernetes command-line tool.*
+- [sops](https://github.com/getsops/sops) *- simple and flexible tool for managing secrets.*
 - [sshpass](https://sourceforge.net/projects/sshpass) *- non-interactive ssh password auth.*
-- [sops](https://github.com/getsops/sops) *- Simple and flexible tool for managing secrets.*
 - [yq](https://github.com/mikefarah/yq) *- portable command-line YAML, JSON, XML, CSV, TOML and properties processor.*
 
 ```sh
 # Clone the repository
 git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab && rm -rf ./.git
 
-# Copy inventories examples to inventories
-cp -R ./ansible/infra/inventory-example ./ansible/infra/inventory
-cp -R ./ansible/kube/inventory-example ./ansible/kube/inventory
+# Copy inventory example to inventory
+cp -R ./ansible/inventory-example ./ansible/inventory
 ```
 
 > __*Notes*__:
 >
-> *PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../ansible/infra/inventory-example/group_vars/gateway.yml).*
->
-> *Every kubernetes services can be disabled by commenting its declaration in the Argocd [applicationset](../argo-cd/envs/production/applicationset.yaml). Ansible will determine which service is enabled and create the appropriate secrets in vault, it will also update the dashy configmap and may ask to push the updated file for gitops needs.*
+> *PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../ansible/inventory-example/group_vars/gateway.yml).*
 
 
 ## Settings
 
-Update the [hosts file](../ansible/infra/inventory-example/hosts.yml) and [group_vars files](../ansible/infra/inventory-example/group_vars/) to provide the appropriate infra and services settings.
+### Infrastructure
 
-Actions Runner Controller uses [Sops](https://github.com/getsops/sops) encrypted secret to store information about Github applications. These secrets are managed (encrypted/decrypted) using the wrapper script [run.sh](../run.sh) following the keys provided in [.sops.yaml](../.sops.yaml).
+Update the [hosts file](../ansible/inventory-example/hosts.yml) and [group_vars files](../ansible/inventory-example/group_vars/) to provide the appropriate infrastructure settings.
+
+To create admin access to the machines, it is required to provide their informations in the `group_vars/all.yml` file:
+- Put user ssh public key in the inventory file, this will grant admin access to the infrastructure by adding `authorized_keys`.
+
+### Applications (GitOps)
+
+Applications are managed via ArgoCD ApplicationSets. Configuration is done through:
+
+1. **Instance configuration** - Enable/disable apps in JSON files:
+   - Core services: [./argo-cd/core/instances/homelab/production.json](../argo-cd/core/instances/homelab/production.json)
+   - Platform services: [./argo-cd/platforms/instances/homelab/production.json](../argo-cd/platforms/instances/homelab/production.json)
+
+2. **Values configuration** - Customize app values in YAML files:
+   - Core values: [./argo-cd/core/values/homelab/](../argo-cd/core/values/homelab/)
+   - Platform values: [./argo-cd/platforms/values/homelab/](../argo-cd/platforms/values/homelab/)
+
+### Secrets Management
+
+[Sops](https://github.com/getsops/sops) is used to encrypt sensitive values. These secrets are managed (encrypted/decrypted) using the wrapper script [run.sh](../run.sh) following the keys provided in [.sops.yaml](../.sops.yaml).
 
 > *__Notes:__*
 >
 > *__Update Sops keys with your own__ but __leave the first age key blank__ as it is used by the cluster's automated key management system.*
 >
-> *Decrypt secrets by running `./run.sh -d` and encrypt secrets by running `./run.sh -e`, do not forget to recrypt secrets when changes are made.*
-
-
-To create admin access to the machines, it is required to provide their informations in the `groups_vars/all.yml` file :
-- Put user ssh public key in the inventory file, this will grant admin access to the infrastructure by adding `authorized_keys`.
+> *Decrypt secrets by running `./run.sh -d` and encrypt secrets by running `./run.sh -e`, do not forget to re-encrypt secrets when changes are made.*
 
 > __*Notes*__:
 >
-> *During setup, every password, token and so on are randomly generated and stored into kubernetes secrets / vault secrets.*
+> *During setup, every password, token and so on are randomly generated and stored into Vault secrets.*
+
 
 ## Deploy
 
-Two playbooks are available, one for [infrastructure](../ansible/infra/install.yml) installation and another one for [services](../ansible/kube/install.yml) installation.
-Various tags are available in the playbooks (*for more details, take a look at the files*), it allows to launch only some part of the installation, the main ones are :
+### Infrastructure
 
-__Infra :__
+Deploy gateway and K3s cluster using the Ansible playbook:
+
 ```sh
-# Deploy gateway
-./run.sh -p ./ansible/infra/install.yml -t gateway
+# Update Ansible collections and deploy infrastructure
+./run.sh -p ./ansible/install.yml -u -k
 
-# Deploy cluster
-./run.sh -p ./ansible/infra/install.yml -t k3s
+# Or with specific tags
+./run.sh -p ./ansible/install.yml -t gateway   # Deploy gateway only
+./run.sh -p ./ansible/install.yml -t k3s       # Deploy K3s cluster only
 ```
 
-__Services :__
+The `-k` flag fetches the kubeconfig from the master node and merges it into your local kubeconfig.
+
+### Applications (GitOps)
+
+Once the infrastructure is ready, bootstrap ArgoCD and deploy services:
 
 ```sh
-# Deploy kubernetes services
-./run.sh -p ./ansible/kube/install.yml
+# Set kubectl context
+kubectl config use-context homelab
 
-# Deploy only core services
-./run.sh -p ./ansible/kube/install.yml -t core
+# Bootstrap ArgoCD
+./run.sh -b
 
-# Deploy only platform services
-./run.sh -p ./ansible/kube/install.yml -t additional
+# Apply core services (Longhorn, Vault, Cert-Manager, etc.)
+./run.sh -c homelab
 
-# Deploy only keycloak
-./run.sh -p ./ansible/kube/install.yml -t keycloak
+# Apply platform services (Keycloak, Gitea, Harbor, etc.)
+./run.sh -s homelab
 ```
 
 > __*Notes*__:
 >
-> *By default tag `all` is used so every roles are played on playbooks launch.*
-> *Multiple tags can be passed as follows :* `./run.sh -p ./ansible/infra/install.yml -t gateway,k3s`
+> *Multiple tags can be passed as follows:* `./run.sh -p ./ansible/install.yml -t gateway,k3s`
 >
-> *First gateway init can take a long time to run because of openvpn key genereration (5-10min).*
+> *First gateway init can take a long time to run because of OpenVPN key generation (5-10min).*
+
 
 ## Destroy
 
-It is possible to cleanly detroy the k3s cluster by running :
+It is possible to cleanly destroy the K3s cluster by running:
 
 ```sh
 # Destroy cluster
-./run.sh -p ./ansible/infra/install.yml -t k3s-destroy
+./run.sh -p ./ansible/install.yml -t k3s-destroy
 ```
 
-## Kubernetes services
 
-Kubernetes services are deployed within 2 steps, the first one deploy core services that are needed to deploy one or more platforms, core services are composed of :
-- __Longhorn__ *- storage management in the cluster.*
-- __Traefik__ *- ingress controler to expose services.*
-- __Cert Manager__ *- certificate management for tls.*
-- __Vault__ *- secret management for services deployments.*
-- __Argocd__ *- deployment management for services deployments.*
+## Architecture
 
-Other services follow the gitops workflow, they are configured through files stored in a Git repository that is watched by Argocd.
-An `applicationSet` is responsible to deploy an `app of apps` for each environement (or platform) wanted to be spin up, then the app of apps will deploy all others services with their dependencies by reading secrets into Hashicorp Vault.
+### Core Services
+
+Core services provide the foundation for the platform:
+- **Longhorn** *- storage management in the cluster.*
+- **Ingress-NGINX** *- ingress controller to expose services.*
+- **Cert-Manager** *- certificate management for TLS.*
+- **Vault Operator** *- secret management for services deployments.*
+- **ArgoCD** *- deployment management following GitOps.*
+- **CloudNative-PG** *- PostgreSQL operator for databases.*
+
+### Platform Services
+
+Platform services are deployed on top of core services:
+- **Keycloak** *- identity and access management (SSO).*
+- **Gitea** *- self-hosted Git service.*
+- **Harbor** *- container registry.*
+- **Mattermost** *- team communication.*
+- **And more...*
+
+### GitOps Workflow
+
+Services follow the GitOps workflow with ArgoCD ApplicationSets:
+
+1. **ApplicationSet** reads instance configuration from JSON files
+2. **Application** is created for each enabled service
+3. **Helm chart** is deployed with values from the values directory
+4. **Vault** provides secrets via Vault Secrets Operator (VSO)
 
 ![gitops-01](images/gitops-01.drawio.png)
 
@@ -116,8 +152,9 @@ The next step would be to deploy each platform environment to a dedicated cluste
 
 ![gitops-02](images/gitops-02.drawio.png)
 
+
 ## Known issues
 
-At the moment, `mattermost` and `outline` images are not `arm64` compatible so their deployment are using custom mirror image with compatibility (see. [this repo](https://github.com/this-is-tobi/multiarch-mirror) and and associated Argocd applications).
+At the moment, `mattermost` and `outline` images are not `arm64` compatible so their deployment are using custom mirror image with compatibility (see. [this repo](https://github.com/this-is-tobi/multiarch-mirror) and associated ArgoCD applications).
 
 The [official Harbor helm chart](https://artifacthub.io/packages/helm/harbor/harbor) cannot be used due to arm64 incompatibility, the [Bitnami distribution](https://artifacthub.io/packages/helm/bitnami/harbor) is used instead.
