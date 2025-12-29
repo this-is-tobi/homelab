@@ -1,0 +1,77 @@
+homepage:
+  ingress:
+    main:
+      hosts:
+      - host: "staging.example.com"
+        paths:
+        - path: /
+          pathType: Prefix
+      tls:
+      - secretName: staging.example.com-tls
+        hosts:
+        - staging.example.com
+  env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: "staging.example.com"
+  config:
+    settings:
+      title: "Homelab Dashboard (Staging)"
+      theme: dark
+      color: slate
+      headerStyle: clean
+      layout:
+        Services:
+          style: row
+          columns: 3
+        Admin:
+          style: row
+          columns: 3
+        Utils:
+          style: row
+          columns: 2
+    bookmarks:
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/
+    services:
+    - Services:
+      - Argo-cd:
+          href: https://gitops.staging.example.com
+          siteMonitor: https://gitops.staging.example.com
+          description: Deploy apps using gitops
+          icon: argo-cd.png
+      - Gitea:
+          href: https://git.staging.example.com
+          siteMonitor: https://git.staging.example.com
+          description: Private DevOps Platform
+          icon: gitea.png
+      - Grafana:
+          href: https://monitoring.staging.example.com
+          siteMonitor: https://monitoring.staging.example.com
+          description: Cluster metrics & logs
+          icon: grafana.png
+    - Admin:
+      - Keycloak:
+          href: https://sso.staging.example.com
+          siteMonitor: https://sso.staging.example.com
+          description: Single Sign On management
+          icon: keycloak.png
+      - Vault:
+          href: https://vault.admin.staging.example.com
+          siteMonitor: https://vault.admin.staging.example.com
+          description: Secret manager
+          icon: vault.png
+    widgets:
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true

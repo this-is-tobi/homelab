@@ -1,0 +1,94 @@
+homepage:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/gethomepage/homepage
+    pullPolicy: IfNotPresent
+    tag: "v1.8.0"
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+  enableRbac: true
+  service:
+    type: ClusterIP
+    port: 3000
+    annotations: {}
+  ingress:
+    main:
+      enabled: true
+      className: "nginx"
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      hosts:
+      - host: ""
+        paths:
+        - path: /
+          pathType: Prefix
+      tls: []
+      # - secretName: ""
+      #   hosts:
+      #   - ""
+  env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: "*"
+  config:
+    kubernetes:
+      mode: cluster
+    settings:
+      title: ""
+      favicon: ""
+      theme: dark
+      color: slate
+      headerStyle: clean
+      layout: {}
+      # - Services:
+      #     style: row
+      #     columns: 3
+      # - Admin:
+      #     style: row
+      #     columns: 3
+      # - Utils:
+      #     style: row
+      #     columns: 2
+    bookmarks: []
+    # - Developer:
+    #     - Github:
+    #         - abbr: GH
+    #           href: https://github.com/
+    services: []
+    # - Services:
+    #   - Argo-cd:
+    #       href: https://gitops.example.com
+    #       siteMonitor: https://gitops.example.com
+    #       description: Deploy apps using gitops
+    #       icon: argo-cd.png
+    #   - Gitea:
+    #       href: https://git.example.com
+    #       siteMonitor: https://git.example.com
+    #       description: Private DevOps Platform
+    #       icon: gitea.png
+    widgets:
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: false
+          cpu: true
+          memory: true
+          showLabel: true
+  customCss: ""
+  customJs: ""
+  resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 256Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}

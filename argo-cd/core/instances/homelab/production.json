@@ -41,7 +41,7 @@
     { "app": "prometheus-stack", "enabled": "false", "hook": "Sync", "syncWave": 50 },
     { "app": "system-upgrade", "enabled": "false", "hook": "Sync", "syncWave": 60 },
     { "app": "trivy-operator", "enabled": "false", "hook": "Sync", "syncWave": 90 },
-    { "app": "dashy", "enabled": "false", "hook": "Sync", "syncWave": 100 },
+    { "app": "homepage", "enabled": "false", "hook": "Sync", "syncWave": 100 },
     { "app": "homelab-utils", "enabled": "false", "hook": "Sync", "syncWave": -1 }
   ]
 }

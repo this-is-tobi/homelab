@@ -1,0 +1,95 @@
+homepage:
+  ingress:
+    main:
+      hosts:
+      - host: "ohmlab.fr"
+        paths:
+        - path: /
+          pathType: Prefix
+      tls:
+      - secretName: ohmlab.fr-tls
+        hosts:
+        - ohmlab.fr
+  env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: "ohmlab.fr"
+  config:
+    settings:
+      title: "Tobi's Cloud"
+      theme: dark
+      color: slate
+      headerStyle: clean
+      layout:
+        Services:
+          style: row
+          columns: 3
+        Admin:
+          style: row
+          columns: 3
+        Utils:
+          style: row
+          columns: 2
+    bookmarks:
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/this-is-tobi/homelab
+        - Documentation:
+            - abbr: DOC
+              href: https://this-is-tobi.com/homelab/introduction
+    services:
+    - Services:
+      - Argo-cd:
+          href: https://gitops.ohmlab.fr
+          siteMonitor: https://gitops.ohmlab.fr
+          description: Deploy apps using gitops
+          icon: argo-cd.png
+      - Gitea:
+          href: https://git.ohmlab.fr
+          siteMonitor: https://git.ohmlab.fr
+          description: Private DevOps Platform including code storage
+          icon: gitea.png
+      - Grafana:
+          href: https://monitoring.ohmlab.fr
+          siteMonitor: https://monitoring.ohmlab.fr
+          description: Watch cluster metrics & application logs
+          icon: grafana.png
+      - Mattermost:
+          href: https://mattermost.ohmlab.fr
+          siteMonitor: https://mattermost.ohmlab.fr
+          description: Team communication service
+          icon: mattermost.png
+      - Minio:
+          href: https://minio.ohmlab.fr
+          siteMonitor: https://minio.ohmlab.fr
+          description: Store data with s3 standard
+          icon: minio.png
+    - Admin:
+      - Argo-cd Admin:
+          href: https://gitops.admin.ohmlab.fr
+          siteMonitor: https://gitops.admin.ohmlab.fr
+          description: Admin services deployment manager
+          icon: argo-cd.png
+      - Keycloak:
+          href: https://sso.ohmlab.fr
+          siteMonitor: https://sso.ohmlab.fr
+          description: Single Sign On management
+          icon: keycloak.png
+      - Vault:
+          href: https://vault.admin.ohmlab.fr
+          siteMonitor: https://vault.admin.ohmlab.fr
+          description: Admin secret manager
+          icon: vault.png
+    widgets:
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "homelab"
+        nodes:
+          show: false
+          cpu: true
+          memory: true
+          showLabel: true
