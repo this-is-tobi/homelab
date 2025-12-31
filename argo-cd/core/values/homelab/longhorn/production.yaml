@@ -1,5 +1,5 @@
 longhorn:
   ingress:
     enabled: true
-    host: "longhorn.admin.ohmlab.fr"
-    tlsSecret: "longhorn.admin.ohmlab.fr-tls"
+    host: "longhorn.core.ohmlab.fr"
+    tlsSecret: "longhorn.core.ohmlab.fr-tls"

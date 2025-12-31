@@ -42,18 +42,18 @@ homepage:
     services:
     - Core Services:
       - Argo-cd:
-          href: https://gitops.admin.ohmlab.fr
-          siteMonitor: https://gitops.admin.ohmlab.fr
+          href: https://gitops.core.ohmlab.fr
+          siteMonitor: https://gitops.core.ohmlab.fr
           description: Admin services deployment manager
           icon: argo-cd.png
       - Longhorn:
-          href: https://longhorn.admin.ohmlab.fr
-          siteMonitor: https://longhorn.admin.ohmlab.fr
+          href: https://longhorn.core.ohmlab.fr
+          siteMonitor: https://longhorn.core.ohmlab.fr
           description: Distributed block storage for Kubernetes
           icon: longhorn.png
       - Vault:
-          href: https://vault.admin.ohmlab.fr
-          siteMonitor: https://vault.admin.ohmlab.fr
+          href: https://vault.core.ohmlab.fr
+          siteMonitor: https://vault.core.ohmlab.fr
           description: Admin secret manager
           icon: vault.png
     - Platform Services:

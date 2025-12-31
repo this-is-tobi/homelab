@@ -1,13 +1,13 @@
 vault:
   server:
     ha:
-      apiAddr: "admin.vault.ohmlab.fr"
+      apiAddr: "vault.ohmlab.fr"
     ingress:
       hosts:
-      - host: "admin.vault.ohmlab.fr"
+      - host: "vault.ohmlab.fr"
         paths:
         - "/"
       tls:
       - hosts:
-        - "admin.vault.ohmlab.fr"
-        secretName: "admin.vault.ohmlab.fr-tls"
+        - "vault.ohmlab.fr"
+        secretName: "vault.ohmlab.fr-tls"
