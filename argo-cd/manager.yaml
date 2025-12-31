@@ -1,0 +1,73 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: manager
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - "missingkey=error"
+  generators:
+  - git:
+      repoURL: https://github.com/this-is-tobi/homelab.git
+      revision: main
+      files:
+      - path: './argo-cd/core/instances/**/*'
+  template:
+    metadata:
+      name: '{{.name}}-{{.env}}'
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
+      labels:
+        ohmlab.fr/instance-name: '{{.name}}'
+        ohmlab.fr/instance-env: '{{.env}}'
+        ohmlab.fr/instance-provider: '{{.provider}}'
+        ohmlab.fr/instance-region: '{{.region}}'
+        ohmlab.fr/instance-category: '{{.category}}'
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: admin
+      revisionHistoryLimit: 3
+      sources:
+      - repoURL: https://github.com/this-is-tobi/homelab.git
+        path: './homelab-utils/helm'
+        targetRevision: '{{.targetRevision}}'
+        helm:
+          valuesObject:
+            argo-cd:
+              enabled: false
+            argo-cd-apps:
+              enabled: false
+            avp:
+              enabled: false
+            instanceAppset:
+              enabled: true
+              name: '{{.name}}'
+              env: '{{.env}}'
+              provider: '{{.provider}}'
+              region: '{{.region}}'
+              category: '{{.category}}'
+              prefix:
+                name: '{{.prefix.name}}'
+                namespace: '{{.prefix.namespace}}'
+              suffix:
+                name: '{{.suffix.name}}'
+                namespace: '{{.suffix.namespace}}'
+              destination:
+                server: '{{.destination.server}}'
+              targetRevision: '{{.targetRevision}}'
+              apps: {{.apps | toJson}}
+      destination:
+        server: '{{.destination.server}}'
+        namespace: argocd-system
+      syncPolicy:
+        # automated:
+        #   selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+        - ServerSideApply=true
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+    # automated:
+    #   selfHeal: true

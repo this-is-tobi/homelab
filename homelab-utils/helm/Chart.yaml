@@ -1,0 +1,27 @@
+apiVersion: v2
+name: homelab-core
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+description: A Helm chart to deploy homelab-core.
+home: https://this-is-tobi.com/homelab
+deprecated: false
+annotations: {}
+keywords: []
+dependencies:
+- name: argo-cd
+  alias: argo-cd
+  version: 9.1.0
+  repository: https://argoproj.github.io/argo-helm
+  condition: argo-cd.enabled
+- name: argocd-apps
+  alias: argo-cd-apps
+  version: 2.0.2
+  repository: https://argoproj.github.io/argo-helm
+  condition: argo-cd-apps.enabled
+sources:
+- https://github.com/this-is-tobi/homelab
+maintainers:
+- name: this-is-tobi
+  email: this-is-tobi@proton.me
+  url: https://this-is-tobi.com

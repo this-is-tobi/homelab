@@ -1,0 +1,69 @@
+{{- if .Values.instanceAppset.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ include "homelab-core.instanceAppsetName" . }}
+  namespace: {{ .Values.instanceAppset.argocdNamespace }}
+  labels:
+    ohmlab.fr/instance-name: {{ .Values.instanceAppset.name | quote }}
+    ohmlab.fr/instance-env: {{ .Values.instanceAppset.env | quote }}
+    ohmlab.fr/instance-provider: {{ .Values.instanceAppset.provider | quote }}
+    ohmlab.fr/instance-region: {{ .Values.instanceAppset.region | quote }}
+    ohmlab.fr/instance-category: {{ .Values.instanceAppset.category | quote }}
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - "missingkey=error"
+  generators:
+  - list:
+      elements:
+      {{- range .Values.instanceAppset.apps }}
+      {{- if eq .enabled "true" }}
+      - app: {{ .app | quote }}
+        hook: {{ .hook | quote }}
+        syncWave: {{ .syncWave | quote }}
+      {{- end }}
+      {{- end }}
+  template:
+    metadata:
+      name: '{{ .Values.instanceAppset.prefix.name }}{{`{{ .app }}`}}{{ .Values.instanceAppset.suffix.name }}'
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
+        argocd.argoproj.io/hook: '{{`{{ .hook }}`}}'
+        argocd.argoproj.io/sync-wave: '{{`{{ .syncWave }}`}}'
+      labels:
+        ohmlab.fr/instance-name: {{ .Values.instanceAppset.name | quote }}
+        ohmlab.fr/instance-env: {{ .Values.instanceAppset.env | quote }}
+        ohmlab.fr/instance-provider: {{ .Values.instanceAppset.provider | quote }}
+        ohmlab.fr/instance-region: {{ .Values.instanceAppset.region | quote }}
+        ohmlab.fr/instance-category: {{ .Values.instanceAppset.category | quote }}
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.instanceAppset.project }}
+      revisionHistoryLimit: 3
+      sources:
+      - repoURL: {{ .Values.instanceAppset.repoURL.sources | quote }}
+        path: './argo-cd/apps/{{`{{ .app }}`}}'
+        targetRevision: {{ .Values.instanceAppset.targetRevision | quote }}
+        helm:
+          valueFiles:
+          - $values/argo-cd/values/{{`{{ .app }}`}}/{{ .Values.instanceAppset.name }}-{{ .Values.instanceAppset.env }}.yaml
+      - repoURL: {{ .Values.instanceAppset.repoURL.values | default .Values.instanceAppset.repoURL.sources | quote }}
+        ref: values
+        targetRevision: {{ .Values.instanceAppset.targetRevision | quote }}
+      destination:
+        server: {{ .Values.instanceAppset.destination.server | quote }}
+        namespace: '{{ .Values.instanceAppset.prefix.namespace }}{{`{{ .app }}`}}{{ .Values.instanceAppset.suffix.namespace }}'
+      syncPolicy:
+        # automated:
+        #   selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+        - ServerSideApply=true
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+    # automated:
+    #   selfHeal: true
+{{- end }}
