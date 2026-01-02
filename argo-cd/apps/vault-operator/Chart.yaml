@@ -1,12 +1,12 @@
 apiVersion: v2
 name: vault-operator
 type: application
-version: 1.23.0
-appVersion: "1.23.0"
+version: 1.23.4
+appVersion: "1.23.4"
 description: Bank Vaults operator for GitOps-native Vault management
 dependencies:
 - name: vault-operator
-  version: 1.23.0
+  version: 1.23.4
   repository: oci://ghcr.io/bank-vaults/helm-charts
 - name: vault-secrets-operator
   alias: vso
