@@ -314,7 +314,7 @@ initSecrets:
   # -- TTL in seconds after which the job will be cleaned up.
   ttlSecondsAfterFinished: 86400
   # -- Init job container image.
-  image: "ghcr.io/this-is-tobi/homelab-utils:latest"
+  image: "ghcr.io/this-is-tobi/tools/homelab-utils:latest"
   resources:
     requests:
       # -- CPU requests for the init job container.

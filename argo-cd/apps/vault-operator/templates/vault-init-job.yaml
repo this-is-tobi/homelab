@@ -112,7 +112,7 @@ spec:
             memory: 32Mi
       containers:
       - name: init-secrets
-        image: {{ .Values.vault.initSecrets.image | default "ghcr.io/this-is-tobi/homelab-utils:latest" }}
+        image: {{ .Values.vault.initSecrets.image | default "ghcr.io/this-is-tobi/tools/homelab-utils:latest" }}
         env:
         - name: VAULT_ADDR
           value: {{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) | quote }}
@@ -150,10 +150,16 @@ spec:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: true
           runAsNonRoot: true
-          runAsUser: 100
+          runAsUser: 1000
           capabilities:
             drop:
             - ALL
           seccompProfile:
             type: RuntimeDefault
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        emptyDir: {}
 {{- end }}
