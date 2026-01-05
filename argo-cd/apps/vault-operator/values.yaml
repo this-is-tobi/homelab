@@ -116,13 +116,6 @@ vault:
             "data/keycloak/clientSecret" = []
           }
         }
-        path "homelab/data/platforms/production/rustfs" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
         path "homelab/data/platforms/production/gitea" {
           capabilities = ["read", "list"]
           allowed_parameters = {
