@@ -31,7 +31,7 @@
     { "app": "harbor", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "kubernetes-dashboard", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "mattermost", "enabled": "true", "hook": "Sync", "syncWave": 40 },
-    { "app": "minio", "enabled": "true", "hook": "Sync", "syncWave": 40 },
+    { "app": "minio", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "mlflow", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "outline", "enabled": "false", "hook": "Sync", "syncWave": 40 },
     { "app": "rustfs", "enabled": "true", "hook": "Sync", "syncWave": 40 },
