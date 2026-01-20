@@ -76,6 +76,6 @@ vso:
     clientMinio:
       mount: "example"
       path: "platforms/staging/minio"
-    clientRustfs:
-      mount: "example"
-      path: "platforms/staging/rustfs"
+    # clientRustfs:
+    #   mount: "example"
+    #   path: "platforms/staging/rustfs"
