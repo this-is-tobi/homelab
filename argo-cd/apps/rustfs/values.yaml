@@ -4,8 +4,8 @@ rustfs:
   podManagementPolicy: "Parallel"
   auth:
     existingSecret: "rustfs-admin"
-    existingSecretAccessKeyKey: "accessKey"
-    existingSecretSecretKeyKey: "secretKey"
+    existingSecretAccessKeyKey: "ACCESS_KEY"
+    existingSecretSecretKeyKey: "SECRET_KEY"
   config:
     logLevel: "info"
     consoleEnabled: true
@@ -106,6 +106,10 @@ vso:
         create: true
         type: "Opaque"
         transformation:
-          excludeRaw: true
-          includes:
-          - "admin"
+          excludes:
+          - ".*"
+          templates:
+            ACCESS_KEY:
+              text: '{{ get .Secrets "admin" | dig "accessKey" "" }}'
+            SECRET_KEY:
+              text: '{{ get .Secrets "admin" | dig "secretKey" "" }}'
