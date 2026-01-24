@@ -1,12 +1,12 @@
 apiVersion: v2
 name: rustfs
 type: application
-version: 0.1.1
+version: 0.4.1
 appVersion: "1.0.0"
 dependencies:
 - name: rustfs
   alias: rustfs
-  version: 0.1.1
+  version: 0.4.1
   repository: oci://registry-1.docker.io/cloudpirates
 - name: vso-utils
   alias: vso
