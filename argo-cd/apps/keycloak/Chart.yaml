@@ -1,12 +1,12 @@
 apiVersion: v2
 name: keycloak
 type: application
-version: 0.11.4
-appVersion: "26.4.7"
+version: 0.14.6
+appVersion: "26.5.3"
 dependencies:
 - name: keycloak
   alias: keycloak
-  version: 0.11.4
+  version: 0.14.6
   repository: oci://registry-1.docker.io/cloudpirates
   condition: keycloak.enabled
 - name: keycloak-config-cli
