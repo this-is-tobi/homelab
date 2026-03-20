@@ -2,7 +2,7 @@ apiVersion: v2
 name: outline
 type: application
 version: 1.11.0
-appVersion: "0.87.4"
+appVersion: "1.6.1"
 dependencies:
 - name: outline
   alias: outline
