@@ -72,7 +72,7 @@ gitea:
           key: "OIDC_CLIENT_SECRET"
 
 cnpg:
-  mode: "primary"
+  mode: "recovery"
   credentials:
     existingSecrets:
       enabled: true
