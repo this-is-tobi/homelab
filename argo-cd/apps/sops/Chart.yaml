@@ -1,12 +1,12 @@
 apiVersion: v2
 name: sops-secrets-operator
 type: application
-version: 0.25.2
-appVersion: "0.20.0"
+version: 0.25.3
+appVersion: "0.20.1"
 dependencies:
 - name: sops-secrets-operator
   alias: sops
-  version: 0.25.2
+  version: 0.25.3
   repository: https://isindir.github.io/sops-secrets-operator
 - name: vso-utils
   alias: vso
