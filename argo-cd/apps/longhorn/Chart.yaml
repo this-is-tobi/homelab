@@ -1,10 +1,10 @@
 apiVersion: v2
 name: longhorn
 type: application
-version: 1.9.2
-appVersion: "1.9.2"
+version: 1.10.2
+appVersion: "1.10.2"
 dependencies:
 - name: longhorn
   alias: longhorn
-  version: 1.9.2
+  version: 1.10.2
   repository: https://charts.longhorn.io
