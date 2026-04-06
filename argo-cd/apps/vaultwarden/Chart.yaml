@@ -1,12 +1,12 @@
 apiVersion: v2
 name: vaultwarden
 type: application
-version: 0.31.1
-appVersion: "1.32.5"
+version: 0.35.1
+appVersion: "1.35.4"
 dependencies:
 - name: vaultwarden
   alias: vaultwarden
-  version: 0.31.1
+  version: 0.35.1
   repository: https://guerzon.github.io/vaultwarden
 - name: vso-utils
   alias: vso
