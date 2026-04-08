@@ -73,9 +73,6 @@ vso:
     clientArgoCd:
       mount: "example"
       path: "platforms/staging/argo-cd"
-    clientMinio:
-      mount: "example"
-      path: "platforms/staging/minio"
     # clientRustfs:
     #   mount: "example"
     #   path: "platforms/staging/rustfs"

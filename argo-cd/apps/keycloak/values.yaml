@@ -304,25 +304,6 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-    clientMinio:
-      mount: ""
-      path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
-      hmacSecretData: true
-      destination:
-        name: "keycloak-clients-minio"
-        create: true
-        type: "Opaque"
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
 
 keycloakConfigCli:
   enabled: true
@@ -370,11 +351,6 @@ keycloakConfigCli:
     valueFrom:
       secretKeyRef:
         name: keycloak-clients-argocd
-        key: CLIENT_SECRET
-  - name: MINIO_CLIENT_SECRET
-    valueFrom:
-      secretKeyRef:
-        name: keycloak-clients-minio
         key: CLIENT_SECRET
   # - name: ARGOWORKFLOWS_CLIENT_SECRET
   #   valueFrom:
@@ -447,29 +423,12 @@ keycloakConfigCli:
               description: "Grafana admin role"
             - name: "editor"
               description: "Grafana editor role"
-            minio:
-            - name: "consoleAdmin"
-              description: "MinIO console administrator"
-            - name: "diagnostics"
-              description: "MinIO diagnostics role"
-            - name: "readonly"
-              description: "MinIO read-only access"
-            - name: "readwrite"
-              description: "MinIO read-write access"
-            - name: "writeonly"
-              description: "MinIO write-only access"
         groups:
         - name: "admin"
           path: "/admin"
           clientRoles:
             grafana:
             - "grafanaadmin"
-            minio:
-            - "consoleAdmin"
-            - "diagnostics"
-            - "readonly"
-            - "readwrite"
-            - "writeonly"
         clients:
         - clientId: "gitea"
           name: "Gitea"
@@ -560,52 +519,6 @@ keycloakConfigCli:
           implicitFlowEnabled: false
           directAccessGrantsEnabled: true
           serviceAccountsEnabled: false
-          defaultClientScopes:
-          - "web-origins"
-          - "acr"
-          - "profile"
-          - "roles"
-          - "email"
-          - "groups"
-          optionalClientScopes:
-          - "address"
-          - "phone"
-          - "offline_access"
-          - "microprofile-jwt"
-        - clientId: "minio"
-          name: "MinIO"
-          description: "Object storage"
-          enabled: true
-          clientAuthenticatorType: "client-secret"
-          secret: "$(env:MINIO_CLIENT_SECRET)"
-          redirectUris:
-          - "https://minio.$(env:ROOT_DOMAIN)/*"
-          - "https://minio.$(env:ROOT_DOMAIN)/oauth_callback"
-          webOrigins:
-          - "https://minio.$(env:ROOT_DOMAIN)"
-          protocol: "openid-connect"
-          publicClient: false
-          standardFlowEnabled: true
-          implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
-          serviceAccountsEnabled: false
-          attributes:
-            "use.jwks.url": "true"
-            "jwks.url": "https://sso.$(env:ROOT_DOMAIN)/realms/$(env:KEYCLOAK_REALM)/protocol/openid-connect/certs"
-          protocolMappers:
-          - name: "minio-policy-mapper"
-            protocol: "openid-connect"
-            protocolMapper: "oidc-usermodel-client-role-mapper"
-            consentRequired: false
-            config:
-              "id.token.claim": "true"
-              "access.token.claim": "true"
-              "claim.name": "minio-policy"
-              "userinfo.token.claim": "true"
-              "jsonType.label": "String"
-              "aggregate.attrs": "true"
-              "client_id": "minio"
-              "multivalued": "true"
           defaultClientScopes:
           - "web-origins"
           - "acr"

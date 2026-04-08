@@ -87,11 +87,6 @@ vault:
           realm: "homelab"
           clientId: "mattermost"
           clientSecret: "<random:32>"
-    - path: "homelab/platforms/production/minio"
-      data:
-        admin:
-          username: "admin"
-          password: "<random:24>"
     - path: "homelab/platforms/production/rustfs"
       data:
         admin:

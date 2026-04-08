@@ -76,9 +76,6 @@ vso:
     clientArgoCd:
       mount: "homelab"
       path: "platforms/production/argo-cd"
-    clientMinio:
-      mount: "homelab"
-      path: "platforms/production/minio"
     # clientRustfs:
     #   mount: "homelab"
     #   path: "platforms/production/rustfs"

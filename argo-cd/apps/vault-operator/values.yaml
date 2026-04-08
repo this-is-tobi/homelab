@@ -109,13 +109,6 @@ vault:
             "data/keycloak/clientSecret" = []
           }
         }
-        path "homelab/data/platforms/production/minio" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
         path "homelab/data/platforms/production/gitea" {
           capabilities = ["read", "list"]
           allowed_parameters = {
@@ -130,13 +123,6 @@ vault:
             "data/keycloak/clientSecret" = []
           }
         }
-        path "homelab/data/platforms/production/mlflow" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
         path "homelab/data/platforms/production/mattermost" {
           capabilities = ["read", "list"]
           allowed_parameters = {
@@ -144,7 +130,21 @@ vault:
             "data/keycloak/clientSecret" = []
           }
         }
+        path "homelab/data/platforms/production/mlflow" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
+          }
+        }
         path "homelab/data/platforms/production/outline" {
+          capabilities = ["read", "list"]
+          allowed_parameters = {
+            "data/keycloak/clientId" = []
+            "data/keycloak/clientSecret" = []
+          }
+        }
+        path "homelab/data/platforms/production/rustfs" {
           capabilities = ["read", "list"]
           allowed_parameters = {
             "data/keycloak/clientId" = []
@@ -182,11 +182,6 @@ vault:
     - name: "mattermost"
       rules: |
         path "homelab/data/platforms/production/mattermost" {
-          capabilities = ["read", "list"]
-        }
-    - name: "minio"
-      rules: |
-        path "homelab/data/platforms/production/minio" {
           capabilities = ["read", "list"]
         }
     - name: "rustfs"
@@ -256,11 +251,6 @@ vault:
         bound_service_account_names: ["default"]
         bound_service_account_namespaces: ["mattermost"]
         policies: ["mattermost"]
-        ttl: "1h"
-      - name: "minio"
-        bound_service_account_names: ["default"]
-        bound_service_account_namespaces: ["minio"]
-        policies: ["minio"]
         ttl: "1h"
       - name: "rustfs"
         bound_service_account_names: ["default"]

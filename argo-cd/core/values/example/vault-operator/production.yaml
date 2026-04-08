@@ -96,13 +96,6 @@ vault:
           path "homelab/data/platforms/production/mattermost/*" {
             capabilities = ["read", "list"]
           }
-      - name: minio
-        rules: |
-          path "homelab/data/platforms/production/minio" {
-            capabilities = ["read", "list"]
-          }
-          path "homelab/data/platforms/production/minio/*" {
-            capabilities = ["read", "list"]
           }
       - name: outline
         rules: |
@@ -120,6 +113,13 @@ vault:
           path "homelab/data/platforms/production/prometheus-stack/*" {
             capabilities = ["read", "list"]
           }
+      - name: rustfs
+        rules: |
+          path "homelab/data/platforms/production/rustfs" {
+            capabilities = ["read", "list"]
+          }
+          path "homelab/data/platforms/production/rustfs/*" {
+            capabilities = ["read", "list"]
       - name: sonarqube
         rules: |
           path "homelab/data/platforms/production/sonarqube" {
@@ -182,11 +182,6 @@ vault:
             bound_service_account_namespaces: ["mattermost"]
             policies: ["mattermost"]
             ttl: 1h
-          # minio role
-          - name: minio
-            bound_service_account_names: ["default"]
-            bound_service_account_namespaces: ["minio"]
-            policies: ["minio"]
             ttl: 1h
           # outline role
           - name: outline
@@ -200,6 +195,11 @@ vault:
             bound_service_account_namespaces: ["prometheus-stack"]
             policies: ["prometheus-stack"]
             ttl: 1h
+          # rustfs role
+          - name: rustfs
+            bound_service_account_names: ["default"]
+            bound_service_account_namespaces: ["rustfs"]
+            policies: ["rustfs"]
           # sonarqube role
           - name: sonarqube
             bound_service_account_names: ["default"]

@@ -82,11 +82,11 @@ homepage:
           siteMonitor: https://mattermost.ohmlab.fr
           description: Team communication service
           icon: mattermost.png
-      - Minio:
-          href: https://minio.ohmlab.fr
-          siteMonitor: https://minio.ohmlab.fr
+      - Rustfs:
+          href: https://rustfs.ohmlab.fr
+          siteMonitor: https://rustfs.ohmlab.fr
           description: Store data with s3 standard
-          icon: minio.png
+          icon: rustfs.png
     widgets:
     - kubernetes:
         cluster:
