@@ -64,9 +64,9 @@ spec:
   vaultContainerSpec:
     name: vault
     securityContext:
-      capabilities:
-        add:
-        - IPC_LOCK
+      runAsNonRoot: true
+      runAsUser: 100
+      runAsGroup: 1000
     volumeMounts:
     - name: vault-config
       mountPath: /vault/config
@@ -78,10 +78,10 @@ spec:
     {{- end }}
   config:
     ui: {{ .Values.vault.config.ui }}
-    # disable_mlock controls memory locking to prevent sensitive data from swapping to disk
-    # false = secure (requires IPC_LOCK capability) - prevents memory swapping
-    # true = permissive (no capability needed) - allows memory swapping
-    disable_mlock: false
+    # disable_mlock: in Kubernetes, memory is managed by cgroups/resource limits
+    # so mlock is unnecessary. Setting true allows running as non-root without
+    # IPC_LOCK/SETFCAP capabilities, which is the more secure approach in containers.
+    disable_mlock: true
     listener:
     - tcp:
         address: "0.0.0.0:8200"
@@ -148,6 +148,14 @@ spec:
     value: "https://$(POD_NAME).{{ .Release.Namespace }}.svc.cluster.local:8200"
   - name: VAULT_CLUSTER_ADDR
     value: "https://$(POD_NAME).{{ .Release.Namespace }}.svc.cluster.local:8201"
+  # Skip chown/setcap in the Vault entrypoint:
+  # - SKIP_CHOWN: /vault/config is an operator-managed projected volume that cannot be chowned
+  # - SKIP_SETCAP: setcap requires SETFCAP capability; not needed since disable_mlock is true
+  # Both are required when running as the non-root vault user (Vault 2.0.0+ default).
+  - name: SKIP_CHOWN
+    value: "true"
+  - name: SKIP_SETCAP
+    value: "true"
   serviceAccount: {{ .Values.vault.serviceAccount }}
   {{- if .Values.vault.ingress.enabled }}
   ingress:

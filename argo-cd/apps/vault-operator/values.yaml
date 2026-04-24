@@ -22,7 +22,7 @@ vault:
   size: 3
   image:
     repository: "hashicorp/vault"
-    tag: "1.20.1"
+    tag: "2.0.0"
   bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:latest"
   service:
     type: "ClusterIP"
@@ -321,9 +321,11 @@ vault:
       requests:
         cpu: "50m"
         memory: "64Mi"
-  # Note: Vault needs specific capabilities (IPC_LOCK, SETFCAP) which are added by the operator
-  # Don't set runAsNonRoot/runAsUser here - let the operator handle it
+  # Vault 2.0.0+ runs as vault user (UID 100, GID 1000) by default
+  # runAsUser: 100 at pod level ensures the config-templating init container also writes
+  # vault.json as UID 100, so the vault container can read it (fixes permission denied)
   securityContext:
+    runAsUser: 100
     fsGroup: 1000
   serviceAccount: "vault"
   ingress:

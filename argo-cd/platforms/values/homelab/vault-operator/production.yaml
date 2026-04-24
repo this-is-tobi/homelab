@@ -246,9 +246,10 @@ vault:
         cpu: 50m
         memory: 64Mi
   # Security context
-  # Note: Vault needs specific capabilities (IPC_LOCK, SETFCAP) which are added by the operator
-  # Don't set runAsNonRoot/runAsUser here - let the operator handle it
+  # runAsUser: 100 at pod level ensures the config-templating init container writes vault.json
+  # as the vault user (UID 100), fixing the permission denied error on /vault/config/vault.json
   securityContext:
+    runAsUser: 100
     fsGroup: 1000
   # Service account
   serviceAccount: vault
