@@ -1,5 +1,5 @@
-# Ansible inventory
-inventory/
+# Ansible vault password (local only, never commit)
+.vault_password
 
 # Kubernetes access files
 auth/

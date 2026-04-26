@@ -2,9 +2,9 @@ gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
   version: "alpine3.22"
   extraKubeAllowedIps: ""
-  allowedIps: ""
+  allowedIps: "192.168.27.64/27"
 pihole:
-  enabled: false
+  enabled: true
   version: "2026.04.1"
   domain: pihole.{{ localRootDomain }}
   password: "{{ vault_pihole_password }}"
@@ -13,5 +13,5 @@ wireguard:
   version: "15"
   domain: "vpn.{{ rootDomain }}"
   password: "{{ vault_wireguard_password }}"
-  ipRange: "10.8.0.x"
-  allowedIps: "0.0.0.0/0, ::/0"
+  ipRange: "192.168.27.x"
+  # allowedIps: ""

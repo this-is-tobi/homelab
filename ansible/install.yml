@@ -3,6 +3,7 @@
   hosts: all
   become: true
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
   serial: 1
   roles:
@@ -11,11 +12,26 @@
     - os-upgrade
     - never
 
+# All
+- name: Debian Dist-Upgrade
+  hosts: all
+  become: true
+  vars_files:
+    - ./inventory/group_vars/vault.yml
+    - ./inventory/group_vars/all.yml
+  serial: 1
+  roles:
+    - role: common/dist-upgrade
+  tags:
+    - dist-upgrade
+    - never
+
 # Gateway
 - name: Setup Gateway
   hosts: gateway
   become: true
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/gateway.yml
   roles:
@@ -34,6 +50,7 @@
   hosts: k3s
   become: true
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   roles:
@@ -53,6 +70,7 @@
   become: true
   serial: 1
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   roles:
@@ -67,6 +85,7 @@
   become: true
   serial: 1
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   roles:
@@ -82,6 +101,7 @@
   environment:
     K8S_AUTH_KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
   roles:
     - role: k3s/users
@@ -95,6 +115,7 @@
   hosts: k3s
   become: true
   vars_files:
+    - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   roles:
