@@ -1,0 +1,3 @@
+---
+# k3s/registry defaults — no configurable variables.
+# Requires harbor.domain, harbor.username, harbor.password from inventory.

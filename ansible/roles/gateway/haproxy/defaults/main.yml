@@ -1,0 +1,3 @@
+---
+# gateway/haproxy defaults
+# haproxy.* — provided by inventory (group_vars/gateway.yml)

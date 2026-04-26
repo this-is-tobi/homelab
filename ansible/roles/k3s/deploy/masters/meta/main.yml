@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: masters
+  namespace: k3s
+  license: MIT
+  description: Deploy K3s server (master) nodes with HA cluster-init.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [k3s, kubernetes, master, controlplane]
+dependencies:
+  - role: k3s/download

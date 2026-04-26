@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: hostname
+  namespace: common
+  license: MIT
+  description: Set hostname and update /etc/hosts.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [hostname, system]
+dependencies: []

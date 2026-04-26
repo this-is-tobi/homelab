@@ -1,0 +1,4 @@
+---
+# common/ssh defaults
+common_ssh_pub_key: "~/.ssh/id_rsa.pub"
+adminUsers: []

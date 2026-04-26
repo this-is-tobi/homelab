@@ -1,0 +1,3 @@
+---
+# k3s/storage defaults
+# additional_disk — provided by inventory (host_vars)

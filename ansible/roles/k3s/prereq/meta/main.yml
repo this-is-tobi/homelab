@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: prereq
+  namespace: k3s
+  license: MIT
+  description: K3s prerequisites — IP forwarding, cgroups, utility packages.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [k3s, kubernetes, prereq]
+dependencies: []

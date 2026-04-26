@@ -1,0 +1,3 @@
+---
+# k3s/download defaults
+k3sVersion: "v1.33.4+k3s1"

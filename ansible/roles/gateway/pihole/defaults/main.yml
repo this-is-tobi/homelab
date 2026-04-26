@@ -1,0 +1,3 @@
+---
+# gateway/pihole defaults
+# pihole.* — provided by inventory (group_vars/gateway.yml)

@@ -1,0 +1,3 @@
+---
+# common/upgrade defaults — no configurable variables.
+# Performs apt dist-upgrade and reboots if required.

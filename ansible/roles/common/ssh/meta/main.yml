@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: ssh
+  namespace: common
+  license: MIT
+  description: Harden SSH configuration and manage authorized keys.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [ssh, security, hardening]
+dependencies: []

@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: pihole
+  namespace: gateway
+  license: MIT
+  description: Deploy Pi-hole DNS sinkhole via Docker Compose.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [pihole, dns, gateway]
+dependencies:
+  - role: common/docker

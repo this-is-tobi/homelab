@@ -1,0 +1,5 @@
+---
+# k3s/deploy/workers defaults
+k3sSystemdDir: "/etc/systemd/system"
+k3sExtraAgentArgs: ""
+k3sExtraStorageArgs: ""

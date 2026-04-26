@@ -1,0 +1,4 @@
+---
+# gateway/wireguard defaults
+# wireguard.* — provided by inventory (group_vars/gateway.yml)
+# adminUsers — provided by inventory (group_vars/all.yml)

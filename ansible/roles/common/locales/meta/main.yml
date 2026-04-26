@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: locales
+  namespace: common
+  license: MIT
+  description: Ensure en_US.UTF-8 locale is generated.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [locale, system]
+dependencies: []

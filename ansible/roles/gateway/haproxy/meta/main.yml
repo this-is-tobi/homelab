@@ -1,0 +1,14 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  role_name: haproxy
+  namespace: gateway
+  license: MIT
+  description: Deploy HAProxy via Docker Compose for load balancing.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm]
+  galaxy_tags: [haproxy, loadbalancer, gateway]
+dependencies:
+  - role: common/docker

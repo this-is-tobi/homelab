@@ -1,0 +1,3 @@
+---
+# k3s/prereq defaults — no configurable variables.
+# Enables IP forwarding and cgroup support for K3s.
