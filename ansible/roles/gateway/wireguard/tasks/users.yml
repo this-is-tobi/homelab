@@ -19,4 +19,4 @@
       "name": "{{ item.username }}"
     status_code: [200]
     headers:
-      Cookie: "{{ gateway_wireguard_login.cookies_string.stdout }}"
+      Cookie: "{{ gateway_wireguard_login.cookies_string }}"

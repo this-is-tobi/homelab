@@ -49,11 +49,11 @@
 - name: Fetch k3sToken
   delegate_to: localhost
   become: false
-  ansible.builtin.shell:
-    cmd: |
-      yq -i '.k3sToken = "{{ k3s_token }}"' inventory/group_vars/k3s.yml
+  ansible.builtin.copy:
+    content: "{{ k3s_token }}"
+    dest: "{{ playbook_dir }}/inventory/group_vars/.k3sToken"
+    mode: "0600"
   when: ansible_default_ipv4.address == k3sMasterIP
-  changed_when: ansible_default_ipv4.address == k3sMasterIP
 
 - name: Restore node-token file access
   ansible.builtin.file:
@@ -112,8 +112,8 @@
 - name: Fetch cluster CA data
   delegate_to: localhost
   become: false
-  ansible.builtin.shell:
-    cmd: |
-      yq -i '.k3sCaData = "{{ k3s_ca_data.stdout }}"' inventory/group_vars/k3s.yml
+  ansible.builtin.copy:
+    content: "{{ k3s_ca_data.stdout }}"
+    dest: "{{ playbook_dir }}/inventory/group_vars/.k3sCaData"
+    mode: "0600"
   when: ansible_default_ipv4.address == k3sMasterIP
-  changed_when: ansible_default_ipv4.address == k3sMasterIP
