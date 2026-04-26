@@ -1,0 +1,27 @@
+# Tenant (apps) tier app catalog for the `homelab` instance.
+# Slim list — only what is actually deployed.
+# Schema reference: ../_example/core.yaml
+
+apps:
+  - app: argo-cd
+    enabled: "true"
+    namespace: argo-cd
+    syncWave: 100
+  - app: actions-runner-controller
+    enabled: "true"
+    syncWave: 110
+  - app: gitea
+    enabled: "true"
+    syncWave: 110
+  - app: mattermost
+    enabled: "true"
+    syncWave: 110
+  - app: rustfs
+    enabled: "true"
+    syncWave: 110
+  - app: teleport
+    enabled: "true"
+    syncWave: 110
+  - app: homepage
+    enabled: "true"
+    syncWave: 200
