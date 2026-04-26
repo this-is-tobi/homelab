@@ -65,17 +65,16 @@ kubectl port-forward -n <namespace> svc/<service_name> <host_port>:<service_port
 kubectl port-forward -n <namespace> pod/<pod_name> <host_port>:<pod_port>
 ```
 
-## Minio
+## RustFS
 
 ```sh
-# Generate S3 format secret key
+# Generate S3 format secret key (Ruby)
 SecureRandom.urlsafe_base64(30)
 
-# Install docker minio client (CLI)
-docker pull minio/mc
-
-# Register minio client alias
-docker run minio/mc alias set homelab https://minio.domain.com $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD
+# Use the AWS CLI against the RustFS S3 endpoint
+aws --endpoint-url https://s3.domain.com \
+  --profile homelab \
+  s3 ls
 ```
 
 ## Local registry

@@ -50,20 +50,20 @@ __Install:__
 ### Kubernetes Services (GitOps)
 
 __Setup configuration:__
-- Enable/disable apps in [./argo-cd/core/instances/homelab/production.json](./argo-cd/core/instances/homelab/production.json)
-- Configure values in [./argo-cd/core/values/homelab/](./argo-cd/core/values/homelab/)
+- Pick (or create) an instance under [./argo-cd/instances/](./argo-cd/instances/) (e.g. `homelab/`):
+  - [`instance.yaml`](./argo-cd/instances/homelab/instance.yaml) — cluster destination, env, repos, project bindings.
+  - [`core.yaml`](./argo-cd/instances/homelab/core.yaml) — platform/core tier app catalog.
+  - [`tenant.yaml`](./argo-cd/instances/homelab/tenant.yaml) — user-facing apps catalog.
+- Configure values in [./argo-cd/instances/homelab/values/core/](./argo-cd/instances/homelab/values/core/) and [./argo-cd/instances/homelab/values/tenant/](./argo-cd/instances/homelab/values/tenant/).
+- For a brand-new instance, copy the documented template at [./argo-cd/instances/_example/](./argo-cd/instances/_example/) (folders prefixed with `_` are excluded by the root manager and treated as templates). See [Installation > Tier-flexible apps](./docs/03-installation.md#tier-flexible-apps) for apps (ingress, cert-manager, keycloak, prometheus-stack, ...) that can live in either tier depending on topology.
 
 __Install:__
 ```sh
 # Set kubectl context
 kubectl config use-context homelab
 
-# Bootstrap ArgoCD
-./run.sh -b
-
-# Apply core services (Longhorn, Vault, Cert-Manager, etc.)
-./run.sh -c homelab
-
-# Apply platform services (Keycloak, Gitea, Harbor, etc.)
-./run.sh -s homelab
+# Bootstrap (or upgrade) the homelab instance
+./run.sh -b homelab
 ```
+
+> *Optionally pass `ARGOCD_ADMIN_PASSWORD=mypass` before the command to set the ArgoCD admin password explicitly. Otherwise the chart auto-generates one and the script prints it at the end.*

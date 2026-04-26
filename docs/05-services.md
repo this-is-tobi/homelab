@@ -58,7 +58,6 @@ The following services are deployed in the cluster :
 | [Kubernetes-dashboard](https://github.com/kubernetes/dashboard)                   | Kubernetes dashboard                            | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard)                                   |
 | [Longhorn](https://longhorn.io/)                                                  | Cloud native distributed block storage          | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                                                     |
 | [Mattermost](https://mattermost.com/)                                             | Chat service with file sharing and integrations | [mattermost/mattermost-team-edition](https://artifacthub.io/packages/helm/mattermost/mattermost-team-edition)                                   |
-| [Minio](https://min.io/)                                                          | High Performance Object Storage                 | [bitnami/minio](https://artifacthub.io/packages/helm/bitnami/minio)                                                                             |
 | [MLflow](https://mlflow.org/)                                                     | ML experiment tracking and model registry       | [community-charts/mlflow](https://artifacthub.io/packages/helm/community-charts/mlflow)                                                         |
 | [Outline](https://www.getoutline.com/)                                            | Share notes and wiki with your team             | [lrstanley/outline](https://artifacthub.io/packages/helm/lrstanley/outline)                                                                     |
 | [Prometheus-stack](https://prometheus.io/)                                        | Open-source monitoring solution                 | [prometheus-community/kube-prometheus-stack](https://artifacthub.io/packages/helm/prometheus-community/kube-prometheus-stack)                   |
@@ -75,23 +74,76 @@ The following services are deployed in the cluster :
 ### Versions
 
 All services helm charts and versions are managed through ArgoCD ApplicationSets with configuration stored in:
-- **App charts**: [./argo-cd/apps/](../argo-cd/apps/) - Each app has its own `Chart.yaml` defining the version
-- **Core instances**: [./argo-cd/core/instances/](../argo-cd/core/instances/) - Enable/disable core services
-- **Platform instances**: [./argo-cd/platforms/instances/](../argo-cd/platforms/instances/) - Enable/disable platform services
+- **App charts**: [./argo-cd/apps/](../argo-cd/apps/) — each app has its own `Chart.yaml` defining the chart version and dependencies.
+- **Per-instance metadata**: [./argo-cd/instances/\<instance\>/instance.yaml](../argo-cd/instances/homelab/instance.yaml) — cluster destination, env, repos, AppProject bindings.
+- **Per-instance app catalog**: [./argo-cd/instances/\<instance\>/core.yaml](../argo-cd/instances/homelab/core.yaml) and [tenant.yaml](../argo-cd/instances/homelab/tenant.yaml) — enable/disable apps + per-app overrides (sync wave, namespace, release name, ...).
+- **Per-instance values**: [./argo-cd/instances/\<instance\>/values/core/\<app\>.yaml](../argo-cd/instances/homelab/values/core/) and [tenant/\<app\>.yaml](../argo-cd/instances/homelab/values/tenant/) — values overrides applied on top of the chart defaults.
 
 ### Management
 
-Services are managed via GitOps using ArgoCD ApplicationSets:
+Services are managed by a **two-level** ApplicationSet hierarchy declared by the `homelab-core` chart in the `argocd-system` namespace:
 
-1. **Core services** - Managed by [core/manager.yaml](../argo-cd/core/manager.yaml):
-   - Enable/disable apps in [./argo-cd/core/instances/\<instance\>/\<env\>.json](../argo-cd/core/instances/homelab/production.json)
-   - Configure values in [./argo-cd/core/values/\<instance\>/\<app\>/\<env\>.yaml](../argo-cd/core/values/homelab/)
+- The root `manager` AppSet discovers each instance folder and emits one Application per instance pointing at the `instance-manager` chart.
+- That chart renders two child AppSets per instance — `core-<instance>` (platform tier, bound to `admin-core` AppProject) and `tenant-<instance>` (apps tier, bound to `admin-tenant` AppProject).
 
-2. **Platform services** - Managed by [platforms/manager.yaml](../argo-cd/platforms/manager.yaml):
-   - Enable/disable apps in [./argo-cd/platforms/instances/\<instance\>/\<env\>.json](../argo-cd/platforms/instances/)
-   - Configure values in [./argo-cd/platforms/values/\<instance\>/\<app\>/\<env\>.yaml](../argo-cd/platforms/values/)
+To enable or disable a service, edit the relevant entry in [argo-cd/instances/homelab/core.yaml](../argo-cd/instances/homelab/core.yaml) or [tenant.yaml](../argo-cd/instances/homelab/tenant.yaml) and flip `enabled: "true"` / `enabled: "false"`.
 
-To enable/disable a service, edit the corresponding JSON instance file and set `"enabled": "true"` or `"enabled": "false"`.
+```mermaid
+flowchart LR
+    subgraph git["Git repository"]
+        direction TB
+        subgraph instFolder["argo-cd/instances/homelab/"]
+            direction TB
+            subgraph valsTree["values/"]
+                direction LR
+                coreVals["core/&lt;app&gt;.yaml"]
+                tenantVals["tenant/&lt;app&gt;.yaml"]
+            end
+            subgraph catalogs["catalogs"]
+                direction LR
+                coreCat["core.yaml"]
+                tenantCat["tenant.yaml"]
+            end
+            instYaml["instance.yaml"]
+        end
+        chart["argo-cd/apps/&lt;app&gt;/<br/>(Chart.yaml + templates)"]
+    end
+
+    subgraph engine["core ArgoCD (argocd-system)"]
+        direction TB
+        rootAS["AppSet: manager (root)"]
+        instApp["Application: instance-homelab"]
+        subgraph childAS["child AppSets"]
+            direction LR
+            coreAS["core-homelab<br/>(AppProject: admin-core)"]
+            tenantAS["tenant-homelab<br/>(AppProject: admin-tenant)"]
+        end
+        subgraph leafApps["leaf Applications"]
+            direction LR
+            coreApp["homelab-&lt;coreApp&gt;"]
+            tenantApp["homelab-&lt;tenantApp&gt;"]
+        end
+    end
+
+    k8s[(Kubernetes resources)]
+
+    %% Git → ArgoCD wiring
+    rootAS -->|scans instances/*| instApp
+    instYaml -->|configures| instApp
+    instApp -->|emits| coreAS & tenantAS
+    coreCat -->|drives| coreAS
+    tenantCat -->|drives| tenantAS
+    coreAS -->|one per enabled app| coreApp
+    tenantAS -->|one per enabled app| tenantApp
+
+    %% Per-app sources (chart + values)
+    chart -. chart source .-> coreApp & tenantApp
+    coreVals -. values override .-> coreApp
+    tenantVals -. values override .-> tenantApp
+
+    %% Sync to cluster
+    coreApp & tenantApp -->|helm template + apply| k8s
+```
 
 ### Access
 
@@ -118,8 +170,8 @@ Kubernetes services that are available through user interfaces are centralized o
 | Keycloak             | <https://sso.domain.com>         |
 | Kubernetes-dashboard | <https://kube.domain.com>        |
 | Mattermost           | <https://mattermost.domain.com>  |
-| Minio *- api*        | <https://s3.domain.com>          |
-| Minio *- web*        | <https://minio.domain.com>       |
+| RustFS *- api*       | <https://s3.domain.com>          |
+| RustFS *- console*   | <https://console.s3.domain.com>  |
 | Outline              | <https://outline.domain.com>     |
 | SonarQube            | <http://sonarqube.domain.com>    |
 | Vault                | <https://vault.domain.com>       |
@@ -129,29 +181,66 @@ Kubernetes services that are available through user interfaces are centralized o
 
 ### Single sign on
 
-[Keycloak](https://keycloak.org/) is deployed as the cluster single sign on tool, it give access to various services accross the same account (*i.e: username / password pair*) to improve user experience.
-On the other hand, keycloak can pass user groups and roles to control access level to theese services.
+[Keycloak](https://keycloak.org/) is deployed as the cluster single sign-on tool. It provides a single account (username / password pair) that grants access to multiple services, and propagates user groups to control access levels.
 
-It is also usefull for admins to have a better control over homelab users and access, users can be manage connecting the keycloak interface (*cf: [keycloak service url](#kubernetes)*) with admin credentials (`keycloak.username` and `keycloak.password` can be found in admin vault under the keycloak secrets).
+Users and access levels are managed via the Keycloak interface (cf. [keycloak service url](#kubernetes)) using the admin credentials from Vault (`keycloak.username` / `keycloak.password` under the `keycloak` secret path).
 
-> Don't forget to select 'homelab' realm
+> Don't forget to select the `homelab` realm.
 
-By default an admin group is created to give admin access on each service that use keycloak sso registration, keycloak users that are not in the admin group get simple access.
+A default `admin` group grants admin-level access on every connected service; users not in this group get standard access.
 
-Following services are connected through sso :
+```mermaid
+flowchart LR
+    user([User])
+    kc[Keycloak<br/>realm: homelab]
+    subgraph apps[Connected services]
+        argo[ArgoCD]
+        coder[Coder]
+        gitea[Gitea]
+        harbor[Harbor]
+        graf[Grafana]
+        outline[Outline]
+        sonar[Sonarqube]
+        vault[Vault]
+    end
+    user -->|login| apps
+    apps -->|OIDC redirect| kc
+    kc -->|id_token + groups| apps
+```
+
+Services currently connected through SSO:
 - ArgoCD
 - Coder
 - Harbor
 - Gitea
 - Grafana
-- Minio
 - Outline
 - Sonarqube
 - Vault
 
+> *RustFS does not support OIDC — admin credentials are managed via Vault and rotated through the Vault Secrets Operator.*
+
+### Secrets
+
+Secrets are sourced from Vault and synced into Kubernetes by the [Vault Secrets Operator](https://developer.hashicorp.com/vault/docs/platform/k8s/vso) (VSO). Each chart that needs secrets depends on the `vso-utils` subchart, which renders `VaultStaticSecret` custom resources pointing at a Vault path.
+
+```mermaid
+flowchart LR
+    vault[(HashiCorp Vault)]
+    vso[Vault Secrets Operator]
+    vss[VaultStaticSecret CR<br/>per app]
+    secret[Kubernetes Secret]
+    pod([App pod])
+
+    vss -->|watched by| vso
+    vso -->|reads| vault
+    vso -->|materializes| secret
+    pod -->|envFrom / volume| secret
+```
+
 ### Monitoring
 
-The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Minio, Argocd and Trivy-operator to increase metrics coming from these applications.
+The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Argocd and Trivy-operator to increase metrics coming from these applications.
 
 Some dashboards are already delivered with the installation but more can be added in [argo-cd/apps/prometheus-stack/grafana-dashboards/](../argo-cd/apps/prometheus-stack/grafana-dashboards/), they will be automatically loaded on ArgoCD synchronization via the [dashboards.yaml](../argo-cd/apps/prometheus-stack/templates/dashboards.yaml) template. Already added dashboards are:
 
@@ -168,6 +257,5 @@ Some dashboards are already delivered with the installation but more can be adde
 | [kube-ns.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/kube-ns.json)               | [15758](https://grafana.com/grafana/dashboards/15758-kubernetes-views-namespaces/)                            |
 | [kube-pod.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/kube-pod.json)             | [15760](https://grafana.com/grafana/dashboards/15760-kubernetes-views-pods/)                                  |
 | [longhorn.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/longhorn.json)             | [13032](https://grafana.com/grafana/dashboards/13032-longhorn-example-v1-1-0/)                                |
-| [minio.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/minio.json)                   | [13502](https://grafana.com/grafana/dashboards/13502-minio-dashboard/)                                        |
 | [trivy.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/trivy.json)                   | [16337](https://grafana.com/grafana/dashboards/16337-trivy-operator-vulnerabilities/)                         |
 | [vault.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/vault.json)                   | [12904](https://grafana.com/grafana/dashboards/12904-hashicorp-vault/)                                        |
