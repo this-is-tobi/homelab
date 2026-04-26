@@ -37,9 +37,7 @@ TAGS="all"
 DECRYPT="false"
 ENCRYPT="false"
 UPDATE="false"
-BOOTSTRAP="false"
-APPLY_CORE=""
-APPLY_PLATFORMS=""
+BOOTSTRAP_INSTANCE=""
 
 # =============================================================================
 # Helper Functions
@@ -106,14 +104,26 @@ INFRASTRUCTURE (Ansible):
   -u              Update ansible galaxy collections before running playbook.
 
 GITOPS (ArgoCD):
-  -b              Bootstrap ArgoCD and core manager ApplicationSet.
-                  This is the first step after K3s deployment.
+  -b <instance>   Bootstrap (or upgrade) the homelab-core release for the given
+                  instance. Installs core ArgoCD + the root `manager`
+                  ApplicationSet + the `admin-core` / `admin-tenant`
+                  AppProjects. The manager then discovers every instance under:
+                    ./argo-cd/instances/*/
+                  and renders one Application per instance pointing at the
+                  `instance-manager` chart (which fans out into per-scope
+                  AppSets reading `core.yaml` and `tenant.yaml`).
+                  Per-app values are read from:
+                    ./argo-cd/instances/<instance>/values/{core,tenant}/<app>.yaml
+                  Example: ./run.sh -b homelab
 
-  -c <instance>   Apply core services for an instance (e.g., 'homelab').
-                  Deploys: Longhorn, Vault, Cert-Manager, etc.
-
-  -s <instance>   Apply platform services for an instance (e.g., 'homelab').
-                  Deploys: Keycloak, Gitea, Harbor, etc.
+                  An optional admin password may be provided via the
+                  ARGOCD_ADMIN_PASSWORD environment variable. The script will
+                  bcrypt-hash it locally (requires `htpasswd` from
+                  apache2-utils, or `python3` with bcrypt) and inject it into
+                  the chart.
+                  If unset, the ArgoCD chart auto-generates an admin password
+                  and stores it in the `argocd-initial-admin-secret` Secret;
+                  the script will print it at the end of the bootstrap.
 
 SECRETS (Sops):
   -d              Decrypt all *.enc.yaml files to *.dec.yaml in ./argo-cd
@@ -131,11 +141,7 @@ EXAMPLES:
   ./run.sh -p ./ansible/install.yml -u -k         # Full infra + fetch kubeconfig
 
   # Bootstrap GitOps
-  ./run.sh -b                                      # Bootstrap ArgoCD
-
-  # Deploy services via GitOps
-  ./run.sh -c homelab                              # Apply core services
-  ./run.sh -s homelab                              # Apply platform services
+  ./run.sh -b homelab                              # Bootstrap homelab instance
 
   # Secrets management
   ./run.sh -d                                      # Decrypt secrets
@@ -263,90 +269,110 @@ check_helm() {
   fi
 }
 
-bootstrap_argocd() {
-  log "Bootstrapping ArgoCD and core infrastructure..."
+# Bcrypt-hash a plain string using whatever's available locally.
+# Echoes the hash on stdout; non-zero exit on failure.
+bcrypt_hash() {
+  local plain="$1"
+  if command -v htpasswd &> /dev/null; then
+    htpasswd -nbBC 10 "" "$plain" | tr -d ':\n' | sed 's/$2y/$2a/'
+  elif command -v python3 &> /dev/null && python3 -c 'import bcrypt' &> /dev/null; then
+    python3 -c 'import bcrypt,sys; print(bcrypt.hashpw(sys.argv[1].encode(),bcrypt.gensalt(10)).decode())' "$plain"
+  else
+    error "Cannot bcrypt-hash password: install 'htpasswd' (apache2-utils) or 'python3-bcrypt'."
+    return 1
+  fi
+}
+
+# Print the auto-generated initial admin password (if the secret exists).
+print_initial_admin_password() {
+  local secret
+  if ! secret=$(kubectl -n argocd-system get secret argocd-initial-admin-secret \
+                  -o jsonpath='{.data.password}' 2>/dev/null); then
+    return 0
+  fi
+  if [[ -z "$secret" ]]; then
+    return 0
+  fi
+  log ""
+  log "ArgoCD admin password (auto-generated):"
+  log "  user:     admin"
+  log "  password: $(echo "$secret" | base64 -d)"
+  warn "Store this password and delete the secret once rotated:"
+  warn "  kubectl -n argocd-system delete secret argocd-initial-admin-secret"
+}
+
+bootstrap_instance() {
+  local instance="$1"
+  local values_file="$SCRIPT_PATH/argo-cd/instances/$instance/values/core/homelab-core.yaml"
+  local instance_dir="$SCRIPT_PATH/argo-cd/instances/$instance"
+
+  # Folders prefixed with `_` are templates (e.g. `_example`) and are excluded
+  # by the root manager AppSet. Refuse to bootstrap them.
+  if [[ "$instance" == _* ]]; then
+    error "Instance '$instance' starts with '_' and is treated as a template."
+    error "Copy it to a real name first:  cp -r argo-cd/instances/$instance argo-cd/instances/<name>"
+    exit 1
+  fi
+
+  if [[ ! -d "$instance_dir" ]]; then
+    error "Instance '$instance' not found: $instance_dir"
+    log "Available instances:"
+    find "$SCRIPT_PATH/argo-cd/instances/" -mindepth 1 -maxdepth 1 -type d \
+      ! -name '_*' -exec basename {} \; 2>/dev/null | sed 's/^/  /' || echo "  (none)"
+    exit 1
+  fi
+
+  if [[ ! -f "$instance_dir/instance.yaml" ]]; then
+    error "Missing instance.yaml: $instance_dir/instance.yaml"
+    exit 1
+  fi
+
+  if [[ ! -f "$values_file" ]]; then
+    error "homelab-core values not found: $values_file"
+    exit 1
+  fi
 
   check_kubectl
   check_helm
 
-  # Create argocd namespace
-  log "Creating argocd-system namespace..."
-  kubectl create namespace argocd-system --dry-run=client -o yaml | kubectl apply -f -
+  log "Bootstrapping homelab-core for instance: $instance"
 
-  # Install ArgoCD using the homelab-core helm chart
-  log "Installing ArgoCD..."
-  helm dependency update "$SCRIPT_PATH/homelab-utils/helm"
+  log "Updating chart dependencies..."
+  helm dependency update "$SCRIPT_PATH/homelab-utils/helm" >/dev/null
+
+  local extra_args=()
+  if [[ -n "${ARGOCD_ADMIN_PASSWORD:-}" ]]; then
+    log "Bcrypt-hashing admin password from \$ARGOCD_ADMIN_PASSWORD..."
+    local bcrypt
+    bcrypt=$(bcrypt_hash "$ARGOCD_ADMIN_PASSWORD") || exit 1
+    extra_args+=(--set-string "argo-cd.configs.secret.argocdServerAdminPassword=$bcrypt")
+  fi
+
+  log "Installing/upgrading homelab-core release..."
   helm upgrade --install homelab-core "$SCRIPT_PATH/homelab-utils/helm" \
     --namespace argocd-system \
+    --create-namespace \
+    --values "$values_file" \
+    "${extra_args[@]}" \
     --wait \
     --timeout 10m
 
-  # Wait for ArgoCD to be ready
-  log "Waiting for ArgoCD to be ready..."
-  kubectl wait --for=condition=available deployment -l app.kubernetes.io/name=argocd-server \
-    -n argocd-system --timeout=300s
+  log "Waiting for ArgoCD server to be ready..."
+  kubectl rollout status deployment -n argocd-system \
+    -l app.kubernetes.io/name=argocd-server --timeout=300s || true
 
-  # Apply the core manager ApplicationSet
-  log "Applying core manager ApplicationSet..."
-  kubectl apply -f "$SCRIPT_PATH/argo-cd/core/manager.yaml"
+  success "homelab-core bootstrap complete for instance: $instance"
 
-  # Apply the platform manager ApplicationSet
-  log "Applying platform manager ApplicationSet..."
-  kubectl apply -f "$SCRIPT_PATH/argo-cd/platforms/manager.yaml"
-
-  success "ArgoCD bootstrap complete!"
+  if [[ -z "${ARGOCD_ADMIN_PASSWORD:-}" ]]; then
+    print_initial_admin_password
+  fi
   log ""
-  log "Next steps:"
-  log "  1. Configure your instance in ./argo-cd/core/instances/<name>/"
-  log "  2. Apply core services: ./run.sh -c <instance>"
-  log "  3. Apply platform services: ./run.sh -s <instance>"
-}
-
-apply_core() {
-  local instance="$1"
-  local instance_dir="$SCRIPT_PATH/argo-cd/core/instances/$instance"
-
-  if [[ ! -d "$instance_dir" ]]; then
-    error "Instance '$instance' not found in $instance_dir"
-    log "Available instances:"
-    ls -1 "$SCRIPT_PATH/argo-cd/core/instances/" 2>/dev/null || echo "  (none)"
-    exit 1
-  fi
-
-  check_kubectl
-
-  log "Applying core services for instance: $instance"
-
-  # The ApplicationSet will pick up the instance configuration automatically
-  # Just need to ensure the manager is applied
-  kubectl apply -f "$SCRIPT_PATH/argo-cd/core/manager.yaml"
-
-  success "Core services configuration applied for '$instance'"
-  log "ArgoCD will now sync the applications based on the instance configuration"
-  log "Monitor progress: kubectl get applications -n argocd-system"
-}
-
-apply_platforms() {
-  local instance="$1"
-  local instance_dir="$SCRIPT_PATH/argo-cd/platforms/instances/$instance"
-
-  if [[ ! -d "$instance_dir" ]]; then
-    error "Instance '$instance' not found in $instance_dir"
-    log "Available instances:"
-    ls -1 "$SCRIPT_PATH/argo-cd/platforms/instances/" 2>/dev/null || echo "  (none)"
-    exit 1
-  fi
-
-  check_kubectl
-
-  log "Applying platform services for instance: $instance"
-
-  # The ApplicationSet will pick up the instance configuration automatically
-  kubectl apply -f "$SCRIPT_PATH/argo-cd/platforms/manager.yaml"
-
-  success "Platform services configuration applied for '$instance'"
-  log "ArgoCD will now sync the applications based on the instance configuration"
-  log "Monitor progress: kubectl get applications -n argocd-system"
+  log "The root 'manager' ApplicationSet will now reconcile every instance"
+  log "under ./argo-cd/instances/*/ (one per-instance Application per folder,"
+  log "each fanning out into core + tenant AppSets)."
+  log ""
+  log "Monitor progress:"
+  log "  kubectl get applications,applicationsets -n argocd-system"
 }
 
 # =============================================================================
@@ -354,7 +380,7 @@ apply_platforms() {
 # =============================================================================
 
 # Parse options
-while getopts "hdekp:t:ubc:s:" flag; do
+while getopts "hdekp:t:ub:" flag; do
   case "${flag}" in
     d) DECRYPT="true" ;;
     e) ENCRYPT="true" ;;
@@ -362,9 +388,7 @@ while getopts "hdekp:t:ubc:s:" flag; do
     p) PLAYBOOK="${OPTARG}" ;;
     t) TAGS="${OPTARG}" ;;
     u) UPDATE="true" ;;
-    b) BOOTSTRAP="true" ;;
-    c) APPLY_CORE="${OPTARG}" ;;
-    s) APPLY_PLATFORMS="${OPTARG}" ;;
+    b) BOOTSTRAP_INSTANCE="${OPTARG}" ;;
     h | *)
       print_help
       exit 0
@@ -397,21 +421,12 @@ if [[ "$FETCH_KUBECONFIG" == "true" ]]; then
 fi
 
 # GitOps operations
-if [[ "$BOOTSTRAP" == "true" ]]; then
-  bootstrap_argocd
-fi
-
-if [[ -n "$APPLY_CORE" ]]; then
-  apply_core "$APPLY_CORE"
-fi
-
-if [[ -n "$APPLY_PLATFORMS" ]]; then
-  apply_platforms "$APPLY_PLATFORMS"
+if [[ -n "$BOOTSTRAP_INSTANCE" ]]; then
+  bootstrap_instance "$BOOTSTRAP_INSTANCE"
 fi
 
 # Show help if no action was taken
 if [[ "$DECRYPT" == "false" && "$ENCRYPT" == "false" && "$UPDATE" == "false" && \
-      -z "$PLAYBOOK" && "$FETCH_KUBECONFIG" == "false" && "$BOOTSTRAP" == "false" && \
-      -z "$APPLY_CORE" && -z "$APPLY_PLATFORMS" ]]; then
+      -z "$PLAYBOOK" && "$FETCH_KUBECONFIG" == "false" && -z "$BOOTSTRAP_INSTANCE" ]]; then
   print_help
 fi

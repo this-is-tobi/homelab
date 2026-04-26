@@ -17,4 +17,11 @@ ansible/secrets/
 # Sops
 *.dec.yaml
 
-operator/
+# Helm charts (packaged or source)
+**/charts/
+
+# Helm secret local values
+homelab-utils/helm/secret-values.yaml
+
+# Local backup files
+backups/
