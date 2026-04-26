@@ -1,0 +1,83 @@
+{{- if .Values.rootManager.enabled }}
+{{- /*
+Root `manager` ApplicationSet.
+
+Discovers every folder under `argo-cd/instances/*` (one folder per instance)
+and emits ONE Application per instance pointing at the `instance-manager` chart
+(under `argo-cd/apps/instance-manager`). That chart in turn renders the
+per-scope child AppSets (core + tenant) for the matched instance.
+
+Two-level pattern:
+  manager (this AppSet)
+    └─> instance-<name>  (Application, helm-renders instance-manager chart)
+          ├─> core-<name>   (ApplicationSet)
+          │     └─> <name>-<app>  (Application)  -- core tier
+          └─> tenant-<name> (ApplicationSet)
+                └─> <name>-<app>  (Application)  -- tenant tier
+*/ -}}
+{{- $repoSources := required ".Values.rootManager.repoURL.sources is required" .Values.rootManager.repoURL.sources -}}
+{{- $repoValues := .Values.rootManager.repoURL.values | default $repoSources -}}
+{{- $rev := .Values.rootManager.targetRevision | default "main" -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ include "homelab-core.rootManagerName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Name }}
+    app.kubernetes.io/part-of: homelab-core
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
+  generators:
+  - git:
+      repoURL: {{ $repoSources | quote }}
+      revision: {{ $rev | quote }}
+      directories:
+      # All instance folders.
+      - path: argo-cd/instances/*
+      # Convention: folders prefixed with `_` are treated as TEMPLATES and not
+      # rendered. Useful for shipping a documented `_example/` next to real
+      # instances without producing idle ArgoCD objects for it.
+      - path: argo-cd/instances/_*
+        exclude: true
+  template:
+    metadata:
+      name: 'instance-{{ `{{ .path.basename }}` }}'
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Name }}
+        app.kubernetes.io/part-of: homelab-core
+        ohmlab.fr/instance-name: '{{ `{{ .path.basename }}` }}'
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ .Values.projects.core.name | default "admin-core" | quote }}
+      revisionHistoryLimit: 3
+      sources:
+      - repoURL: {{ $repoSources | quote }}
+        targetRevision: {{ $rev | quote }}
+        path: argo-cd/apps/instance-manager
+        helm:
+          releaseName: 'instance-{{ `{{ .path.basename }}` }}'
+          parameters:
+          - name: instance.name
+            value: '{{ `{{ .path.basename }}` }}'
+          valueFiles:
+          - '$values/argo-cd/instances/{{ `{{ .path.basename }}` }}/instance.yaml'
+      - repoURL: {{ $repoValues | quote }}
+        ref: values
+        targetRevision: {{ $rev | quote }}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: {{ .Release.Namespace }}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - ServerSideApply=true
+  syncPolicy:
+    preserveResourcesOnDeletion: false
+{{- end }}

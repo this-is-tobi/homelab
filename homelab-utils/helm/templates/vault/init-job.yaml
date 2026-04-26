@@ -1,4 +1,4 @@
-{{- if and .Values.vault.enabled .Values.vault.initSecrets.enabled }}
+{{- if and (.Values.vault).enabled ((.Values.vault).initSecrets).enabled }}
 ---
 apiVersion: v1
 kind: ServiceAccount

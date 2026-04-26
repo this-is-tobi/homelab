@@ -1,0 +1,76 @@
+{{- if .Values.scopes.tenant.enabled }}
+{{- $instance := required ".Values.instance.name is required" .Values.instance.name -}}
+{{- $repo := required ".Values.repoURL is required" .Values.repoURL -}}
+{{- $valuesRepo := include "instance-manager.valuesRepo" . | trim -}}
+{{- $rev := .Values.targetRevision | default "main" -}}
+{{- $defaultServer := .Values.destination.server | default "https://kubernetes.default.svc" -}}
+{{- $project := .Values.projects.tenant | default "admin-tenant" -}}
+{{- $prefix := .Values.namespacePrefix | default "" -}}
+{{- $suffix := .Values.namespaceSuffix | default "" -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tenant-{{ $instance }}
+  namespace: argocd-system
+  labels:
+    {{- include "instance-manager.labels" . | nindent 4 }}
+    ohmlab.fr/instance-scope: "tenant"
+spec:
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
+  generators:
+  - matrix:
+      generators:
+      - git:
+          repoURL: {{ $repo | quote }}
+          revision: {{ $rev | quote }}
+          files:
+          - path: 'argo-cd/instances/{{ $instance }}/tenant.yaml'
+      - list:
+          elementsYaml: "{{ `{{ .apps | toJson }}` }}"
+        selector:
+          matchExpressions:
+          - key: enabled
+            operator: In
+            values:
+            - "true"
+  template:
+    metadata:
+      name: '{{ $instance }}-{{ `{{ .app }}` }}'
+      annotations:
+        argocd.argoproj.io/compare-options: ServerSideDiff=true
+        argocd.argoproj.io/sync-wave: '{{ `{{ .syncWave }}` }}'
+        argocd.argoproj.io/hook: '{{ `{{ default "Sync" .hook }}` }}'
+      labels:
+        {{- include "instance-manager.labels" . | nindent 8 }}
+        ohmlab.fr/instance-scope: "tenant"
+        ohmlab.fr/app-name: '{{ `{{ .app }}` }}'
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: {{ $project | quote }}
+      revisionHistoryLimit: 3
+      sources:
+      - repoURL: {{ $repo | quote }}
+        path: '{{ `{{ default (printf "argo-cd/apps/%s" (default .app .chart)) .chartPath }}` }}'
+        targetRevision: '{{ printf "{{ default %q .targetRevision }}" $rev }}'
+        helm:
+          releaseName: '{{ `{{ default .app .releaseName }}` }}'
+          valueFiles:
+          - '$values/{{ printf "{{ default (printf \"argo-cd/instances/%s/values/tenant/%%s.yaml\" .app) .valuesPath }}" $instance }}'
+      - repoURL: {{ $valuesRepo | quote }}
+        ref: values
+        targetRevision: {{ $rev | quote }}
+      destination:
+        server: '{{ printf "{{ default %q .destination.server }}" $defaultServer }}'
+        namespace: '{{ printf "{{ default (printf \"%s%%s%s\" .app) .namespace }}" $prefix $suffix }}'
+      syncPolicy:
+        syncOptions:
+        - CreateNamespace=true
+        - ApplyOutOfSyncOnly=true
+        - ServerSideApply=true
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+{{- end }}

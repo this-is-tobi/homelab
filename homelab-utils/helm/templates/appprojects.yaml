@@ -1,0 +1,42 @@
+{{- range $scope, $proj := .Values.projects }}
+{{- if $proj.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: {{ $proj.name | quote }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ $.Release.Name }}
+    app.kubernetes.io/part-of: homelab-core
+    ohmlab.fr/instance-scope: {{ $scope | quote }}
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  description: {{ $proj.description | default (printf "Homelab %s tier" $scope) | quote }}
+  sourceRepos:
+    {{- toYaml $proj.sourceRepos | nindent 2 }}
+  destinations:
+    {{- toYaml $proj.destinations | nindent 2 }}
+  clusterResourceWhitelist:
+    {{- toYaml $proj.clusterResourceWhitelist | nindent 2 }}
+  namespaceResourceWhitelist:
+    {{- toYaml $proj.namespaceResourceWhitelist | nindent 2 }}
+  {{- with $proj.clusterResourceBlacklist }}
+  clusterResourceBlacklist:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with $proj.namespaceResourceBlacklist }}
+  namespaceResourceBlacklist:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with $proj.roles }}
+  roles:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- with $proj.sourceNamespaces }}
+  sourceNamespaces:
+    {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}

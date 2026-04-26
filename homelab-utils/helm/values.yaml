@@ -183,124 +183,77 @@ argo-cd:
     # - name: custom-tools
     #   emptyDir: {}
 
-avp:
-  # -- Enable ArgoCD Vault Plugin (AVP) integration.
-  enabled: false
-  # -- Vault server address.
-  vaultAddr: "" # Add your Vault address here
-  # -- Vault token.
-  vaultToken: "" # Add your Vault token here
-  # -- ArgoCD Vault Plugin type.
-  type: "vault"
-  # -- Authentication type.
-  authType: "token"
-
-argo-cd-apps:
-  # -- Enable ArgoCD core deployment
+rootManager:
+  # -- Enable the root `manager` ApplicationSet that discovers every instance
+  # under `argo-cd/instances/*` and renders one per-instance Application
+  # pointing at the `instance-manager` chart.
   enabled: true
-  projects:
-    admin:
-      # namespace: argocd-system
-      description: Ohmlab admin project
-      additionalLabels: {}
-      additionalAnnotations: {}
-      permitOnlyProjectScopedClusters: false
-      sourceRepos:
-      - '*'
-      destinations:
-      - namespace: '*'
-        server: https://kubernetes.default.svc
-      clusterResourceWhitelist:
-      - group: '*'
-        kind: '*'
-      clusterResourceBlacklist: []
-      namespaceResourceWhitelist:
-      - group: '*'
-        kind: '*'
-      namespaceResourceBlacklist: []
-      orphanedResources: {}
-      roles:
-      - name: admin
-        description: Admin keycloak group
-        groups:
-        - admin
-        policies:
-        - p, proj:admin:admin, applications, *, infra/*, allow
-      finalizers:
-      - resources-finalizer.argocd.argoproj.io
-      syncWindows: []
-      signatureKeys: []
-      sourceNamespaces: []
-  applications:
-    manager:
-      # namespace: argocd-system
-      additionalLabels: {}
-      additionalAnnotations: {}
-      project: admin
-      sources:
-      - repoURL: https://github.com/this-is-tobi/homelab.git
-        path: ./argo-cd
-        directory:
-          include: manager.yaml
-        targetRevision: main
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: argocd-system
-      syncPolicy:
-        preserveResourcesOnDeletion: true
-        # automated:
-        #   prune: false
-        #   selfHeal: false
-        syncOptions:
-        - CreateNamespace=true
-        - ApplyOutOfSyncOnly=true
-      revisionHistoryLimit: 3
-      ignoreDifferences: []
-      info:
-      - name: url
-        value: https://this-is-tobi.com/homelab
-      finalizers:
-      - resources-finalizer.argocd.argoproj.io
-
-instanceAppset:
-  # -- Enable instance ApplicationSet deployment.
-  enabled: false
-  # -- Instance name used for identification.
-  name: ""
-  # -- Instance environment used for identification.
-  env: ""
-  # -- Instance provider used for identification.
-  provider: ""
-  # -- Instance region used for identification.
-  region: ""
-  prefix:
-    # -- Prefix name added to all apps.
-    name: ""
-    # -- Prefix namespace added to all namespaces.
-    namespace: ""
-  suffix:
-    # -- Suffix name added to all apps.
-    name: ""
-    # -- Suffix namespace added to all namespaces.
-    namespace: ""
-  destination:
-    # -- Destination server URL for the instance.
-    server: "https://kubernetes.default.svc"
   repoURL:
-    # -- Repo URL to use as sources for the instance.
+    # -- Repo holding the `argo-cd/` tree (charts + instances + values).
     sources: "https://github.com/this-is-tobi/homelab.git"
-    # -- Repo URL to use as values for the instance.
-    values: "https://github.com/this-is-tobi/homelab.git"
-  # -- Target revision (branch, tag, commit) for the instance.
+    # -- Repo holding the values tree. Defaults to `sources`.
+    values: ""
+  # -- Default git revision (branch, tag, commit) used to read the instance
+  # folders and the `instance-manager` chart.
   targetRevision: "main"
-  # -- Instance category used for identification.
-  category: "core"
-  # -- ArgoCD namespace where the instance apps will be deployed.
-  argocdNamespace: "argocd-system"
-  # -- Project the instance apps will belong to.
-  project: "admin"
-  # -- List of apps to deploy for the instance.
-  apps: []
+
+projects:
+  # AppProjects are split per scope to mirror real platform/tenant boundaries.
+  # Adjust whitelists per scope to enforce stricter RBAC on tenant apps.
+  core:
+    # -- Render the `core` AppProject.
+    enabled: true
+    # -- Project name (referenced by `argo-cd/instances/<inst>/instance.yaml.projects.core`).
+    name: "admin-core"
+    description: "Homelab platform/core tier (infra, identity, observability, security)"
+    sourceRepos:
+    - '*'
+    destinations:
+    - namespace: '*'
+      server: '*'
+    clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+    clusterResourceBlacklist: []
+    namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+    namespaceResourceBlacklist: []
+    roles:
+    - name: admin
+      description: Admin keycloak group
+      groups:
+      - admin
+      policies:
+      - p, proj:admin-core:admin, applications, *, admin-core/*, allow
+    sourceNamespaces: []
+  tenant:
+    # -- Render the `tenant` AppProject.
+    enabled: true
+    # -- Project name (referenced by `argo-cd/instances/<inst>/instance.yaml.projects.tenant`).
+    name: "admin-tenant"
+    description: "Homelab tenant/apps tier (user-facing services)"
+    sourceRepos:
+    - '*'
+    destinations:
+    - namespace: '*'
+      server: '*'
+    clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+    clusterResourceBlacklist: []
+    namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+    namespaceResourceBlacklist: []
+    roles:
+    - name: admin
+      description: Admin keycloak group
+      groups:
+      - admin
+      policies:
+      - p, proj:admin-tenant:admin, applications, *, admin-tenant/*, allow
+    sourceNamespaces: []
 
 initSecrets:
   # -- Enable Vault init secrets job.
