@@ -37,11 +37,13 @@ flowchart TB
 
 ## Gateway
 
-A single host is configured as the gateway to the local network (handles all incoming traffic). It runs the following systemd-managed services:
+A single host is configured as the gateway to the local network (handles all incoming traffic). It runs the following Docker Compose–managed services:
 
 - [HAProxy](https://www.haproxy.org/) — load-balances incoming external HTTP/HTTPS (ports 80 & 443) onto the K3s ingress controller, and the K3s api-server traffic (port 6443) onto the master nodes.
 - [PiHole](https://pi-hole.net/) *(optional)* — network-level DNS sinkhole for ad / tracker filtering.
 - [WireGuard](https://www.wireguard.com/) *(optional)* — VPN access to the local network from the internet. Clients are managed via the web UI.
+
+Auto-generated secrets (PiHole password, WireGuard password) are written back as dot-files under `inventory/group_vars/` and should be added to `vault.yml` after the first run.
 
 ## K3s cluster
 
@@ -55,3 +57,26 @@ The integrated [klipper-lb](https://github.com/k3s-io/klipper-lb) load balancer 
 [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed cluster-wide to perform automatic K3s upgrades through two plans (one for masters, one for workers).
 
 [Longhorn](https://longhorn.io/) provides distributed block storage on top of the disks of the worker nodes flagged `additional_disk: true`.
+
+## Ansible roles
+
+All Ansible roles live under `ansible/roles/` and follow a consistent structure (`tasks/`, `defaults/`, `meta/`, `templates/`, `handlers/`).
+
+| Scope   | Role             | Description                                                    |
+| ------- | ---------------- | -------------------------------------------------------------- |
+| common  | `hostname`       | Set hostname and update `/etc/hosts`.                          |
+| common  | `locales`        | Configure system locales.                                      |
+| common  | `ssh`            | Harden SSH via drop-in config, deploy authorized keys.         |
+| common  | `docker`         | Install Docker CE from the official apt repository.            |
+| common  | `upgrade`        | Dist-upgrade all packages, reboot if required.                 |
+| gateway | `haproxy`        | Deploy HAProxy via Docker Compose.                             |
+| gateway | `pihole`         | Deploy PiHole via Docker Compose (optional).                   |
+| gateway | `wireguard`      | Deploy WireGuard-Easy via Docker Compose (optional).           |
+| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, utility packages.  |
+| k3s     | `download`       | Download the K3s binary matching the target architecture.      |
+| k3s     | `storage`        | Install iSCSI/NFS packages and mount additional storage disks. |
+| k3s     | `deploy/masters` | Deploy K3s server (master) nodes with HA cluster-init.         |
+| k3s     | `deploy/workers` | Deploy K3s agent (worker) nodes.                               |
+| k3s     | `destroy`        | Cleanly destroy a K3s installation and restore system state.   |
+| k3s     | `registry`       | Configure private container registry (Harbor) on K3s nodes.    |
+| k3s     | `users`          | Create Kubernetes users with x509 certificates and RBAC.       |

@@ -24,6 +24,39 @@ git clone --depth 1 https://github.com/this-is-tobi/homelab.git && cd ./homelab 
 cp -R ./ansible/inventory-example ./ansible/inventory
 ```
 
+### Ansible Vault
+
+Sensitive values (passwords, tokens, certificates) are stored in `ansible/inventory/group_vars/vault.yml` and encrypted at rest with [ansible-vault](https://docs.ansible.com/ansible/latest/vault_guide/index.html).
+
+1. Create a vault password file (never committed — already in `.gitignore`):
+
+```sh
+# Generate a strong random password
+openssl rand -base64 32 > ./ansible/.vault_password
+```
+
+2. Fill in the secrets in `ansible/inventory/group_vars/vault.yml`:
+
+```yaml
+vault_ansible_password: "<ssh-password>"
+vault_pihole_password: ""          # auto-generated if empty
+vault_wireguard_password: ""       # auto-generated if empty
+vault_k3s_token: ""                # populated during cluster bootstrap
+vault_k3s_ca_data: ""              # populated during cluster bootstrap
+```
+
+3. Encrypt the vault file:
+
+```sh
+cd ansible && ansible-vault encrypt inventory/group_vars/vault.yml
+```
+
+> **Notes**:
+>
+> *To edit secrets later: `ansible-vault edit inventory/group_vars/vault.yml`*
+>
+> *The vault password file path is configured in `ansible.cfg` (`vault_password_file = .vault_password`).*
+
 > __*Notes*__:
 >
 > *PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../ansible/inventory-example/group_vars/gateway.yml).*
@@ -35,8 +68,10 @@ cp -R ./ansible/inventory-example ./ansible/inventory
 
 Update the [hosts file](../ansible/inventory-example/hosts.yml) and [group_vars files](../ansible/inventory-example/group_vars/) to provide the appropriate infrastructure settings.
 
-To create admin access to the machines, it is required to provide their informations in the `group_vars/all.yml` file:
-- Put user ssh public key in the inventory file, this will grant admin access to the infrastructure by adding `authorized_keys`.
+All sensitive values are indirected through `vault_*` variables in `group_vars/vault.yml` (see [Ansible Vault](#ansible-vault) above). Non-secret settings are in `all.yml`, `gateway.yml` and `k3s.yml`.
+
+To create admin access to the machines, provide admin user information in `group_vars/all.yml`:
+- Put user ssh public keys in the inventory file — this will grant admin access to the infrastructure by adding `authorized_keys`.
 
 ### Applications (GitOps)
 
@@ -164,6 +199,78 @@ It is possible to cleanly destroy the K3s cluster by running:
 # Destroy cluster
 ./run.sh -p ./ansible/install.yml -t k3s-destroy
 ```
+
+
+## Maintenance
+
+### OS upgrades
+
+Run a dist-upgrade on all managed hosts (gateway + K3s nodes), rebooting only if required:
+
+```sh
+./run.sh -p ./ansible/install.yml -t os-upgrade
+```
+
+### Debian major version upgrade
+
+Upgrade all hosts in-place from one Debian release to the next (e.g. bookworm → trixie). K3s nodes are automatically **drained** before the upgrade and **uncordoned** after reboot. Hosts are processed one at a time (`serial: 1`).
+
+1. Set the target release in `inventory/group_vars/all.yml` (or pass it as extra var):
+
+```yaml
+common_dist_upgrade_target_release: "trixie"
+```
+
+2. Run the dist-upgrade:
+
+```sh
+./run.sh -p ./ansible/install.yml -t dist-upgrade
+```
+
+> **Notes**:
+>
+> *Hosts already running the target release are automatically skipped.*
+>
+> *Ensure `kubectl` is configured locally — the drain/uncordon commands run from your workstation.*
+>
+> *After a major upgrade, re-run the full infra playbook to reconcile Docker repos and other codename-dependent configuration: `./run.sh -p ./ansible/install.yml -u`*
+
+### Ansible collection updates
+
+Update pinned Ansible Galaxy collections to the latest compatible version before running a playbook:
+
+```sh
+./run.sh -p ./ansible/install.yml -u
+```
+
+Collection version ranges are pinned in [ansible/collections/requirements.yml](../ansible/collections/requirements.yml). Bump the major range when upgrading to a new major release.
+
+### Ansible vault
+
+Edit encrypted secrets:
+
+```sh
+cd ansible && ansible-vault edit inventory/group_vars/vault.yml
+```
+
+### Docker image updates (gateway)
+
+Image versions for gateway services (HAProxy, PiHole, WireGuard) are managed in `inventory/group_vars/gateway.yml`. Update the `version` field and re-run the gateway playbook:
+
+```sh
+./run.sh -p ./ansible/install.yml -t gateway
+```
+
+### K3s version updates
+
+K3s patch-level upgrades are handled automatically in-cluster by the [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller). For major/minor version bumps:
+
+1. Update `k3sVersion` in `inventory/group_vars/k3s.yml`.
+2. Re-deploy: `./run.sh -p ./ansible/install.yml -t k3s`
+
+### Kubernetes application updates
+
+Application chart versions are managed via GitOps — update the Helm chart version in the relevant `argo-cd/apps/<app>/Chart.yaml` and push. ArgoCD auto-syncs the change.
 
 
 ## Architecture
