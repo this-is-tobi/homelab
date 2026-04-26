@@ -1,0 +1,156 @@
+# =============================================================================
+# Core (platform) tier app catalog — TEMPLATE
+# =============================================================================
+# This file is the canonical reference for what an instance can ship in its
+# core (platform) tier. Copy this folder, rename it to `<your-instance>/`,
+# then flip `enabled` flags and tweak overrides as needed.
+#
+# This catalog is consumed by the `core-<instance>` ApplicationSet rendered
+# by the `instance-manager` chart (argo-cd/apps/instance-manager).
+#
+# -----------------------------------------------------------------------------
+# Per-app fields
+# -----------------------------------------------------------------------------
+#   app                 (required) chart name under argo-cd/apps/<app>/
+#
+#   enabled             "true" / "false" — string, used by the AppSet matcher
+#
+#   syncWave            ArgoCD sync wave (int). Lower = applied first.
+#                       Convention: core uses -10..60, tenant uses 100..200.
+#
+#   namespace           target namespace (defaults to `app` value).
+#
+#   releaseName         helm release name (defaults to `app` value).
+#
+#   chart               override chart name (defaults to `app` value),
+#                       useful when several Apps reuse the same upstream chart.
+#
+#   chartPath           override full chart path. Defaults to
+#                       `argo-cd/apps/<chart>`. Use this when the chart lives
+#                       outside the catalog, e.g. `homelab-utils/helm` for
+#                       the self-managed bootstrap chart.
+#
+#   valuesPath          override values file path. Defaults to
+#                       `argo-cd/instances/<instance>/values/core/<app>.yaml`.
+#                       Useful when several Apps share a values file, or when
+#                       the values live somewhere else in the values repo.
+#
+#   targetRevision      override git revision (defaults to instance default).
+#
+#   destination.server  override destination cluster (defaults to instance
+#                       default). Use to push specific apps to remote clusters.
+#
+#   hook                ArgoCD sync hook annotation (defaults to "Sync").
+#
+# -----------------------------------------------------------------------------
+# Tier conventions
+# -----------------------------------------------------------------------------
+# The core tier is intended for cluster-wide concerns: storage, certificates,
+# ingress, identity, observability, security, secrets management, OS upgrades.
+# Bind apps in this file to the `admin-core` AppProject (set in instance.yaml).
+#
+# -----------------------------------------------------------------------------
+# Tier-flexible apps  [IMPORTANT]
+# -----------------------------------------------------------------------------
+# Some apps are needed on whichever cluster runs the workloads — typically:
+#   longhorn, cert-manager, ingress-nginx, vault, keycloak, teleport,
+#   kubernetes-dashboard, prometheus-stack.
+#
+# These are listed BOTH in core.yaml AND in tenant.yaml (disabled in both, with
+# different default `syncWave`s appropriate to each tier). Pick ONE tier per
+# instance and enable the app there; leave the other side disabled.
+#
+# Topology guidance:
+#   - All-in-one cluster   → enable under core (lower sync waves, applied first).
+#   - SaaS shared core     → admin cluster: core; tenant clusters: tenant.
+#   - Dedicated core/tenant clusters → same as SaaS shared core.
+#
+# Enabling the same app in BOTH tiers in the same instance creates two
+# Applications with the same name → ArgoCD will refuse to sync. This is the
+# safety net but is intentional: pick one.
+
+apps:
+  # ---------------------------------------------------------------------------
+  # Core-only apps — operators, cluster-scoped controllers, instance bootstrap
+  # ---------------------------------------------------------------------------
+
+  # Self-managed bootstrap chart. Adopts the helm release initially installed
+  # by `./run.sh -b <instance>`. Required on every instance that ships its
+  # own core ArgoCD; not needed on tenant-only instances.
+  - app: homelab-core
+    enabled: "false"
+    namespace: argocd-system
+    syncWave: -10
+    releaseName: homelab-core
+    chartPath: homelab-utils/helm
+
+  # Vault operator — manages Vault clusters and Vault Secrets Operator.
+  - app: vault-operator
+    enabled: "false"
+    namespace: vault-operator-system
+    syncWave: 10
+
+  # PostgreSQL operator — used by Keycloak, Gitea, Mattermost, Outline, ...
+  - app: cloudnative-pg
+    enabled: "false"
+    syncWave: 20
+
+  # SOPS / age decryption controller for encrypted manifests.
+  - app: sops
+    enabled: "false"
+    syncWave: 20
+
+  # Continuous vulnerability scanning of cluster workloads.
+  - app: trivy-operator
+    enabled: "false"
+    syncWave: 50
+
+  # Rancher's OS-level upgrade controller for K3s nodes.
+  - app: system-upgrade
+    enabled: "false"
+    syncWave: 60
+
+  # ---------------------------------------------------------------------------
+  # Tier-flexible apps — also listed in tenant.yaml; enable in only ONE tier.
+  # ---------------------------------------------------------------------------
+
+  # [TIER-FLEXIBLE] Distributed block storage — provides the default StorageClass.
+  - app: longhorn
+    enabled: "false"
+    namespace: longhorn-system
+    syncWave: 0
+
+  # [TIER-FLEXIBLE] X.509 certificate management (Let's Encrypt, internal CA, ...).
+  - app: cert-manager
+    enabled: "false"
+    syncWave: 10
+
+  # [TIER-FLEXIBLE] Ingress controller — terminates TLS and routes external traffic.
+  - app: ingress-nginx
+    enabled: "false"
+    syncWave: 10
+
+  # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
+  - app: vault
+    enabled: "false"
+    syncWave: 20
+
+  # [TIER-FLEXIBLE] Identity provider (OIDC). Most user-facing apps depend on it.
+  - app: keycloak
+    enabled: "false"
+    syncWave: 30
+
+  # [TIER-FLEXIBLE] Identity-aware infrastructure access proxy (SSH / kube / DB).
+  - app: teleport
+    enabled: "false"
+    syncWave: 40
+
+  # [TIER-FLEXIBLE] Kubernetes web UI.
+  - app: kubernetes-dashboard
+    enabled: "false"
+    syncWave: 40
+
+  # [TIER-FLEXIBLE] Prometheus + Grafana + Alertmanager bundle (cluster-wide observability).
+  - app: prometheus-stack
+    enabled: "false"
+    syncWave: 50

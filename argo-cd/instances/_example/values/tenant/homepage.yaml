@@ -1,0 +1,77 @@
+homepage:
+  ingress:
+    main:
+      hosts:
+      - host: "example.com"
+        paths:
+        - path: /
+          pathType: Prefix
+      tls:
+      - secretName: example.com-tls
+        hosts:
+        - example.com
+  env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: "example.com"
+  config:
+    settings:
+      title: "Homelab Dashboard"
+      theme: dark
+      color: slate
+      headerStyle: clean
+      layout:
+        Services:
+          style: row
+          columns: 3
+        Admin:
+          style: row
+          columns: 3
+        Utils:
+          style: row
+          columns: 2
+    bookmarks:
+    - Developer:
+        - Github:
+            - abbr: GH
+              href: https://github.com/
+    services:
+    - Services:
+      - Argo-cd:
+          href: https://gitops.example.com
+          siteMonitor: https://gitops.example.com
+          description: Deploy apps using gitops
+          icon: argo-cd.png
+      - Gitea:
+          href: https://git.example.com
+          siteMonitor: https://git.example.com
+          description: Private DevOps Platform
+          icon: gitea.png
+      - Grafana:
+          href: https://monitoring.example.com
+          siteMonitor: https://monitoring.example.com
+          description: Cluster metrics & logs
+          icon: grafana.png
+    - Admin:
+      - Keycloak:
+          href: https://sso.example.com
+          siteMonitor: https://sso.example.com
+          description: Single Sign On management
+          icon: keycloak.png
+      - Vault:
+          href: https://vault.admin.example.com
+          siteMonitor: https://vault.admin.example.com
+          description: Secret manager
+          icon: vault.png
+    widgets:
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true

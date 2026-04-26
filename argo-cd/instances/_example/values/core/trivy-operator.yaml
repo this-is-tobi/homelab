@@ -1,0 +1,5 @@
+# trivy-operator — continuous vulnerability scanning of cluster workloads.
+# Defaults are sensible. Override `trivy-operator.targetNamespaces` to limit
+# scanning scope, or tweak resource requests for large clusters.
+
+trivy-operator: {}

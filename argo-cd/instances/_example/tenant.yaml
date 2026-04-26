@@ -1,0 +1,148 @@
+# =============================================================================
+# Tenant (apps) tier app catalog — TEMPLATE
+# =============================================================================
+# Canonical reference for the tenant tier. See ./core.yaml for the full list
+# of supported per-app fields and tier conventions.
+#
+# This catalog is consumed by the `tenant-<instance>` ApplicationSet rendered
+# by the `instance-manager` chart (argo-cd/apps/instance-manager).
+#
+# Default values path: argo-cd/instances/<instance>/values/tenant/<app>.yaml
+# AppProject binding:  admin-tenant (set in instance.yaml)
+#
+# -----------------------------------------------------------------------------
+# Tier conventions
+# -----------------------------------------------------------------------------
+# The tenant tier is intended for user-facing applications (VCS, chat, docs,
+# storage, CI runners, dashboards, sandbox ArgoCD, ...).
+#
+# -----------------------------------------------------------------------------
+# Tier-flexible apps  [IMPORTANT]
+# -----------------------------------------------------------------------------
+# Some cluster-infra apps are listed BOTH here and in core.yaml — typically:
+#   longhorn, cert-manager, ingress-nginx, vault, keycloak, teleport,
+#   kubernetes-dashboard, prometheus-stack.
+#
+# Pick ONE tier per instance and enable the app there; leave the other side
+# disabled. See core.yaml for the topology guidance and the rationale.
+# Within the tenant tier they are placed at sync waves 80..99 so they are
+# applied before user-facing apps (waves 100..200).
+
+apps:
+  # ---------------------------------------------------------------------------
+  # Tier-flexible apps — also listed in core.yaml; enable in only ONE tier.
+  # Sync waves 80..99 so cluster infra is ready before user apps.
+  # ---------------------------------------------------------------------------
+
+  # [TIER-FLEXIBLE] Distributed block storage — provides the default StorageClass.
+  - app: longhorn
+    enabled: "false"
+    namespace: longhorn-system
+    syncWave: 80
+
+  # [TIER-FLEXIBLE] X.509 certificate management.
+  - app: cert-manager
+    enabled: "false"
+    syncWave: 85
+
+  # [TIER-FLEXIBLE] Ingress controller — terminates TLS and routes external traffic.
+  - app: ingress-nginx
+    enabled: "false"
+    syncWave: 85
+
+  # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
+  - app: vault
+    enabled: "false"
+    syncWave: 90
+
+  # [TIER-FLEXIBLE] Identity provider (OIDC). Most user-facing apps depend on it.
+  - app: keycloak
+    enabled: "false"
+    syncWave: 95
+
+  # [TIER-FLEXIBLE] Identity-aware infrastructure access proxy (SSH / kube / DB).
+  - app: teleport
+    enabled: "false"
+    syncWave: 96
+
+  # [TIER-FLEXIBLE] Kubernetes web UI.
+  - app: kubernetes-dashboard
+    enabled: "false"
+    syncWave: 96
+
+  # [TIER-FLEXIBLE] Prometheus + Grafana + Alertmanager bundle (cluster-wide observability).
+  - app: prometheus-stack
+    enabled: "false"
+    syncWave: 97
+
+  # ---------------------------------------------------------------------------
+  # Tenant-only apps — user-facing services
+  # ---------------------------------------------------------------------------
+
+  # Personal user-facing ArgoCD instance — separate from the core engine.
+  # Lets users deploy ad-hoc Applications via the UI without touching the
+  # platform AppSets.
+  - app: argo-cd
+    enabled: "false"
+    namespace: argo-cd
+    syncWave: 100
+
+  # Gitea Actions self-hosted runners controller.
+  - app: actions-runner-controller
+    enabled: "false"
+    syncWave: 110
+
+  # Workflow engine for batch / DAG-style pipelines.
+  - app: argo-workflows
+    enabled: "false"
+    syncWave: 110
+
+  # Cloud development environments.
+  - app: coder
+    enabled: "false"
+    syncWave: 110
+
+  # Self-hosted Git server.
+  - app: gitea
+    enabled: "false"
+    syncWave: 110
+
+  # OCI registry (container images + helm charts).
+  - app: harbor
+    enabled: "false"
+    syncWave: 110
+
+  # Team chat.
+  - app: mattermost
+    enabled: "false"
+    syncWave: 110
+
+  # Machine-learning experiment tracking.
+  - app: mlflow
+    enabled: "false"
+    syncWave: 110
+
+  # Knowledge base / wiki.
+  - app: outline
+    enabled: "false"
+    syncWave: 110
+
+  # S3-compatible object storage.
+  - app: rustfs
+    enabled: "false"
+    syncWave: 110
+
+  # Code-quality analysis.
+  - app: sonarqube
+    enabled: "false"
+    syncWave: 110
+
+  # Personal password manager (Bitwarden-compatible).
+  - app: vaultwarden
+    enabled: "false"
+    syncWave: 110
+
+  # Service catalogue / homepage. Synced last so links resolve.
+  - app: homepage
+    enabled: "false"
+    syncWave: 200

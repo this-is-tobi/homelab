@@ -1,0 +1,5 @@
+# system-upgrade-controller — defaults are sensible.
+# Customize the upgrade Plan(s) inside the chart templates if you need a
+# different cadence, channel, or node selector.
+
+system-upgrade: {}

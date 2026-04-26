@@ -1,0 +1,20 @@
+# Teleport (tenant tier example).
+#
+# This file is also used when Teleport is enabled under the core tier — copy
+# it to argo-cd/instances/<inst>/values/core/teleport.yaml in that case.
+
+server:
+  # Public DNS name for the cluster. Replace with your own.
+  clusterName: "teleport.example.com"
+
+roles: {}
+
+users: {}
+  # Example mapping (uncomment and adapt):
+  # alice:
+  #   roles:
+  #     - superadmin
+  #     - admin
+  # bob:
+  #   roles:
+  #     - admin

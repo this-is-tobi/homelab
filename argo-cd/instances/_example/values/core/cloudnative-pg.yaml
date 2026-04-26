@@ -1,0 +1,5 @@
+# cloudnative-pg operator — defaults are sensible.
+# Override only when you need to customize the operator deployment itself.
+# PostgreSQL Cluster manifests for individual apps are managed by those apps.
+
+cloudnative-pg: {}

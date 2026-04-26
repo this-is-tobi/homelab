@@ -1,0 +1,13 @@
+vault:
+  server:
+    ha:
+      apiAddr: "vault.example.com"
+    ingress:
+      hosts:
+      - host: "vault.example.com"
+        paths:
+        - "/"
+      tls:
+      - hosts:
+        - "vault.example.com"
+        secretName: "vault.example.com-tls"
