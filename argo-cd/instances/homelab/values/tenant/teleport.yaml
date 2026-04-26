@@ -1,0 +1,13 @@
+server:
+  clusterName: "teleport.ohmlab.fr"
+
+roles: {}
+
+users:
+  tobi:
+    roles:
+    - superadmin
+    - admin
+  qit:
+    roles:
+    - admin

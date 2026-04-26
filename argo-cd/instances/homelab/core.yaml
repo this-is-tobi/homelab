@@ -1,0 +1,41 @@
+# Core (platform) tier app catalog for the `homelab` instance.
+# Slim list — only what is actually deployed.
+# Schema reference: ../_example/core.yaml
+
+apps:
+  - app: homelab-core
+    enabled: "true"
+    namespace: argocd-system
+    syncWave: -10
+    releaseName: homelab-core
+    chartPath: homelab-utils/helm
+  - app: longhorn
+    enabled: "true"
+    namespace: longhorn-system
+    releaseName: longhorn-system
+    syncWave: 0
+  - app: cert-manager
+    enabled: "true"
+    syncWave: 10
+  - app: ingress-nginx
+    enabled: "true"
+    syncWave: 10
+  - app: vault-operator
+    enabled: "true"
+    namespace: vault-operator-system
+    syncWave: 10
+  - app: cloudnative-pg
+    enabled: "true"
+    syncWave: 20
+  - app: sops
+    enabled: "true"
+    syncWave: 20
+  - app: keycloak
+    enabled: "true"
+    syncWave: 30
+  - app: prometheus-stack
+    enabled: "true"
+    syncWave: 50
+  - app: system-upgrade
+    enabled: "true"
+    syncWave: 60

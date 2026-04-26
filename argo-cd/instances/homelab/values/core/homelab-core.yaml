@@ -1,0 +1,58 @@
+# homelab-core wrapper values for the `homelab` instance.
+#
+# Owns:
+# - The CORE ArgoCD installation (in argocd-system namespace)
+# - The root `manager` ApplicationSet (discovers every instance under
+#   `argo-cd/instances/*` and renders one per-instance Application)
+# - The `admin-core` and `admin-tenant` AppProjects
+#
+# Bootstrap is intentionally bare: admin login only, no OIDC, no notifications.
+# This avoids any chicken-and-egg with vault-operator / Vault / Keycloak.
+#
+# Once the full stack is up, enable OIDC by uncommenting the block below and
+# providing the clientSecret either inline (replaced manually) or via a
+# VaultStaticSecret applied out-of-band into argocd-system.
+
+rootManager:
+  enabled: true
+  repoURL:
+    sources: https://github.com/this-is-tobi/homelab.git
+    values: ""
+  targetRevision: main
+
+projects:
+  core:
+    enabled: true
+    name: admin-core
+  tenant:
+    enabled: true
+    name: admin-tenant
+
+argo-cd:
+  enabled: true
+  configs:
+    secret:
+      # Set at bootstrap via:
+      #   helm install ... --set 'argo-cd.configs.secret.argocdServerAdminPassword=<bcrypt>'
+      # or by pre-creating the `argocd-secret` Secret in argocd-system.
+      argocdServerAdminPassword: ""
+    cm:
+      url: "https://core.gitops.ohmlab.fr"
+      # Enable apiKey once you need to issue tokens (e.g. for argocd-mcp).
+      accounts.admin: apiKey,login
+      # --- OIDC (enable once Keycloak is up) ---
+      # oidc.config: |
+      #   name: "Keycloak"
+      #   issuer: "https://sso.ohmlab.fr/realms/homelab"
+      #   clientID: "argo-cd-core"
+      #   clientSecret: "$oidc.keycloak.clientSecret"
+      #   requestedScopes: ["openid", "profile", "email", "groups"]
+  applicationSet:
+    ingress:
+      hostname: "appset.core.gitops.ohmlab.fr"
+  server:
+    ingress:
+      hostname: "core.gitops.ohmlab.fr"
+  crds:
+    install: true
+    keep: true

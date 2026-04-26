@@ -1,0 +1,19 @@
+# `homelab` instance — personal, all-in-one production cluster.
+# Schema reference + full documentation: ../_example/instance.yaml
+
+instance:
+  name: homelab
+  env: production
+  provider: self-hosted
+  region: fr-par
+
+destination:
+  server: https://kubernetes.default.svc
+
+repoURL: https://github.com/this-is-tobi/homelab.git
+valuesRepoURL: ""
+targetRevision: main
+
+projects:
+  core: admin-core
+  tenant: admin-tenant
