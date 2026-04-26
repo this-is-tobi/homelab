@@ -32,11 +32,11 @@
     - name: Fetch wireguard password
       delegate_to: localhost
       become: false
-      ansible.builtin.shell:
-        cmd: |
-          yq -i '.wireguard.password = "{{ gateway_wireguard_password }}"' ./inventory/group_vars/gateway.yml
+      ansible.builtin.copy:
+        content: "{{ gateway_wireguard_password }}"
+        dest: "{{ playbook_dir }}/inventory/group_vars/.wireguard_password"
+        mode: "0600"
       when: wireguard.password == ''
-      changed_when: wireguard.password == ''
 
     - name: Create wireguard service dir
       ansible.builtin.file:

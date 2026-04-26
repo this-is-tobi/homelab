@@ -32,11 +32,11 @@
     - name: Fetch pihole password
       delegate_to: localhost
       become: false
-      ansible.builtin.shell:
-        cmd: |
-          yq -i '.pihole.password = "{{ gateway_pihole_password }}"' ./inventory/group_vars/gateway.yml
+      ansible.builtin.copy:
+        content: "{{ gateway_pihole_password }}"
+        dest: "{{ playbook_dir }}/inventory/group_vars/.pihole_password"
+        mode: "0600"
       when: pihole.password == ''
-      changed_when: pihole.password == ''
 
     - name: Create pihole service dir
       ansible.builtin.file:

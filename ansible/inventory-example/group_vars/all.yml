@@ -1,6 +1,7 @@
 # Ansible infos
 ansible_user: devops
 ansible_port: 22
+ansible_password: "{{ vault_ansible_password }}"
 # Lab domains
 rootDomain: "example.domain.com"
 localRootDomain: "example.domain.local"
