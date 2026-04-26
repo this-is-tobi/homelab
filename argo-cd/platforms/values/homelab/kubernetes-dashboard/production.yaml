@@ -1,6 +1,0 @@
-kubernetes-dashboard:
-  app:
-    ingress:
-      hosts:
-      - "kubernetes.ohmlab.fr"
-      secretName: "kubernetes.ohmlab.fr"

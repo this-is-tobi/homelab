@@ -1,5 +1,0 @@
-longhorn:
-  ingress:
-    enabled: true
-    host: "longhorn.staging.core.example.com"
-    tlsSecret: "longhorn.staging.core.example.com-tls"
