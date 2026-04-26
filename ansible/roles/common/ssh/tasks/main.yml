@@ -1,11 +1,3 @@
-- name: Copy sshd_config file
-  ansible.builtin.template:
-    src: sshd_config.j2
-    dest: /etc/ssh/sshd_config
-    owner: root
-    group: root
-    mode: "0644"
-
 - name: Copy ssh security conf file
   ansible.builtin.template:
     src: security.conf.j2
@@ -19,7 +11,7 @@
   ansible.posix.authorized_key:
     user: "{{ ansible_user }}"
     state: present
-    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    key: "{{ lookup('file', common_ssh_pub_key) }}"
 
 - name: Add admin users ssh keys in authorized_keys
   ansible.posix.authorized_key:
