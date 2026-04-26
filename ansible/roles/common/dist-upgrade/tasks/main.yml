@@ -1,0 +1,97 @@
+---
+- name: Get current Debian codename
+  ansible.builtin.command: lsb_release -cs
+  register: common_dist_upgrade_current_result
+  changed_when: false
+
+- name: Set codename facts
+  ansible.builtin.set_fact:
+    common_dist_upgrade_current: "{{ common_dist_upgrade_current_result.stdout }}"
+    common_dist_upgrade_target: "{{ common_dist_upgrade_target_release }}"
+
+- name: Skip if already on target release
+  ansible.builtin.meta: end_host
+  when: common_dist_upgrade_current == common_dist_upgrade_target
+
+- name: Display upgrade plan
+  ansible.builtin.debug:
+    msg: "Upgrading {{ inventory_hostname }} from {{ common_dist_upgrade_current }} to {{ common_dist_upgrade_target }}"
+
+# --- K3s drain (only for cluster nodes) ---
+- name: Drain K3s node before upgrade
+  delegate_to: localhost
+  become: false
+  ansible.builtin.command: >-
+    kubectl drain {{ inventory_hostname }}
+    --ignore-daemonsets
+    --delete-emptydir-data
+    --timeout=300s
+  when: inventory_hostname in groups.get('k3s', [])
+
+# --- Replace apt sources ---
+- name: Check if /etc/apt/sources.list exists
+  ansible.builtin.stat:
+    path: /etc/apt/sources.list
+  register: common_dist_upgrade_sources_list
+
+- name: Replace codename in /etc/apt/sources.list
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list
+    regexp: "{{ common_dist_upgrade_current }}"
+    replace: "{{ common_dist_upgrade_target }}"
+  when: common_dist_upgrade_sources_list.stat.exists
+
+- name: Find all source files in sources.list.d
+  ansible.builtin.find:
+    paths: /etc/apt/sources.list.d
+    patterns: "*.list,*.sources"
+  register: common_dist_upgrade_source_files
+
+- name: Replace codename in sources.list.d files
+  ansible.builtin.replace:
+    path: "{{ item.path }}"
+    regexp: "{{ common_dist_upgrade_current }}"
+    replace: "{{ common_dist_upgrade_target }}"
+  loop: "{{ common_dist_upgrade_source_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+# --- Upgrade ---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Full dist-upgrade
+  ansible.builtin.apt:
+    upgrade: dist
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Remove unused packages
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+
+# --- Reboot ---
+- name: Reboot into new release
+  ansible.builtin.reboot:
+    msg: "Rebooting after dist-upgrade to {{ common_dist_upgrade_target }}"
+    reboot_timeout: 600
+
+# --- K3s uncordon ---
+- name: Uncordon K3s node after upgrade
+  delegate_to: localhost
+  become: false
+  ansible.builtin.command: >-
+    kubectl uncordon {{ inventory_hostname }}
+  when: inventory_hostname in groups.get('k3s', [])
+
+# --- Verify ---
+- name: Verify new release
+  ansible.builtin.command: lsb_release -a
+  register: common_dist_upgrade_new_release
+  changed_when: false
+
+- name: Display new release info
+  ansible.builtin.debug:
+    var: common_dist_upgrade_new_release.stdout_lines

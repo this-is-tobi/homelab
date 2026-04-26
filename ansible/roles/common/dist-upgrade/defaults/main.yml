@@ -1,0 +1,3 @@
+---
+# common/dist-upgrade defaults
+common_dist_upgrade_target_release: "trixie"

@@ -97,6 +97,7 @@ INFRASTRUCTURE (Ansible):
                     - k3s-deploy    : Deploy K3s only
                     - k3s-destroy   : Destroy K3s cluster
                     - os-upgrade    : Upgrade OS on all hosts
+                    - dist-upgrade  : Debian major version upgrade (e.g. bookworm→trixie)
 
   -k              Fetch kubeconfig from cluster and configure local kubectl.
                   Kubeconfig saved to: ~/.kube/config.d/homelab
