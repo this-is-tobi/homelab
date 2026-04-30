@@ -48,11 +48,22 @@ argo-cd:
       #   clientSecret: "$oidc.keycloak.clientSecret"
       #   requestedScopes: ["openid", "profile", "email", "groups"]
   applicationSet:
-    ingress:
-      hostname: "appset.core.gitops.ohmlab.fr"
+    webhook:
+      ingress:
+        enabled: true
+        hostname: "appset.core.gitops.ohmlab.fr"
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        tls: true
+        extraTls: []
   server:
     ingress:
+      enabled: true
       hostname: "core.gitops.ohmlab.fr"
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      tls: true
+      extraTls: []
   crds:
     install: true
     keep: true
