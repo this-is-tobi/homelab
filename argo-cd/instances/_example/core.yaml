@@ -93,21 +93,25 @@ apps:
   # PostgreSQL operator — used by Keycloak, Gitea, Mattermost, Outline, ...
   - app: cloudnative-pg
     enabled: "false"
+    namespace: cloudnative-pg-system
     syncWave: 20
 
   # SOPS / age decryption controller for encrypted manifests.
   - app: sops
     enabled: "false"
+    namespace: sops-system
     syncWave: 20
 
   # Continuous vulnerability scanning of cluster workloads.
   - app: trivy-operator
     enabled: "false"
+    namespace: trivy-operator-system
     syncWave: 50
 
   # Rancher's OS-level upgrade controller for K3s nodes.
   - app: system-upgrade
     enabled: "false"
+    namespace: system-upgrade-system
     syncWave: 60
 
   # ---------------------------------------------------------------------------
@@ -123,11 +127,13 @@ apps:
   # [TIER-FLEXIBLE] X.509 certificate management (Let's Encrypt, internal CA, ...).
   - app: cert-manager
     enabled: "false"
+    namespace: cert-manager-system
     syncWave: 10
 
   # [TIER-FLEXIBLE] Ingress controller — terminates TLS and routes external traffic.
   - app: ingress-nginx
     enabled: "false"
+    namespace: ingress-nginx-system
     syncWave: 10
 
   # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
@@ -153,4 +159,5 @@ apps:
   # [TIER-FLEXIBLE] Prometheus + Grafana + Alertmanager bundle (cluster-wide observability).
   - app: prometheus-stack
     enabled: "false"
+    namespace: prometheus-stack-system
     syncWave: 50

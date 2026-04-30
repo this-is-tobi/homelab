@@ -3,6 +3,11 @@
 # Schema reference: ../_example/core.yaml
 
 apps:
+  # [TIER-FLEXIBLE] Identity provider — kept in tenant tier because of its
+  # PostgreSQL (CNPG) database. Renaming the namespace would lose all data.
+  - app: keycloak
+    enabled: "true"
+    syncWave: 95
   - app: argo-cd
     enabled: "true"
     namespace: argo-cd
