@@ -354,7 +354,7 @@ bootstrap_instance() {
     --namespace argocd-system \
     --create-namespace \
     --values "$values_file" \
-    "${extra_args[@]}" \
+    ${extra_args[@]+"${extra_args[@]}"} \
     --wait \
     --timeout 10m
 

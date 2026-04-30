@@ -42,7 +42,6 @@ spec:
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
         argocd.argoproj.io/sync-wave: '{{ `{{ .syncWave }}` }}'
-        argocd.argoproj.io/hook: '{{ `{{ default "Sync" .hook }}` }}'
       labels:
         {{- include "instance-manager.labels" . | nindent 8 }}
         ohmlab.fr/instance-scope: "tenant"
