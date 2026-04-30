@@ -18,8 +18,6 @@ metadata:
     ohmlab.fr/instance-scope: "tenant"
 spec:
   goTemplate: true
-  goTemplateOptions:
-  - missingkey=error
   generators:
   - matrix:
       generators:
