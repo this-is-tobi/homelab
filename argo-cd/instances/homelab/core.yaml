@@ -30,9 +30,6 @@ apps:
   - app: sops
     enabled: "true"
     syncWave: 20
-  - app: keycloak
-    enabled: "true"
-    syncWave: 30
   - app: prometheus-stack
     enabled: "true"
     syncWave: 50
