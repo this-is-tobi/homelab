@@ -43,15 +43,9 @@ crowdsec:
       enabled: true
       serviceMonitor:
         enabled: true
-    podSecurityContext:
-      runAsNonRoot: true
-      runAsUser: 65534
-      runAsGroup: 65534
-      fsGroup: 65534
     securityContext:
       allowPrivilegeEscalation: false
       privileged: false
-      readOnlyRootFilesystem: false
       capabilities:
         drop:
           - ALL
@@ -83,15 +77,9 @@ crowdsec:
       enabled: true
       serviceMonitor:
         enabled: true
-    podSecurityContext:
-      runAsNonRoot: true
-      runAsUser: 65534
-      runAsGroup: 65534
-      fsGroup: 65534
     securityContext:
       allowPrivilegeEscalation: false
       privileged: false
-      readOnlyRootFilesystem: false
       capabilities:
         drop:
           - ALL
