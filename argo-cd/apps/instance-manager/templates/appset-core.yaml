@@ -64,10 +64,20 @@ spec:
         server: '{{ printf "{{ default %q .destination.server }}" $defaultServer }}'
         namespace: '{{ printf "{{ default (printf \"%s%%s%s\" .app) .namespace }}" $prefix $suffix }}'
       syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
         syncOptions:
         - CreateNamespace=true
         - ApplyOutOfSyncOnly=true
         - ServerSideApply=true
+        - RespectIgnoreDifferences=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 30s
+            factor: 2
+            maxDuration: 3m
   syncPolicy:
     preserveResourcesOnDeletion: true
 {{- end }}
