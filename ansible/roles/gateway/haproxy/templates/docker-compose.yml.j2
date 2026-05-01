@@ -4,14 +4,20 @@ services:
     container_name: haproxy
     restart: unless-stopped
     volumes:
-      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     ports:
       - 80:80
       - 443:443
       - 6443:6443
-      - 8404:8404
+      - {{ gatewayIp }}:8404:8404
     sysctls:
       - net.ipv4.ip_unprivileged_port_start=0
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
     networks:
       - homelab
 

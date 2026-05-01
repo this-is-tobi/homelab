@@ -1,49 +1,79 @@
 global
   log stdout format raw local0 info
+  # Security: drop privileges after binding
+  maxconn 4096
+  # Performance: use multi-threaded mode (auto-detect CPUs)
+  nbthread 2
 
 defaults
   mode tcp
   log global
   option tcplog
-  option http-server-close
-  timeout connect 1s
-  timeout client  20s
-  timeout server  20s
-  timeout client-fin 20s
-  timeout tunnel 1h
+  option dontlognull
+  # Timeouts tuned for mixed traffic (websockets, API, file uploads)
+  timeout connect 5s
+  timeout client  60s
+  timeout server  60s
+  timeout client-fin 30s
+  timeout tunnel  3600s
+  timeout http-request 10s
+  timeout http-keep-alive 5s
+  timeout queue 30s
+  # Retry on connection failure
+  retries 3
+  option redispatch
 
+# --- Stats (restricted to local/VPN) ---
 frontend stats
   mode http
   bind *:8404
+  acl allowed_stats src 127.0.0.0/8 {{ (gatewayIp + '/255.255.0.0') | ansible.utils.ipaddr('network/prefix') }} {{ haproxy.allowedIps }}
+  http-request deny if !allowed_stats
   stats enable
   stats uri /
-  stats refresh 60s
+  stats refresh 30s
+  stats show-legends
 
+# --- Web traffic (HTTP/HTTPS) ---
 frontend homelab_entrypoint_lb
   bind *:80
   bind *:443
+  # Rate-limit: max 100 concurrent connections per source IP
+  stick-table type ip size 100k expire 30s store conn_cur
+  acl too_many_conns sc0_conn_cur gt 100
+  tcp-request connection track-sc0 src
+  tcp-request connection reject if too_many_conns
   default_backend homelab_entrypoint
 
+# --- Kubernetes API (restricted access) ---
 frontend k3s_api_server_lb
   bind *:6443
   acl white_list src {{ (gatewayIp + '/255.255.0.0') | ansible.utils.ipaddr('network/prefix') }} {{ haproxy.extraKubeAllowedIps }}
   tcp-request connection reject if !white_list
   default_backend k3s_api_server
 
+# --- Backends ---
+
+# Web entrypoint: route to ALL k3s nodes (kube-proxy forwards to nginx pods).
+# Workers are preferred (nginx runs there) but masters also forward correctly
+# via externalTrafficPolicy=Cluster.
 backend homelab_entrypoint
   mode tcp
+  balance leastconn
   option tcp-check
-  balance roundrobin
-  default-server inter 10s downinter 5s
-  {% for host in groups['masters'] %}
-server {{ host }} {{ hostvars[host]['ansible_host'] }} check port 80
-  {% endfor %}
+  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
+{% for host in groups['workers'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check check-ssl verify none
+{% endfor %}
+{% for host in groups['masters'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check check-ssl verify none backup
+{% endfor %}
 
 backend k3s_api_server
   mode tcp
-  option tcp-check
   balance roundrobin
-  default-server inter 10s downinter 5s
-  {% for host in groups['masters'] %}
-server {{ host }} {{ hostvars[host]['ansible_host'] }} check port 6443
-  {% endfor %}
+  option tcp-check
+  default-server inter 5s downinter 2s rise 2 fall 3 maxconn 256
+{% for host in groups['masters'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:6443 check
+{% endfor %}
