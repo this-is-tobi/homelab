@@ -100,6 +100,8 @@ valkey:
   fullnameOverride: "gitea-valkey"
   architecture: standalone
   replicaCount: 1
+  auth:
+    enabled: false
   service:
     port: 6379
 
