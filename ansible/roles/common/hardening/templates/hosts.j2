@@ -1,0 +1,16 @@
+127.0.0.1       localhost
+::1             localhost ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+
+127.0.1.1       {{ inventory_hostname }}
+
+# Cluster nodes - managed by Ansible
+{% for host in groups['all'] %}
+{{ hostvars[host]['ansible_host'] }}    {{ host }}
+{% endfor %}
+
+# Gateway services - local resolution
+{{ hostvars[groups['gateway'][0]]['ansible_host'] }}    gateway.{{ localRootDomain }}
+{{ hostvars[groups['gateway'][0]]['ansible_host'] }}    haproxy.{{ localRootDomain }}
+{{ hostvars[groups['gateway'][0]]['ansible_host'] }}    pihole.{{ localRootDomain }}

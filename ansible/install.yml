@@ -38,10 +38,12 @@
     - role: common/hostname
     - role: common/locales
     - role: common/ssh
+    - role: common/hardening
     - role: common/docker
     - role: gateway/haproxy
     - role: gateway/wireguard
     - role: gateway/pihole
+    - role: gateway/crowdsec
   tags:
     - gateway
 
@@ -57,6 +59,7 @@
     - role: common/hostname
     - role: common/locales
     - role: common/ssh
+    - role: common/hardening
     - role: k3s/prereq
     - role: k3s/download
     - role: k3s/storage

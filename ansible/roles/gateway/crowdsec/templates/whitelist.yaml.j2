@@ -1,0 +1,8 @@
+name: local/gateway-whitelist
+description: "Whitelist local and cluster network ranges"
+whitelist:
+  reason: "local network"
+  cidr:
+{% for cidr in crowdsec.whitelists | default(gateway_crowdsec_default_whitelists) %}
+    - {{ cidr }}
+{% endfor %}

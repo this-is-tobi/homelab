@@ -12,6 +12,7 @@ vault_ansible_password: ""
 # gateway.yml secrets (auto-generated on first run if left empty)
 vault_pihole_password: ""
 vault_wireguard_password: ""
+vault_crowdsec_console_key: "" # Get from https://app.crowdsec.net/security-engines after enrolling an instance
 
 # k3s.yml secrets (populated automatically during cluster bootstrap)
 vault_k3s_token: ""

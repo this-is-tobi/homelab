@@ -1,0 +1,202 @@
+---
+- name: Remove crowdsec when disabled
+  when: not crowdsec.enabled
+  block:
+    - name: Stop crowdsec if running
+      community.docker.docker_compose_v2:
+        state: absent
+        project_src: "/services/crowdsec"
+        files:
+          - "docker-compose.yml"
+      ignore_errors: true
+
+    - name: Stop firewall bouncer service
+      ansible.builtin.systemd:
+        name: crowdsec-firewall-bouncer
+        state: stopped
+        enabled: false
+      ignore_errors: true
+
+    - name: Remove crowdsec service dir
+      ansible.builtin.file:
+        path: "/services/crowdsec"
+        state: absent
+
+- name: Deploy crowdsec when enabled
+  when: crowdsec.enabled
+  block:
+    - name: Create crowdsec service dir
+      ansible.builtin.file:
+        path: "/services/crowdsec"
+        state: directory
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Copy docker-compose file
+      ansible.builtin.template:
+        src: "docker-compose.yml.j2"
+        dest: "/services/crowdsec/docker-compose.yml"
+        owner: root
+        group: root
+        mode: "0640"
+      register: gateway_crowdsec_compose
+
+    - name: Copy acquis configuration
+      ansible.builtin.template:
+        src: "acquis.yaml.j2"
+        dest: "/services/crowdsec/acquis.yaml"
+        owner: root
+        group: root
+        mode: "0640"
+      register: gateway_crowdsec_acquis
+
+    - name: Copy whitelist configuration
+      ansible.builtin.template:
+        src: "whitelist.yaml.j2"
+        dest: "/services/crowdsec/whitelist.yaml"
+        owner: root
+        group: root
+        mode: "0640"
+      register: gateway_crowdsec_whitelist
+
+    - name: Launch crowdsec engine
+      community.docker.docker_compose_v2:
+        state: present
+        project_src: "/services/crowdsec"
+        files:
+          - "docker-compose.yml"
+        recreate: "{{ 'always' if (gateway_crowdsec_acquis is changed or gateway_crowdsec_whitelist is changed) else 'auto' }}"
+      register: gateway_crowdsec_launch
+
+    - name: Wait for crowdsec to initialize
+      ansible.builtin.pause:
+        seconds: 15
+      when: gateway_crowdsec_launch is changed
+
+    - name: Check CAPI registration status
+      ansible.builtin.command:
+        cmd: docker exec crowdsec cscli capi status
+      register: gateway_crowdsec_capi_status
+      changed_when: false
+      failed_when: false
+
+    - name: Register with CrowdSec Central API
+      ansible.builtin.command:
+        cmd: docker exec crowdsec cscli capi register
+      when: gateway_crowdsec_capi_status.rc != 0
+      register: gateway_crowdsec_capi_register
+      changed_when: gateway_crowdsec_capi_register.rc == 0
+      failed_when: false
+
+    - name: Restart engine after CAPI registration
+      community.docker.docker_compose_v2:
+        state: present
+        project_src: "/services/crowdsec"
+        files:
+          - "docker-compose.yml"
+        recreate: always
+      when: gateway_crowdsec_capi_register is changed
+
+    - name: Wait after CAPI registration restart
+      ansible.builtin.pause:
+        seconds: 15
+      when: gateway_crowdsec_capi_register is changed
+
+    - name: Check console enrollment status
+      ansible.builtin.command:
+        cmd: docker exec crowdsec cat /etc/crowdsec/console.yaml
+      register: gateway_crowdsec_console_config
+      changed_when: false
+      failed_when: false
+
+    - name: Enroll in CrowdSec console
+      ansible.builtin.command:
+        cmd: >-
+          docker exec crowdsec cscli console enroll
+          --name {{ crowdsec.console_name | default(inventory_hostname) }}
+          {{ (crowdsec.console_tags | default('gateway')).split() | map('regex_replace', '^', '--tags ') | join(' ') }}
+          {{ crowdsec.console_key }}
+      when:
+        - crowdsec.console_key | default('') | length > 0
+        - "'share_custom: true' not in gateway_crowdsec_console_config.stdout"
+      changed_when: true
+      failed_when: false
+
+    - name: Check if bouncer is already registered
+      ansible.builtin.command:
+        cmd: docker exec crowdsec cscli bouncers list -o raw
+      register: gateway_crowdsec_bouncer_list
+      changed_when: false
+
+    - name: Check if bouncer key file exists
+      ansible.builtin.stat:
+        path: "/services/crowdsec/.bouncer-key"
+      register: gateway_crowdsec_bouncer_key_file
+
+    - name: Delete stale bouncer registration
+      ansible.builtin.command:
+        cmd: docker exec crowdsec cscli bouncers delete firewall-bouncer
+      when:
+        - "'firewall-bouncer' in gateway_crowdsec_bouncer_list.stdout"
+        - not gateway_crowdsec_bouncer_key_file.stat.exists
+      changed_when: true
+
+    - name: Register firewall bouncer API key
+      ansible.builtin.command:
+        cmd: docker exec crowdsec cscli bouncers add firewall-bouncer -o raw
+      register: gateway_crowdsec_bouncer_key
+      changed_when: true
+      no_log: true
+      when: "'firewall-bouncer' not in gateway_crowdsec_bouncer_list.stdout or not gateway_crowdsec_bouncer_key_file.stat.exists"
+
+    - name: Save bouncer API key to file
+      ansible.builtin.copy:
+        content: "{{ gateway_crowdsec_bouncer_key.stdout }}"
+        dest: "/services/crowdsec/.bouncer-key"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      when: gateway_crowdsec_bouncer_key is changed
+
+    - name: Read bouncer API key
+      ansible.builtin.slurp:
+        src: "/services/crowdsec/.bouncer-key"
+      register: gateway_crowdsec_saved_key
+      no_log: true
+
+    - name: Install CrowdSec repository key
+      ansible.builtin.apt_key:
+        url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
+        state: present
+
+    - name: Add CrowdSec repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://packagecloud.io/crowdsec/crowdsec/debian/ {{ ansible_distribution_release }} main"
+        state: present
+        filename: crowdsec
+
+    - name: Install crowdsec-firewall-bouncer-nftables
+      ansible.builtin.apt:
+        name: crowdsec-firewall-bouncer-nftables
+        state: present
+        update_cache: true
+
+    - name: Configure firewall bouncer
+      ansible.builtin.template:
+        src: "crowdsec-firewall-bouncer.yaml.j2"
+        dest: "/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      notify: Restart crowdsec-firewall-bouncer
+      vars:
+        gateway_crowdsec_api_key: "{{ gateway_crowdsec_saved_key.content | b64decode | trim }}"
+
+    - name: Enable and start firewall bouncer
+      ansible.builtin.systemd:
+        name: crowdsec-firewall-bouncer
+        state: started
+        enabled: true

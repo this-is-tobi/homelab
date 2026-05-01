@@ -36,3 +36,7 @@ apps:
   - app: system-upgrade
     enabled: "true"
     syncWave: 60
+  - app: crowdsec
+    enabled: "true"
+    namespace: crowdsec
+    syncWave: 60

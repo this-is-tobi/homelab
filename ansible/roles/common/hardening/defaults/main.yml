@@ -1,0 +1,28 @@
+---
+# Services to disable on headless servers (no GUI, no wireless, no USB hotplug)
+common_hardening_disable_services:
+  - bluetooth.service
+  - ModemManager.service
+  - wpa_supplicant.service
+  - triggerhappy.service
+  - avahi-daemon.service
+  - avahi-daemon.socket
+
+# Firmware packages to remove (unused hardware drivers waste disk + attack surface)
+common_hardening_remove_packages:
+  - firmware-atheros
+  - firmware-nvidia-graphics
+  - firmware-marvell-prestera
+  - firmware-mediatek
+  - firmware-brcm80211
+  - firmware-realtek
+  - firmware-libertas
+  - firmware-misc-nonfree
+  - wpasupplicant
+  - modemmanager
+  - triggerhappy
+  - bluez
+  - bluez-firmware
+
+# Old kernel headers to clean up
+common_hardening_autoremove: true

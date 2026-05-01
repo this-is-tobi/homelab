@@ -24,6 +24,19 @@ Using the web interface, you can enable/disable ad and tracker blocking, add a l
 
 Wireguard's web interface lets you create / delete / activate / deactivate VPN users, download their configuration file and display the user's QrCode. With this user configuration file, a user can access the homelab network to perform an ssh connection to the machines and then request the Kubernetes api server.
 
+### CrowdSec
+
+[CrowdSec](https://www.crowdsec.net/) is an open-source security engine that analyses logs from various sources (HAProxy, sshd, syslog) and detects malicious behaviour using community-curated scenarios. Detected attackers are blocked at the network level via an nftables firewall bouncer.
+
+The gateway deployment runs the CrowdSec engine as a Docker container with the following collections:
+- `crowdsecurity/linux` — SSH brute force, bad user agents, port scans
+- `crowdsecurity/sshd` — SSH-specific attack patterns
+- `crowdsecurity/haproxy` — HTTP abuse through the load balancer
+- `crowdsecurity/base-http-scenarios` — generic HTTP attacks (scanners, exploits)
+- `crowdsecurity/http-cve` — known CVE exploit patterns
+
+A separate Kubernetes deployment (CrowdSec Helm chart) provides cluster-wide monitoring via a DaemonSet agent that parses container logs from ingress-nginx.
+
 ### Access
 
 Gateway web interface services are deployed and accessible for admin purpose, they are available on local network at :
@@ -50,6 +63,7 @@ The following services are deployed in the cluster :
 | [Cert-manager](https://cert-manager.io/)                                          | Cloud native certificate management             | [cert-manager/cert-manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager)                                                     |
 | [Cloud-native-postgres](https://cloudnative-pg.io/)                               | Cloud native postgres database management       | [cnpg/cloudnative-pg](https://artifacthub.io/packages/helm/cloudnative-pg/cloudnative-pg)                                                       |
 | [Coder](https://coder.com/)                                                       | Remote selfhosted development environments      | [coder-v2/coder](https://artifacthub.io/packages/helm/coder-v2/coder)                                                                           |
+| [CrowdSec](https://www.crowdsec.net/)                                              | Open-source security engine & threat detection  | [crowdsec/crowdsec](https://artifacthub.io/packages/helm/crowdsec/crowdsec)                                                                     |
 | [Homepage](https://gethomepage.dev/)                                              | Home dashboard                                  | [unknowniq/homepage](https://artifacthub.io/packages/helm/unknowniq/homepage)                                                                   |
 | [Gitea](https://about.gitea.com/)                                                 | Private, Fast, Reliable DevOps Platform         | [gitea/gitea](https://artifacthub.io/packages/helm/gitea/gitea)                                                                                 |
 | [Harbor](https://goharbor.io/)                                                    | Cloud native registry                           | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                                                           |

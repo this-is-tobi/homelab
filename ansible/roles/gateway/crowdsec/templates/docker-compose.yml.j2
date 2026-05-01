@@ -1,0 +1,33 @@
+services:
+  crowdsec:
+    image: docker.io/crowdsecurity/crowdsec:{{ crowdsec.version }}
+    container_name: crowdsec
+    restart: unless-stopped
+    environment:
+      COLLECTIONS: "{{ (crowdsec.collections | default(gateway_crowdsec_default_collections)) | join(' ') }}"
+      GID: "{{ crowdsec.gid | default('1000') }}"
+    volumes:
+      - crowdsec-config:/etc/crowdsec
+      - crowdsec-data:/var/lib/crowdsec/data
+      - /var/log:/var/log/host:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./acquis.yaml:/etc/crowdsec/acquis.d/custom-acquis.yaml:ro
+      - ./whitelist.yaml:/etc/crowdsec/postoverflows/s01-whitelist/custom-whitelist.yaml:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: {{ crowdsec.memory_limit | default(gateway_crowdsec_default_memory_limit) }}
+    networks:
+      - homelab
+
+volumes:
+  crowdsec-config:
+  crowdsec-data:
+
+networks:
+  homelab:
+    driver: bridge

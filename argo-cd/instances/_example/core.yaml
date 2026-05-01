@@ -156,3 +156,10 @@ apps:
     enabled: "false"
     namespace: prometheus-stack-system
     syncWave: 50
+
+  # [TIER-FLEXIBLE] CrowdSec — open-source security engine with log analysis,
+  # threat detection and community-driven blocklists. Deploys LAPI + agent DaemonSet.
+  - app: crowdsec
+    enabled: "false"
+    namespace: crowdsec
+    syncWave: 60

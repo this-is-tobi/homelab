@@ -1,0 +1,40 @@
+---
+- name: Disable unnecessary services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+    masked: true
+  loop: "{{ common_hardening_disable_services }}"
+  ignore_errors: true
+
+- name: Remove unnecessary packages
+  ansible.builtin.apt:
+    name: "{{ common_hardening_remove_packages }}"
+    state: absent
+    purge: true
+  register: common_hardening_pkg_result
+  ignore_errors: true
+
+- name: Autoremove unused dependencies
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  when: common_hardening_autoremove and common_hardening_pkg_result is succeeded
+
+- name: Deploy kernel hardening sysctl
+  ansible.builtin.template:
+    src: "sysctl-hardening.conf.j2"
+    dest: "/etc/sysctl.d/99-hardening.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload sysctl
+
+- name: Populate /etc/hosts with cluster nodes
+  ansible.builtin.template:
+    src: "hosts.j2"
+    dest: "/etc/hosts"
+    owner: root
+    group: root
+    mode: "0644"

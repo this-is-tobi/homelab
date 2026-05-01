@@ -1,0 +1,8 @@
+# CrowdSec instance values — override defaults from argo-cd/apps/crowdsec/values.yaml
+# Secrets are managed by Vault via VSO (VaultStaticSecret).
+
+vso:
+  vaultStaticSecrets:
+    crowdsecConsole:
+      mount: ""       # e.g. "homelab"
+      path: ""        # e.g. "platforms/production/crowdsec"

@@ -1,0 +1,9 @@
+dependencies:
+- name: crowdsec
+  repository: https://crowdsecurity.github.io/helm-charts
+  version: 0.23.0
+- name: vso-utils
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.1.7
+digest: sha256:cea956ae44b0b548359841fdce2404cfd3234f147be1dbf3b45c990c9526674d
+generated: "2026-05-01T18:28:01.753805+02:00"

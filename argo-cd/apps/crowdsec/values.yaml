@@ -1,0 +1,163 @@
+crowdsec:
+  container_runtime: containerd
+
+  # -- LAPI: central decision engine
+  lapi:
+    replicas: 1
+    env:
+      - name: ENROLL_KEY
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-console
+            key: ENROLL_KEY
+            optional: true
+      - name: ENROLL_INSTANCE_NAME
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-console
+            key: ENROLL_INSTANCE_NAME
+            optional: true
+      - name: ENROLL_TAGS
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-console
+            key: ENROLL_TAGS
+            optional: true
+    persistentVolume:
+      data:
+        enabled: true
+        accessModes:
+          - ReadWriteOnce
+        size: 1Gi
+      config:
+        enabled: true
+        accessModes:
+          - ReadWriteOnce
+        size: 1Gi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 256Mi
+
+  # -- Agent: DaemonSet that parses container & host logs
+  agent:
+    acquisition:
+      - namespace: ingress-nginx
+        podName: ingress-nginx-controller-*
+        program: nginx
+    env:
+      - name: COLLECTIONS
+        value: >-
+          crowdsecurity/linux
+          crowdsecurity/nginx
+          crowdsecurity/base-http-scenarios
+          crowdsecurity/http-cve
+          crowdsecurity/whitelist-good-actors
+      - name: PARSERS
+        value: "crowdsecurity/cri-logs"
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+
+  # -- AppSec WAF: inspects HTTP requests forwarded by ingress-nginx
+  appsec:
+    enabled: false
+    acquisitions:
+      - source: appsec
+        listen_addr: "0.0.0.0:7422"
+        path: /
+        appsec_config: crowdsecurity/virtual-patching
+        labels:
+          type: appsec
+    env:
+      - name: COLLECTIONS
+        value: "crowdsecurity/appsec-virtual-patching"
+    replicas: 2
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 128Mi
+
+  # -- Shared configuration
+  config:
+    config.yaml.local: |
+      api:
+        server:
+          auto_registration:
+            enabled: true
+            token: "${REGISTRATION_TOKEN}"
+            allowed_ranges:
+              - "127.0.0.1/32"
+              - "10.42.0.0/16"
+              - "10.43.0.0/16"
+    postoverflows:
+      s01-whitelist:
+        whitelist-local.yaml: |
+          name: local/k8s-whitelist
+          description: "Whitelist local and cluster networks"
+          whitelist:
+            reason: "local network"
+            cidr:
+              - "192.168.1.0/24"
+              - "10.42.0.0/16"
+              - "10.43.0.0/16"
+
+# -- VSO (Vault Secrets Operator) integration
+# Secrets are stored in Vault and synced to K8s via VaultStaticSecret.
+# Set mount/path per-instance in argo-cd/instances/<name>/values/core/crowdsec.yaml
+vso:
+  vaultAuth:
+    default:
+      method: "kubernetes"
+      mount: "kubernetes"
+      kubernetes:
+        role: "crowdsec"
+        serviceAccount: "default"
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: true
+  vaultStaticSecrets:
+    crowdsecConsole:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "crowdsec-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "crowdsec-console"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+            - ".*"
+          templates:
+            ENROLL_KEY:
+              text: '{{ get .Secrets "console" | dig "enrollKey" "" }}'
+            ENROLL_INSTANCE_NAME:
+              text: '{{ get .Secrets "console" | dig "instanceName" "" }}'
+            ENROLL_TAGS:
+              text: '{{ get .Secrets "console" | dig "tags" "" }}'

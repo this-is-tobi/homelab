@@ -209,6 +209,11 @@ vault:
         path "homelab/data/platforms/production/sops" {
           capabilities = ["read", "list"]
         }
+    - name: "crowdsec"
+      rules: |
+        path "homelab/data/platforms/production/crowdsec" {
+          capabilities = ["read", "list"]
+        }
     auth:
     - type: "kubernetes"
       roles:
@@ -276,6 +281,11 @@ vault:
         bound_service_account_names: ["default", "sops-vso"]
         bound_service_account_namespaces: ["sops"]
         policies: ["sops"]
+        ttl: "1h"
+      - name: "crowdsec"
+        bound_service_account_names: ["default", "crowdsec-vso"]
+        bound_service_account_namespaces: ["crowdsec"]
+        policies: ["crowdsec"]
         ttl: "1h"
     secrets:
     - path: "homelab"

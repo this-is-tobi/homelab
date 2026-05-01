@@ -1,0 +1,92 @@
+# Kernel hardening - deployed by Ansible
+# See https://www.kernel.org/doc/html/latest/admin-guide/sysctl/
+
+# --- Network: prevent common attacks ---
+# SYN flood protection
+net.ipv4.tcp_syncookies = 1
+
+# Prevent source routing
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
+
+# Disable ICMP redirects (prevent MITM)
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+net.ipv4.conf.all.secure_redirects = 0
+net.ipv4.conf.default.secure_redirects = 0
+
+# Log suspicious packets
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.conf.default.log_martians = 1
+
+# Ignore ICMP broadcasts (smurf attack prevention)
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+# Ignore bogus ICMP errors
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# Enable reverse path filtering (anti-spoofing)
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+# --- Kernel: harden memory and process ---
+# Full ASLR (Address Space Layout Randomization)
+kernel.randomize_va_space = 2
+
+# Restrict dmesg to root
+kernel.dmesg_restrict = 1
+
+# Restrict kernel pointers
+kernel.kptr_restrict = 1
+
+# Disable core dumps for setuid programs
+fs.suid_dumpable = 0
+
+# Restrict unprivileged BPF
+kernel.unprivileged_bpf_disabled = 1
+
+# Restrict ptrace to parent process only
+kernel.yama.ptrace_scope = 1
+
+# Restrict userns (if supported)
+kernel.unprivileged_userns_clone = 0
+
+# --- Network: performance tuning for Pi ---
+# Increase connection tracking (for K3s + HAProxy)
+net.netfilter.nf_conntrack_max = 131072
+
+# Reuse TIME_WAIT sockets
+net.ipv4.tcp_tw_reuse = 1
+
+# Increase local port range
+net.ipv4.ip_local_port_range = 10240 65535
+
+# TCP keepalive (detect dead connections faster)
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 5
+
+# Increase socket buffer sizes for better throughput
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.core.rmem_default = 1048576
+net.core.wmem_default = 1048576
+net.ipv4.tcp_rmem = 4096 1048576 16777216
+net.ipv4.tcp_wmem = 4096 1048576 16777216
+
+# Increase backlog for high-traffic nodes
+net.core.somaxconn = 4096
+net.core.netdev_max_backlog = 4096
+
+# --- Filesystem ---
+# Restrict hardlinks/symlinks
+fs.protected_hardlinks = 1
+fs.protected_symlinks = 1
+fs.protected_fifos = 2
+fs.protected_regular = 2

@@ -3,7 +3,6 @@
     path: "{{ item }}"
     state: absent
   loop:
-    - /etc/apt/sources.list.d/docker.list
     - /etc/apt/sources.list.d/download_docker_com_linux_debian.list
 
 - name: Install required system packages
