@@ -47,6 +47,15 @@ gitea:
       # groupTeamMap: ""
       # groupTeamMapRemoval: true
     config:
+      cache:
+        ADAPTER: "redis"
+        HOST: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
+      session:
+        PROVIDER: "redis"
+        PROVIDER_CONFIG: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
+      queue:
+        TYPE: "redis"
+        CONN_STR: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       database:
         DB_TYPE: "postgres"
         HOST: ""
@@ -82,6 +91,17 @@ gitea:
     primary:
       persistence:
         size: "25Gi"
+  valkey-cluster:
+    enabled: false
+  valkey:
+    enabled: false
+
+valkey:
+  fullnameOverride: "gitea-valkey"
+  architecture: standalone
+  replicaCount: 1
+  service:
+    port: 6379
 
 cnpg:
   fullnameOverride: "gitea-pg-cluster"

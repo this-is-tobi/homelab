@@ -8,6 +8,10 @@ dependencies:
   alias: gitea
   version: 12.5.3
   repository: https://dl.gitea.com/charts
+- name: valkey
+  alias: valkey
+  version: 0.20.0
+  repository: oci://registry-1.docker.io/cloudpirates
 - name: cnpg-cluster
   alias: cnpg
   version: 2.1.0

@@ -1,9 +1,9 @@
 dependencies:
 - name: coder
   repository: https://helm.coder.com/v2
-  version: 2.31.5
+  version: 2.32.1
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:3a91d153f1d022312fa2529e0441e1bd9bb893cc4dbd1a8d26c937de33648463
-generated: "2026-05-01T23:06:20.733438+02:00"
+digest: sha256:189f11b27b2c5aa9f508606f07bb3515b426aef911b2238a51fc234bddb4d913
+generated: "2026-05-01T23:30:58.898232+02:00"

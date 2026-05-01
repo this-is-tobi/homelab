@@ -1,9 +1,9 @@
 dependencies:
 - name: sops-secrets-operator
   repository: https://isindir.github.io/sops-secrets-operator
-  version: 0.25.3
+  version: 0.26.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 1.1.7
-digest: sha256:862acbb3f1bd3582b601cf03be324458f0b9ed042496559ed9ef1f2f97256320
-generated: "2026-05-01T05:15:27.499296+02:00"
+digest: sha256:08fad6d8ea8ce555015e27d89c76b111d079407595198d9b28d57ab7d2b56fde
+generated: "2026-05-01T23:31:19.967242+02:00"

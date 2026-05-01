@@ -1,12 +1,12 @@
 apiVersion: v2
 name: coder
 type: application
-version: 2.31.5
-appVersion: "2.31.5"
+version: 2.32.1
+appVersion: "2.32.1"
 dependencies:
 - name: coder
   alias: coder
-  version: 2.31.5
+  version: 2.32.1
   repository: https://helm.coder.com/v2
 - name: cnpg-cluster
   alias: cnpg

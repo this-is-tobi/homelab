@@ -2,11 +2,14 @@ dependencies:
 - name: gitea
   repository: https://dl.gitea.com/charts
   version: 12.5.3
+- name: valkey
+  repository: oci://registry-1.docker.io/cloudpirates
+  version: 0.20.0
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 1.1.7
-digest: sha256:15aa45baea4d15616d596dd2b6fd4f965e8599b729fa91adeab6bcbaf38f7fba
-generated: "2026-05-01T23:06:35.941284+02:00"
+digest: sha256:eac3befdd86224fea86787078444d749b451c5a861c0fbad20974cba56996255
+generated: "2026-05-01T23:37:24.289352+02:00"
