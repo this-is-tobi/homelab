@@ -1,0 +1,5 @@
+vso:
+  vaultStaticSecrets:
+    crowdsecConsole:
+      mount: "homelab"
+      path: "platforms/production/crowdsec"

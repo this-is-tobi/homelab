@@ -132,6 +132,12 @@ vault:
         extras:
           secret: "<age:secret>"
           public: "<age:public>"
+    - path: "homelab/platforms/production/crowdsec"
+      data:
+        console:
+          enrollKey: ""  # Set manually in Vault (from https://app.crowdsec.net/security-engines)
+          instanceName: "homelab-k8s"
+          tags: "k8s homelab production"
     # - path: "homelab/platforms/production/argo-workflows"
     #   data:
     #     keycloak:
