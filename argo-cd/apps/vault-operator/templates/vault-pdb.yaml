@@ -1,0 +1,14 @@
+{{- if and .Values.vault.enabled (gt (int .Values.vault.size) 1) }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.vault.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.vault.name }}
+      vault_cr: {{ .Values.vault.name }}
+{{- end }}

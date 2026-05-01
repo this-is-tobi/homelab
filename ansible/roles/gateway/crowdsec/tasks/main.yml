@@ -166,14 +166,18 @@
       register: gateway_crowdsec_saved_key
       no_log: true
 
-    - name: Install CrowdSec repository key
-      ansible.builtin.apt_key:
+    - name: Install CrowdSec repository GPG key
+      ansible.builtin.get_url:
         url: https://packagecloud.io/crowdsec/crowdsec/gpgkey
-        state: present
+        dest: /etc/apt/keyrings/crowdsec-archive-keyring.asc
+        mode: "0644"
 
     - name: Add CrowdSec repository
       ansible.builtin.apt_repository:
-        repo: "deb https://packagecloud.io/crowdsec/crowdsec/debian/ {{ ansible_distribution_release }} main"
+        repo: >-
+          deb [signed-by=/etc/apt/keyrings/crowdsec-archive-keyring.asc]
+          https://packagecloud.io/crowdsec/crowdsec/debian/
+          {{ ansible_distribution_release }} main
         state: present
         filename: crowdsec
 

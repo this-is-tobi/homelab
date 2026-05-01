@@ -5,6 +5,10 @@
 # SYN flood protection
 net.ipv4.tcp_syncookies = 1
 
+# IP forwarding — required for K3s (pod networking) and gateway (WireGuard/Docker).
+# Set explicitly here; k3s/prereq and Docker also enable it independently.
+net.ipv4.ip_forward = 1
+
 # Prevent source routing
 net.ipv4.conf.all.accept_source_route = 0
 net.ipv4.conf.default.accept_source_route = 0

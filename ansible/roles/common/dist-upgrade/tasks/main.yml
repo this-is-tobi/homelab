@@ -15,7 +15,30 @@
 
 - name: Display upgrade plan
   ansible.builtin.debug:
-    msg: "Upgrading {{ inventory_hostname }} from {{ common_dist_upgrade_current }} to {{ common_dist_upgrade_target }}"
+    msg: >-
+      Upgrading {{ inventory_hostname }} from
+      {{ common_dist_upgrade_current }} to {{ common_dist_upgrade_target }}
+
+# --- Pre-flight checks ---
+- name: Check available disk space
+  ansible.builtin.shell: |
+    set -o pipefail
+    df --output=avail / | tail -1
+  register: common_dist_upgrade_disk_space
+  changed_when: false
+
+- name: Fail if less than 1 GB free
+  ansible.builtin.fail:
+    msg: >-
+      Only {{ (common_dist_upgrade_disk_space.stdout | int / 1024) | int }}
+      MB free on /. At least 1 GB required for dist-upgrade.
+  when: (common_dist_upgrade_disk_space.stdout | int) < 1048576
+
+- name: Ensure dpkg is in a clean state
+  ansible.builtin.command: dpkg --audit
+  register: common_dist_upgrade_dpkg_audit
+  changed_when: false
+  failed_when: common_dist_upgrade_dpkg_audit.stdout | length > 0
 
 # --- K3s drain (only for cluster nodes) ---
 - name: Drain K3s node before upgrade
@@ -25,7 +48,9 @@
     kubectl drain {{ inventory_hostname }}
     --ignore-daemonsets
     --delete-emptydir-data
-    --timeout=300s
+    --timeout={{ common_dist_upgrade_drain_timeout }}s
+  register: common_dist_upgrade_drain_result
+  changed_when: "'evicting pod' in common_dist_upgrade_drain_result.stdout"
   when: inventory_hostname in groups.get('k3s', [])
 
 # --- Replace apt sources ---
@@ -64,8 +89,10 @@
 - name: Full dist-upgrade
   ansible.builtin.apt:
     upgrade: dist
+    dpkg_options: "force-confold,force-confdef"
   environment:
     DEBIAN_FRONTEND: noninteractive
+    NEEDRESTART_MODE: a
 
 - name: Remove unused packages
   ansible.builtin.apt:
@@ -78,12 +105,24 @@
     msg: "Rebooting after dist-upgrade to {{ common_dist_upgrade_target }}"
     reboot_timeout: 600
 
-# --- K3s uncordon ---
+# --- K3s uncordon and validate ---
+- name: Wait for K3s node to be Ready
+  delegate_to: localhost
+  become: false
+  ansible.builtin.command: >-
+    kubectl wait --for=condition=Ready
+    node/{{ inventory_hostname }}
+    --timeout={{ common_dist_upgrade_drain_timeout }}s
+  changed_when: false
+  when: inventory_hostname in groups.get('k3s', [])
+
 - name: Uncordon K3s node after upgrade
   delegate_to: localhost
   become: false
   ansible.builtin.command: >-
     kubectl uncordon {{ inventory_hostname }}
+  register: common_dist_upgrade_uncordon_result
+  changed_when: "'uncordoned' in common_dist_upgrade_uncordon_result.stdout"
   when: inventory_hostname in groups.get('k3s', [])
 
 # --- Verify ---

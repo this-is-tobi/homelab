@@ -27,6 +27,11 @@ argo-cd:
         requestedScopes: ["openid", "profile", "email", "groups"]
   redis-ha:
     enabled: false
+    haproxy:
+      podDisruptionBudget:
+        maxUnavailable: 1
+    podDisruptionBudget:
+      maxUnavailable: 1
   redis:
     metrics:
       enabled: true
@@ -322,6 +327,9 @@ argo-cd:
         enabled: true
   controller:
     replicas: 1
+    pdb:
+      enabled: true
+      maxUnavailable: 1
     metrics:
       enabled: true
       serviceMonitor:
@@ -329,6 +337,9 @@ argo-cd:
   applicationSet:
     enabled: true
     replicas: 1
+    pdb:
+      enabled: true
+      maxUnavailable: 1
     ingress:
       enabled: true
       ingressClassName: nginx
@@ -346,6 +357,9 @@ argo-cd:
     autoscaling:
       enabled: false
       minReplicas: 1
+    pdb:
+      enabled: true
+      maxUnavailable: 1
     metrics:
       enabled: true
       serviceMonitor:
@@ -361,6 +375,9 @@ argo-cd:
     autoscaling:
       enabled: false
       minReplicas: 1
+    pdb:
+      enabled: true
+      maxUnavailable: 1
     metrics:
       enabled: true
       serviceMonitor:

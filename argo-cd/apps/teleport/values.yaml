@@ -16,6 +16,9 @@ server:
       issuerName: "letsencrypt-dns-prod"
       addCommonName: true
     replicaCount: 1
+  podDisruptionBudget:
+    enabled: true
+    maxUnavailable: 1
   ingress:
     enabled: true
     suppressAutomaticWildcards: false

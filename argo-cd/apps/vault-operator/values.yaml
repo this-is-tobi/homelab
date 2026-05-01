@@ -11,6 +11,9 @@ vault-operator:
   webhook:
     enabled: true
     replicas: 2
+    pdb:
+      create: true
+      maxUnavailable: 1
   metrics:
     enabled: true
     serviceMonitor:

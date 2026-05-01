@@ -1,3 +1,4 @@
 ---
 # common/dist-upgrade defaults
 common_dist_upgrade_target_release: "trixie"
+common_dist_upgrade_drain_timeout: 300
