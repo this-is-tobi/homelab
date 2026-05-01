@@ -258,7 +258,9 @@ vault:
     ingressClassName: nginx
     host: vault.core.example.com
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      # DNS-01 issuer: works during bootstrap before ingress-nginx is
+      # available, and supports wildcards / private hosts.
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     tls:
       enabled: true
