@@ -48,6 +48,9 @@ argo-cd:
       #   clientSecret: "$oidc.keycloak.clientSecret"
       #   requestedScopes: ["openid", "profile", "email", "groups"]
   applicationSet:
+    pdb:
+      enabled: true
+      maxUnavailable: 1
     webhook:
       ingress:
         enabled: true
@@ -60,6 +63,9 @@ argo-cd:
         tls: true
         extraTls: []
   server:
+    pdb:
+      enabled: true
+      maxUnavailable: 1
     ingress:
       enabled: true
       ingressClassName: "nginx"
@@ -73,3 +79,17 @@ argo-cd:
   crds:
     install: true
     keep: true
+  controller:
+    pdb:
+      enabled: true
+      maxUnavailable: 1
+  repoServer:
+    pdb:
+      enabled: true
+      maxUnavailable: 1
+  redis-ha:
+    haproxy:
+      podDisruptionBudget:
+        maxUnavailable: 1
+    podDisruptionBudget:
+      maxUnavailable: 1
