@@ -3,6 +3,7 @@ haproxy:
   version: "alpine3.22"
   extraKubeAllowedIps: ""
   allowedIps: "192.168.27.64/27"
+  statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
 pihole:
   enabled: true
   version: "2026.04.1"
