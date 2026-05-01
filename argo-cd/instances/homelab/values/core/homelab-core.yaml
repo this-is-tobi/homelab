@@ -37,7 +37,7 @@ argo-cd:
       # or by pre-creating the `argocd-secret` Secret in argocd-system.
       argocdServerAdminPassword: ""
     cm:
-      url: "https://core.gitops.ohmlab.fr"
+      url: "https://gitops.core.ohmlab.fr"
       # Enable apiKey once you need to issue tokens (e.g. for argocd-mcp).
       accounts.admin: apiKey,login
       # --- OIDC (enable once Keycloak is up) ---
@@ -51,17 +51,21 @@ argo-cd:
     webhook:
       ingress:
         enabled: true
-        hostname: "appset.core.gitops.ohmlab.fr"
+        hostname: "gitops-appset.core.ohmlab.fr"
         annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-http-prod
+          # DNS-01 issuer: works during bootstrap before ingress-nginx is
+          # available, and supports wildcards / private hosts.
+          cert-manager.io/cluster-issuer: letsencrypt-dns-prod
         tls: true
         extraTls: []
   server:
     ingress:
       enabled: true
-      hostname: "core.gitops.ohmlab.fr"
+      hostname: "gitops.core.ohmlab.fr"
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        # DNS-01 issuer: works during bootstrap before ingress-nginx is
+        # available, and supports wildcards / private hosts.
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       tls: true
       extraTls: []
   crds:
