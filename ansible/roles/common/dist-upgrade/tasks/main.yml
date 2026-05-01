@@ -53,6 +53,71 @@
   changed_when: "'evicting pod' in common_dist_upgrade_drain_result.stdout"
   when: inventory_hostname in groups.get('k3s', [])
 
+# --- Converge Raspberry Pi kernel packaging ---
+- name: Fix legacy raspi repo URL (.org -> .com)
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list.d/raspi.list
+    regexp: 'archive\.raspberrypi\.org'
+    replace: 'archive.raspberrypi.com'
+  register: common_dist_upgrade_raspi_url
+
+- name: Fix raspi repo codename to match current release
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list.d/raspi.list
+    regexp: '\bbullseye\b'
+    replace: "{{ common_dist_upgrade_current }}"
+  register: common_dist_upgrade_raspi_codename
+
+- name: Update apt cache after raspi repo fix
+  ansible.builtin.apt:
+    update_cache: true
+  when: >-
+    common_dist_upgrade_raspi_url is changed or
+    common_dist_upgrade_raspi_codename is changed
+
+- name: Check if legacy raspberrypi-kernel is installed
+  ansible.builtin.command: dpkg-query -W -f='${Status}' raspberrypi-kernel
+  register: common_dist_upgrade_legacy_kernel
+  changed_when: false
+  failed_when: false
+
+- name: Migrate from raspberrypi-kernel to linux-image-rpi-v8
+  when: >-
+    common_dist_upgrade_legacy_kernel.stdout is defined and
+    'install ok installed' in common_dist_upgrade_legacy_kernel.stdout
+  block:
+    - name: Install modern kernel meta-package
+      ansible.builtin.apt:
+        name: linux-image-rpi-v8
+        state: present
+        update_cache: true
+
+    - name: Remove legacy kernel package
+      ansible.builtin.apt:
+        name: raspberrypi-kernel
+        state: absent
+        purge: true
+
+- name: Check if running kernel matches installed
+  ansible.builtin.shell: |
+    set -o pipefail
+    RUNNING=$(uname -r)
+    INSTALLED=$(dpkg -l | grep '^ii.*linux-image-[0-9]' \
+      | awk '{print $2}' | sed 's/linux-image-//' | sort -V | tail -1)
+    if [ "$RUNNING" != "$INSTALLED" ]; then
+      echo "MISMATCH: running=$RUNNING installed=$INSTALLED"
+      exit 1
+    fi
+  register: common_dist_upgrade_kernel_check
+  changed_when: false
+  failed_when: false
+
+- name: Reboot to load latest installed kernel
+  ansible.builtin.reboot:
+    msg: "Rebooting to converge kernel before dist-upgrade"
+    reboot_timeout: 300
+  when: common_dist_upgrade_kernel_check.rc != 0
+
 # --- Replace apt sources ---
 - name: Check if /etc/apt/sources.list exists
   ansible.builtin.stat:
