@@ -18,6 +18,10 @@ services:
     tmpfs:
       - /tmp
       - /var/run
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     networks:
       - homelab
 

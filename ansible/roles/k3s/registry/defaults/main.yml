@@ -1,3 +1,5 @@
 ---
-# k3s/registry defaults — no configurable variables.
-# Requires harbor.domain, harbor.username, harbor.password from inventory.
+# k3s/registry defaults
+# Set k3s_registry_enabled to true and define harbor.domain, harbor.username,
+# harbor.password in inventory to configure a private registry mirror.
+k3s_registry_enabled: false

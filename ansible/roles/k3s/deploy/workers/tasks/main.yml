@@ -1,3 +1,20 @@
+- name: Ensure k3s config directory exists
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Deploy k3s token file
+  ansible.builtin.copy:
+    content: "{{ k3sToken }}"
+    dest: /etc/rancher/k3s/token
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
 - name: Copy k3s service file
   ansible.builtin.template:
     src: "k3s.service.j2"

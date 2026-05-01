@@ -8,6 +8,7 @@
       "password": "{{ wireguard.password }}"
     status_code: [200]
   register: gateway_wireguard_login
+  no_log: true
 
 - name: Create wireguard user
   delegate_to: localhost

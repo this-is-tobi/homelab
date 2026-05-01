@@ -3,6 +3,7 @@
     path: "/etc/rancher/k3s"
     state: directory
     mode: "0755"
+  when: k3s_registry_enabled
 
 - name: Copy registries yaml file
   ansible.builtin.template:
@@ -10,4 +11,12 @@
     dest: "/etc/rancher/k3s/registries.yml"
     owner: root
     group: root
-    mode: "0755"
+    mode: "0600"
+  no_log: true
+  when: k3s_registry_enabled
+
+- name: Remove registries config when registry is disabled
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s/registries.yml"
+    state: absent
+  when: not k3s_registry_enabled

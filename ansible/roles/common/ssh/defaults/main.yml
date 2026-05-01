@@ -1,4 +1,6 @@
 ---
 # common/ssh defaults
-common_ssh_pub_key: "~/.ssh/id_rsa.pub"
+# Prefer Ed25519 keys, fall back to RSA if not available.
+# Override with: -e common_ssh_pub_key=~/.ssh/my_key.pub
+common_ssh_pub_key: ""
 adminUsers: []

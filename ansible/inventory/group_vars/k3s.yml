@@ -11,7 +11,7 @@ k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}  --node-ip={{ k3sNodeIP }}  --flannel-iface {{ k3sFlanneliface }}
 k3sExtraServerArgs: >-
-  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --disable traefik  --write-kubeconfig-mode 644  --node-label node-type=master
+  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --disable traefik  --write-kubeconfig-mode 600  --node-label node-type=master
 # --etcd-arg heartbeat-interval=250  --etcd-arg election-timeout=2500
 k3sExtraAgentArgs: >-
   {{ k3sExtraArgs }}  --node-label node-type=worker

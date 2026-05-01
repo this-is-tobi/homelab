@@ -23,7 +23,7 @@ vault:
   image:
     repository: "hashicorp/vault"
     tag: "2.0.0"
-  bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:latest"
+  bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:v1.32.1"
   service:
     type: "ClusterIP"
     annotations:
@@ -218,62 +218,62 @@ vault:
         policies: ["vault-init-secrets"]
         ttl: "10m"
       - name: "argo-cd"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "argo-cd-vso"]
         bound_service_account_namespaces: ["argo-cd"]
         policies: ["argo-cd"]
         ttl: "1h"
       - name: "cert-manager"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "cert-manager-vso"]
         bound_service_account_namespaces: ["cert-manager"]
         policies: ["cert-manager"]
         ttl: "1h"
       - name: "coder"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "coder-vso"]
         bound_service_account_namespaces: ["coder"]
         policies: ["coder"]
         ttl: "1h"
       - name: "gitea"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "gitea-vso"]
         bound_service_account_namespaces: ["gitea"]
         policies: ["gitea"]
         ttl: "1h"
       - name: "harbor"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "harbor-vso"]
         bound_service_account_namespaces: ["harbor"]
         policies: ["harbor"]
         ttl: "1h"
       - name: "keycloak"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "keycloak-vso"]
         bound_service_account_namespaces: ["keycloak"]
         policies: ["keycloak"]
         ttl: "1h"
       - name: "mattermost"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "mattermost-vso"]
         bound_service_account_namespaces: ["mattermost"]
         policies: ["mattermost"]
         ttl: "1h"
       - name: "rustfs"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "rustfs-vso"]
         bound_service_account_namespaces: ["rustfs"]
         policies: ["rustfs"]
         ttl: "1h"
       - name: "outline"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "outline-vso"]
         bound_service_account_namespaces: ["outline"]
         policies: ["outline"]
         ttl: "1h"
       - name: "prometheus-stack"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "prometheus-stack-vso"]
         bound_service_account_namespaces: ["prometheus-stack"]
         policies: ["prometheus-stack"]
         ttl: "1h"
       - name: "sonarqube"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "sonarqube-vso"]
         bound_service_account_namespaces: ["sonarqube"]
         policies: ["sonarqube"]
         ttl: "1h"
       - name: "sops"
-        bound_service_account_names: ["default"]
+        bound_service_account_names: ["default", "sops-vso"]
         bound_service_account_namespaces: ["sops"]
         policies: ["sops"]
         ttl: "1h"
@@ -328,6 +328,8 @@ vault:
     runAsUser: 100
     fsGroup: 1000
   serviceAccount: "vault"
+  caNamespaces:
+    - "*"
   ingress:
     enabled: true
     ingressClassName: "nginx"
@@ -342,7 +344,7 @@ vault:
     enabled: true
   statsd:
     enabled: true
-    image: "prom/statsd-exporter:latest"
+    image: "prom/statsd-exporter:v0.29.0"
   agent:
     enabled: true
 
@@ -382,7 +384,8 @@ vso:
   defaultVaultConnection:
     enabled: true
     address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-    skipTLSVerify: true
+    skipTLSVerify: false
+    caCertSecret: "vault-tls"
   defaultAuthMethod:
     enabled: false
     # Uncomment to enable global auth (not recommended for multi-tenant)

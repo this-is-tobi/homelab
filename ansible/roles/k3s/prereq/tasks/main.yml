@@ -5,13 +5,29 @@
     state: present
     reload: true
 
+- name: Load wireguard kernel module
+  community.general.modprobe:
+    name: wireguard
+    state: present
+  ignore_errors: true
+
+- name: Ensure wireguard module loads at boot
+  ansible.builtin.lineinfile:
+    path: /etc/modules-load.d/wireguard.conf
+    line: wireguard
+    create: true
+    owner: root
+    group: root
+    mode: "0644"
+  ignore_errors: true
+
 - name: Enable IPv6 forwarding
   ansible.posix.sysctl:
     name: net.ipv6.conf.all.forwarding
     value: "1"
     state: present
     reload: true
-  when: ansible_all_ipv6_addresses
+  when: ansible_all_ipv6_addresses | default([]) | length > 0
 
 - name: Enable IPv6 router advertisements
   ansible.posix.sysctl:

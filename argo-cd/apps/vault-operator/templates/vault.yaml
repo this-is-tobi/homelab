@@ -157,6 +157,10 @@ spec:
   - name: SKIP_SETCAP
     value: "true"
   serviceAccount: {{ .Values.vault.serviceAccount }}
+  {{- if .Values.vault.caNamespaces }}
+  caNamespaces:
+    {{- toYaml .Values.vault.caNamespaces | nindent 4 }}
+  {{- end }}
   {{- if .Values.vault.ingress.enabled }}
   ingress:
     annotations:

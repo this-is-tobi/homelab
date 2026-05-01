@@ -7,11 +7,17 @@
     mode: "0644"
   notify: Restart sshd
 
+- name: Resolve SSH public key (prefer Ed25519, fallback to RSA)
+  ansible.builtin.set_fact:
+    common_ssh_resolved_pub_key: >-
+      {{ common_ssh_pub_key
+         | default(lookup('first_found', {'files': ['id_ed25519.pub', 'id_rsa.pub'], 'paths': ['~/.ssh']}), true) }}
+
 - name: Add super admin ssh key in authorized_keys
   ansible.posix.authorized_key:
     user: "{{ ansible_user }}"
     state: present
-    key: "{{ lookup('file', common_ssh_pub_key) }}"
+    key: "{{ lookup('file', common_ssh_resolved_pub_key) }}"
 
 - name: Add admin users ssh keys in authorized_keys
   ansible.posix.authorized_key:

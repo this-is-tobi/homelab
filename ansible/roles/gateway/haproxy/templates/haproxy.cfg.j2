@@ -33,6 +33,10 @@ frontend stats
   stats uri /
   stats refresh 30s
   stats show-legends
+  stats hide-version
+{% if haproxy.statsPassword is defined and haproxy.statsPassword != '' %}
+  stats auth admin:{{ haproxy.statsPassword }}
+{% endif %}
 
 # --- Web traffic (HTTP/HTTPS) ---
 frontend homelab_entrypoint_lb

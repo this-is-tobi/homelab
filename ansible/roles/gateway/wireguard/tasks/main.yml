@@ -1,26 +1,18 @@
 - name: Remove wireguard when disabled
   when: not wireguard.enabled
   block:
-    - name: Create wireguard service dir
-      ansible.builtin.file:
-        path: "/services/wireguard"
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "0775"
-
-    - name: Copy docker-compose file
-      ansible.builtin.template:
-        src: "docker-compose.yml.j2"
-        dest: "/services/wireguard/docker-compose.yml"
-        mode: "0644"
-
-    - name: Launch wireguard
+    - name: Stop wireguard if running
       community.docker.docker_compose_v2:
         state: absent
         project_src: "/services/wireguard"
         files:
           - "docker-compose.yml"
+      ignore_errors: true
+
+    - name: Remove wireguard service dir
+      ansible.builtin.file:
+        path: "/services/wireguard"
+        state: absent
 
 - name: Deploy wireguard when enabled
   when: wireguard.enabled
@@ -42,15 +34,26 @@
       ansible.builtin.file:
         path: "/services/wireguard"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "0775"
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Copy wireguard env file
+      ansible.builtin.template:
+        src: "wireguard.env.j2"
+        dest: "/services/wireguard/.env.wireguard"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
 
     - name: Copy docker-compose file
       ansible.builtin.template:
         src: "docker-compose.yml.j2"
         dest: "/services/wireguard/docker-compose.yml"
-        mode: "0644"
+        owner: root
+        group: root
+        mode: "0640"
 
     - name: Launch wireguard
       community.docker.docker_compose_v2:

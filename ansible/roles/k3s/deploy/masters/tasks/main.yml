@@ -27,16 +27,6 @@
   ansible.builtin.wait_for:
     path: /var/lib/rancher/k3s/server/node-token
 
-- name: Register node-token file access mode
-  ansible.builtin.stat:
-    path: /var/lib/rancher/k3s/server/node-token
-  register: k3s_node_token_stat
-
-- name: Change file access node-token
-  ansible.builtin.file:
-    path: /var/lib/rancher/k3s/server/node-token
-    mode: "g+rx,o+rx"
-
 - name: Read node-token from master
   ansible.builtin.slurp:
     path: /var/lib/rancher/k3s/server/node-token
@@ -45,6 +35,7 @@
 - name: Store Master node-token
   ansible.builtin.set_fact:
     k3s_token: "{{ k3s_node_token.content | b64decode | regex_replace('\n', '') }}"
+  no_log: true
 
 - name: Fetch k3sToken
   delegate_to: localhost
@@ -53,12 +44,8 @@
     content: "{{ k3s_token }}"
     dest: "{{ playbook_dir }}/inventory/group_vars/.k3sToken"
     mode: "0600"
+  no_log: true
   when: ansible_default_ipv4.address == k3sMasterIP
-
-- name: Restore node-token file access
-  ansible.builtin.file:
-    path: /var/lib/rancher/k3s/server/node-token
-    mode: "{{ k3s_node_token_stat.stat.mode }}"
 
 - name: Create directory .kube
   ansible.builtin.file:

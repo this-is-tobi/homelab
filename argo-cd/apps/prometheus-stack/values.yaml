@@ -24,7 +24,6 @@ kube-prometheus-stack:
               requests:
                 storage: 100Gi
   grafana:
-    assertNoLeakedSecrets: false
     adminPassword: ""
     ingress:
       enabled: true

@@ -5,6 +5,10 @@
 auth/
 htpasswd
 
+# K3s secrets fetched by Ansible
+ansible/inventory/group_vars/.k3sCaData
+ansible/inventory/group_vars/.k3sToken
+
 # Homelab folder with ovpn & ssh files
 ansible/secrets/
 

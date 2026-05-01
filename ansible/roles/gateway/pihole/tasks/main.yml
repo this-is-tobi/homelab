@@ -1,26 +1,18 @@
 - name: Remove pihole when disabled
   when: not pihole.enabled
   block:
-    - name: Create pihole service dir
-      ansible.builtin.file:
-        path: "/services/pihole"
-        state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "0775"
-
-    - name: Copy docker-compose file
-      ansible.builtin.template:
-        src: "docker-compose.yml.j2"
-        dest: "/services/pihole/docker-compose.yml"
-        mode: "0644"
-
-    - name: Launch pihole
+    - name: Stop pihole if running
       community.docker.docker_compose_v2:
         state: absent
         project_src: "/services/pihole"
         files:
           - "docker-compose.yml"
+      ignore_errors: true
+
+    - name: Remove pihole service dir
+      ansible.builtin.file:
+        path: "/services/pihole"
+        state: absent
 
 - name: Deploy pihole when enabled
   when: pihole.enabled
@@ -42,15 +34,26 @@
       ansible.builtin.file:
         path: "/services/pihole"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-        mode: "0775"
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Copy pihole env file
+      ansible.builtin.template:
+        src: "pihole.env.j2"
+        dest: "/services/pihole/.env.pihole"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
 
     - name: Copy docker-compose file
       ansible.builtin.template:
         src: "docker-compose.yml.j2"
         dest: "/services/pihole/docker-compose.yml"
-        mode: "0644"
+        owner: root
+        group: root
+        mode: "0640"
 
     - name: Launch pihole
       community.docker.docker_compose_v2:

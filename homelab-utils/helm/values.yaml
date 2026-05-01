@@ -207,10 +207,10 @@ projects:
     name: "admin-core"
     description: "Homelab platform/core tier (infra, identity, observability, security)"
     sourceRepos:
-    - '*'
+    - 'https://github.com/this-is-tobi/homelab.git'
     destinations:
     - namespace: '*'
-      server: '*'
+      server: 'https://kubernetes.default.svc'
     clusterResourceWhitelist:
     - group: '*'
       kind: '*'
@@ -234,13 +234,25 @@ projects:
     name: "admin-tenant"
     description: "Homelab tenant/apps tier (user-facing services)"
     sourceRepos:
-    - '*'
+    - 'https://github.com/this-is-tobi/homelab.git'
     destinations:
     - namespace: '*'
-      server: '*'
+      server: 'https://kubernetes.default.svc'
     clusterResourceWhitelist:
-    - group: '*'
+    - group: ''
+      kind: 'Namespace'
+    - group: 'networking.k8s.io'
+      kind: 'Ingress'
+    - group: 'networking.k8s.io'
+      kind: 'IngressClass'
+    - group: 'rbac.authorization.k8s.io'
+      kind: 'ClusterRole'
+    - group: 'rbac.authorization.k8s.io'
+      kind: 'ClusterRoleBinding'
+    - group: 'cert-manager.io'
       kind: '*'
+    - group: 'apiextensions.k8s.io'
+      kind: 'CustomResourceDefinition'
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
     - group: '*'
