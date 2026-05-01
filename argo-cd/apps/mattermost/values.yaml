@@ -164,6 +164,24 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "host" "" }}'
             DB_PORT:
               text: '{{ get .Secrets "postgres" | dig "port" "" }}'
+    mattermostDbSecret:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "mattermost-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "mattermost-mattermost-dbsecret"
+        create: true
+        overwrite: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            mattermost.dbsecret:
+              text: 'postgres://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}?sslmode=disable&connect_timeout=10'
     mattermostDbAdmin:
       mount: ""
       path: ""

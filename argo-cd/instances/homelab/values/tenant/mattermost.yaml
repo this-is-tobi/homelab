@@ -36,8 +36,6 @@ mattermost:
       secretKeyRef:
         name: "mattermost-s3"
         key: "S3_SECRET_KEY"
-  # - name: "MM_CONFIG" # Used to disable db default connection string (chart issue)
-  #   value: ""
 
 cnpg:
   mode: "primary"
@@ -68,6 +66,9 @@ vso:
       mount: "homelab"
       path: "platforms/production/mattermost"
     mattermostDbInfos:
+      mount: "homelab"
+      path: "platforms/production/mattermost"
+    mattermostDbSecret:
       mount: "homelab"
       path: "platforms/production/mattermost"
     mattermostDbAdmin:
