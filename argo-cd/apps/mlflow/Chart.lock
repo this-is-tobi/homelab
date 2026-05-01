@@ -1,0 +1,15 @@
+dependencies:
+- name: mlflow
+  repository: https://community-charts.github.io/helm-charts
+  version: 0.16.4
+- name: cnpg-cluster
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.7.1
+- name: oauth2-proxy
+  repository: https://oauth2-proxy.github.io/manifests
+  version: 7.12.8
+- name: vso-utils
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.1.7
+digest: sha256:7ea1171ed87b850ebd0ce57ec5d244f03d3f0ea399c22468c59a8a5a092ad34b
+generated: "2026-05-01T05:14:46.356116+02:00"

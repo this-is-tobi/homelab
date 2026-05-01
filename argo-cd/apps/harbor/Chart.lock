@@ -1,0 +1,12 @@
+dependencies:
+- name: harbor
+  repository: https://charts.bitnami.com/bitnami
+  version: 27.0.3
+- name: cnpg-cluster
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.7.1
+- name: vso-utils
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.1.7
+digest: sha256:135c4ae49abe6ce8789e7a81ba73127b0a0c644854f5450603bed5d786f4aa7c
+generated: "2026-05-01T05:14:01.188819+02:00"

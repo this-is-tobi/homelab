@@ -71,15 +71,6 @@ rustfs:
               values:
               - rustfs
           topologyKey: kubernetes.io/hostname
-  service:
-    type: ClusterIP
-    port: 9000
-    consolePort: 9001
-  consoleService:
-    enabled: true
-    type: ClusterIP
-    port: 9001
-    consolePort: 9001
 
 vso:
   vaultAuth:

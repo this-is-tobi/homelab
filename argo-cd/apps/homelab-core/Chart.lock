@@ -1,0 +1,6 @@
+dependencies:
+- name: homelab-core
+  repository: file://../../../homelab-utils/helm
+  version: 0.1.0
+digest: sha256:5352f59f62604fca26f1fdd2b657a82c2ef95add614991e05a687632c61fa460
+generated: "2026-05-01T05:14:08.510571+02:00"

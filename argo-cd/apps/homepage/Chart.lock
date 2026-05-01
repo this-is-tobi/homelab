@@ -1,0 +1,6 @@
+dependencies:
+- name: homepage
+  repository: https://unknowniq.github.io/helm-charts/
+  version: 1.8.0
+digest: sha256:9468be63d513170430284f225509833bd29a077b88e6f6ba4b3713b637bf636b
+generated: "2026-05-01T05:14:12.144191+02:00"

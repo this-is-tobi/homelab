@@ -19,6 +19,7 @@ ansible/secrets/
 
 # Helm charts (packaged or source)
 **/charts/
+**/tmpcharts*/
 
 # Helm secret local values
 homelab-utils/helm/secret-values.yaml

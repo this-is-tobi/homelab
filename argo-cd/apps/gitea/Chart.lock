@@ -1,0 +1,12 @@
+dependencies:
+- name: gitea
+  repository: https://dl.gitea.com/charts
+  version: 12.5.0
+- name: cnpg-cluster
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.7.1
+- name: vso-utils
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 1.1.7
+digest: sha256:dbf87fa0b52bfa4727186c14085f26a31a32d32874d3e26a7ee0f5243e2e3c9f
+generated: "2026-05-01T05:13:51.777338+02:00"

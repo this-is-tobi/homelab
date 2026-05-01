@@ -54,7 +54,7 @@
 # -----------------------------------------------------------------------------
 # Some apps are needed on whichever cluster runs the workloads — typically:
 #   longhorn, cert-manager, ingress-nginx, vault, keycloak, teleport,
-#   kubernetes-dashboard, prometheus-stack.
+#   prometheus-stack.
 #
 # These are listed BOTH in core.yaml AND in tenant.yaml (disabled in both, with
 # different default `syncWave`s appropriate to each tier). Pick ONE tier per
@@ -148,11 +148,6 @@ apps:
 
   # [TIER-FLEXIBLE] Identity-aware infrastructure access proxy (SSH / kube / DB).
   - app: teleport
-    enabled: "false"
-    syncWave: 40
-
-  # [TIER-FLEXIBLE] Kubernetes web UI.
-  - app: kubernetes-dashboard
     enabled: "false"
     syncWave: 40
 
