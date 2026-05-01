@@ -50,6 +50,7 @@
     kubectl drain {{ inventory_hostname }}
     --ignore-daemonsets
     --delete-emptydir-data
+    --disable-eviction
     --timeout={{ common_dist_upgrade_drain_timeout }}s
   register: common_dist_upgrade_drain_result
   changed_when: "'evicting pod' in common_dist_upgrade_drain_result.stdout"

@@ -17,7 +17,7 @@ server:
       addCommonName: true
     replicaCount: 1
     podDisruptionBudget:
-      enabled: true
+      enabled: false
       minAvailable: 1
   ingress:
     enabled: true

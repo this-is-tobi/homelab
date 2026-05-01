@@ -10,7 +10,7 @@ dependencies:
     repository: https://crowdsecurity.github.io/helm-charts
   - name: cnpg-cluster
     alias: cnpg
-    version: 1.7.1
+    version: 2.1.0
     repository: https://this-is-tobi.github.io/helm-charts
   - name: vso-utils
     alias: vso

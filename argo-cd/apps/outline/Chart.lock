@@ -4,9 +4,9 @@ dependencies:
   version: 1.11.0
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
-  version: 1.7.1
+  version: 2.1.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 1.1.7
-digest: sha256:d6cc2d226d2805d92f7cfba78d16059baff09d5a68f18d6ff7f7b33a34563ece
-generated: "2026-05-01T05:14:58.155695+02:00"
+digest: sha256:c8ad39c5384740dccbb72100e6c766fcbc3c86c372879c713df2fd7a6e111024
+generated: "2026-05-01T23:07:24.320912+02:00"

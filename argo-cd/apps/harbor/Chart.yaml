@@ -1,16 +1,17 @@
 apiVersion: v2
 name: harbor
 type: application
-version: 27.0.3
-appVersion: "2.13.2"
+# NOTE: harbor ARM64 support is not complete yet, see https://github.com/goharbor/harbor/pull/22311
+version: 1.18.3
+appVersion: "2.14.3"
 dependencies:
 - name: harbor
   alias: harbor
-  version: 27.0.3
-  repository: https://charts.bitnami.com/bitnami
+  version: 1.18.3
+  repository: https://helm.goharbor.io
 - name: cnpg-cluster
   alias: cnpg
-  version: 1.7.1
+  version: 2.1.0
   repository: https://this-is-tobi.github.io/helm-charts
 - name: vso-utils
   alias: vso

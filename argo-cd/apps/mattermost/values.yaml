@@ -62,6 +62,8 @@ mattermost:
 cnpg:
   fullnameOverride: "mattermost-pg-cluster"
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.7"
+  extraSpec:
+    enablePDB: false
   mode: "primary"
   dbName: "mattermost"
   credentials:

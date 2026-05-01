@@ -1,15 +1,20 @@
 harbor:
-  adminPassword: ""
+  harborAdminPassword: ""
   externalURL: "https://harbor.example.com"
-  ingress:
-    core:
-      hostname: "harbor.example.com"
-  externalDatabase:
-    host: "harbor-pg-cluster-rw"
-    port: 5432
-    coreDatabase: "harbor"
-    user: "harbor"
-    password: ""
+  expose:
+    tls:
+      secret:
+        secretName: ""
+    ingress:
+      hosts:
+        core: "harbor.example.com"
+  database:
+    external:
+      host: "harbor-pg-cluster-rw"
+      port: 5432
+      coreDatabase: "harbor"
+      username: "harbor"
+      password: ""
 
 cnpg:
   mode: "primary"

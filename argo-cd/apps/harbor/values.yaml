@@ -6,8 +6,6 @@ harbor:
     replicas: 1
   portal:
     replicas: 2
-  nginx:
-    replicas: 2
   core:
     replicas: 2
   jobservice:
@@ -18,18 +16,18 @@ harbor:
     replicas: 2
   expose:
     type: "ingress"
-  externalURL: ""
-  ingress:
-    hosts:
-      core: ""
-    className: "nginx"
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     tls:
       enabled: true
       certSource: "secret"
       secret:
         secretName: ""
+    ingress:
+      hosts:
+        core: ""
+      className: "nginx"
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+  externalURL: ""
   persistence:
     enabled: true
     resourcePolicy: "keep"
@@ -38,8 +36,9 @@ harbor:
         accessMode: "ReadWriteOnce"
         size: "5Gi"
       jobservice:
-        accessMode: "ReadWriteOnce"
-        size: "1Gi"
+        jobLog:
+          accessMode: "ReadWriteOnce"
+          size: "1Gi"
       redis:
         accessMode: "ReadWriteOnce"
         size: "1Gi"
@@ -48,19 +47,19 @@ harbor:
         size: "1Gi"
     imageChartStorage:
       disableredirect: true
-    type: "s3"
-    s3:
-      existingSecret: "" # REGISTRY_STORAGE_S3_ACCESSKEY / REGISTRY_STORAGE_S3_SECRETKEY
-      region: ""
-      bucket: ""
-      regionendpoint: "https://s3.example.com"
+      type: "s3"
+      s3:
+        existingSecret: "" # REGISTRY_STORAGE_S3_ACCESSKEY / REGISTRY_STORAGE_S3_SECRETKEY
+        region: ""
+        bucket: ""
+        regionendpoint: "https://s3.example.com"
   database:
     type: "external"
     external:
       host: "harbor-pg-cluster-rw"
       port: "5432"
       coreDatabase: "harbor"
-      user: "harbor"
+      username: "harbor"
       existingSecret: "harbor-pg-cluster-app"
       sslmode: disable
   metrics:

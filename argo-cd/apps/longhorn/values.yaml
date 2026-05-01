@@ -17,6 +17,7 @@ longhorn:
   defaultSettings:
     createDefaultDiskLabeledNodes: true
     defaultDataPath: "/storage01"
+    nodeDrainPolicy: "always-allow"
     storageMinimalAvailablePercentage: 25
     storageOverProvisioningPercentage: 200
     storageReservedPercentageForDefaultDisk: 10
