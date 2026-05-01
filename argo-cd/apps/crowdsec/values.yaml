@@ -23,6 +23,11 @@ crowdsec:
             name: crowdsec-console
             key: ENROLL_TAGS
             optional: true
+      - name: DB_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: crowdsec-pg-cluster-app
+            key: password
     persistentVolume:
       data:
         enabled: true
@@ -38,6 +43,18 @@ crowdsec:
       enabled: true
       serviceMonitor:
         enabled: true
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+      fsGroup: 65534
+    securityContext:
+      allowPrivilegeEscalation: false
+      privileged: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - ALL
     resources:
       requests:
         cpu: 50m
@@ -66,6 +83,18 @@ crowdsec:
       enabled: true
       serviceMonitor:
         enabled: true
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65534
+      runAsGroup: 65534
+      fsGroup: 65534
+    securityContext:
+      allowPrivilegeEscalation: false
+      privileged: false
+      readOnlyRootFilesystem: false
+      capabilities:
+        drop:
+          - ALL
     resources:
       requests:
         cpu: 50m
@@ -103,6 +132,14 @@ crowdsec:
   # -- Shared configuration
   config:
     config.yaml.local: |
+      db_config:
+        type: postgresql
+        user: crowdsec
+        password: ${DB_PASSWORD}
+        db_name: crowdsec
+        host: crowdsec-pg-cluster-rw
+        port: 5432
+        sslmode: require
       api:
         server:
           auto_registration:
@@ -123,6 +160,51 @@ crowdsec:
               - "192.168.1.0/24"
               - "10.42.0.0/16"
               - "10.43.0.0/16"
+
+# -- CNPG PostgreSQL cluster for LAPI persistence
+cnpg:
+  fullnameOverride: "crowdsec-pg-cluster"
+  imageName: "ghcr.io/cloudnative-pg/postgresql:17.7"
+  mode: "primary"
+  dbName: "crowdsec"
+  credentials:
+    username: "crowdsec"
+    password: ""
+    postgresPassword: ""
+  instances: 2
+  enableSuperuserAccess: false
+  pvcSize:
+    data: "3Gi"
+    wal: "1Gi"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  affinity:
+    topologyKey: "kubernetes.io/hostname"
+  backup:
+    enabled: true
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://"
+    cron: "0 0 0 * * *"
+    retentionPolicy: "30d"
+    compression: "gzip"
+    s3Credentials:
+      create: true
+      secretName: "crowdsec-pg-cluster-backup"
+      accessKeyId:
+        key: "accessKeyId"
+        value: ""
+      secretAccessKey:
+        key: "secretAccessKey"
+        value: ""
+      region:
+        key: "region"
+        value: ""
 
 # -- VSO (Vault Secrets Operator) integration
 # Secrets are stored in Vault and synced to K8s via VaultStaticSecret.
@@ -161,3 +243,68 @@ vso:
               text: '{{ get .Secrets "console" | dig "instanceName" "" }}'
             ENROLL_TAGS:
               text: '{{ get .Secrets "console" | dig "tags" "" }}'
+    crowdsecDbAdmin:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "crowdsec-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "crowdsec-pg-cluster-admin"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    crowdsecDbApp:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "crowdsec-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "crowdsec-pg-cluster-app"
+        create: true
+        type: "kubernetes.io/basic-auth"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    crowdsecPgBackup:
+      mount: ""
+      path: ""
+      type: "kv-v2"
+      vaultAuthRef: "crowdsec-vso-default"
+      refreshAfter: "1h"
+      hmacSecretData: true
+      destination:
+        name: "crowdsec-pg-cluster-backup"
+        create: true
+        type: "Opaque"
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
