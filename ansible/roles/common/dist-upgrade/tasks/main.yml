@@ -24,6 +24,8 @@
   ansible.builtin.shell: |
     set -o pipefail
     df --output=avail / | tail -1
+  args:
+    executable: /bin/bash
   register: common_dist_upgrade_disk_space
   changed_when: false
 
@@ -108,6 +110,8 @@
       echo "MISMATCH: running=$RUNNING installed=$INSTALLED"
       exit 1
     fi
+  args:
+    executable: /bin/bash
   register: common_dist_upgrade_kernel_check
   changed_when: false
   failed_when: false
