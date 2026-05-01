@@ -138,6 +138,23 @@ vault:
           enrollKey: ""  # Set manually in Vault (from https://app.crowdsec.net/security-engines)
           instanceName: "homelab-k8s"
           tags: "k8s homelab production"
+        postgres:
+          admin:
+            username: "postgres"
+            password: "<random:24>"
+          app:
+            username: "crowdsec"
+            password: "<random:24>"
+          database: "crowdsec"
+          host: "crowdsec-pg-cluster-rw"
+          port: "5432"
+          s3:
+            accessKey: ""
+            bucketName: "ohmlab-backups"
+            bucketPrefix: "cnpg"
+            endpoint: "https://s3.fr-par.scw.cloud"
+            region: "fr-par"
+            secretKey: ""
     # - path: "homelab/platforms/production/argo-workflows"
     #   data:
     #     keycloak:
