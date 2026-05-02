@@ -7,9 +7,9 @@ cilium:
   #
   # SAFETY DESIGN:
   #   - Cilium does NOT write any CNI config (flannel stays in charge)
-  #   - Cilium uses its own VXLAN tunnel on port 8473 (flannel uses 8472)
+  #   - Cilium uses native routing with NO auto-direct routes (no route injection)
   #   - Cilium uses a SEPARATE pod CIDR (10.45.0.0/16) to avoid IP collisions
-  #   - No BPF programs are attached to eth0 (tunnel mode, not native)
+  #   - Host legacy routing enabled (BPF does not intercept host stack traffic)
   #   - Host stack routing is preserved (hostLegacyRouting: true)
   #   - Policy enforcement is disabled (policyEnforcementMode: never)
   #   - Host firewall is disabled — SSH and API traffic are NEVER intercepted
@@ -42,14 +42,17 @@ cilium:
   kubeProxyReplacement: false
 
   # --- Routing ---
-  # CRITICAL: Use TUNNEL mode, NOT native routing.
-  # Native routing attaches TC/XDP BPF programs to eth0 — if the agent crashes,
-  # stale BPF programs on eth0 black-hole SSH and all node traffic.
-  # Tunnel mode creates a separate cilium_vxlan interface, leaving eth0 untouched.
-  routingMode: tunnel
-  tunnelProtocol: vxlan
-  # Use port 8473 to avoid collision with flannel's VXLAN on port 8472
-  tunnelPort: 8473
+  # Use native routing with NO auto-direct routes and host legacy routing.
+  # This prevents Cilium from installing routes for flannel's 10.42.x.0/24 CIDRs.
+  # Tunnel mode (VXLAN) was tried but it installs routes for ALL known pod CIDRs
+  # through cilium_host, overriding flannel's cni0/flannel.1 routes.
+  # With native + autoDirectNodeRoutes=false + hostLegacyRouting=true:
+  #   - No routes are injected for flannel CIDRs
+  #   - No BPF intercepts host-stack traffic (SSH, API safe)
+  #   - Flannel routes remain intact
+  routingMode: native
+  autoDirectNodeRoutes: false
+  ipv4NativeRoutingCIDR: 10.45.0.0/16
 
   # --- IPAM ---
   # CRITICAL: Use a SEPARATE CIDR from flannel (10.42.0.0/16).
