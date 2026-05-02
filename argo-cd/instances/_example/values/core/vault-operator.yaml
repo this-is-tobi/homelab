@@ -320,7 +320,8 @@ vso:
   defaultVaultConnection:
     enabled: true
     address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-    skipTLSVerify: true
+    skipTLSVerify: false
+    caCertSecret: "vault-tls"
   # Default auth method using Kubernetes auth
   # NOTE: Disabled because role must be specified per namespace
   # Applications should create their own VaultAuth resources with specific roles

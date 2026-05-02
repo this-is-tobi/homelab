@@ -116,8 +116,13 @@ spec:
         env:
         - name: VAULT_ADDR
           value: {{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) | quote }}
+        {{- if .Values.vault.initSecrets.skipTLSVerify }}
         - name: VAULT_SKIP_VERIFY
-          value: {{ .Values.vault.initSecrets.skipTLSVerify | default "true" | quote }}
+          value: "true"
+        {{- else }}
+        - name: VAULT_CACERT
+          value: /vault-ca/ca.crt
+        {{- end }}
         - name: VAULT_ROLE
           value: {{ .Values.vault.initSecrets.vaultRole | default "vault-init-secrets" | quote }}
         - name: NAMESPACE
@@ -159,7 +164,20 @@ spec:
         volumeMounts:
         - name: tmp
           mountPath: /tmp
+        {{- if not .Values.vault.initSecrets.skipTLSVerify }}
+        - name: vault-ca
+          mountPath: /vault-ca
+          readOnly: true
+        {{- end }}
       volumes:
       - name: tmp
         emptyDir: {}
+      {{- if not .Values.vault.initSecrets.skipTLSVerify }}
+      - name: vault-ca
+        secret:
+          secretName: vault-tls
+          items:
+          - key: ca.crt
+            path: ca.crt
+      {{- end }}
 {{- end }}

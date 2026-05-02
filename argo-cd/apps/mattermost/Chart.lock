@@ -7,6 +7,6 @@ dependencies:
   version: 2.1.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
-  version: 1.1.7
-digest: sha256:f7c65c140901b962d62e932de4f38575a67264b75054ce79a8071c6e528165e0
-generated: "2026-05-01T23:07:03.609356+02:00"
+  version: 2.0.0
+digest: sha256:a554d971c25cf1497b75860c84a2a9e1ac837f5758ffdaeed5d0c512693c7131
+generated: "2026-05-02T02:31:27.335527+02:00"

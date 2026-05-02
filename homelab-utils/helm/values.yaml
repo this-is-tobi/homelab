@@ -212,8 +212,34 @@ projects:
     - namespace: '*'
       server: 'https://kubernetes.default.svc'
     clusterResourceWhitelist:
-    - group: '*'
+    - group: ''
+      kind: 'Namespace'
+    - group: 'rbac.authorization.k8s.io'
+      kind: 'ClusterRole'
+    - group: 'rbac.authorization.k8s.io'
+      kind: 'ClusterRoleBinding'
+    - group: 'apiextensions.k8s.io'
+      kind: 'CustomResourceDefinition'
+    - group: 'admissionregistration.k8s.io'
+      kind: 'MutatingWebhookConfiguration'
+    - group: 'admissionregistration.k8s.io'
+      kind: 'ValidatingWebhookConfiguration'
+    - group: 'scheduling.k8s.io'
+      kind: 'PriorityClass'
+    - group: 'storage.k8s.io'
+      kind: 'StorageClass'
+    - group: 'storage.k8s.io'
+      kind: 'CSIDriver'
+    - group: 'networking.k8s.io'
+      kind: 'IngressClass'
+    - group: 'cert-manager.io'
       kind: '*'
+    - group: 'kyverno.io'
+      kind: '*'
+    - group: 'policies.kyverno.io'
+      kind: '*'
+    - group: 'policy'
+      kind: 'PodSecurityPolicy'
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
     - group: '*'
@@ -273,7 +299,7 @@ initSecrets:
   # -- Vault role used for authentication.
   vaultRole: "vault-init-secrets"
   # -- Whether to skip TLS verification when connecting to Vault.
-  skipTLSVerify: true
+  skipTLSVerify: false
   # -- Backoff limit for the init job.
   backoffLimit: 3
   # -- TTL in seconds after which the job will be cleaned up.

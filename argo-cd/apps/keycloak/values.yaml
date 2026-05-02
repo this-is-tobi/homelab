@@ -121,7 +121,8 @@ vso:
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-      skipTLSVerify: true
+      skipTLSVerify: false
+      caCertSecretRef: "vault-ca"
   vaultStaticSecrets:
     keycloakAdmin:
       mount: ""

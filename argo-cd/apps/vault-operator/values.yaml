@@ -300,7 +300,7 @@ vault:
   initSecrets:
     enabled: true
     vaultRole: "vault-init-secrets"
-    skipTLSVerify: true
+    skipTLSVerify: false
     backoffLimit: 3
     ttlSecondsAfterFinished: 86400
     image: "ghcr.io/this-is-tobi/tools/homelab-utils:latest"
