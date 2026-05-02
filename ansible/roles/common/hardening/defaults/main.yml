@@ -7,6 +7,9 @@ common_hardening_disable_services:
   - triggerhappy.service
   - avahi-daemon.service
   - avahi-daemon.socket
+  - pigpiod.service
+  - dphys-swapfile.service
+  - exim4.service
 
 # Firmware packages to remove (unused hardware drivers waste disk + attack surface)
 common_hardening_remove_packages:
@@ -18,11 +21,50 @@ common_hardening_remove_packages:
   - firmware-realtek
   - firmware-libertas
   - firmware-misc-nonfree
+  # Wireless / Bluetooth
   - wpasupplicant
+  # NOTE: wireless-regdb is kept — hard dep of linux-image and network-manager
   - modemmanager
   - triggerhappy
   - bluez
   - bluez-firmware
+  # Audio (headless server)
+  # NOTE: alsa-utils/ucm-conf/topology-conf kept — hard dep chain from raspi-config
+  # Mail (not needed on k3s nodes)
+  - exim4-base
+  - exim4-config
+  - exim4-daemon-light
+  - bsd-mailx
+  # mDNS / service discovery (security risk)
+  - avahi-daemon
+  # NOTE: dphys-swapfile is kept (disabled only) — k3s/destroy re-enables it
+  # Build tools (attack surface, not needed at runtime)
+  - build-essential
+  - gcc
+  - g++
+  - make
+  - cpp
+  - dpkg-dev
+  - fakeroot
+  - gdb
+  - strace
+  # NOTE: binutils is kept — hard dep of rpi-eeprom and rpi-update
+  # GPIO / Pi hardware dev libs (not needed for k3s)
+  - pigpio
+  - pigpiod
+  - pigpio-tools
+  - libpigpio-dev
+  - libpigpiod-if-dev
+  - python3-pigpio
+  - python3-gpiozero
+  - python3-rpi.gpio
+  - python3-lgpio
+  - python3-smbus2
+  # Lua (unused)
+  - lua5.1
+  - luajit
+  # Man pages (headless server, save disk)
+  - man-db
 
 # Old kernel headers to clean up
 common_hardening_autoremove: true
