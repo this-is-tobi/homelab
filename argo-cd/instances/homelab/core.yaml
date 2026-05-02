@@ -15,7 +15,7 @@ apps:
     releaseName: longhorn-system
     syncWave: 0
   - app: cilium
-    enabled: "true"
+    enabled: "false"
     namespace: kube-system
     syncWave: 5
   - app: cert-manager
