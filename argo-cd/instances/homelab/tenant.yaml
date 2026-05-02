@@ -13,7 +13,7 @@ apps:
     namespace: argo-cd
     syncWave: 100
   - app: actions-runner-controller
-    enabled: "true"
+    enabled: "false"  # Disabled during Cilium migration — crash-looping
     syncWave: 110
   - app: gitea
     enabled: "true"
