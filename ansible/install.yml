@@ -125,3 +125,19 @@
     - role: k3s/destroy
   tags:
     - k3s-destroy
+
+# K3S - Cilium Migration (run AFTER Cilium is deployed and healthy)
+- name: Migrate K3S from Flannel to Cilium
+  hosts: k3s
+  become: true
+  serial: 1
+  vars_files:
+    - ./inventory/group_vars/vault.yml
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  tasks:
+    - name: Include Cilium migration tasks
+      ansible.builtin.include_tasks: roles/k3s/prereq/tasks/migrate-cilium.yml
+  tags:
+    - cilium-migrate
+    - never

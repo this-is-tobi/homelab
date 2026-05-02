@@ -1,0 +1,20 @@
+# Migration tasks: flannel → Cilium
+# Run ONLY during migration with: --tags cilium-migrate
+# Requires Cilium to already be deployed and healthy in kube-system.
+
+- name: Clean up legacy flannel interfaces
+  ansible.builtin.shell: |
+    ip link delete flannel.1 2>/dev/null || true
+    ip link delete cni0 2>/dev/null || true
+    rm -rf /run/flannel 2>/dev/null || true
+  changed_when: false
+  ignore_errors: true
+
+- name: Flush iptables rules left by kube-proxy
+  ansible.builtin.shell: |
+    iptables-save | grep -i kube | wc -l
+    iptables -F 2>/dev/null || true
+    iptables -t nat -F 2>/dev/null || true
+    iptables -t mangle -F 2>/dev/null || true
+  changed_when: false
+  ignore_errors: true

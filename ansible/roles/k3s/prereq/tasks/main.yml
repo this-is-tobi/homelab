@@ -21,6 +21,43 @@
     mode: "0644"
   ignore_errors: true
 
+- name: Load eBPF/Cilium kernel modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - br_netfilter
+    - ip_tables
+    - xt_socket
+    - xt_mark
+    - xt_CT
+    - ip6_tables
+  ignore_errors: true
+
+- name: Ensure Cilium kernel modules load at boot
+  ansible.builtin.copy:
+    content: |
+      br_netfilter
+      ip_tables
+      xt_socket
+      xt_mark
+      xt_CT
+      ip6_tables
+    dest: /etc/modules-load.d/cilium.conf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Set Cilium sysctl requirements
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+  loop:
+    - { key: "net.core.bpf_jit_enable", value: "1" }
+    - { key: "net.ipv4.conf.all.rp_filter", value: "0" }
+
 - name: Enable IPv6 forwarding
   ansible.posix.sysctl:
     name: net.ipv6.conf.all.forwarding
