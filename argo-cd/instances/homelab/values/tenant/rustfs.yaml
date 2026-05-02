@@ -1,3 +1,21 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: rustfs-api
+      hostnames:
+        - s3.ohmlab.fr
+      rules:
+        - backendService: rustfs
+          backendPort: 9000
+    - name: rustfs-console
+      hostnames:
+        - console.s3.ohmlab.fr
+      rules:
+        - backendService: rustfs-console
+          backendPort: 9001
+
 rustfs:
   ingress:
     hosts:

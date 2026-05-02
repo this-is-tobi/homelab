@@ -1,3 +1,15 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: gitea
+      hostnames:
+        - git.ohmlab.fr
+      rules:
+        - backendService: gitea-http
+          backendPort: 3000
+
 gitea:
   ingress:
     hosts:

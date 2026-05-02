@@ -13,6 +13,18 @@
 # providing the clientSecret either inline (replaced manually) or via a
 # VaultStaticSecret applied out-of-band into argocd-system.
 
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: argocd-core
+      hostnames:
+        - gitops.core.ohmlab.fr
+      rules:
+        - backendService: homelab-core-argocd-server
+          backendPort: 80
+
 rootManager:
   enabled: true
   repoURL:

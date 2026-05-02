@@ -13,6 +13,20 @@ homepage:
   env:
   - name: HOMEPAGE_ALLOWED_HOSTS
     value: "ohmlab.fr"
+
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: homepage
+      listener: https-apex
+      hostnames:
+        - ohmlab.fr
+      rules:
+        - backendService: homepage
+          backendPort: 3000
+
   config:
     settings:
       title: "Tobi's Cloud"

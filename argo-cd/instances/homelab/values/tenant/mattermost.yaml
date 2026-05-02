@@ -1,3 +1,15 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: mattermost
+      hostnames:
+        - mattermost.ohmlab.fr
+      rules:
+        - backendService: mattermost
+          backendPort: 8065
+
 mattermost:
   image:
     repository: "ghcr.io/this-is-tobi/mirror/mattermost"

@@ -1,3 +1,15 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: vault
+      hostnames:
+        - vault.core.ohmlab.fr
+      rules:
+        - backendService: vault
+          backendPort: 8200
+
 vault:
   initSecrets:
     # Secrets to initialize using template syntax:

@@ -1,3 +1,15 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: grafana
+      hostnames:
+        - monitoring.ohmlab.fr
+      rules:
+        - backendService: prometheus-stack-grafana
+          backendPort: 80
+
 kube-prometheus-stack:
   prometheus:
     prometheusSpec:

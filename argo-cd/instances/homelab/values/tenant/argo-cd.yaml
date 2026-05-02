@@ -4,6 +4,25 @@
 # Provided as a sandbox for ad-hoc deployments via the ArgoCD UI.
 # All credentials come from Vault via VSO (vso-utils subchart in this chart).
 
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: argo-cd
+      hostnames:
+        - gitops.ohmlab.fr
+      rules:
+        - backendService: argo-cd-argocd-server
+          backendPort: 80
+    - name: argo-cd-appset
+      hostnames:
+        - appset.gitops.ohmlab.fr
+      rules:
+        - path: /api/webhook
+          backendService: argo-cd-argocd-applicationset-controller
+          backendPort: 7000
+
 argo-cd:
   enabled: true
   configs:
