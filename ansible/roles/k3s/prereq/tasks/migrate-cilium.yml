@@ -1,20 +1,45 @@
-# Migration tasks: flannel → Cilium
-# Run ONLY during migration with: --tags cilium-migrate
-# Requires Cilium to already be deployed and healthy in kube-system.
+# Pre-migration cleanup: flannel → Cilium
+# Run BEFORE K3s restart with: --tags cilium-migrate
+# Removes flannel/Cilium residue so K3s starts clean with Cilium as sole CNI.
 
-- name: Clean up legacy flannel interfaces
+- name: Stop K3s service
+  ansible.builtin.systemd:
+    name: k3s
+    state: stopped
+  ignore_errors: true
+
+- name: Clean up flannel interfaces and state
   ansible.builtin.shell: |
     ip link delete flannel.1 2>/dev/null || true
     ip link delete cni0 2>/dev/null || true
+    ip link delete cilium_host 2>/dev/null || true
+    ip link delete cilium_net 2>/dev/null || true
+    ip link delete cilium_vxlan 2>/dev/null || true
     rm -rf /run/flannel 2>/dev/null || true
+    rm -rf /var/lib/cni/ 2>/dev/null || true
+    rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/10-flannel.conflist 2>/dev/null || true
+    rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
   changed_when: false
   ignore_errors: true
 
-- name: Flush iptables rules left by kube-proxy
+- name: Flush iptables rules left by kube-proxy and flannel
   ansible.builtin.shell: |
-    iptables-save | grep -i kube | wc -l
-    iptables -F 2>/dev/null || true
-    iptables -t nat -F 2>/dev/null || true
-    iptables -t mangle -F 2>/dev/null || true
+    # Use K3s bundled iptables-nft if available, fall back to system
+    IPT="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables"
+    [ -x "$IPT" ] || IPT="iptables"
+    $IPT -F 2>/dev/null || true
+    $IPT -t nat -F 2>/dev/null || true
+    $IPT -t mangle -F 2>/dev/null || true
+    $IPT -X 2>/dev/null || true
+    $IPT -t nat -X 2>/dev/null || true
+    $IPT -t mangle -X 2>/dev/null || true
+  changed_when: false
+  ignore_errors: true
+
+- name: Clean BPF filesystem
+  ansible.builtin.shell: |
+    # Remove Cilium BPF state from previous runs
+    rm -rf /sys/fs/bpf/tc 2>/dev/null || true
+    rm -rf /sys/fs/bpf/cilium 2>/dev/null || true
   changed_when: false
   ignore_errors: true

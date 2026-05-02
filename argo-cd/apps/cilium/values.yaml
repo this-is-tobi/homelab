@@ -1,121 +1,77 @@
 cilium:
   # ==========================================================================
-  # CILIUM PHASE A — "Secondary" mode alongside flannel (observation only)
+  # CILIUM — Primary CNI (flannel fully replaced)
   # ==========================================================================
-  # Follows the official Cilium migration guide:
-  #   https://docs.cilium.io/en/v1.19/installation/k8s-install-migration/
+  # K3s is configured with:
+  #   --flannel-backend=none --disable-network-policy --disable-kube-proxy
   #
-  # SAFETY DESIGN:
-  #   - Cilium does NOT write any CNI config (flannel stays in charge)
-  #   - Cilium uses native routing with NO auto-direct routes (no route injection)
-  #   - Cilium uses a SEPARATE pod CIDR (10.45.0.0/16) to avoid IP collisions
-  #   - Host legacy routing enabled (BPF does not intercept host stack traffic)
-  #   - Host stack routing is preserved (hostLegacyRouting: true)
-  #   - Policy enforcement is disabled (policyEnforcementMode: never)
-  #   - Host firewall is disabled — SSH and API traffic are NEVER intercepted
-  #   - Operator does NOT restart flannel-managed pods
-  #
-  # RESULT: Even a complete Cilium crash cannot affect SSH, API, or existing
-  # pod networking. All node traffic flows through the normal host stack.
-  #
-  # MIGRATION PATH (per-node, when ready):
-  #   Phase B: cordon → drain → label → reboot each node (see migration guide)
-  #   Phase C: enable native routing, kube-proxy replacement, envoy, Gateway API
+  # Cilium provides: CNI, kube-proxy replacement, NetworkPolicy, Hubble.
+  # Envoy/Gateway API disabled until kernel upgrade (CONFIG_ARM64_VA_BITS=52).
   # ==========================================================================
 
   # --- K3s CNI paths ---
   cni:
     binPath: /var/lib/rancher/k3s/data/current/bin
     confPath: /var/lib/rancher/k3s/agent/etc/cni/net.d
-    # CRITICAL: Do NOT write a CNI config file — flannel manages all pods.
-    # This prevents Cilium from creating 05-cilium.conflist which would
-    # override flannel and brick networking if the cilium-cni binary is missing.
-    customConf: true
-    # Do NOT remove CNI config on agent shutdown (defense-in-depth)
-    uninstall: false
-    # Do NOT remove other CNI configs (flannel's 10-flannel.conflist)
-    exclusive: false
+    exclusive: true
 
   # --- Kube-proxy replacement ---
-  # DISABLED — kube-proxy (nftables) continues managing service IPs.
-  # Phase C: enable after kernel upgrade + native routing migration
-  kubeProxyReplacement: false
+  # Cilium replaces kube-proxy entirely (K3s started with --disable-kube-proxy)
+  kubeProxyReplacement: true
+  k8sServiceHost: 192.168.1.99
+  k8sServicePort: 6443
 
   # --- Routing ---
-  # Use native routing with NO auto-direct routes and host legacy routing.
-  # This prevents Cilium from installing routes for flannel's 10.42.x.0/24 CIDRs.
-  # Tunnel mode (VXLAN) was tried but it installs routes for ALL known pod CIDRs
-  # through cilium_host, overriding flannel's cni0/flannel.1 routes.
-  # With native + autoDirectNodeRoutes=false + hostLegacyRouting=true:
-  #   - No routes are injected for flannel CIDRs
-  #   - No BPF intercepts host-stack traffic (SSH, API safe)
-  #   - Flannel routes remain intact
+  # Native routing — Cilium installs direct node routes for pod CIDRs.
+  # No VXLAN/Geneve overlay — direct L2 path between RPi nodes on same subnet.
   routingMode: native
-  autoDirectNodeRoutes: false
-  ipv4NativeRoutingCIDR: 10.45.0.0/16
+  autoDirectNodeRoutes: true
+  ipv4NativeRoutingCIDR: 10.42.0.0/16
 
   # --- IPAM ---
-  # CRITICAL: Use a SEPARATE CIDR from flannel (10.42.0.0/16).
-  # This prevents IP collisions between Cilium-managed and flannel-managed pods.
-  # Linux routing table naturally separates traffic by CIDR.
+  # Use the existing K3s pod CIDR — Cilium takes over IP allocation.
   ipam:
     operator:
       clusterPoolIPv4PodCIDRList:
-        - 10.45.0.0/16
+        - 10.42.0.0/16
 
   # --- Policy enforcement ---
-  # CRITICAL: Disable ALL policy enforcement during migration.
-  # Otherwise traffic from flannel pods may be incorrectly dropped.
-  # Phase C: switch to "default" after full migration
-  policyEnforcementMode: "never"
+  policyEnforcementMode: "default"
 
   # --- Host firewall ---
-  # CRITICAL: Disable host firewall — ensures Cilium never filters host-level
-  # traffic (SSH port 22, K8s API port 6443, etcd, kubelet, etc.)
   hostFirewall:
     enabled: false
 
   # --- BPF settings ---
   bpf:
-    # eBPF masquerade requires kubeProxyReplacement: true
-    # Phase C: enable after kube-proxy replacement
-    masquerade: false
-    # CRITICAL: Enable host legacy routing — traffic goes through the normal
-    # host networking stack (iptables/nftables). This ensures that even if
-    # Cilium BPF programs malfunction, traffic falls back to the host stack.
-    # Without this, eBPF host-routing bypasses iptables entirely, and a crash
-    # means no fallback path for packets.
-    hostLegacyRouting: true
+    masquerade: true
+    hostLegacyRouting: false
+    # Kernel 6.12 supports tproxy for L7 without envoy fallback
+    tproxy: true
 
-  # Cilium handles masquerade for its own CIDR (10.45.0.0/16) via iptables
   enableIPv4Masquerade: true
   enableIPv6Masquerade: false
   ipv6:
     enabled: false
 
   # --- WireGuard encryption ---
-  # DISABLED — requires kubeProxyReplacement: true
-  # Phase C: enable after kube-proxy replacement
   encryption:
     enabled: false
 
   # --- Gateway API ---
-  # DISABLED — requires envoy proxy
-  # Phase C: enable after kernel upgrade (CONFIG_ARM64_VA_BITS=52 fixes tcmalloc)
+  # BLOCKED — requires envoy which needs CONFIG_ARM64_VA_BITS=52
+  # Enable after running: ansible-playbook install.yml --tags kernel-upgrade
   gatewayAPI:
     enabled: false
 
   # --- Envoy (standalone DaemonSet) ---
-  # DISABLED — tcmalloc crashes on RPi kernel (CONFIG_ARM64_VA_BITS=39)
-  #   Error: "MmapAligned() failed - TCMalloc assumes a 48-bit virtual address space"
-  #   Fix: upgrade to Debian arm64 kernel (CONFIG_ARM64_VA_BITS=52)
-  # Phase C: enable after kernel upgrade
+  # BLOCKED — tcmalloc crashes on RPi kernel (CONFIG_ARM64_VA_BITS=39)
+  # Enable after kernel upgrade to Debian arm64 kernel
   envoy:
     enabled: false
 
   # --- L7 proxy ---
-  # DISABLED — requires envoy
-  # Phase C: enable after kernel upgrade
+  # Requires envoy — enable after kernel upgrade
   l7Proxy: false
 
   # --- Operator ---
@@ -129,10 +85,7 @@ cilium:
         cpu: 500m
         memory: 256Mi
     unmanagedPodWatcher:
-      # CRITICAL: Do NOT restart pods not managed by Cilium.
-      # All existing pods are flannel-managed; restarting them would cause
-      # them to try to use Cilium CNI (which isn't configured via customConf).
-      restart: false
+      restart: true
     prometheus:
       enabled: true
       serviceMonitor:
@@ -210,10 +163,16 @@ cilium:
       trustCRDsExist: true
 
   # --- Node init ---
-  # Loads kernel modules and mounts BPF filesystem.
-  # Safe in tunnel mode — does NOT attach BPF programs to eth0.
   nodeinit:
     enabled: true
 
-  # NOTE: socketLB and bandwidthManager require kubeProxyReplacement: true
-  # They will be re-enabled in Phase C alongside kube-proxy replacement.
+  # --- Socket LB ---
+  # Accelerates service routing by intercepting at socket level
+  socketLB:
+    enabled: true
+
+  # --- Bandwidth manager ---
+  # Requires kubeProxyReplacement: true (enabled above)
+  bandwidthManager:
+    enabled: true
+    bbr: false
