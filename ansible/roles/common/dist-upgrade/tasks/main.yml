@@ -168,6 +168,29 @@
   loop_control:
     label: "{{ item.path }}"
 
+- name: Validate third-party repos have target release
+  ansible.builtin.shell: |
+    set -o pipefail
+    apt-get update -o Dir::Etc::sourcelist="{{ item.path }}" \
+      -o Dir::Etc::sourceparts="/dev/null" 2>&1
+  args:
+    executable: /bin/bash
+  loop: "{{ common_dist_upgrade_source_files.files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  register: common_dist_upgrade_repo_check
+  changed_when: false
+  failed_when: false
+
+- name: Disable repos without target release
+  ansible.builtin.command: >-
+    mv {{ item.item.path }} {{ item.item.path }}.disabled
+  loop: "{{ common_dist_upgrade_repo_check.results }}"
+  loop_control:
+    label: "{{ item.item.path }}"
+  when: item.rc != 0
+  changed_when: true
+
 # --- Upgrade ---
 - name: Update apt cache
   ansible.builtin.apt:
