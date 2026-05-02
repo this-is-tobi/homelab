@@ -1,0 +1,30 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pod-security-baseline
+  annotations:
+    policies.kyverno.io/title: Enforce Pod Security Standards (Baseline)
+    policies.kyverno.io/description: >-
+      Enforces the Pod Security Standards baseline profile cluster-wide.
+      Starts in Audit mode — violations are logged but not blocked.
+      Switch failureAction to Enforce once all pods comply.
+spec:
+  background: true
+  rules:
+  - name: baseline
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kyverno
+    validate:
+      failureAction: Audit
+      podSecurity:
+        level: baseline
+        version: latest

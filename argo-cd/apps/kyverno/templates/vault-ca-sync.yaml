@@ -1,0 +1,45 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: sync-vault-ca
+  annotations:
+    policies.kyverno.io/title: Sync Vault CA to all app namespaces
+    policies.kyverno.io/description: >-
+      Extracts only the ca.crt from vault-operator-system/vault-tls and
+      generates a vault-ca secret in every non-system namespace.
+      VSO VaultConnections reference this secret via caCertSecretRef.
+spec:
+  rules:
+  - name: sync-vault-ca
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+    preconditions:
+      all:
+      - key: "{{`{{request.object.metadata.name}}`}}"
+        operator: NotIn
+        value:
+        - kube-system
+        - kube-public
+        - kube-node-lease
+        - default
+        - vault-operator-system
+        - kyverno
+    context:
+    - name: caCrt
+      apiCall:
+        urlPath: "/api/v1/namespaces/vault-operator-system/secrets/vault-tls"
+        jmesPath: "data.\"ca.crt\""
+    generate:
+      generateExisting: true
+      synchronize: true
+      apiVersion: v1
+      kind: Secret
+      name: vault-ca
+      namespace: "{{`{{request.object.metadata.name}}`}}"
+      data:
+        type: Opaque
+        data:
+          ca.crt: "{{`{{caCrt}}`}}"

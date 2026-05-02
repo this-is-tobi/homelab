@@ -90,6 +90,12 @@ apps:
     namespace: vault-operator-system
     syncWave: 10
 
+  # Kyverno — policy engine for secret distribution and security policies.
+  - app: kyverno
+    enabled: "false"
+    namespace: kyverno
+    syncWave: 15
+
   # PostgreSQL operator — used by Keycloak, Gitea, Mattermost, Outline, ...
   - app: cloudnative-pg
     enabled: "false"
