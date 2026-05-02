@@ -2,7 +2,7 @@
   ansible.builtin.file:
     path: "/etc/rancher/k3s"
     state: directory
-    mode: "0755"
+    mode: "0700"
   when: k3s_registry_enabled
 
 - name: Copy registries yaml file

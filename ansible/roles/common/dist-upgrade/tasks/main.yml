@@ -89,17 +89,34 @@
     common_dist_upgrade_legacy_kernel.stdout is defined and
     'install ok installed' in common_dist_upgrade_legacy_kernel.stdout
   block:
+    - name: Ensure raspi-firmware is installed (provides boot partition hook)
+      ansible.builtin.apt:
+        name: raspi-firmware
+        state: present
+        update_cache: true
+
     - name: Install modern kernel meta-package
       ansible.builtin.apt:
         name: linux-image-rpi-v8
         state: present
-        update_cache: true
 
     - name: Remove legacy kernel package
       ansible.builtin.apt:
         name: raspberrypi-kernel
         state: absent
         purge: true
+
+    - name: Verify kernel8.img exists on boot partition
+      ansible.builtin.stat:
+        path: /boot/firmware/kernel8.img
+      register: common_dist_upgrade_kernel8_img
+
+    - name: Fail if kernel8.img missing after migration
+      ansible.builtin.fail:
+        msg: >-
+          /boot/firmware/kernel8.img not found after kernel migration.
+          The raspi-firmware hook may have failed. Do NOT reboot.
+      when: not common_dist_upgrade_kernel8_img.stat.exists
 
 - name: Check if running kernel matches installed
   ansible.builtin.shell: |

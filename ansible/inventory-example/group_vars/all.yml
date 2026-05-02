@@ -2,6 +2,7 @@
 ansible_user: devops
 ansible_port: 22
 ansible_password: "{{ vault_ansible_password }}"
+ansible_python_interpreter: /usr/bin/python3
 # Lab domains
 rootDomain: "example.domain.com"
 localRootDomain: "example.domain.local"

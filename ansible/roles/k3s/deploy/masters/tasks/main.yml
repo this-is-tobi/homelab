@@ -2,7 +2,18 @@
   ansible.builtin.set_fact:
     k3s_init_server_args: >-
       {{ '--cluster-init' if (ansible_default_ipv4.address == k3sMasterIP)
-      else '--server https://' + k3sApiServerEndpoint + ':6443 --token ' + hostvars[groups['masters'][0]]['k3s_token'] }}
+      else '--server https://' + k3sApiServerEndpoint + ':6443 --token-file /etc/rancher/k3s/token' }}
+  no_log: true
+
+- name: Deploy k3s token file for joining masters
+  ansible.builtin.copy:
+    content: "{{ hostvars[groups['masters'][0]]['k3s_token'] }}"
+    dest: /etc/rancher/k3s/token
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  when: ansible_default_ipv4.address != k3sMasterIP
 
 - name: Copy k3s service file
   register: k3s_service
