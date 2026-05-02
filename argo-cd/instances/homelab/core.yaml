@@ -15,7 +15,7 @@ apps:
     releaseName: longhorn-system
     syncWave: 0
   - app: cilium
-    enabled: "false"  # Disabled — tunnel mode hijacks ALL flannel routes, native mode untested
+    enabled: "true"
     namespace: kube-system
     syncWave: 5
   - app: cert-manager
