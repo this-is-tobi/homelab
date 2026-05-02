@@ -177,7 +177,7 @@
         repo: >-
           deb [signed-by=/etc/apt/keyrings/crowdsec-archive-keyring.asc]
           https://packagecloud.io/crowdsec/crowdsec/debian/
-          {{ ansible_distribution_release }} main
+          {{ 'bookworm' if ansible_distribution_release == 'trixie' else ansible_distribution_release }} main
         state: present
         filename: crowdsec
 
