@@ -1,3 +1,9 @@
+gateway:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""
+  routes: []
+
 argo-cd:
   configs:
     secret:

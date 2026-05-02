@@ -92,3 +92,9 @@ homepage:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+gateway:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""
+  routes: []

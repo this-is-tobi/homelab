@@ -1,3 +1,9 @@
+gateway:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""
+  routes: []
+
 argo-cd:
   # -- Enable ArgoCD core deployment
   enabled: true
@@ -242,6 +248,10 @@ projects:
       kind: '*'
     - group: 'policy'
       kind: 'PodSecurityPolicy'
+    - group: 'gateway.networking.k8s.io'
+      kind: '*'
+    - group: 'cilium.io'
+      kind: '*'
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
     - group: '*'
@@ -281,6 +291,8 @@ projects:
       kind: '*'
     - group: 'apiextensions.k8s.io'
       kind: 'CustomResourceDefinition'
+    - group: 'gateway.networking.k8s.io'
+      kind: '*'
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
     - group: '*'

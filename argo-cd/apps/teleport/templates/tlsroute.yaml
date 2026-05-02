@@ -1,0 +1,24 @@
+{{- if .Values.gateway.enabled }}
+{{- $gatewayName := .Values.gateway.gatewayName | default "homelab-gateway" }}
+{{- $gatewayNamespace := .Values.gateway.gatewayNamespace | default "kube-system" }}
+{{- range .Values.gateway.tlsRoutes }}
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TLSRoute
+metadata:
+  name: {{ .name }}
+spec:
+  parentRefs:
+    - name: {{ $gatewayName }}
+      namespace: {{ $gatewayNamespace }}
+      sectionName: {{ .listener }}
+  hostnames:
+    {{- range .hostnames }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    - backendRefs:
+        - name: {{ .backendService }}
+          port: {{ .backendPort }}
+{{- end }}
+{{- end }}

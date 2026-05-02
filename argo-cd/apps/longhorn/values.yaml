@@ -1,3 +1,9 @@
+gateway:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""
+  routes: []
+
 longhorn:
   ingress:
     enabled: false
