@@ -1,0 +1,10 @@
+gateway:
+  enabled: false
+  name: example-gateway
+  domain: example.com
+  clusterIssuer: letsencrypt-http-prod
+  dnsClusterIssuer: letsencrypt-dns-prod
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  extraListeners: []
+  tlsPassthroughListeners: []

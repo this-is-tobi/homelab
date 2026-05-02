@@ -1,3 +1,15 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  routes:
+    - name: keycloak
+      hostnames:
+        - sso.ohmlab.fr
+      rules:
+        - backendService: keycloak
+          backendPort: 8080
+
 keycloak:
   keycloak:
     hostnameAdmin: "https://sso.ohmlab.fr"

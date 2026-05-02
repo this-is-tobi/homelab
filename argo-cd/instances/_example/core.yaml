@@ -141,7 +141,11 @@ apps:
     enabled: "false"
     namespace: ingress-nginx-system
     syncWave: 10
-
+  # [TIER-FLEXIBLE] Cilium CNI — eBPF networking, Gateway API, kube-proxy replacement.
+  - app: cilium
+    enabled: \"false\"
+    namespace: kube-system
+    syncWave: 5
   # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
   - app: vault
     enabled: "false"

@@ -1,0 +1,19 @@
+gateway:
+  enabled: true
+  name: homelab-gateway
+  domain: ohmlab.fr
+  clusterIssuer: letsencrypt-http-prod
+  dnsClusterIssuer: letsencrypt-dns-prod
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  extraListeners: []
+
+  # TLS passthrough listeners (SNI-based, no TLS termination)
+  # Routes referencing these listeners are managed by each app chart
+  tlsPassthroughListeners:
+    - name: tls-teleport
+      hostname: "*.teleport.ohmlab.fr"
+    - name: tls-teleport-apex
+      hostname: teleport.ohmlab.fr
+      backendService: teleport
+      backendPort: 443

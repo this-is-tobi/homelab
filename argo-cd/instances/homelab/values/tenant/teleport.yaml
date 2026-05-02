@@ -1,3 +1,21 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway
+  gatewayNamespace: kube-system
+  tlsRoutes:
+    - name: teleport
+      listener: tls-teleport-apex
+      hostnames:
+        - teleport.ohmlab.fr
+      backendService: teleport
+      backendPort: 443
+    - name: teleport-wildcard
+      listener: tls-teleport
+      hostnames:
+        - "*.teleport.ohmlab.fr"
+      backendService: teleport
+      backendPort: 443
+
 server:
   clusterName: "teleport.ohmlab.fr"
 
