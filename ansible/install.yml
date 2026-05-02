@@ -141,3 +141,19 @@
   tags:
     - cilium-migrate
     - never
+
+# K3S - Kernel Upgrade (Debian arm64 with 52-bit VA for Cilium envoy/tcmalloc)
+# Uses RPi tryboot mechanism — power cycle reverts to original kernel on failure.
+# Run one node at a time: ansible-playbook install.yml --tags kernel-upgrade --limit pi8
+- name: Upgrade kernel to Debian arm64 (52-bit VA)
+  hosts: k3s
+  become: true
+  serial: 1
+  vars_files:
+    - ./inventory/group_vars/vault.yml
+    - ./inventory/group_vars/all.yml
+  roles:
+    - role: common/kernel-upgrade
+  tags:
+    - kernel-upgrade
+    - never

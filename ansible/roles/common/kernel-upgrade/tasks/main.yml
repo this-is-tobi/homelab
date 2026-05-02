@@ -1,0 +1,257 @@
+---
+# common/kernel-upgrade — Upgrade RPi4 to Debian generic arm64 kernel
+#
+# Why: CONFIG_ARM64_VA_BITS=52 required for Cilium envoy (tcmalloc crashes on 39-bit VA)
+# Safety: uses RPi tryboot mechanism — power cycle reverts to original RPi kernel
+#
+# Run: ansible-playbook install.yml --tags kernel-upgrade --limit <node>
+# Test without commit: ansible-playbook install.yml --tags kernel-upgrade --limit <node> -e common_kernel_upgrade_commit=false
+
+# ============================================================
+# Phase 0 — Detect current state
+# ============================================================
+
+- name: Get current kernel version
+  ansible.builtin.command: uname -r
+  register: common_kup_current_kernel
+  changed_when: false
+
+- name: Set kernel state facts
+  ansible.builtin.set_fact:
+    common_kup_is_debian: "{{ 'deb' in common_kup_current_kernel.stdout }}"
+
+- name: Display current kernel
+  ansible.builtin.debug:
+    msg: "Current kernel: {{ common_kup_current_kernel.stdout }} (debian={{ common_kup_is_debian }})"
+
+# ============================================================
+# Phase 0b — Recovery: if already on Debian kernel but config.txt not committed
+# (happens if previous run succeeded tryboot but failed/skipped the commit step)
+# Without this fix, a power cycle would silently revert to the RPi kernel.
+# ============================================================
+
+- name: Check if Debian kernel is committed in config.txt
+  ansible.builtin.shell:
+    cmd: "grep -c '{{ common_kernel_upgrade_image_name }}' /boot/firmware/config.txt || true"
+  register: common_kup_config_committed
+  changed_when: false
+  when: common_kup_is_debian | bool
+
+- name: Recovery commit — make Debian kernel permanent
+  when:
+    - common_kup_is_debian | bool
+    - (common_kup_config_committed.stdout | default('0') | int) == 0
+    - common_kernel_upgrade_commit | bool
+  block:
+    - name: Check if tryboot.txt exists for recovery commit
+      ansible.builtin.stat:
+        path: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
+      register: common_kup_recovery_tryboot
+
+    - name: Copy tryboot.txt to config.txt (recovery)
+      ansible.builtin.copy:
+        src: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
+        dest: /boot/firmware/config.txt
+        remote_src: true
+        backup: true
+        mode: "0755"
+      when: common_kup_recovery_tryboot.stat.exists
+
+    - name: Remove tryboot.txt after recovery commit
+      ansible.builtin.file:
+        path: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
+        state: absent
+      when: common_kup_recovery_tryboot.stat.exists
+
+    - name: Recovery commit complete
+      ansible.builtin.debug:
+        msg: "Debian kernel was running but config.txt not updated — fixed. Next power cycle is safe."
+
+# ============================================================
+# Phase 1 — Install kernel, build initramfs, prepare boot files
+# ============================================================
+
+- name: Upgrade to Debian kernel
+  when: not (common_kup_is_debian | bool)
+  block:
+
+    # --- 1a. Install kernel package ---
+
+    - name: Install Debian arm64 kernel package
+      ansible.builtin.apt:
+        name: "{{ common_kernel_upgrade_package }}"
+        state: present
+        update_cache: true
+
+    - name: Discover installed Debian kernel version
+      ansible.builtin.shell:
+        cmd: "ls /usr/lib/modules/ | grep 'deb.*-arm64' | sort -V | tail -1"
+      register: common_kup_kver
+      changed_when: false
+      failed_when: common_kup_kver.stdout | length == 0
+
+    - name: Display detected kernel version
+      ansible.builtin.debug:
+        msg: "Debian kernel: {{ common_kup_kver.stdout }}"
+
+    # --- 1b. Initramfs — CRITICAL for boot (genet, bcm2835-mmc, ext4 are all =m) ---
+
+    - name: Ensure critical modules listed in initramfs config
+      ansible.builtin.lineinfile:
+        path: /etc/initramfs-tools/modules
+        line: "{{ item }}"
+        create: true
+        mode: "0644"
+      loop: "{{ common_kernel_upgrade_required_initramfs_modules }}"
+      register: common_kup_modules_changed
+
+    - name: Check if initramfs already exists
+      ansible.builtin.stat:
+        path: "/boot/initrd.img-{{ common_kup_kver.stdout }}"
+      register: common_kup_initramfs_exists
+
+    - name: Create initramfs for Debian kernel
+      ansible.builtin.command:
+        cmd: "update-initramfs -c -k {{ common_kup_kver.stdout }}"
+      when: not common_kup_initramfs_exists.stat.exists
+
+    - name: Update initramfs (modules config changed)
+      ansible.builtin.command:
+        cmd: "update-initramfs -u -k {{ common_kup_kver.stdout }}"
+      when:
+        - common_kup_initramfs_exists.stat.exists
+        - common_kup_modules_changed is changed
+
+    - name: Verify initramfs contains critical boot modules
+      ansible.builtin.shell:
+        cmd: "lsinitramfs /boot/initrd.img-{{ common_kup_kver.stdout }} | grep -cE '{{ common_kernel_upgrade_required_initramfs_modules | join(\"|\") }}'"
+      register: common_kup_initramfs_check
+      changed_when: false
+      failed_when: (common_kup_initramfs_check.stdout | int) < (common_kernel_upgrade_required_initramfs_modules | length)
+
+    - name: Show initramfs module verification
+      ansible.builtin.shell:
+        cmd: "lsinitramfs /boot/initrd.img-{{ common_kup_kver.stdout }} | grep -E '{{ common_kernel_upgrade_required_initramfs_modules | join(\"|\") }}'"
+      register: common_kup_initramfs_modules
+      changed_when: false
+
+    - name: Display initramfs verification
+      ansible.builtin.debug:
+        msg: "Initramfs modules ({{ common_kup_initramfs_check.stdout }} matches): {{ common_kup_initramfs_modules.stdout_lines }}"
+
+    # --- 1c. Copy kernel + initramfs to boot partition ---
+    # These go alongside the existing RPi kernel (kernel8.img / initramfs8)
+    # with distinct names so tryboot can reference them without affecting the original.
+
+    - name: Copy Debian kernel to boot partition
+      ansible.builtin.copy:
+        src: "/boot/vmlinuz-{{ common_kup_kver.stdout }}"
+        dest: "/boot/firmware/{{ common_kernel_upgrade_image_name }}"
+        remote_src: true
+        mode: "0755"
+
+    - name: Copy initramfs to boot partition
+      ansible.builtin.copy:
+        src: "/boot/initrd.img-{{ common_kup_kver.stdout }}"
+        dest: "/boot/firmware/{{ common_kernel_upgrade_initramfs_name }}"
+        remote_src: true
+        mode: "0755"
+
+    # --- 1d. Generate tryboot.txt ---
+    # Built from current config.txt with kernel/initramfs overridden.
+    # Keeps all existing settings (overlays, dtparams, boost, etc.) intact.
+    # Does NOT change device_tree= — firmware auto-detects RPi4 DTB.
+
+    - name: Generate tryboot.txt from current config.txt
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          # Strip lines we'll override, keep everything else
+          grep -v -E '^(auto_initramfs=|kernel=|initramfs )' /boot/firmware/config.txt > /tmp/tryboot-base.txt
+          {
+            echo "# tryboot.txt — Debian arm64 kernel (generated by kernel-upgrade role)"
+            echo "# SAFETY: power cycle reverts to config.txt (RPi kernel)"
+            echo ""
+            echo "# Debian kernel"
+            echo "kernel={{ common_kernel_upgrade_image_name }}"
+            echo "auto_initramfs=0"
+            echo "initramfs {{ common_kernel_upgrade_initramfs_name }} followkernel"
+            echo ""
+            cat /tmp/tryboot-base.txt
+          } > /boot/firmware/{{ common_kernel_upgrade_tryboot_config }}
+          rm -f /tmp/tryboot-base.txt
+      args:
+        creates: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
+
+    # ============================================================
+    # Phase 2 — Tryboot reboot
+    # The firmware reads tryboot.txt INSTEAD of config.txt for this one boot.
+    # If the node doesn't come back: power cycle → firmware uses config.txt → RPi kernel.
+    # ============================================================
+
+    - name: Reboot with tryboot (safe — power cycle reverts)
+      ansible.builtin.shell:
+        cmd: "sleep 2 && reboot '0 tryboot'"
+      async: 1
+      poll: 0
+      ignore_errors: true
+
+    - name: Wait for node to come back
+      ansible.builtin.wait_for_connection:
+        delay: 15
+        timeout: "{{ common_kernel_upgrade_reboot_timeout }}"
+
+    # ============================================================
+    # Phase 3 — Verify the new kernel
+    # ============================================================
+
+    - name: Verify running Debian kernel
+      ansible.builtin.command: uname -r
+      register: common_kup_new_kernel
+      changed_when: false
+      failed_when: "'deb' not in common_kup_new_kernel.stdout"
+
+    - name: Verify 52-bit virtual address space
+      # CONFIG_IKCONFIG is NOT set in the Debian kernel — no /proc/config.gz
+      # Verify from the config file installed by the kernel package instead
+      ansible.builtin.command:
+        cmd: "grep '^CONFIG_ARM64_VA_BITS=' /boot/config-{{ common_kup_kver.stdout }}"
+      register: common_kup_va_bits
+      changed_when: false
+      failed_when: "'CONFIG_ARM64_VA_BITS=52' not in common_kup_va_bits.stdout"
+
+    - name: Verify K3s is running
+      ansible.builtin.service_facts:
+      register: common_kup_service_facts
+      retries: 6
+      delay: 10
+      until: (common_kup_service_facts.ansible_facts.services['k3s.service'].state | default('')) == 'running'
+
+    - name: Display upgrade results
+      ansible.builtin.debug:
+        msg: >-
+          SUCCESS — {{ inventory_hostname }}:
+          kernel={{ common_kup_new_kernel.stdout }},
+          {{ common_kup_va_bits.stdout }},
+          k3s=running
+
+    # ============================================================
+    # Phase 4 — Commit (make permanent)
+    # Replaces config.txt with tryboot.txt so the Debian kernel persists
+    # across power cycles. The original config.txt is backed up.
+    # ============================================================
+
+    - name: Make Debian kernel permanent — update config.txt
+      ansible.builtin.copy:
+        src: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
+        dest: /boot/firmware/config.txt
+        remote_src: true
+        backup: true
+        mode: "0755"
+      when: common_kernel_upgrade_commit | bool
+
+    - name: Remove tryboot.txt after commit
+      ansible.builtin.file:
+        path: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
+        state: absent
+      when: common_kernel_upgrade_commit | bool

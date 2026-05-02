@@ -1,0 +1,40 @@
+---
+# Debian generic arm64 kernel — CONFIG_ARM64_VA_BITS=52 (fixes Cilium envoy/tcmalloc crash)
+#
+# Confirmed RPi4 compatibility (6.12.85+deb13-arm64):
+#   - Ethernet (GENET):               genet.ko           — CONFIG_BCMGENET=m              ✓
+#   - SD card root (MMC):             bcm2835.ko         — CONFIG_MMC_BCM2835=m           ✓ (initramfs)
+#   - ext4 root filesystem:           ext4.ko            — CONFIG_EXT4_FS=m               ✓ (initramfs)
+#   - DRM/GPU (vc4, v3d):             vc4.ko / v3d.ko    — CONFIG_DRM_VC4=m               ✓
+#   - VideoCore mailbox (vchiq):      vchiq.ko           — CONFIG_BCM2835_VCHIQ=m         ✓
+#   - WiFi (brcmfmac):                brcmfmac.ko        — present                        ✓
+#   - USB3 (xhci-pci), USB2 (dwc2):   present            — present                        ✓
+#   - RPi firmware mailbox:           built-in           — CONFIG_RASPBERRYPI_FIRMWARE=y  ✓
+#   - Thermal (bcm2711):              bcm2711_thermal.ko — present                        ✓
+#   - rpi-eeprom updates:             depends on firmware mailbox (above)                 ✓
+#   - tryboot mechanism:              firmware-level, no kernel dependency                ✓
+#
+# NOT present (but unused by any K3s workload):
+#   - rpi_hevc_dec, bcm2835_codec, bcm2835_isp  (RPi proprietary V4L2 media pipeline)
+common_kernel_upgrade_package: "linux-image-arm64"
+
+# Filenames used in /boot/firmware/ for the new kernel
+# The 'deb' suffix distinguishes from the RPi kernel (kernel8.img) as a fallback
+common_kernel_upgrade_image_name: "kernel8-deb.img"
+common_kernel_upgrade_initramfs_name: "initramfs8-deb"
+common_kernel_upgrade_tryboot_config: "tryboot.txt"
+
+# How long to wait for the node to come back after tryboot reboot (seconds)
+common_kernel_upgrade_reboot_timeout: 300
+
+# Whether to make the new kernel permanent after successful tryboot
+# Set to false to only test — you must run with common_kernel_upgrade_commit=true separately
+common_kernel_upgrade_commit: true
+
+# These modules are =m (not built-in) and MUST be in the initramfs to boot.
+# update-initramfs should include them automatically (detects root device),
+# but we verify and force-add them as a safety net.
+common_kernel_upgrade_required_initramfs_modules:
+  - genet          # Ethernet — needed early for any network-dependent initramfs hooks
+  - bcm2835        # MMC host controller — root filesystem is on SD card
+  - ext4           # Root filesystem type (rootfstype=ext4 in cmdline.txt)
