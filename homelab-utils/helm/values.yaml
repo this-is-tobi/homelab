@@ -232,6 +232,8 @@ projects:
       kind: 'CSIDriver'
     - group: 'networking.k8s.io'
       kind: 'IngressClass'
+    - group: 'apiregistration.k8s.io'
+      kind: 'APIService'
     - group: 'cert-manager.io'
       kind: '*'
     - group: 'kyverno.io'
