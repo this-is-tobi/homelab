@@ -1,12 +1,13 @@
+---
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
-  version: "alpine3.22"
+  version: alpine3.22
   extraKubeAllowedIps: ""
-  allowedIps: "192.168.27.64/27"
+  allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
 pihole:
   enabled: true
-  version: "2026.04.1"
+  version: 2026.04.1
   domain: pihole.{{ localRootDomain }}
   password: "{{ vault_pihole_password }}"
 wireguard:
@@ -14,15 +15,15 @@ wireguard:
   version: "15"
   domain: "vpn.{{ rootDomain }}"
   password: "{{ vault_wireguard_password }}"
-  ipRange: "192.168.27.x"
+  ipRange: 192.168.27.x
   # allowedIps: ""
 crowdsec:
   enabled: true
-  version: "v1.7.7"
+  version: v1.7.7
   gid: "1000"
   console_key: "{{ vault_crowdsec_console_key | default('') }}"
-  console_name: "pi-gw"
-  console_tags: "gateway haproxy"
+  console_name: pi-gw
+  console_tags: gateway haproxy
   # collections: []        # override gateway_crowdsec_default_collections
   # acquis_files: []       # override gateway_crowdsec_default_acquis_files
   # acquis_docker: []      # override gateway_crowdsec_default_acquis_docker
