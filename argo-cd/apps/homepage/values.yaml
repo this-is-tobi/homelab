@@ -3,7 +3,7 @@ homepage:
   image:
     repository: ghcr.io/gethomepage/homepage
     pullPolicy: IfNotPresent
-    tag: "v1.8.0"
+    tag: v1.8.0
   serviceAccount:
     create: true
     annotations: {}
@@ -16,7 +16,7 @@ homepage:
   ingress:
     main:
       enabled: true
-      className: "nginx"
+      className: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:
@@ -74,7 +74,7 @@ homepage:
           cpu: true
           memory: true
           showLabel: true
-          label: "cluster"
+          label: cluster
         nodes:
           show: false
           cpu: true
@@ -84,11 +84,11 @@ homepage:
   customJs: ""
   resources:
     requests:
-      cpu: "50m"
-      memory: "64Mi"
+      cpu: 50m
+      memory: 64Mi
     limits:
-      cpu: "200m"
-      memory: "256Mi"
+      cpu: 200m
+      memory: 256Mi
   nodeSelector: {}
   tolerations: []
   affinity: {}

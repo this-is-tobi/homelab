@@ -8,15 +8,15 @@ keycloak:
   enabled: true
   replicaCount: 1
   keycloak:
-    existingSecret: "keycloak-admin"
+    existingSecret: keycloak-admin
     secretKeys:
-      adminPasswordKey: "password"
+      adminPasswordKey: password
     hostnameAdmin: ""
     hostname: ""
     production: true
     proxyHeaders: xforwarded
   cache:
-    stack: "ispn"
+    stack: ispn
   database:
     host: ""
     port: ""
@@ -25,7 +25,7 @@ keycloak:
     password: ""
   ingress:
     enabled: true
-    className: "nginx"
+    className: nginx
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
@@ -43,11 +43,11 @@ keycloak:
     enabled: false
   resources:
     requests:
-      memory: "1Gi"
-      cpu: "500m"
+      memory: 1Gi
+      cpu: 500m
     limits:
-      memory: "2Gi"
-      cpu: "1000m"
+      memory: 2Gi
+      cpu: 1000m
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -119,28 +119,28 @@ cnpg:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "keycloak"
-        serviceAccount: "default"
+        role: keycloak
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     keycloakAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-admin"
+        name: keycloak-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -152,14 +152,14 @@ vso:
     keycloakConfig:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-config"
+        name: keycloak-config
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -173,14 +173,14 @@ vso:
     keycloakDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-db-infos"
+        name: keycloak-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -194,14 +194,14 @@ vso:
     keycloakDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-pg-cluster-admin"
+        name: keycloak-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -213,14 +213,14 @@ vso:
     keycloakDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-pg-cluster-app"
+        name: keycloak-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -232,14 +232,14 @@ vso:
     keycloakPgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-pg-cluster-backup"
+        name: keycloak-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -259,14 +259,14 @@ vso:
     clientGitea:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-clients-gitea"
+        name: keycloak-clients-gitea
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -278,14 +278,14 @@ vso:
     clientGrafana:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-clients-grafana"
+        name: keycloak-clients-grafana
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -297,14 +297,14 @@ vso:
     clientArgoCd:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "keycloak-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "keycloak-clients-argocd"
+        name: keycloak-clients-argocd
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -319,17 +319,17 @@ keycloakConfigCli:
   fullnameOverride: keycloak-config-cli
   backoffLimit: 3
   image:
-    tag: "latest-26"
+    tag: latest-26
   env:
     KEYCLOAK_URL: "http://keycloak:8080"
-    KEYCLOAK_USER: "admin"
+    KEYCLOAK_USER: admin
     IMPORT_FILES_LOCATIONS: "/config/*.json"
     IMPORT_FORCE: "false"
     IMPORT_VAR_SUBSTITUTION_ENABLED: "true"
     IMPORT_VAR_SUBSTITUTION_UNDEFINED_IS_ERROR: "true"
-    LOGGING_LEVEL_ROOT: "INFO"
-  existingSecret: "keycloak-admin"
-  existingSecretKey: "password"
+    LOGGING_LEVEL_ROOT: INFO
+  existingSecret: keycloak-admin
+  existingSecretKey: password
   extraEnv:
   - name: ROOT_DOMAIN
     valueFrom:
@@ -401,8 +401,8 @@ keycloakConfigCli:
       inline:
         realm: "$(env:KEYCLOAK_REALM)"
         enabled: true
-        displayName: "Homelab"
-        displayNameHtml: "<b>Homelab</b> Identity"
+        displayName: Homelab
+        displayNameHtml: <b>Homelab</b> Identity
         registrationAllowed: false
         registrationEmailAsUsername: true
         editUsernameAllowed: false
@@ -426,120 +426,120 @@ keycloakConfigCli:
         roles:
           client:
             grafana:
-            - name: "grafanaadmin"
-              description: "Grafana administrator role"
-            - name: "admin"
-              description: "Grafana admin role"
-            - name: "editor"
-              description: "Grafana editor role"
+            - name: grafanaadmin
+              description: Grafana administrator role
+            - name: admin
+              description: Grafana admin role
+            - name: editor
+              description: Grafana editor role
         groups:
-        - name: "admin"
-          path: "/admin"
+        - name: admin
+          path: /admin
           clientRoles:
             grafana:
-            - "grafanaadmin"
+            - grafanaadmin
         clients:
-        - clientId: "gitea"
-          name: "Gitea"
-          description: "Git hosting platform"
+        - clientId: gitea
+          name: Gitea
+          description: Git hosting platform
           enabled: true
-          clientAuthenticatorType: "client-secret"
+          clientAuthenticatorType: client-secret
           secret: "$(env:GITEA_CLIENT_SECRET)"
           redirectUris:
           - "https://git.$(env:ROOT_DOMAIN)/*"
           - "https://git.$(env:ROOT_DOMAIN)/user/oauth2/keycloak/callback"
           webOrigins:
           - "https://git.$(env:ROOT_DOMAIN)"
-          protocol: "openid-connect"
+          protocol: openid-connect
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
           directAccessGrantsEnabled: true
           serviceAccountsEnabled: false
           defaultClientScopes:
-          - "web-origins"
-          - "acr"
-          - "profile"
-          - "roles"
-          - "email"
-          - "groups"
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
           optionalClientScopes:
-          - "address"
-          - "phone"
-          - "offline_access"
-          - "microprofile-jwt"
-        - clientId: "grafana"
-          name: "Grafana"
-          description: "Monitoring dashboards"
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        - clientId: grafana
+          name: Grafana
+          description: Monitoring dashboards
           enabled: true
-          clientAuthenticatorType: "client-secret"
+          clientAuthenticatorType: client-secret
           secret: "$(env:GRAFANA_CLIENT_SECRET)"
           redirectUris:
           - "https://monitoring.$(env:ROOT_DOMAIN)/*"
           - "https://monitoring.$(env:ROOT_DOMAIN)/login/generic_oauth"
           webOrigins:
           - "https://monitoring.$(env:ROOT_DOMAIN)"
-          protocol: "openid-connect"
+          protocol: openid-connect
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
           directAccessGrantsEnabled: true
           serviceAccountsEnabled: false
           defaultClientScopes:
-          - "web-origins"
-          - "acr"
-          - "profile"
-          - "roles"
-          - "email"
-          - "groups"
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
           optionalClientScopes:
-          - "address"
-          - "phone"
-          - "offline_access"
-          - "microprofile-jwt"
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
           protocolMappers:
-          - name: "Client Role Mapper"
-            protocol: "openid-connect"
-            protocolMapper: "oidc-usermodel-client-role-mapper"
+          - name: Client Role Mapper
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-client-role-mapper
             consentRequired: false
             config:
-              "user.attribute": "role"
-              "access.token.claim": "true"
-              "claim.name": "roles"
-              "jsonType.label": "String"
-              "multivalued": "true"
-              "userinfo.token.claim": "true"
-              "id.token.claim": "true"
-              "client_id": "grafana"
-        - clientId: "argo-cd"
-          name: "Argo CD"
-          description: "GitOps continuous delivery"
+              user.attribute: role
+              access.token.claim: "true"
+              claim.name: roles
+              jsonType.label: String
+              multivalued: "true"
+              userinfo.token.claim: "true"
+              id.token.claim: "true"
+              client_id: grafana
+        - clientId: argo-cd
+          name: Argo CD
+          description: GitOps continuous delivery
           enabled: true
-          clientAuthenticatorType: "client-secret"
+          clientAuthenticatorType: client-secret
           secret: "$(env:ARGOCD_CLIENT_SECRET)"
           redirectUris:
           - "https://gitops.$(env:ROOT_DOMAIN)/*"
           - "https://gitops.$(env:ROOT_DOMAIN)/auth/callback"
           webOrigins:
           - "https://gitops.$(env:ROOT_DOMAIN)"
-          protocol: "openid-connect"
+          protocol: openid-connect
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
           directAccessGrantsEnabled: true
           serviceAccountsEnabled: false
           defaultClientScopes:
-          - "web-origins"
-          - "acr"
-          - "profile"
-          - "roles"
-          - "email"
-          - "groups"
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
           optionalClientScopes:
-          - "address"
-          - "phone"
-          - "offline_access"
-          - "microprofile-jwt"
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
         # - clientId: "argo-workflows"
         #   name: "Argo Workflows"
         #   description: "Workflow engine"

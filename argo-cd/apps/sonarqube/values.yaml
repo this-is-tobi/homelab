@@ -36,7 +36,7 @@ sonarqube:
     jdbcSecretName: sonarqube-pg-cluster-app
     jdbcSecretPasswordKey: password
   setAdminPassword:
-    passwordSecretName: "sonarqube-admin"
+    passwordSecretName: sonarqube-admin
     # securityContext: {}
     resources:
       limits:
@@ -67,17 +67,17 @@ sonarqube:
     failureThreshold: 30
   sonarProperties:
     # sonar.core.serverBaseURL: ""
-    sonar.plugins.risk.consent: "ACCEPTED"
+    sonar.plugins.risk.consent: ACCEPTED
     sonar.auth.oidc.enabled: "true"
     sonar.auth.oidc.allowUsersToSignUp: "true"
     sonar.auth.oidc.autoLogin: "false"
-    sonar.auth.oidc.loginButtonText: "Connect with Keycloak"
-    sonar.auth.oidc.groupsSync.claimName: "groups"
-    sonar.auth.oidc.loginStrategy: "Email"
+    sonar.auth.oidc.loginButtonText: Connect with Keycloak
+    sonar.auth.oidc.groupsSync.claimName: groups
+    sonar.auth.oidc.loginStrategy: Email
     sonar.auth.oidc.groupsSync: "true"
-    sonar.auth.oidc.scopes: "openid profile email roles groups"
+    sonar.auth.oidc.scopes: openid profile email roles groups
     # sonar.auth.oidc.issuerUri: ""
-    sonar.auth.oidc.loginStrategy.customClaim.name: "upn"
+    sonar.auth.oidc.loginStrategy.customClaim.name: upn
     sonar.auth.oidc.clientId.secured: ""
     # sonar.auth.oidc.clientSecret.secured: ""
   extraVolumes:
@@ -145,28 +145,28 @@ cnpg:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "sonarqube"
-        serviceAccount: "default"
+        role: sonarqube
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     sonarqubeAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-admin"
+        name: sonarqube-admin
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -182,14 +182,14 @@ vso:
     sonarqubeProperties:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-properties"
+        name: sonarqube-properties
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -200,14 +200,14 @@ vso:
     sonarqubeDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-db-infos"
+        name: sonarqube-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -221,14 +221,14 @@ vso:
     sonarqubeDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-pg-cluster-admin"
+        name: sonarqube-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -240,14 +240,14 @@ vso:
     sonarqubeDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-pg-cluster-app"
+        name: sonarqube-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -259,14 +259,14 @@ vso:
     sonarqubePgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-pg-cluster-backup"
+        name: sonarqube-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -286,14 +286,14 @@ vso:
     sonarqubeSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sonarqube-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sonarqube-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sonarqube-sso"
+        name: sonarqube-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

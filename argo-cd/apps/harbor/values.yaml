@@ -1,7 +1,7 @@
 harbor:
-  existingSecretAdminPassword: "harbor-admin"
-  existingSecretAdminPasswordKey: "password"
-  existingSecretSecretKey: "harbor-secretkey"
+  existingSecretAdminPassword: harbor-admin
+  existingSecretAdminPasswordKey: password
+  existingSecretSecretKey: harbor-secretkey
   registry:
     replicas: 1
   portal:
@@ -15,58 +15,58 @@ harbor:
   exporter:
     replicas: 2
   expose:
-    type: "ingress"
+    type: ingress
     tls:
       enabled: true
-      certSource: "secret"
+      certSource: secret
       secret:
         secretName: ""
     ingress:
       hosts:
         core: ""
-      className: "nginx"
+      className: nginx
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
   externalURL: ""
   persistence:
     enabled: true
-    resourcePolicy: "keep"
+    resourcePolicy: keep
     persistentVolumeClaim:
       registry:
-        accessMode: "ReadWriteOnce"
-        size: "5Gi"
+        accessMode: ReadWriteOnce
+        size: 5Gi
       jobservice:
         jobLog:
-          accessMode: "ReadWriteOnce"
-          size: "1Gi"
+          accessMode: ReadWriteOnce
+          size: 1Gi
       redis:
-        accessMode: "ReadWriteOnce"
-        size: "1Gi"
+        accessMode: ReadWriteOnce
+        size: 1Gi
       trivy:
-        accessMode: "ReadWriteOnce"
-        size: "1Gi"
+        accessMode: ReadWriteOnce
+        size: 1Gi
     imageChartStorage:
       disableredirect: true
-      type: "s3"
+      type: s3
       s3:
         existingSecret: "" # REGISTRY_STORAGE_S3_ACCESSKEY / REGISTRY_STORAGE_S3_SECRETKEY
         region: ""
         bucket: ""
         regionendpoint: "https://s3.example.com"
   database:
-    type: "external"
+    type: external
     external:
-      host: "harbor-pg-cluster-rw"
+      host: harbor-pg-cluster-rw
       port: "5432"
-      coreDatabase: "harbor"
-      username: "harbor"
-      existingSecret: "harbor-pg-cluster-app"
+      coreDatabase: harbor
+      username: harbor
+      existingSecret: harbor-pg-cluster-app
       sslmode: disable
   metrics:
     enabled: true
     serviceMonitor:
       enabled: true
-      interval: "30s"
+      interval: 30s
 
 cnpg:
   fullnameOverride: harbor-pg-cluster
@@ -115,28 +115,28 @@ cnpg:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "harbor"
-        serviceAccount: "default"
+        role: harbor
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     harborAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-admin"
+        name: harbor-admin
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -148,14 +148,14 @@ vso:
     harborSecretkey:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-secretkey"
+        name: harbor-secretkey
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -165,14 +165,14 @@ vso:
     harborS3:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-s3"
+        name: harbor-s3
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -192,14 +192,14 @@ vso:
     harborDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-db-infos"
+        name: harbor-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -213,14 +213,14 @@ vso:
     harborDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-pg-cluster-admin"
+        name: harbor-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -232,14 +232,14 @@ vso:
     harborDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-pg-cluster-app"
+        name: harbor-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -251,14 +251,14 @@ vso:
     harborPgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-pg-cluster-backup"
+        name: harbor-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -278,14 +278,14 @@ vso:
     harborSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "harbor-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: harbor-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "harbor-sso"
+        name: harbor-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

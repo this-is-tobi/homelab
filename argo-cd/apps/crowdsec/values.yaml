@@ -5,39 +5,39 @@ crowdsec:
   lapi:
     replicas: 1
     env:
-      - name: ENROLL_KEY
-        valueFrom:
-          secretKeyRef:
-            name: crowdsec-console
-            key: ENROLL_KEY
-            optional: true
-      - name: ENROLL_INSTANCE_NAME
-        valueFrom:
-          secretKeyRef:
-            name: crowdsec-console
-            key: ENROLL_INSTANCE_NAME
-            optional: true
-      - name: ENROLL_TAGS
-        valueFrom:
-          secretKeyRef:
-            name: crowdsec-console
-            key: ENROLL_TAGS
-            optional: true
-      - name: DB_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: crowdsec-pg-cluster-app
-            key: password
+    - name: ENROLL_KEY
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-console
+          key: ENROLL_KEY
+          optional: true
+    - name: ENROLL_INSTANCE_NAME
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-console
+          key: ENROLL_INSTANCE_NAME
+          optional: true
+    - name: ENROLL_TAGS
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-console
+          key: ENROLL_TAGS
+          optional: true
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-pg-cluster-app
+          key: password
     persistentVolume:
       data:
         enabled: true
         accessModes:
-          - ReadWriteOnce
+        - ReadWriteOnce
         size: 1Gi
       config:
         enabled: true
         accessModes:
-          - ReadWriteOnce
+        - ReadWriteOnce
         size: 1Gi
     metrics:
       enabled: true
@@ -48,7 +48,7 @@ crowdsec:
       privileged: false
       capabilities:
         drop:
-          - ALL
+        - ALL
     resources:
       requests:
         cpu: 50m
@@ -60,19 +60,19 @@ crowdsec:
   # -- Agent: DaemonSet that parses container & host logs
   agent:
     acquisition:
-      - namespace: ingress-nginx
-        podName: ingress-nginx-controller-*
-        program: nginx
+    - namespace: ingress-nginx
+      podName: ingress-nginx-controller-*
+      program: nginx
     env:
-      - name: COLLECTIONS
-        value: >-
-          crowdsecurity/linux
-          crowdsecurity/nginx
-          crowdsecurity/base-http-scenarios
-          crowdsecurity/http-cve
-          crowdsecurity/whitelist-good-actors
-      - name: PARSERS
-        value: "crowdsecurity/cri-logs"
+    - name: COLLECTIONS
+      value: >-
+        crowdsecurity/linux
+        crowdsecurity/nginx
+        crowdsecurity/base-http-scenarios
+        crowdsecurity/http-cve
+        crowdsecurity/whitelist-good-actors
+    - name: PARSERS
+      value: crowdsecurity/cri-logs
     metrics:
       enabled: true
       serviceMonitor:
@@ -82,7 +82,7 @@ crowdsec:
       privileged: false
       capabilities:
         drop:
-          - ALL
+        - ALL
     resources:
       requests:
         cpu: 50m
@@ -91,23 +91,23 @@ crowdsec:
         cpu: 250m
         memory: 256Mi
     tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
 
   # -- AppSec WAF: inspects HTTP requests forwarded by ingress-nginx
   appsec:
     enabled: false
     acquisitions:
-      - source: appsec
-        listen_addr: "0.0.0.0:7422"
-        path: /
-        appsec_config: crowdsecurity/virtual-patching
-        labels:
-          type: appsec
+    - source: appsec
+      listen_addr: "0.0.0.0:7422"
+      path: /
+      appsec_config: crowdsecurity/virtual-patching
+      labels:
+        type: appsec
     env:
-      - name: COLLECTIONS
-        value: "crowdsecurity/appsec-virtual-patching"
+    - name: COLLECTIONS
+      value: crowdsecurity/appsec-virtual-patching
     replicas: 2
     resources:
       requests:
@@ -151,49 +151,49 @@ crowdsec:
 
 # -- CNPG PostgreSQL cluster for LAPI persistence
 cnpg:
-  fullnameOverride: "crowdsec-pg-cluster"
+  fullnameOverride: crowdsec-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.7"
   extraSpec:
     enablePDB: false
-  mode: "primary"
-  dbName: "crowdsec"
+  mode: primary
+  dbName: crowdsec
   credentials:
-    username: "crowdsec"
+    username: crowdsec
     password: ""
     postgresPassword: ""
   instances: 2
   enableSuperuserAccess: false
   pvcSize:
-    data: "3Gi"
-    wal: "1Gi"
+    data: 3Gi
+    wal: 1Gi
   resources:
     requests:
-      cpu: "100m"
-      memory: "256Mi"
+      cpu: 100m
+      memory: 256Mi
     limits:
-      cpu: "250m"
-      memory: "512Mi"
+      cpu: 250m
+      memory: 512Mi
   affinity:
-    topologyKey: "kubernetes.io/hostname"
+    topologyKey: kubernetes.io/hostname
   backup:
     enabled: true
     legacyMode: false
     endpointURL: ""
     destinationPath: "s3://"
     cron: "0 0 0 * * *"
-    retentionPolicy: "30d"
-    compression: "gzip"
+    retentionPolicy: 30d
+    compression: gzip
     s3Credentials:
       create: true
-      secretName: "crowdsec-pg-cluster-backup"
+      secretName: crowdsec-pg-cluster-backup
       accessKeyId:
-        key: "accessKeyId"
+        key: accessKeyId
         value: ""
       secretAccessKey:
-        key: "secretAccessKey"
+        key: secretAccessKey
         value: ""
       region:
-        key: "region"
+        key: region
         value: ""
 
 # -- VSO (Vault Secrets Operator) integration
@@ -202,28 +202,28 @@ cnpg:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "crowdsec"
-        serviceAccount: "default"
+        role: crowdsec
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     crowdsecConsole:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "crowdsec-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: crowdsec-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "crowdsec-console"
+        name: crowdsec-console
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -237,14 +237,14 @@ vso:
     crowdsecDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "crowdsec-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: crowdsec-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "crowdsec-pg-cluster-admin"
+        name: crowdsec-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -256,14 +256,14 @@ vso:
     crowdsecDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "crowdsec-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: crowdsec-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "crowdsec-pg-cluster-app"
+        name: crowdsec-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -275,14 +275,14 @@ vso:
     crowdsecPgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "crowdsec-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: crowdsec-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "crowdsec-pg-cluster-backup"
+        name: crowdsec-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

@@ -115,28 +115,28 @@ sso:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "mlflow"
-        serviceAccount: "default"
+        role: mlflow
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     mlflowAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-admin"
+        name: mlflow-admin
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -148,14 +148,14 @@ vso:
     mlflowS3:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-s3"
+        name: mlflow-s3
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -175,14 +175,14 @@ vso:
     mlflowDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-db-infos"
+        name: mlflow-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -196,14 +196,14 @@ vso:
     mlflowDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-pg-cluster-admin"
+        name: mlflow-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -215,14 +215,14 @@ vso:
     mlflowDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-pg-cluster-app"
+        name: mlflow-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -234,14 +234,14 @@ vso:
     mlflowPgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-pg-cluster-backup"
+        name: mlflow-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -261,14 +261,14 @@ vso:
     mlflowSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "mlflow-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: mlflow-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "mlflow-sso"
+        name: mlflow-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

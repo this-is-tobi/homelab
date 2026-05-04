@@ -8,62 +8,62 @@ gitea:
   replicaCount: 3
   ingress:
     enabled: true
-    apiVersion: "networking.k8s.io/v1"
-    className: "nginx"
+    apiVersion: networking.k8s.io/v1
+    className: nginx
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - host: ""
       paths:
-      - path: "/"
-        pathType: "Prefix"
+      - path: /
+        pathType: Prefix
     tls:
     - secretName: ""
       hosts:
       - ""
   resources:
     requests:
-      cpu: "100m"
-      memory: "128Mi"
+      cpu: 100m
+      memory: 128Mi
   limits:
-    cpu: "500m"
-    memory: "512Mi"
+    cpu: 500m
+    memory: 512Mi
   serviceAccount:
     create: true
     automountServiceAccountToken: true
   persistence:
     enabled: true
-    size: "25Gi"
+    size: 25Gi
     accessModes:
-    - "ReadWriteMany"
+    - ReadWriteMany
   gitea:
     admin:
       username: ""
       password: ""
       email: ""
     oauth:
-    - name: "Keycloak"
-      provider: "openidConnect"
+    - name: Keycloak
+      provider: openidConnect
       key: ""
       secret: ""
       autoDiscoverUrl: ""
-      scopes: "openid profile email roles groups"
-      adminGroup: "admin"
-      groupClaimName: "groups"
+      scopes: openid profile email roles groups
+      adminGroup: admin
+      groupClaimName: groups
       # groupTeamMap: ""
       # groupTeamMapRemoval: true
     config:
       cache:
-        ADAPTER: "redis"
+        ADAPTER: redis
         HOST: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       session:
-        PROVIDER: "redis"
+        PROVIDER: redis
         PROVIDER_CONFIG: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       queue:
-        TYPE: "redis"
+        TYPE: redis
         CONN_STR: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       database:
-        DB_TYPE: "postgres"
+        DB_TYPE: postgres
         HOST: ""
         NAME: ""
         USER: ""
@@ -83,11 +83,11 @@ gitea:
         DISABLE_REGISTRATION: true
         ALLOW_ONLY_EXTERNAL_REGISTRATION: true
       oauth2_client:
-        OPENID_CONNECT_SCOPES: "openid profile email roles groups"
+        OPENID_CONNECT_SCOPES: openid profile email roles groups
         REGISTER_EMAIL_CONFIRM: false
         ENABLE_AUTO_REGISTRATION: true
-        ACCOUNT_LINKING: "auto"
-        USERNAME: "email"
+        ACCOUNT_LINKING: auto
+        USERNAME: email
     metrics:
       enabled: true
       serviceMonitor:
@@ -96,14 +96,14 @@ gitea:
     enabled: false
     primary:
       persistence:
-        size: "25Gi"
+        size: 25Gi
   valkey-cluster:
     enabled: false
   valkey:
     enabled: false
 
 valkey:
-  fullnameOverride: "gitea-valkey"
+  fullnameOverride: gitea-valkey
   architecture: standalone
   replicaCount: 1
   auth:
@@ -112,76 +112,76 @@ valkey:
     port: 6379
 
 cnpg:
-  fullnameOverride: "gitea-pg-cluster"
+  fullnameOverride: gitea-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.7"
   extraSpec:
     enablePDB: false
-  mode: "primary"
-  dbName: "gitea"
+  mode: primary
+  dbName: gitea
   credentials:
-    username: "gitea"
+    username: gitea
     password: ""
     postgresPassword: ""
   instances: 3
   enableSuperuserAccess: false
   pvcSize:
-    data: "7Gi"
-    wal: "3Gi"
+    data: 7Gi
+    wal: 3Gi
   resources:
     requests:
-      cpu: "250m"
-      memory: "512Mi"
+      cpu: 250m
+      memory: 512Mi
     limits:
-      cpu: "500m"
-      memory: "1Gi"
+      cpu: 500m
+      memory: 1Gi
   affinity:
-    topologyKey: "kubernetes.io/hostname"
+    topologyKey: kubernetes.io/hostname
   backup:
     enabled: true
     legacyMode: false
     endpointURL: ""
     destinationPath: "s3://"
     cron: "0 0 0 * * *"
-    retentionPolicy: "30d"
-    compression: "gzip"
+    retentionPolicy: 30d
+    compression: gzip
     s3Credentials:
       create: true
-      secretName: "gitea-pg-cluster-backup"
+      secretName: gitea-pg-cluster-backup
       accessKeyId:
-        key: "accessKeyId"
+        key: accessKeyId
         value: ""
       secretAccessKey:
-        key: "secretAccessKey"
+        key: secretAccessKey
         value: ""
       region:
-        key: "region"
+        key: region
         value: ""
 
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "gitea"
-        serviceAccount: "default"
+        role: gitea
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     giteaAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "gitea-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "gitea-admin"
+        name: gitea-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -193,14 +193,14 @@ vso:
     giteaDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "gitea-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "gitea-db-infos"
+        name: gitea-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -214,14 +214,14 @@ vso:
     giteaDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "gitea-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "gitea-pg-cluster-admin"
+        name: gitea-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -233,14 +233,14 @@ vso:
     giteaDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "gitea-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "gitea-pg-cluster-app"
+        name: gitea-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -252,14 +252,14 @@ vso:
     giteaPgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "gitea-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "gitea-pg-cluster-backup"
+        name: gitea-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -279,14 +279,14 @@ vso:
     giteaSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "gitea-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "gitea-sso"
+        name: gitea-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

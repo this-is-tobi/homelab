@@ -27,37 +27,37 @@ vault-operator:
 
 vault:
   enabled: true
-  name: "vault"
+  name: vault
   size: 3
   image:
-    repository: "hashicorp/vault"
-    tag: "2.0.0"
+    repository: hashicorp/vault
+    tag: 2.0.0
   bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:v1.32.1"
   service:
-    type: "ClusterIP"
+    type: ClusterIP
     annotations:
       prometheus.io/scrape: "true"
       prometheus.io/port: "9102"
   storage:
     raft:
       enabled: true
-      size: "10Gi"
-      storageClass: "longhorn"
+      size: 10Gi
+      storageClass: longhorn
   unseal:
     kubernetes:
       enabled: true
-      secretName: "vault-unseal-keys"
+      secretName: vault-unseal-keys
   config:
     ui: true
     tls:
       enabled: true
     telemetry:
       unauthenticated: false
-      retention: "10m"
+      retention: 10m
       disableHostname: true
   externalConfig:
     policies:
-    - name: "vault-init-secrets"
+    - name: vault-init-secrets
       rules: |
         # Allow creating/updating secrets in platforms/production path
         path "homelab/data/*" {
@@ -67,32 +67,32 @@ vault:
         path "homelab/metadata/*" {
           capabilities = ["list", "read"]
         }
-    - name: "argo-cd"
+    - name: argo-cd
       rules: |
         path "homelab/data/platforms/production/argo-cd" {
           capabilities = ["read", "list"]
         }
-    - name: "cert-manager"
+    - name: cert-manager
       rules: |
         path "homelab/data/platforms/production/cert-manager" {
           capabilities = ["read", "list"]
         }
-    - name: "coder"
+    - name: coder
       rules: |
         path "homelab/data/platforms/production/coder" {
           capabilities = ["read", "list"]
         }
-    - name: "gitea"
+    - name: gitea
       rules: |
         path "homelab/data/platforms/production/gitea" {
           capabilities = ["read", "list"]
         }
-    - name: "harbor"
+    - name: harbor
       rules: |
         path "homelab/data/platforms/production/harbor" {
           capabilities = ["read", "list"]
         }
-    - name: "keycloak"
+    - name: keycloak
       rules: |
         path "homelab/data/platforms/production/keycloak" {
           capabilities = ["read", "list"]
@@ -188,135 +188,135 @@ vault:
             "data/keycloak/clientSecret" = []
           }
         }
-    - name: "mattermost"
+    - name: mattermost
       rules: |
         path "homelab/data/platforms/production/mattermost" {
           capabilities = ["read", "list"]
         }
-    - name: "rustfs"
+    - name: rustfs
       rules: |
         path "homelab/data/platforms/production/rustfs" {
           capabilities = ["read", "list"]
         }
-    - name: "outline"
+    - name: outline
       rules: |
         path "homelab/data/platforms/production/outline" {
           capabilities = ["read", "list"]
         }
-    - name: "prometheus-stack"
+    - name: prometheus-stack
       rules: |
         path "homelab/data/platforms/production/prometheus-stack" {
           capabilities = ["read", "list"]
         }
-    - name: "sonarqube"
+    - name: sonarqube
       rules: |
         path "homelab/data/platforms/production/sonarqube" {
           capabilities = ["read", "list"]
         }
-    - name: "sops"
+    - name: sops
       rules: |
         path "homelab/data/platforms/production/sops" {
           capabilities = ["read", "list"]
         }
-    - name: "crowdsec"
+    - name: crowdsec
       rules: |
         path "homelab/data/platforms/production/crowdsec" {
           capabilities = ["read", "list"]
         }
     auth:
-    - type: "kubernetes"
+    - type: kubernetes
       roles:
-      - name: "vault-init-secrets"
-        bound_service_account_names: ["vault-init-secrets"]
-        bound_service_account_namespaces: ["vault-operator-system"]
-        policies: ["vault-init-secrets"]
-        ttl: "10m"
-      - name: "argo-cd"
-        bound_service_account_names: ["default", "argo-cd-vso"]
-        bound_service_account_namespaces: ["argo-cd"]
-        policies: ["argo-cd"]
-        ttl: "1h"
-      - name: "cert-manager"
-        bound_service_account_names: ["default", "cert-manager-vso"]
-        bound_service_account_namespaces: ["cert-manager"]
-        policies: ["cert-manager"]
-        ttl: "1h"
-      - name: "coder"
-        bound_service_account_names: ["default", "coder-vso"]
-        bound_service_account_namespaces: ["coder"]
-        policies: ["coder"]
-        ttl: "1h"
-      - name: "gitea"
-        bound_service_account_names: ["default", "gitea-vso"]
-        bound_service_account_namespaces: ["gitea"]
-        policies: ["gitea"]
-        ttl: "1h"
-      - name: "harbor"
-        bound_service_account_names: ["default", "harbor-vso"]
-        bound_service_account_namespaces: ["harbor"]
-        policies: ["harbor"]
-        ttl: "1h"
-      - name: "keycloak"
-        bound_service_account_names: ["default", "keycloak-vso"]
-        bound_service_account_namespaces: ["keycloak"]
-        policies: ["keycloak"]
-        ttl: "1h"
-      - name: "mattermost"
-        bound_service_account_names: ["default", "mattermost-vso"]
-        bound_service_account_namespaces: ["mattermost"]
-        policies: ["mattermost"]
-        ttl: "1h"
-      - name: "rustfs"
-        bound_service_account_names: ["default", "rustfs-vso"]
-        bound_service_account_namespaces: ["rustfs"]
-        policies: ["rustfs"]
-        ttl: "1h"
-      - name: "outline"
-        bound_service_account_names: ["default", "outline-vso"]
-        bound_service_account_namespaces: ["outline"]
-        policies: ["outline"]
-        ttl: "1h"
-      - name: "prometheus-stack"
-        bound_service_account_names: ["default", "prometheus-stack-vso"]
-        bound_service_account_namespaces: ["prometheus-stack"]
-        policies: ["prometheus-stack"]
-        ttl: "1h"
-      - name: "sonarqube"
-        bound_service_account_names: ["default", "sonarqube-vso"]
-        bound_service_account_namespaces: ["sonarqube"]
-        policies: ["sonarqube"]
-        ttl: "1h"
-      - name: "sops"
-        bound_service_account_names: ["default", "sops-vso"]
-        bound_service_account_namespaces: ["sops"]
-        policies: ["sops"]
-        ttl: "1h"
-      - name: "crowdsec"
-        bound_service_account_names: ["default", "crowdsec-vso"]
-        bound_service_account_namespaces: ["crowdsec"]
-        policies: ["crowdsec"]
-        ttl: "1h"
+      - name: vault-init-secrets
+        bound_service_account_names: [vault-init-secrets]
+        bound_service_account_namespaces: [vault-operator-system]
+        policies: [vault-init-secrets]
+        ttl: 10m
+      - name: argo-cd
+        bound_service_account_names: [default, argo-cd-vso]
+        bound_service_account_namespaces: [argo-cd]
+        policies: [argo-cd]
+        ttl: 1h
+      - name: cert-manager
+        bound_service_account_names: [default, cert-manager-vso]
+        bound_service_account_namespaces: [cert-manager]
+        policies: [cert-manager]
+        ttl: 1h
+      - name: coder
+        bound_service_account_names: [default, coder-vso]
+        bound_service_account_namespaces: [coder]
+        policies: [coder]
+        ttl: 1h
+      - name: gitea
+        bound_service_account_names: [default, gitea-vso]
+        bound_service_account_namespaces: [gitea]
+        policies: [gitea]
+        ttl: 1h
+      - name: harbor
+        bound_service_account_names: [default, harbor-vso]
+        bound_service_account_namespaces: [harbor]
+        policies: [harbor]
+        ttl: 1h
+      - name: keycloak
+        bound_service_account_names: [default, keycloak-vso]
+        bound_service_account_namespaces: [keycloak]
+        policies: [keycloak]
+        ttl: 1h
+      - name: mattermost
+        bound_service_account_names: [default, mattermost-vso]
+        bound_service_account_namespaces: [mattermost]
+        policies: [mattermost]
+        ttl: 1h
+      - name: rustfs
+        bound_service_account_names: [default, rustfs-vso]
+        bound_service_account_namespaces: [rustfs]
+        policies: [rustfs]
+        ttl: 1h
+      - name: outline
+        bound_service_account_names: [default, outline-vso]
+        bound_service_account_namespaces: [outline]
+        policies: [outline]
+        ttl: 1h
+      - name: prometheus-stack
+        bound_service_account_names: [default, prometheus-stack-vso]
+        bound_service_account_namespaces: [prometheus-stack]
+        policies: [prometheus-stack]
+        ttl: 1h
+      - name: sonarqube
+        bound_service_account_names: [default, sonarqube-vso]
+        bound_service_account_namespaces: [sonarqube]
+        policies: [sonarqube]
+        ttl: 1h
+      - name: sops
+        bound_service_account_names: [default, sops-vso]
+        bound_service_account_namespaces: [sops]
+        policies: [sops]
+        ttl: 1h
+      - name: crowdsec
+        bound_service_account_names: [default, crowdsec-vso]
+        bound_service_account_namespaces: [crowdsec]
+        policies: [crowdsec]
+        ttl: 1h
     secrets:
-    - path: "homelab"
-      type: "kv"
-      description: "Homelab secrets KV store"
+    - path: homelab
+      type: kv
+      description: Homelab secrets KV store
       options:
         version: 2
   startupSecrets: []
   initSecrets:
     enabled: true
-    vaultRole: "vault-init-secrets"
+    vaultRole: vault-init-secrets
     skipTLSVerify: false
     backoffLimit: 3
     ttlSecondsAfterFinished: 86400
     image: "ghcr.io/this-is-tobi/tools/homelab-utils:latest"
     resources:
       requests:
-        cpu: "50m"
-        memory: "64Mi"
+        cpu: 50m
+        memory: 64Mi
       limits:
-        cpu: "200m"
-        memory: "128Mi"
+        cpu: 200m
+        memory: 128Mi
     # Secrets to initialize using template syntax:
     # - <random:N> generates random alphanumeric string of length N
     # - <uuid> generates UUID v4
@@ -329,36 +329,36 @@ vault:
     vault:
       limits:
         cpu: "1"
-        memory: "1Gi"
+        memory: 1Gi
       requests:
-        cpu: "500m"
-        memory: "512Mi"
+        cpu: 500m
+        memory: 512Mi
     bankVaults:
       limits:
-        cpu: "100m"
-        memory: "128Mi"
+        cpu: 100m
+        memory: 128Mi
       requests:
-        cpu: "50m"
-        memory: "64Mi"
+        cpu: 50m
+        memory: 64Mi
   # Vault 2.0.0+ runs as vault user (UID 100, GID 1000) by default
   # runAsUser: 100 at pod level ensures the config-templating init container also writes
   # vault.json as UID 100, so the vault container can read it (fixes permission denied)
   securityContext:
     runAsUser: 100
     fsGroup: 1000
-  serviceAccount: "vault"
+  serviceAccount: vault
   caNamespaces:
-    - "*"
+  - "*"
   ingress:
     enabled: true
-    ingressClassName: "nginx"
-    host: "vault.core.ohmlab.fr"
+    ingressClassName: nginx
+    host: vault.core.ohmlab.fr
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
     tls:
       enabled: true
-      secretName: "vault-ingress-tls"  # Separate from vault-tls (used internally by operator)
+      secretName: vault-ingress-tls # Separate from vault-tls (used internally by operator)
   serviceMonitor:
     enabled: true
   statsd:
@@ -374,11 +374,11 @@ vso:
     manager:
       resources:
         requests:
-          memory: "256Mi"
-          cpu: "100m"
+          memory: 256Mi
+          cpu: 100m
         limits:
-          memory: "512Mi"
-          cpu: "500m"
+          memory: 512Mi
+          cpu: 500m
       securityContext:
         allowPrivilegeEscalation: false
         readOnlyRootFilesystem: true
@@ -386,25 +386,25 @@ vso:
         runAsUser: 65532
         capabilities:
           drop:
-          - "ALL"
+          - ALL
         seccompProfile:
-          type: "RuntimeDefault"
+          type: RuntimeDefault
     podSecurityContext:
       runAsNonRoot: true
       runAsUser: 65532
       fsGroup: 65532
       seccompProfile:
-        type: "RuntimeDefault"
+        type: RuntimeDefault
     rbac:
       create: true
     serviceAccount:
       create: true
-      name: "vault-secrets-operator"
+      name: vault-secrets-operator
   defaultVaultConnection:
     enabled: true
     address: "https://vault.vault-operator-system.svc.cluster.local:8200"
     skipTLSVerify: false
-    caCertSecret: "vault-tls"
+    caCertSecret: vault-tls
   defaultAuthMethod:
     enabled: false
     # Uncomment to enable global auth (not recommended for multi-tenant)
@@ -419,16 +419,16 @@ vso:
   metrics:
     service:
       enabled: true
-      type: "ClusterIP"
+      type: ClusterIP
       port: 8080
 
 backup-utils:
-  fullnameOverride: "backup"
+  fullnameOverride: backup
   enabled: false
   backups:
     vaultSnapshot:
       enabled: true
-      type: "vault"
+      type: vault
       job:
         schedule: "0 0 * * *"
         successfulJobsHistoryLimit: 3
@@ -437,15 +437,14 @@ backup-utils:
         # VAULT_EXTRA_ARGS: ""
         VAULT_SKIP_VERIFY: "true"
         S3_PATH_STYLE: "true"
-        RETENTION: "30d"
+        RETENTION: 30d
       secrets: {}
-        # VAULT_TOKEN: ""
-        # S3_ENDPOINT: "https://s3.fr-par.scw.cloud"
-        # S3_BUCKET_NAME: "ohmlab-backups"
-        # S3_BUCKET_PREFIX: "vault"
-        # S3_ACCESS_KEY: ""
-        # S3_SECRET_KEY: ""
+      # VAULT_TOKEN: ""
+      # S3_ENDPOINT: "https://s3.fr-par.scw.cloud"
+      # S3_BUCKET_NAME: "ohmlab-backups"
+      # S3_BUCKET_PREFIX: "vault"
+      # S3_ACCESS_KEY: ""
+      # S3_SECRET_KEY: ""
       envFrom:
       - secretRef:
-          name: "vault-backup"
-
+          name: vault-backup

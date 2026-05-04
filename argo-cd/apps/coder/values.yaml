@@ -1,14 +1,14 @@
 coder:
   coder:
     service:
-      type: "ClusterIP"
+      type: ClusterIP
     ingress:
       enable: true
-      className: "nginx"
+      className: nginx
       host: ""
       wildcardHost: "*."
       annotations:
-        cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+        cert-manager.io/cluster-issuer: letsencrypt-http-prod
       tls:
         enable: true
         secretName: ""
@@ -26,13 +26,13 @@ coder:
     - name: CODER_OIDC_CLIENT_SECRET
       value: ""
     - name: CODER_OIDC_SIGN_IN_TEXT
-      value: "Login with Keycloak"
+      value: Login with Keycloak
     - name: CODER_OIDC_SCOPES
       value: "openid,profile,email,groups,roles"
     - name: CODER_OIDC_GROUP_FIELD
-      value: "groups"
+      value: groups
     - name: CODER_OIDC_ADMIN_GROUP
-      value: "admin"
+      value: admin
     - name: CODER_OIDC_GROUP_AUTO_CREATE
       value: "true"
 

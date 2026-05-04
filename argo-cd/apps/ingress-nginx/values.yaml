@@ -2,27 +2,27 @@ ingress-nginx:
   enabled: true
   controller:
     extraArgs:
-      ingress-class: "nginx"
-      controller-class: "k8s.io/ingress-nginx"
-      default-ssl-certificate: "ingress-nginx/default-wildcard-tls"
+      ingress-class: nginx
+      controller-class: k8s.io/ingress-nginx
+      default-ssl-certificate: ingress-nginx/default-wildcard-tls
     ingressClassResource:
-      name: "nginx"
+      name: nginx
       enabled: true
       default: true
-      controllerValue: "k8s.io/ingress-nginx"
-    ingressClass: "nginx"
+      controllerValue: k8s.io/ingress-nginx
+    ingressClass: nginx
     replicaCount: 3
     config:
-      body-size: "100m"
-      client-max-body-size: "100m"
+      body-size: 100m
+      client-max-body-size: 100m
       compute-full-forwarded-for: "true"
       enable-real-ip: "true"
-      proxy-body-size: "100m"
-      proxy-buffer-size: "16k"
-      proxy-buffering: "off"
+      proxy-body-size: 100m
+      proxy-buffer-size: 16k
+      proxy-buffering: off
       proxy-buffers: "4"
-      proxy-busy-buffers-size: "32k"
-      proxy-request-buffering: "off"
+      proxy-busy-buffers-size: 32k
+      proxy-request-buffering: off
       use-forwarded-headers: "true"
       use-proxy-protocol: "false"
       proxy_max_temp_file_size: "0"
@@ -35,12 +35,12 @@ ingress-nginx:
       enabled: true
       annotations:
         config.use-proxy-protocol: "false"
-        service.externalTrafficPolicy: "Local"
-      type: "LoadBalancer"
+        service.externalTrafficPolicy: Local
+      type: LoadBalancer
     resources:
       requests:
-        cpu: "100m"
-        memory: "128Mi"
+        cpu: 100m
+        memory: 128Mi
       limits:
-        cpu: "500m"
-        memory: "512Mi"
+        cpu: 500m
+        memory: 512Mi

@@ -3,7 +3,7 @@ waultwarden:
   adminToken:
     value: ""
   database:
-    type: "postgresql"
+    type: postgresql
     host: ""
     port: ""
     username: ""
@@ -15,10 +15,10 @@ waultwarden:
   invitationOrgName: ""
   ingress:
     enabled: true
-    class: "nginx"
+    class: nginx
     nginxIngressAnnotations: false
     additionalAnnotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hostname: ""
     tls: true
     tlsSecret: ""
@@ -26,28 +26,28 @@ waultwarden:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "vaultwarden"
-        serviceAccount: "default"
+        role: vaultwarden
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     vaultwardenAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "vaultwarden-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: vaultwarden-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "vaultwarden-admin"
+        name: vaultwarden-admin
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -59,14 +59,14 @@ vso:
     vaultwardenDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "vaultwarden-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: vaultwarden-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "vaultwarden-db-infos"
+        name: vaultwarden-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -80,14 +80,14 @@ vso:
     vaultwardenDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "vaultwarden-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: vaultwarden-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "vaultwarden-pg-cluster-admin"
+        name: vaultwarden-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -99,14 +99,14 @@ vso:
     vaultwardenDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "vaultwarden-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: vaultwarden-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "vaultwarden-pg-cluster-app"
+        name: vaultwarden-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -118,14 +118,14 @@ vso:
     vaultwardenPgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "vaultwarden-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: vaultwarden-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "vaultwarden-pg-cluster-backup"
+        name: vaultwarden-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -145,14 +145,14 @@ vso:
     vaultwardenSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "vaultwarden-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: vaultwarden-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "vaultwarden-sso"
+        name: vaultwarden-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

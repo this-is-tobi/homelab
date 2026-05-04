@@ -17,28 +17,28 @@ sops:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "sops"
-        serviceAccount: "default"
+        role: sops
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     sopsAgeKeyFile:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "sops-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: sops-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "sops-age-key-file"
+        name: sops-age-key-file
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

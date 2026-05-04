@@ -30,7 +30,7 @@ spec:
     context:
     - name: caCrt
       apiCall:
-        urlPath: "/api/v1/namespaces/vault-operator-system/secrets/vault-tls"
+        urlPath: /api/v1/namespaces/vault-operator-system/secrets/vault-tls
         jmesPath: "data.\"ca.crt\""
     generate:
       generateExisting: true

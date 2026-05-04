@@ -403,28 +403,28 @@ argo-cd:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "argo-cd"
-        serviceAccount: "default"
+        role: argo-cd
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     argoCdAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "argo-cd-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: argo-cd-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "argo-cd-admin"
+        name: argo-cd-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -436,14 +436,14 @@ vso:
     argoCdConfig:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "argo-cd-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: argo-cd-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "argo-cd-config"
+        name: argo-cd-config
         create: true
-        type: "Opaque"
+        type: Opaque
         labels:
           app.kubernetes.io/part-of: argocd
         transformation:
@@ -455,14 +455,14 @@ vso:
     argoCdSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "argo-cd-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: argo-cd-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "argo-cd-sso"
+        name: argo-cd-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         labels:
           app.kubernetes.io/part-of: argocd
         transformation:

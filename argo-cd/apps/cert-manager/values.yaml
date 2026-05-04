@@ -15,11 +15,11 @@ scaleway-certmanager-webhook:
 defaultWildcard:
   enabled: true
   dnsZone: ""
-  ingressNamespace: "ingress-nginx"
-  secretName: "default-wildcard-tls"
+  ingressNamespace: ingress-nginx
+  secretName: default-wildcard-tls
   issuerRef:
-    kind: "ClusterIssuer"
-    name: "letsencrypt-dns-prod"
+    kind: ClusterIssuer
+    name: letsencrypt-dns-prod
 
 clusterIssuers: []
 # - name: letsencrypt-http-staging
@@ -74,28 +74,28 @@ clusterIssuers: []
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "cert-manager"
-        serviceAccount: "default"
+        role: cert-manager
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     scwCreds:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "cert-manager-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: cert-manager-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "scw-creds"
+        name: scw-creds
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

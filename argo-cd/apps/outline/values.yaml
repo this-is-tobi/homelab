@@ -1,7 +1,7 @@
 outline:
   image:
     repository: ghcr.io/this-is-tobi/mirror/outline
-    tag: "1.6.1"
+    tag: 1.6.1
   ingress:
     enabled: true
     className: nginx
@@ -38,7 +38,7 @@ outline:
   - name: AWS_S3_FORCE_PATH_STYLE
     value: "true"
   - name: AWS_S3_ACL
-    value: "private"
+    value: private
   - name: FILE_STORAGE_UPLOAD_MAX_SIZE
     value: "26214400"
   - name: OIDC_CLIENT_ID
@@ -52,11 +52,11 @@ outline:
   - name: OIDC_USERINFO_URI
     value: ""
   - name: OIDC_USERNAME_CLAIM
-    value: "email"
+    value: email
   - name: OIDC_DISPLAY_NAME
-    value: "Keycloak"
+    value: Keycloak
   - name: OIDC_SCOPES
-    value: "openid profile email groups roles"
+    value: openid profile email groups roles
   - name: SMTP_HOST
     value: ""
   - name: SMTP_PORT
@@ -81,16 +81,16 @@ outline:
     enabled: false
   resources:
     requests:
-      memory: "512Mi"
-      cpu: "250m"
+      memory: 512Mi
+      cpu: 250m
     limits:
-      memory: "1Gi"
+      memory: 1Gi
       cpu: "1"
 
 redis:
   enabled: true
-  fullnameOverride: "outline-redis"
-  architecture: "replication"
+  fullnameOverride: outline-redis
+  architecture: replication
   replicaCount: 1
   auth:
     enabled: false
@@ -100,14 +100,14 @@ redis:
   #   content: ""
   persistence:
     enabled: true
-    size: "2Gi"
+    size: 2Gi
   resources:
     requests:
-      cpu: "100m"
-      memory: "256Mi"
+      cpu: 100m
+      memory: 256Mi
     limits:
-      cpu: "500m"
-      memory: "512Mi"
+      cpu: 500m
+      memory: 512Mi
   # podSecurityContext:
   #   runAsNonRoot: true
   #   fsGroup: 10001
@@ -182,28 +182,28 @@ cnpg:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "outline"
-        serviceAccount: "default"
+        role: outline
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     outlineS3:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "outline-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "outline-s3"
+        name: outline-s3
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -223,14 +223,14 @@ vso:
     outlineDbInfos:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "outline-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "outline-db-infos"
+        name: outline-db-infos
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -244,14 +244,14 @@ vso:
     outlineDbAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "outline-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "outline-pg-cluster-admin"
+        name: outline-pg-cluster-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -263,14 +263,14 @@ vso:
     outlineDbApp:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "outline-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "outline-pg-cluster-app"
+        name: outline-pg-cluster-app
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -282,14 +282,14 @@ vso:
     outlinePgBackup:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "outline-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "outline-pg-cluster-backup"
+        name: outline-pg-cluster-backup
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"
@@ -309,14 +309,14 @@ vso:
     outlineSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "outline-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "outline-sso"
+        name: outline-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

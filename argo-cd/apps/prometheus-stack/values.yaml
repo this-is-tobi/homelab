@@ -25,7 +25,7 @@ kube-prometheus-stack:
       storageSpec:
         volumeClaimTemplate:
           spec:
-            accessModes: ["ReadWriteMany"]
+            accessModes: [ReadWriteMany]
             resources:
               requests:
                 storage: 100Gi
@@ -74,28 +74,28 @@ kube-prometheus-stack:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "prometheus-stack"
-        serviceAccount: "default"
+        role: prometheus-stack
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     monitoringAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "prometheus-stack-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: prometheus-stack-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "monitoring-admin"
+        name: monitoring-admin
         create: true
-        type: "kubernetes.io/basic-auth"
+        type: kubernetes.io/basic-auth
         transformation:
           excludes:
           - ".*"
@@ -107,14 +107,14 @@ vso:
     monitoringSso:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "prometheus-stack-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: prometheus-stack-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "monitoring-sso"
+        name: monitoring-sso
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

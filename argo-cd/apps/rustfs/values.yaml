@@ -5,21 +5,21 @@ gateway:
   routes: []
 
 rustfs:
-  deploymentType: "statefulset"
+  deploymentType: statefulset
   replicaCount: 4
-  podManagementPolicy: "Parallel"
+  podManagementPolicy: Parallel
   auth:
-    existingSecret: "rustfs-admin"
-    existingSecretAccessKeyKey: "ACCESS_KEY"
-    existingSecretSecretKeyKey: "SECRET_KEY"
+    existingSecret: rustfs-admin
+    existingSecretAccessKeyKey: ACCESS_KEY
+    existingSecretSecretKeyKey: SECRET_KEY
   config:
-    logLevel: "info"
+    logLevel: info
     consoleEnabled: true
   ingress:
     enabled: true
-    className: "nginx"
+    className: nginx
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - host: ""
       paths:
@@ -28,9 +28,9 @@ rustfs:
     tls: []
   consoleIngress:
     enabled: true
-    className: "nginx"
+    className: nginx
     annotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-http-prod"
+      cert-manager.io/cluster-issuer: letsencrypt-http-prod
     hosts:
     - host: ""
       paths:
@@ -81,28 +81,28 @@ rustfs:
 vso:
   vaultAuth:
     default:
-      method: "kubernetes"
-      mount: "kubernetes"
+      method: kubernetes
+      mount: kubernetes
       kubernetes:
-        role: "rustfs"
-        serviceAccount: "default"
+        role: rustfs
+        serviceAccount: default
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: "vault-ca"
+      caCertSecretRef: vault-ca
   vaultStaticSecrets:
     rustfsAdmin:
       mount: ""
       path: ""
-      type: "kv-v2"
-      vaultAuthRef: "rustfs-vso-default"
-      refreshAfter: "1h"
+      type: kv-v2
+      vaultAuthRef: rustfs-vso-default
+      refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: "rustfs-admin"
+        name: rustfs-admin
         create: true
-        type: "Opaque"
+        type: Opaque
         transformation:
           excludes:
           - ".*"

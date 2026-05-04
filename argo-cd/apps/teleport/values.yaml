@@ -12,14 +12,14 @@ server:
     enabled: true
   proxy:
     enabled: true
-  proxyListenerMode: "multiplex"
+  proxyListenerMode: multiplex
   clusterName: ""
   acme: false
   highAvailability:
     certManager:
       enabled: true
-      issuerKind: "ClusterIssuer"
-      issuerName: "letsencrypt-dns-prod"
+      issuerKind: ClusterIssuer
+      issuerName: letsencrypt-dns-prod
       addCommonName: true
     replicaCount: 1
     podDisruptionBudget:
@@ -29,41 +29,41 @@ server:
     enabled: true
     suppressAutomaticWildcards: false
     spec:
-      ingressClassName: "nginx"
+      ingressClassName: nginx
   service:
-    type: "ClusterIP"
+    type: ClusterIP
   log:
-    level: "INFO"
+    level: INFO
 
 roles:
   superadmin:
     allow:
       rules:
       - resources:
-        - '*'
+        - "*"
         verbs:
-        - '*'
+        - "*"
       kubernetes_groups:
       - system:masters
       kubernetes_labels:
-        '*': '*'
+        "*": "*"
       kubernetes_resources:
-      - kind: '*'
-        namespace: '*'
-        name: '*'
+      - kind: "*"
+        namespace: "*"
+        name: "*"
         verbs:
-        - '*'
+        - "*"
   admin:
     allow:
       kubernetes_groups:
       - system:masters
       kubernetes_labels:
-        '*': '*'
+        "*": "*"
       kubernetes_resources:
-      - kind: '*'
-        namespace: '*'
-        name: '*'
+      - kind: "*"
+        namespace: "*"
+        name: "*"
         verbs:
-        - '*'
+        - "*"
 
 users: {}

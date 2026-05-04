@@ -9,10 +9,12 @@ cilium:
   # Envoy/Gateway API disabled until kernel upgrade (CONFIG_ARM64_VA_BITS=52).
   # ==========================================================================
 
-  # --- K3s CNI paths ---
+  # --- CNI paths ---
+  # containerd uses default Linux paths (/etc/cni/net.d, /opt/cni/bin)
+  # NOT the K3s agent paths — verified via `crictl info`.
   cni:
-    binPath: /var/lib/rancher/k3s/data/current/bin
-    confPath: /var/lib/rancher/k3s/agent/etc/cni/net.d
+    binPath: /opt/cni/bin
+    confPath: /etc/cni/net.d
     exclusive: true
 
   # --- Kube-proxy replacement ---
@@ -20,6 +22,10 @@ cilium:
   kubeProxyReplacement: true
   k8sServiceHost: 192.168.1.99
   k8sServicePort: 6443
+
+  # --- Device selection ---
+  # Explicitly target eth0 — avoids auto-detection edge cases on RPi.
+  devices: eth0
 
   # --- Routing ---
   # Native routing — Cilium installs direct node routes for pod CIDRs.
@@ -33,10 +39,10 @@ cilium:
   ipam:
     operator:
       clusterPoolIPv4PodCIDRList:
-        - 10.42.0.0/16
+      - 10.42.0.0/16
 
   # --- Policy enforcement ---
-  policyEnforcementMode: "default"
+  policyEnforcementMode: default
 
   # --- Host firewall ---
   hostFirewall:
@@ -45,7 +51,10 @@ cilium:
   # --- BPF settings ---
   bpf:
     masquerade: true
-    hostLegacyRouting: false
+    # Host-generated traffic (SSH, node-exporter, kubelet, etc.) uses the
+    # regular kernel network stack instead of the BPF datapath.  This prevents
+    # Cilium from ever blocking out-of-band management access to the nodes.
+    hostLegacyRouting: true
     # Kernel 6.12 supports tproxy for L7 without envoy fallback
     tproxy: true
 
@@ -59,20 +68,20 @@ cilium:
     enabled: false
 
   # --- Gateway API ---
-  # BLOCKED — requires envoy which needs CONFIG_ARM64_VA_BITS=52
-  # Enable after running: ansible-playbook install.yml --tags kernel-upgrade
+  # Requires envoy + Debian arm64 kernel (CONFIG_ARM64_VA_BITS=52)
+  # Kernel upgraded via: ansible-playbook install.yml --tags kernel-upgrade
   gatewayAPI:
-    enabled: false
+    enabled: true
 
   # --- Envoy (standalone DaemonSet) ---
-  # BLOCKED — tcmalloc crashes on RPi kernel (CONFIG_ARM64_VA_BITS=39)
-  # Enable after kernel upgrade to Debian arm64 kernel
+  # Requires Debian arm64 kernel (CONFIG_ARM64_VA_BITS=52) for tcmalloc
+  # Kernel upgraded via: ansible-playbook install.yml --tags kernel-upgrade
   envoy:
-    enabled: false
+    enabled: true
 
   # --- L7 proxy ---
-  # Requires envoy — enable after kernel upgrade
-  l7Proxy: false
+  # Enabled — envoy is available after kernel upgrade
+  l7Proxy: true
 
   # --- Operator ---
   operator:
@@ -116,12 +125,12 @@ cilium:
       enabled: false
     metrics:
       enabled:
-        - dns
-        - drop
-        - tcp
-        - flow
-        - icmp
-        - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
+      - dns
+      - drop
+      - tcp
+      - flow
+      - icmp
+      - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
       serviceMonitor:
         enabled: true
     tls:
@@ -134,23 +143,23 @@ cilium:
   securityContext:
     capabilities:
       ciliumAgent:
-        - CHOWN
-        - KILL
-        - NET_ADMIN
-        - NET_RAW
-        - IPC_LOCK
-        - SYS_ADMIN
-        - SYS_RESOURCE
-        - DAC_OVERRIDE
-        - FOWNER
-        - SETGID
-        - SETUID
-        - BPF
-        - PERFMON
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+      - BPF
+      - PERFMON
       cleanCiliumState:
-        - NET_ADMIN
-        - SYS_ADMIN
-        - SYS_RESOURCE
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
 
   # --- CRD management ---
   installCRDs: true
@@ -167,12 +176,21 @@ cilium:
     enabled: true
 
   # --- Socket LB ---
-  # Accelerates service routing by intercepting at socket level
+  # Accelerates service routing by intercepting at socket level (cgroup BPF).
+  # hostNamespaceOnly: only intercept in host netns — avoids stale reverse
+  # SK map entries and pod-level side effects (see Cilium GH#42649).
   socketLB:
     enabled: true
+    hostNamespaceOnly: true
 
   # --- Bandwidth manager ---
-  # Requires kubeProxyReplacement: true (enabled above)
+  # DISABLED — bandwidthManager attaches TC BPF programs to the node's
+  # physical interface (eth0).  During DaemonSet rollouts the old agent exits
+  # but those TC programs persist as stale BPF that drops all TCP traffic
+  # (SSH, etcd, K3s API) until the new agent re-attaches.  On a 9-node RPi
+  # cluster this consistently causes SSH lockouts and etcd quorum loss.
+  # Re-enable only after confirming rollout-safe behavior in a future Cilium
+  # version.
   bandwidthManager:
-    enabled: true
+    enabled: false
     bbr: false
