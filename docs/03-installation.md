@@ -38,11 +38,11 @@ openssl rand -base64 32 > ./ansible/.vault_password
 2. Fill in the secrets in `ansible/inventory/group_vars/vault.yml`:
 
 ```yaml
-vault_ansible_password: "<ssh-password>"
-vault_pihole_password: ""          # auto-generated if empty
-vault_wireguard_password: ""       # auto-generated if empty
-vault_k3s_token: ""                # populated during cluster bootstrap
-vault_k3s_ca_data: ""              # populated during cluster bootstrap
+vault_ansible_password: <ssh-password>
+vault_pihole_password: "" # auto-generated if empty
+vault_wireguard_password: "" # auto-generated if empty
+vault_k3s_token: "" # populated during cluster bootstrap
+vault_k3s_ca_data: "" # populated during cluster bootstrap
 ```
 
 3. Encrypt the vault file:
@@ -60,7 +60,6 @@ cd ansible && ansible-vault encrypt inventory/group_vars/vault.yml
 > __*Notes*__:
 >
 > *PiHole and Wireguard installation can be ignored by setting `enabled: false` in [gateway group_vars](../ansible/inventory-example/group_vars/gateway.yml).*
-
 
 ## Settings
 
@@ -121,7 +120,6 @@ Per-app overrides supported in the JSON catalogues (all optional):
 > __*Notes*__:
 >
 > *During setup, every password, token and so on are randomly generated and stored into Vault secrets.*
-
 
 ## Deploy
 
@@ -190,7 +188,6 @@ sequenceDiagram
 >
 > *OIDC for the core ArgoCD is intentionally disabled at bootstrap. Enable it in [argo-cd/instances/homelab/values/core/homelab-core.yaml](../argo-cd/instances/homelab/values/core/homelab-core.yaml) once Keycloak is ready (uncomment the `oidc.config` block and provide the client secret out-of-band).*
 
-
 ## Destroy
 
 It is possible to cleanly destroy the K3s cluster by running:
@@ -199,7 +196,6 @@ It is possible to cleanly destroy the K3s cluster by running:
 # Destroy cluster
 ./run.sh -p ./ansible/install.yml -t k3s-destroy
 ```
-
 
 ## Maintenance
 
@@ -218,7 +214,7 @@ Upgrade all hosts in-place from one Debian release to the next (e.g. bookworm â†
 1. Set the target release in `inventory/group_vars/all.yml` (or pass it as extra var):
 
 ```yaml
-common_dist_upgrade_target_release: "trixie"
+common_dist_upgrade_target_release: trixie
 ```
 
 2. Run the dist-upgrade:
@@ -271,7 +267,6 @@ K3s patch-level upgrades are handled automatically in-cluster by the [system-upg
 ### Kubernetes application updates
 
 Application chart versions are managed via GitOps â€” update the Helm chart version in the relevant `argo-cd/apps/<app>/Chart.yaml` and push. ArgoCD auto-syncs the change.
-
 
 ## Architecture
 
@@ -399,8 +394,8 @@ If you need to keep the chart catalog public while keeping per-instance values (
 
 ```yaml
 # argo-cd/instances/<inst>/instance.yaml
-repoURL: https://github.com/this-is-tobi/homelab.git          # public: charts + this file
-valuesRepoURL: https://github.com/<you>/homelab-private.git    # private: values tree only
+repoURL: https://github.com/this-is-tobi/homelab.git # public: charts + this file
+valuesRepoURL: https://github.com/<you>/homelab-private.git # private: values tree only
 targetRevision: main
 ```
 
@@ -458,7 +453,6 @@ Platform services are deployed on top of core services:
 - **Harbor** *- container registry.*
 - **Mattermost** *- team communication.*
 - **And more...*
-
 
 ## Known issues
 

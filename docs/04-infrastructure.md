@@ -64,23 +64,23 @@ The integrated [klipper-lb](https://github.com/k3s-io/klipper-lb) load balancer 
 
 All Ansible roles live under `ansible/roles/` and follow a consistent structure (`tasks/`, `defaults/`, `meta/`, `templates/`, `handlers/`).
 
-| Scope   | Role             | Description                                                    |
-| ------- | ---------------- | -------------------------------------------------------------- |
-| common  | `hostname`       | Set hostname and update `/etc/hosts`.                          |
-| common  | `locales`        | Configure system locales.                                      |
-| common  | `ssh`            | Harden SSH via drop-in config, deploy authorized keys.         |
+| Scope   | Role             | Description                                                          |
+| ------- | ---------------- | -------------------------------------------------------------------- |
+| common  | `hostname`       | Set hostname and update `/etc/hosts`.                                |
+| common  | `locales`        | Configure system locales.                                            |
+| common  | `ssh`            | Harden SSH via drop-in config, deploy authorized keys.               |
 | common  | `hardening`      | Disable unnecessary services, kernel sysctl hardening, `/etc/hosts`. |
-| common  | `docker`         | Install Docker CE from the official apt repository.            |
-| common  | `upgrade`        | Dist-upgrade all packages, reboot if required.                 |
-| gateway | `haproxy`        | Deploy HAProxy via Docker Compose.                             |
-| gateway | `pihole`         | Deploy PiHole via Docker Compose (optional).                   |
-| gateway | `wireguard`      | Deploy WireGuard-Easy via Docker Compose (optional).           |
-| gateway | `crowdsec`       | Deploy CrowdSec engine + firewall bouncer (optional).          |
-| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, utility packages.  |
-| k3s     | `download`       | Download the K3s binary matching the target architecture.      |
-| k3s     | `storage`        | Install iSCSI/NFS packages and mount additional storage disks. |
-| k3s     | `deploy/masters` | Deploy K3s server (master) nodes with HA cluster-init.         |
-| k3s     | `deploy/workers` | Deploy K3s agent (worker) nodes.                               |
-| k3s     | `destroy`        | Cleanly destroy a K3s installation and restore system state.   |
-| k3s     | `registry`       | Configure private container registry (Harbor) on K3s nodes.    |
-| k3s     | `users`          | Create Kubernetes users with x509 certificates and RBAC.       |
+| common  | `docker`         | Install Docker CE from the official apt repository.                  |
+| common  | `upgrade`        | Dist-upgrade all packages, reboot if required.                       |
+| gateway | `haproxy`        | Deploy HAProxy via Docker Compose.                                   |
+| gateway | `pihole`         | Deploy PiHole via Docker Compose (optional).                         |
+| gateway | `wireguard`      | Deploy WireGuard-Easy via Docker Compose (optional).                 |
+| gateway | `crowdsec`       | Deploy CrowdSec engine + firewall bouncer (optional).                |
+| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, utility packages.        |
+| k3s     | `download`       | Download the K3s binary matching the target architecture.            |
+| k3s     | `storage`        | Install iSCSI/NFS packages and mount additional storage disks.       |
+| k3s     | `deploy/masters` | Deploy K3s server (master) nodes with HA cluster-init.               |
+| k3s     | `deploy/workers` | Deploy K3s agent (worker) nodes.                                     |
+| k3s     | `destroy`        | Cleanly destroy a K3s installation and restore system state.         |
+| k3s     | `registry`       | Configure private container registry (Harbor) on K3s nodes.          |
+| k3s     | `users`          | Create Kubernetes users with x509 certificates and RBAC.             |

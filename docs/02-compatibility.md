@@ -18,7 +18,6 @@ For Raspberry, see :
 
 > *To perform multiple OS installation in parallel on multiple devices take a look at [setup-pi.sh](../scripts/setup-pi.sh) script.*
 
-
 ## Access
 
 Each target server __should have a static IP address__ to maintain consistency in the inventory file [hosts.yml](../ansible/inventory-example/hosts.yml), update this file with the appropriate values.
