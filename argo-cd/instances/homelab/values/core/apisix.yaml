@@ -1,0 +1,21 @@
+# APISIX instance overrides for `homelab`.
+# Replacement for ingress-nginx — enable one at a time.
+
+apisix:
+  replicaCount: 2
+
+  gateway:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  etcd:
+    replicaCount: 3
+    persistence:
+      storageClass: longhorn
+      size: 5Gi
+
+  ingress-controller:
+    enabled: true
+    config:
+      apisix:
+        adminAPIVersion: v3

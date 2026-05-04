@@ -11,9 +11,9 @@ gateway:
   # TLS passthrough listeners (SNI-based, no TLS termination)
   # Routes referencing these listeners are managed by each app chart
   tlsPassthroughListeners:
-    - name: tls-teleport
-      hostname: "*.teleport.ohmlab.fr"
-    - name: tls-teleport-apex
-      hostname: teleport.ohmlab.fr
-      backendService: teleport
-      backendPort: 443
+  - name: tls-teleport
+    hostname: "*.teleport.core.ohmlab.fr"
+  - name: tls-teleport-apex
+    hostname: teleport.core.ohmlab.fr
+    backendService: teleport
+    backendPort: 443

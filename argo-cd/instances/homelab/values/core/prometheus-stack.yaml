@@ -3,12 +3,12 @@ gateway:
   gatewayName: homelab-gateway
   gatewayNamespace: kube-system
   routes:
-    - name: grafana
-      hostnames:
-        - monitoring.ohmlab.fr
-      rules:
-        - backendService: prometheus-stack-grafana
-          backendPort: 80
+  - name: grafana
+    hostnames:
+    - monitoring.ohmlab.fr
+    rules:
+    - backendService: prometheus-stack-grafana
+      backendPort: 80
 
 kube-prometheus-stack:
   prometheus:
@@ -23,38 +23,38 @@ kube-prometheus-stack:
                 storage: 200Gi
   grafana:
     admin:
-      existingSecret: "monitoring-admin"
-      userKey: "username"
-      passwordKey: "password"
+      existingSecret: monitoring-admin
+      userKey: username
+      passwordKey: password
     envValueFrom:
       GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
         secretKeyRef:
-          name: "monitoring-sso"
-          key: "OIDC_CLIENT_ID"
+          name: monitoring-sso
+          key: OIDC_CLIENT_ID
       GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
         secretKeyRef:
-          name: "monitoring-sso"
-          key: "OIDC_CLIENT_SECRET"
+          name: monitoring-sso
+          key: OIDC_CLIENT_SECRET
     ingress:
       hosts:
-      - "monitoring.ohmlab.fr"
+      - monitoring.ohmlab.fr
       tls:
       - hosts:
-        - "monitoring.ohmlab.fr"
-        secretName: "monitoring.ohmlab.fr"
+        - monitoring.ohmlab.fr
+        secretName: monitoring.ohmlab.fr
     grafana.ini:
       server:
         root_url: "https://monitoring.ohmlab.fr"
       auth.generic_oauth:
-        auth_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
-        token_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
-        api_url: "https://sso.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"
+        auth_url: "https://sso.core.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
+        token_url: "https://sso.core.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
+        api_url: "https://sso.core.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"
 
 vso:
   vaultStaticSecrets:
     monitoringAdmin:
-      mount: "homelab"
-      path: "platforms/production/prometheus-stack"
+      mount: homelab
+      path: platforms/production/prometheus-stack
     monitoringSso:
-      mount: "homelab"
-      path: "platforms/production/prometheus-stack"
+      mount: homelab
+      path: platforms/production/prometheus-stack
