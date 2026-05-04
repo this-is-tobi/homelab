@@ -16,22 +16,22 @@ project:
   enabled: true
   description: Example admin project
   sourceRepos:
-  - '*'
+  - "*"
   destinations:
-  - namespace: '*'
+  - namespace: "*"
     server: https://kubernetes.default.svc
   clusterResourceWhitelist:
-  - group: '*'
-    kind: '*'
+  - group: "*"
+    kind: "*"
   namespaceResourceWhitelist:
-  - group: '*'
-    kind: '*'
+  - group: "*"
+    kind: "*"
 
 argo-cd:
   enabled: true
   configs:
     cm:
-      url: ""  # Add your ArgoCD URL here
+      url: "" # Add your ArgoCD URL here
   crds:
     install: true
     keep: true

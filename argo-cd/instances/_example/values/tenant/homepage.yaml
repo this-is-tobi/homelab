@@ -2,7 +2,7 @@ homepage:
   ingress:
     main:
       hosts:
-      - host: "example.com"
+      - host: example.com
         paths:
         - path: /
           pathType: Prefix
@@ -12,10 +12,10 @@ homepage:
         - example.com
   env:
   - name: HOMEPAGE_ALLOWED_HOSTS
-    value: "example.com"
+    value: example.com
   config:
     settings:
-      title: "Homelab Dashboard"
+      title: Homelab Dashboard
       theme: dark
       color: slate
       headerStyle: clean
@@ -31,9 +31,9 @@ homepage:
           columns: 2
     bookmarks:
     - Developer:
-        - Github:
-            - abbr: GH
-              href: https://github.com/
+      - Github:
+        - abbr: GH
+          href: https://github.com/
     services:
     - Services:
       - Argo-cd:
@@ -69,7 +69,7 @@ homepage:
           cpu: true
           memory: true
           showLabel: true
-          label: "cluster"
+          label: cluster
         nodes:
           show: true
           cpu: true

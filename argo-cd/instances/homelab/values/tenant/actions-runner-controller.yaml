@@ -12,11 +12,11 @@ runner-group-001:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
   containerMode:
-    type: "dind"  ## type can be set to dind or kubernetes
-    ## the following is required when containerMode.type=kubernetes
+    type: dind # # type can be set to dind or kubernetes
+    # # the following is required when containerMode.type=kubernetes
     kubernetesModeWorkVolumeClaim:
       accessModes:
-      - "ReadWriteOnce"
+      - ReadWriteOnce
       # For local testing, use https://github.com/openebs/dynamic-localpv-provisioner/blob/develop/docs/quickstart.md to provide dynamic provision volume with storageClassName: openebs-hostpath
       storageClassName: ""
       resources:
@@ -28,7 +28,7 @@ runner-group-001:
       - name: runner
         image: ghcr.io/this-is-tobi/tools/gh-runner:1.5.0 # ghcr.io/actions/actions-runner:latest
         command:
-        - "/home/runner/run.sh"
+        - /home/runner/run.sh
 
 runner-group-002:
   runnerScaleSetName: multiarch-mirror
@@ -42,11 +42,11 @@ runner-group-002:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
   containerMode:
-    type: "dind"  ## type can be set to dind or kubernetes
-    ## the following is required when containerMode.type=kubernetes
+    type: dind # # type can be set to dind or kubernetes
+    # # the following is required when containerMode.type=kubernetes
     kubernetesModeWorkVolumeClaim:
       accessModes:
-      - "ReadWriteOnce"
+      - ReadWriteOnce
       # For local testing, use https://github.com/openebs/dynamic-localpv-provisioner/blob/develop/docs/quickstart.md to provide dynamic provision volume with storageClassName: openebs-hostpath
       storageClassName: ""
       resources:
@@ -58,4 +58,4 @@ runner-group-002:
       - name: runner
         image: ghcr.io/this-is-tobi/tools/gh-runner:1.5.0 # ghcr.io/actions/actions-runner:latest
         command:
-        - "/home/runner/run.sh"
+        - /home/runner/run.sh

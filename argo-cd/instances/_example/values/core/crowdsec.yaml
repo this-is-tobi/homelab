@@ -4,5 +4,5 @@
 vso:
   vaultStaticSecrets:
     crowdsecConsole:
-      mount: ""       # e.g. "homelab"
-      path: ""        # e.g. "platforms/production/crowdsec"
+      mount: "" # e.g. "homelab"
+      path: "" # e.g. "platforms/production/crowdsec"

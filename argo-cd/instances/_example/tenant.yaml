@@ -29,46 +29,46 @@
 # applied before user-facing apps (waves 100..200).
 
 apps:
-  # ---------------------------------------------------------------------------
-  # Tier-flexible apps — also listed in core.yaml; enable in only ONE tier.
-  # Sync waves 80..99 so cluster infra is ready before user apps.
-  # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Tier-flexible apps — also listed in core.yaml; enable in only ONE tier.
+# Sync waves 80..99 so cluster infra is ready before user apps.
+# ---------------------------------------------------------------------------
 
-  # [TIER-FLEXIBLE] Distributed block storage — provides the default StorageClass.
-  - app: longhorn
-    enabled: "false"
-    namespace: longhorn-system
-    syncWave: 80
+# [TIER-FLEXIBLE] Distributed block storage — provides the default StorageClass.
+- app: longhorn
+  enabled: "false"
+  namespace: longhorn-system
+  syncWave: 80
 
   # [TIER-FLEXIBLE] X.509 certificate management.
-  - app: cert-manager
-    enabled: "false"
-    syncWave: 85
+- app: cert-manager
+  enabled: "false"
+  syncWave: 85
 
   # [TIER-FLEXIBLE] Ingress controller — terminates TLS and routes external traffic.
-  - app: ingress-nginx
-    enabled: "false"
-    syncWave: 85
+- app: ingress-nginx
+  enabled: "false"
+  syncWave: 85
 
   # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
-  - app: vault
-    enabled: "false"
-    syncWave: 90
+- app: vault
+  enabled: "false"
+  syncWave: 90
 
   # [TIER-FLEXIBLE] Identity provider (OIDC). Most user-facing apps depend on it.
-  - app: keycloak
-    enabled: "false"
-    syncWave: 95
+- app: keycloak
+  enabled: "false"
+  syncWave: 95
 
   # [TIER-FLEXIBLE] Identity-aware infrastructure access proxy (SSH / kube / DB).
-  - app: teleport
-    enabled: "false"
-    syncWave: 96
+- app: teleport
+  enabled: "false"
+  syncWave: 96
 
   # [TIER-FLEXIBLE] Prometheus + Grafana + Alertmanager bundle (cluster-wide observability).
-  - app: prometheus-stack
-    enabled: "false"
-    syncWave: 97
+- app: prometheus-stack
+  enabled: "false"
+  syncWave: 97
 
   # ---------------------------------------------------------------------------
   # Tenant-only apps — user-facing services
@@ -77,67 +77,67 @@ apps:
   # Personal user-facing ArgoCD instance — separate from the core engine.
   # Lets users deploy ad-hoc Applications via the UI without touching the
   # platform AppSets.
-  - app: argo-cd
-    enabled: "false"
-    namespace: argo-cd
-    syncWave: 100
+- app: argo-cd
+  enabled: "false"
+  namespace: argo-cd
+  syncWave: 100
 
   # Gitea Actions self-hosted runners controller.
-  - app: actions-runner-controller
-    enabled: "false"
-    syncWave: 110
+- app: actions-runner-controller
+  enabled: "false"
+  syncWave: 110
 
   # Workflow engine for batch / DAG-style pipelines.
-  - app: argo-workflows
-    enabled: "false"
-    syncWave: 110
+- app: argo-workflows
+  enabled: "false"
+  syncWave: 110
 
   # Cloud development environments.
-  - app: coder
-    enabled: "false"
-    syncWave: 110
+- app: coder
+  enabled: "false"
+  syncWave: 110
 
   # Self-hosted Git server.
-  - app: gitea
-    enabled: "false"
-    syncWave: 110
+- app: gitea
+  enabled: "false"
+  syncWave: 110
 
   # OCI registry (container images + helm charts).
-  - app: harbor
-    enabled: "false"
-    syncWave: 110
+- app: harbor
+  enabled: "false"
+  syncWave: 110
 
   # Team chat.
-  - app: mattermost
-    enabled: "false"
-    syncWave: 110
+- app: mattermost
+  enabled: "false"
+  syncWave: 110
 
   # Machine-learning experiment tracking.
-  - app: mlflow
-    enabled: "false"
-    syncWave: 110
+- app: mlflow
+  enabled: "false"
+  syncWave: 110
 
   # Knowledge base / wiki.
-  - app: outline
-    enabled: "false"
-    syncWave: 110
+- app: outline
+  enabled: "false"
+  syncWave: 110
 
   # S3-compatible object storage.
-  - app: rustfs
-    enabled: "false"
-    syncWave: 110
+- app: rustfs
+  enabled: "false"
+  syncWave: 110
 
   # Code-quality analysis.
-  - app: sonarqube
-    enabled: "false"
-    syncWave: 110
+- app: sonarqube
+  enabled: "false"
+  syncWave: 110
 
   # Personal password manager (Bitwarden-compatible).
-  - app: vaultwarden
-    enabled: "false"
-    syncWave: 110
+- app: vaultwarden
+  enabled: "false"
+  syncWave: 110
 
   # Service catalogue / homepage. Synced last so links resolve.
-  - app: homepage
-    enabled: "false"
-    syncWave: 200
+- app: homepage
+  enabled: "false"
+  syncWave: 200

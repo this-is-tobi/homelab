@@ -11,25 +11,25 @@ kube-prometheus-stack:
                 storage: 200Gi
   grafana:
     admin:
-      existingSecret: "monitoring-admin"
-      userKey: "username"
-      passwordKey: "password"
+      existingSecret: monitoring-admin
+      userKey: username
+      passwordKey: password
     envValueFrom:
       GF_AUTH_GENERIC_OAUTH_CLIENT_ID:
         secretKeyRef:
-          name: "monitoring-sso"
-          key: "OIDC_CLIENT_ID"
+          name: monitoring-sso
+          key: OIDC_CLIENT_ID
       GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET:
         secretKeyRef:
-          name: "monitoring-sso"
-          key: "OIDC_CLIENT_SECRET"
+          name: monitoring-sso
+          key: OIDC_CLIENT_SECRET
     ingress:
       hosts:
-      - "monitoring.example.com"
+      - monitoring.example.com
       tls:
       - hosts:
-        - "monitoring.example.com"
-        secretName: "monitoring.example.com"
+        - monitoring.example.com
+        secretName: monitoring.example.com
     grafana.ini:
       server:
         root_url: "https://monitoring.example.com"
@@ -41,8 +41,8 @@ kube-prometheus-stack:
 vso:
   vaultStaticSecrets:
     monitoringAdmin:
-      mount: "example"
-      path: "platforms/production/prometheus-stack"
+      mount: example
+      path: platforms/production/prometheus-stack
     monitoringSso:
-      mount: "example"
-      path: "platforms/production/prometheus-stack"
+      mount: example
+      path: platforms/production/prometheus-stack

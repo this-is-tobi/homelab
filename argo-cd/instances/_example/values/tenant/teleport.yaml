@@ -5,16 +5,16 @@
 
 server:
   # Public DNS name for the cluster. Replace with your own.
-  clusterName: "teleport.example.com"
+  clusterName: teleport.example.com
 
 roles: {}
 
 users: {}
-  # Example mapping (uncomment and adapt):
-  # alice:
-  #   roles:
-  #     - superadmin
-  #     - admin
-  # bob:
-  #   roles:
-  #     - admin
+# Example mapping (uncomment and adapt):
+# alice:
+#   roles:
+#     - superadmin
+#     - admin
+# bob:
+#   roles:
+#     - admin

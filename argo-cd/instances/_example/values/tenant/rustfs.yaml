@@ -1,7 +1,7 @@
 rustfs:
   ingress:
     hosts:
-    - host: "s3.example.com"
+    - host: s3.example.com
       paths:
       - path: /
         pathType: Prefix
@@ -11,7 +11,7 @@ rustfs:
       - s3.example.com
   consoleIngress:
     hosts:
-    - host: "console.s3.example.com"
+    - host: console.s3.example.com
       paths:
       - path: /
         pathType: Prefix
@@ -25,5 +25,5 @@ rustfs:
 vso:
   vaultStaticSecrets:
     rustfsAdmin:
-      mount: "example"
-      path: "platforms/production/rustfs"
+      mount: example
+      path: platforms/production/rustfs

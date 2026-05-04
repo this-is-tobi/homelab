@@ -3,5 +3,5 @@ sops: {}
 vso:
   vaultStaticSecrets:
     sopsAgeKeyFile:
-      mount: "homelab"
-      path: "platforms/production/sops"
+      mount: homelab
+      path: platforms/production/sops
