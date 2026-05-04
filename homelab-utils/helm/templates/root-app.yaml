@@ -1,0 +1,63 @@
+{{- if .Values.rootManager.enabled }}
+{{- /*
+Root `manager` Application.
+
+Deploys the `root-manager` chart (under `argo-cd/apps/root-manager`) which
+contains the `manager` ApplicationSet. Wrapping the AppSet in an Application
+gives a visible entry point in the ArgoCD UI tree:
+
+  ohmlab (self-managed, this chart)
+    └─> root-manager (this Application)
+          └─> manager (ApplicationSet, rendered by root-manager chart)
+                └─> instance-<name> (Application)
+                      ├─> core-<name>   (ApplicationSet)
+                      └─> tenant-<name> (ApplicationSet)
+*/ -}}
+{{- $repoSources := required ".Values.rootManager.repoURL.sources is required" .Values.rootManager.repoURL.sources -}}
+{{- $repoValues := .Values.rootManager.repoURL.values | default $repoSources -}}
+{{- $rev := .Values.rootManager.targetRevision | default "main" -}}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-manager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Name }}
+    app.kubernetes.io/part-of: ohmlab
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.projects.core.name | default "admin-core" | quote }}
+  revisionHistoryLimit: 3
+  sources:
+  - repoURL: {{ $repoSources | quote }}
+    targetRevision: {{ $rev | quote }}
+    path: argo-cd/apps/root-manager
+    helm:
+      releaseName: root-manager
+      parameters:
+      - name: repoURL.sources
+        value: {{ $repoSources | quote }}
+      {{- if .Values.rootManager.repoURL.values }}
+      - name: repoURL.values
+        value: {{ .Values.rootManager.repoURL.values | quote }}
+      {{- end }}
+      - name: targetRevision
+        value: {{ $rev | quote }}
+      - name: project
+        value: {{ .Values.projects.core.name | default "admin-core" | quote }}
+      - name: argocdNamespace
+        value: {{ .Release.Namespace }}
+      - name: releaseName
+        value: {{ .Release.Name }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ .Release.Namespace }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - ServerSideApply=true
+{{- end }}

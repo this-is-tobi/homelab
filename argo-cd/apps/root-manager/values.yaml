@@ -1,0 +1,20 @@
+# Values for the root-manager chart.
+# These are passed by the ohmlab root Application via the $values source.
+
+repoURL:
+  # -- Repo holding the `argo-cd/` tree (charts + instances + values).
+  sources: "https://github.com/this-is-tobi/homelab.git"
+  # -- Repo holding the values tree. Defaults to `sources`.
+  values: ""
+
+# -- Default git revision (branch, tag, commit).
+targetRevision: main
+
+# -- ArgoCD project for generated instance Applications.
+project: admin-core
+
+# -- Namespace where ArgoCD lives (for metadata.namespace on generated Apps).
+argocdNamespace: argocd-system
+
+# -- Helm release name of the parent ohmlab chart (for labelling).
+releaseName: ohmlab

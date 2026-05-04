@@ -3,30 +3,22 @@
 # Schema reference: ../_example/core.yaml
 
 apps:
-  # [TIER-FLEXIBLE] Identity provider — kept in tenant tier because of its
-  # PostgreSQL (CNPG) database. Renaming the namespace would lose all data.
-  - app: keycloak
-    enabled: "true"
-    syncWave: 95
-  - app: argo-cd
-    enabled: "true"
-    namespace: argo-cd
-    syncWave: 100
-  - app: actions-runner-controller
-    enabled: "false"  # Disabled during Cilium migration — crash-looping
-    syncWave: 110
-  - app: gitea
-    enabled: "true"
-    syncWave: 110
-  - app: mattermost
-    enabled: "true"
-    syncWave: 110
-  - app: rustfs
-    enabled: "true"
-    syncWave: 110
-  - app: teleport
-    enabled: "true"
-    syncWave: 110
-  - app: homepage
-    enabled: "true"
-    syncWave: 200
+- app: argo-cd
+  enabled: "true"
+  namespace: argo-cd
+  syncWave: 100
+- app: actions-runner-controller
+  enabled: "false" # Disabled during Cilium migration — crash-looping
+  syncWave: 110
+- app: gitea
+  enabled: "true"
+  syncWave: 110
+- app: mattermost
+  enabled: "true"
+  syncWave: 110
+- app: rustfs
+  enabled: "true"
+  syncWave: 110
+- app: homepage
+  enabled: "true"
+  syncWave: 200

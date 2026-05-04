@@ -1,9 +1,0 @@
-# Default values for the homelab-core wrapper chart.
-# Real configuration lives at argo-cd/instances/<instance>/values/core/homelab-core.yaml
-# and is loaded by the manager AppSet via the $values source.
-
-homelab-core:
-  manager:
-    enabled: true
-  argo-cd:
-    enabled: true

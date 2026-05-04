@@ -1,0 +1,9 @@
+# Default values for the ohmlab wrapper chart.
+# Real configuration lives at argo-cd/instances/<instance>/values/core/ohmlab.yaml
+# and is loaded by the manager AppSet via the $values source.
+
+ohmlab:
+  rootManager:
+    enabled: true
+  argo-cd:
+    enabled: true

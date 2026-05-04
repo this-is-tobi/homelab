@@ -1,4 +1,3 @@
-{{- if .Values.rootManager.enabled }}
 {{- /*
 Root `manager` ApplicationSet.
 
@@ -8,25 +7,26 @@ and emits ONE Application per instance pointing at the `instance-manager` chart
 per-scope child AppSets (core + tenant) for the matched instance.
 
 Two-level pattern:
-  manager (this AppSet)
-    └─> instance-<name>  (Application, helm-renders instance-manager chart)
-          ├─> core-<name>   (ApplicationSet)
-          │     └─> <name>-<app>  (Application)  -- core tier
-          └─> tenant-<name> (ApplicationSet)
-                └─> <name>-<app>  (Application)  -- tenant tier
+  root-manager (Application — parent of this AppSet)
+    └─> manager (this AppSet)
+          └─> instance-<name>  (Application, helm-renders instance-manager chart)
+                ├─> core-<name>   (ApplicationSet)
+                │     └─> <name>-<app>  (Application)  -- core tier
+                └─> tenant-<name> (ApplicationSet)
+                      └─> <name>-<app>  (Application)  -- tenant tier
 */ -}}
-{{- $repoSources := required ".Values.rootManager.repoURL.sources is required" .Values.rootManager.repoURL.sources -}}
-{{- $repoValues := .Values.rootManager.repoURL.values | default $repoSources -}}
-{{- $rev := .Values.rootManager.targetRevision | default "main" -}}
+{{- $repoSources := required ".Values.repoURL.sources is required" .Values.repoURL.sources -}}
+{{- $repoValues := .Values.repoURL.values | default $repoSources -}}
+{{- $rev := .Values.targetRevision | default "main" -}}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: {{ include "homelab-core.rootManagerName" . }}
-  namespace: {{ .Release.Namespace }}
+  name: manager
+  namespace: {{ .Values.argocdNamespace }}
   labels:
-    app.kubernetes.io/managed-by: {{ .Release.Name }}
-    app.kubernetes.io/part-of: homelab-core
+    app.kubernetes.io/managed-by: {{ .Values.releaseName }}
+    app.kubernetes.io/part-of: ohmlab
 spec:
   goTemplate: true
   goTemplateOptions:
@@ -47,13 +47,13 @@ spec:
     metadata:
       name: 'instance-{{ `{{ .path.basename }}` }}'
       labels:
-        app.kubernetes.io/managed-by: {{ .Release.Name }}
-        app.kubernetes.io/part-of: homelab-core
+        app.kubernetes.io/managed-by: {{ .Values.releaseName }}
+        app.kubernetes.io/part-of: ohmlab
         ohmlab.fr/instance-name: '{{ `{{ .path.basename }}` }}'
       finalizers:
       - resources-finalizer.argocd.argoproj.io
     spec:
-      project: {{ .Values.projects.core.name | default "admin-core" | quote }}
+      project: {{ .Values.project | default "admin-core" | quote }}
       revisionHistoryLimit: 3
       sources:
       - repoURL: {{ $repoSources | quote }}
@@ -71,7 +71,7 @@ spec:
         targetRevision: {{ $rev | quote }}
       destination:
         server: https://kubernetes.default.svc
-        namespace: {{ .Release.Namespace }}
+        namespace: {{ .Values.argocdNamespace }}
       syncPolicy:
         automated:
           prune: true
@@ -80,4 +80,3 @@ spec:
         - ServerSideApply=true
   syncPolicy:
     preserveResourcesOnDeletion: false
-{{- end }}

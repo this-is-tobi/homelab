@@ -1,0 +1,47 @@
+apisix:
+  enabled: true
+
+  replicaCount: 2
+
+  gateway:
+    type: LoadBalancer
+    http:
+      enabled: true
+      containerPort: 9080
+      servicePort: 80
+    tls:
+      enabled: true
+      containerPort: 9443
+      servicePort: 443
+
+  admin:
+    enabled: true
+    type: ClusterIP
+    credentials:
+      admin: ""
+      viewer: ""
+
+  ingress-controller:
+    enabled: true
+    config:
+      apisix:
+        adminAPIVersion: v3
+
+  dashboard:
+    enabled: false
+
+  etcd:
+    enabled: true
+    replicaCount: 3
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClass: longhorn
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

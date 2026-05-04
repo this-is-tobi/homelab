@@ -1,6 +1,6 @@
 {{/*
-Root manager AppSet name. Singleton per ArgoCD instance.
+Chart full name (used for labelling).
 */}}
-{{- define "homelab-core.rootManagerName" -}}
-manager
+{{- define "ohmlab.fullname" -}}
+{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}

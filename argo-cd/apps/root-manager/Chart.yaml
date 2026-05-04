@@ -1,0 +1,14 @@
+apiVersion: v2
+name: root-manager
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+description: |
+  Root manager chart. Renders the `manager` ApplicationSet that discovers
+  every instance folder under `argo-cd/instances/*` and fans out into
+  per-instance Applications (each pointing at the `instance-manager` chart).
+home: https://this-is-tobi.com/homelab
+maintainers:
+- name: this-is-tobi
+  email: this-is-tobi@proton.me
+  url: https://this-is-tobi.com

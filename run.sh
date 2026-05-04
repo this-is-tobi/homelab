@@ -38,6 +38,7 @@ DECRYPT="false"
 ENCRYPT="false"
 UPDATE="false"
 BOOTSTRAP_INSTANCE=""
+YES="false"
 
 # =============================================================================
 # Helper Functions
@@ -61,6 +62,9 @@ success() {
 
 confirm() {
   local message="$1"
+  if [[ "$YES" == "true" ]]; then
+    return 0
+  fi
   echo -e "${YELLOW}[homelab]${NC} $message (Y/n)"
   read -r ANSWER
   if [[ "$ANSWER" =~ ^[Nn] ]]; then
@@ -105,7 +109,7 @@ INFRASTRUCTURE (Ansible):
   -u              Update ansible galaxy collections before running playbook.
 
 GITOPS (ArgoCD):
-  -b <instance>   Bootstrap (or upgrade) the homelab-core release for the given
+  -b <instance>   Bootstrap (or upgrade) the ohmlab release for the given
                   instance. Installs core ArgoCD + the root `manager`
                   ApplicationSet + the `admin-core` / `admin-tenant`
                   AppProjects. The manager then discovers every instance under:
@@ -132,6 +136,8 @@ SECRETS (Sops):
   -e              Encrypt all *.dec.yaml files to *.enc.yaml in ./argo-cd
 
 GENERAL:
+  -y              Skip all confirmation prompts (non-interactive mode).
+
   -h              Print this help message.
 
 EXAMPLES:
@@ -304,7 +310,7 @@ print_initial_admin_password() {
 
 bootstrap_instance() {
   local instance="$1"
-  local values_file="$SCRIPT_PATH/argo-cd/instances/$instance/values/core/homelab-core.yaml"
+  local values_file="$SCRIPT_PATH/argo-cd/instances/$instance/values/core/ohmlab.yaml"
   local instance_dir="$SCRIPT_PATH/argo-cd/instances/$instance"
 
   # Folders prefixed with `_` are templates (e.g. `_example`) and are excluded
@@ -329,17 +335,54 @@ bootstrap_instance() {
   fi
 
   if [[ ! -f "$values_file" ]]; then
-    error "homelab-core values not found: $values_file"
+    error "ohmlab values not found: $values_file"
     exit 1
   fi
 
   check_kubectl
   check_helm
 
-  log "Bootstrapping homelab-core for instance: $instance"
+  log "Bootstrapping ohmlab for instance: $instance"
 
   log "Updating chart dependencies..."
   helm dependency update "$SCRIPT_PATH/homelab-utils/helm" >/dev/null
+
+  # Phase 1: If ArgoCD CRDs don't exist yet, install the chart with only
+  # ArgoCD enabled (CRDs + core components). This solves the chicken-and-egg
+  # where AppProject/Application/HTTPRoute resources need CRDs from the same release.
+  if ! kubectl get crd applications.argoproj.io &>/dev/null; then
+    log "ArgoCD CRDs not present — phase 1: installing ArgoCD components only..."
+
+    # Install Gateway API CRDs first if the chart uses HTTPRoutes.
+    if ! kubectl get crd httproutes.gateway.networking.k8s.io &>/dev/null; then
+      log "Gateway API CRDs not found — installing..."
+      kubectl apply --server-side -f \
+        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml 2>/dev/null
+      kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
+    fi
+
+    helm upgrade --install ohmlab "$SCRIPT_PATH/homelab-utils/helm" \
+      --namespace argocd-system \
+      --create-namespace \
+      --values "$values_file" \
+      --set rootManager.enabled=false \
+      --set projects.core.enabled=false \
+      --set projects.tenant.enabled=false \
+      --set gateway.enabled=false \
+      --wait \
+      --timeout 10m
+
+    log "Phase 1 complete — ArgoCD CRDs and components installed."
+  fi
+
+  # Install Gateway API CRDs if still missing (upgrade path where ArgoCD was
+  # already present but Gateway API was not).
+  if ! kubectl get crd httproutes.gateway.networking.k8s.io &>/dev/null; then
+    log "Gateway API CRDs not found — installing..."
+    kubectl apply --server-side -f \
+      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml 2>/dev/null
+    kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
+  fi
 
   local extra_args=()
   if [[ -n "${ARGOCD_ADMIN_PASSWORD:-}" ]]; then
@@ -349,8 +392,10 @@ bootstrap_instance() {
     extra_args+=(--set-string "argo-cd.configs.secret.argocdServerAdminPassword=$bcrypt")
   fi
 
-  log "Installing/upgrading homelab-core release..."
-  helm upgrade --install homelab-core "$SCRIPT_PATH/homelab-utils/helm" \
+  # Phase 2: Full install/upgrade with all resources (AppProjects, root
+  # Application, HTTPRoutes). CRDs are now present from phase 1 or prior run.
+  log "Installing/upgrading ohmlab release..."
+  helm upgrade --install ohmlab "$SCRIPT_PATH/homelab-utils/helm" \
     --namespace argocd-system \
     --create-namespace \
     --values "$values_file" \
@@ -362,7 +407,7 @@ bootstrap_instance() {
   kubectl rollout status deployment -n argocd-system \
     -l app.kubernetes.io/name=argocd-server --timeout=300s || true
 
-  success "homelab-core bootstrap complete for instance: $instance"
+  success "ohmlab bootstrap complete for instance: $instance"
 
   if [[ -z "${ARGOCD_ADMIN_PASSWORD:-}" ]]; then
     print_initial_admin_password
@@ -381,7 +426,7 @@ bootstrap_instance() {
 # =============================================================================
 
 # Parse options
-while getopts "hdekp:t:ub:" flag; do
+while getopts "hdekp:t:ub:y" flag; do
   case "${flag}" in
     d) DECRYPT="true" ;;
     e) ENCRYPT="true" ;;
@@ -390,6 +435,7 @@ while getopts "hdekp:t:ub:" flag; do
     t) TAGS="${OPTARG}" ;;
     u) UPDATE="true" ;;
     b) BOOTSTRAP_INSTANCE="${OPTARG}" ;;
+    y) YES="true" ;;
     h | *)
       print_help
       exit 0

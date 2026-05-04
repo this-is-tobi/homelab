@@ -2,7 +2,7 @@ homepage:
   ingress:
     main:
       hosts:
-      - host: "ohmlab.fr"
+      - host: ohmlab.fr
         paths:
         - path: /
           pathType: Prefix
@@ -12,20 +12,20 @@ homepage:
         - ohmlab.fr
   env:
   - name: HOMEPAGE_ALLOWED_HOSTS
-    value: "ohmlab.fr"
+    value: ohmlab.fr
 
 gateway:
   enabled: true
   gatewayName: homelab-gateway
   gatewayNamespace: kube-system
   routes:
-    - name: homepage
-      listener: https-apex
-      hostnames:
-        - ohmlab.fr
-      rules:
-        - backendService: homepage
-          backendPort: 3000
+  - name: homepage
+    listener: https-apex
+    hostnames:
+    - ohmlab.fr
+    rules:
+    - backendService: homepage
+      backendPort: 3000
 
   config:
     settings:
@@ -45,14 +45,14 @@ gateway:
           columns: 2
     bookmarks:
     - Documentation:
-        - Github:
-            - href: https://github.com/this-is-tobi/homelab
-              description: Homelab infrastructure as code
-              icon: github.png
-        - Portfolio:
-            - href: https://this-is-tobi.com/homelab/introduction
-              description: Personal portfolio website
-              icon: vite.png
+      - Github:
+        - href: https://github.com/this-is-tobi/homelab
+          description: Homelab infrastructure as code
+          icon: github.png
+      - Portfolio:
+        - href: https://this-is-tobi.com/homelab/introduction
+          description: Personal portfolio website
+          icon: vite.png
     services:
     - Core Services:
       - Argo-cd:
@@ -87,8 +87,8 @@ gateway:
           description: Watch cluster metrics & application logs
           icon: grafana.png
       - Keycloak:
-          href: https://sso.ohmlab.fr
-          siteMonitor: https://sso.ohmlab.fr
+          href: https://sso.core.ohmlab.fr
+          siteMonitor: https://sso.core.ohmlab.fr
           description: Single Sign On management
           icon: keycloak.png
       - Mattermost:
@@ -108,7 +108,7 @@ gateway:
           cpu: true
           memory: true
           showLabel: true
-          label: "homelab"
+          label: homelab
         nodes:
           show: false
           cpu: true

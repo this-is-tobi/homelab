@@ -70,106 +70,111 @@
 # safety net but is intentional: pick one.
 
 apps:
-  # ---------------------------------------------------------------------------
-  # Core-only apps — operators, cluster-scoped controllers, instance bootstrap
-  # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Core-only apps — operators, cluster-scoped controllers, instance bootstrap
+# ---------------------------------------------------------------------------
 
-  # Self-managed bootstrap chart. Adopts the helm release initially installed
-  # by `./run.sh -b <instance>`. Required on every instance that ships its
-  # own core ArgoCD; not needed on tenant-only instances.
-  - app: homelab-core
-    enabled: "false"
-    namespace: argocd-system
-    syncWave: -10
-    releaseName: homelab-core
-    chartPath: homelab-utils/helm
+# Self-managed bootstrap chart. Adopts the helm release initially installed
+# by `./run.sh -b <instance>`. Required on every instance that ships its
+# own core ArgoCD; not needed on tenant-only instances.
+- app: ohmlab
+  enabled: "false"
+  namespace: argocd-system
+  syncWave: -10
+  releaseName: ohmlab
+  chartPath: homelab-utils/helm
 
   # Vault operator — manages Vault clusters and Vault Secrets Operator.
-  - app: vault-operator
-    enabled: "false"
-    namespace: vault-operator-system
-    syncWave: 10
+- app: vault-operator
+  enabled: "false"
+  namespace: vault-operator-system
+  syncWave: 10
 
   # Kyverno — policy engine for secret distribution and security policies.
-  - app: kyverno
-    enabled: "false"
-    namespace: kyverno
-    syncWave: 15
+- app: kyverno
+  enabled: "false"
+  namespace: kyverno
+  syncWave: 15
 
   # PostgreSQL operator — used by Keycloak, Gitea, Mattermost, Outline, ...
-  - app: cloudnative-pg
-    enabled: "false"
-    namespace: cloudnative-pg-system
-    syncWave: 20
+- app: cloudnative-pg
+  enabled: "false"
+  namespace: cloudnative-pg-system
+  syncWave: 20
 
   # SOPS / age decryption controller for encrypted manifests.
-  - app: sops
-    enabled: "false"
-    namespace: sops-system
-    syncWave: 20
+- app: sops
+  enabled: "false"
+  namespace: sops-system
+  syncWave: 20
 
   # Continuous vulnerability scanning of cluster workloads.
-  - app: trivy-operator
-    enabled: "false"
-    namespace: trivy-operator-system
-    syncWave: 50
+- app: trivy-operator
+  enabled: "false"
+  namespace: trivy-operator-system
+  syncWave: 50
 
   # Rancher's OS-level upgrade controller for K3s nodes.
-  - app: system-upgrade
-    enabled: "false"
-    namespace: system-upgrade-system
-    syncWave: 60
+- app: system-upgrade
+  enabled: "false"
+  namespace: system-upgrade-system
+  syncWave: 60
 
   # ---------------------------------------------------------------------------
   # Tier-flexible apps — also listed in tenant.yaml; enable in only ONE tier.
   # ---------------------------------------------------------------------------
 
   # [TIER-FLEXIBLE] Distributed block storage — provides the default StorageClass.
-  - app: longhorn
-    enabled: "false"
-    namespace: longhorn-system
-    syncWave: 0
+- app: longhorn
+  enabled: "false"
+  namespace: longhorn-system
+  syncWave: 0
 
   # [TIER-FLEXIBLE] X.509 certificate management (Let's Encrypt, internal CA, ...).
-  - app: cert-manager
-    enabled: "false"
-    namespace: cert-manager-system
-    syncWave: 10
+- app: cert-manager
+  enabled: "false"
+  namespace: cert-manager-system
+  syncWave: 10
 
   # [TIER-FLEXIBLE] Ingress controller — terminates TLS and routes external traffic.
-  - app: ingress-nginx
-    enabled: "false"
-    namespace: ingress-nginx-system
-    syncWave: 10
+- app: ingress-nginx
+  enabled: "false"
+  namespace: ingress-nginx-system
+  syncWave: 10
+  # [TIER-FLEXIBLE] APISIX API Gateway — alternative ingress controller with Gateway API.
+- app: apisix
+  enabled: "false"
+  namespace: apisix
+  syncWave: 10
   # [TIER-FLEXIBLE] Cilium CNI — eBPF networking, Gateway API, kube-proxy replacement.
-  - app: cilium
-    enabled: \"false\"
-    namespace: kube-system
-    syncWave: 5
+- app: cilium
+  enabled: \"false\"
+  namespace: kube-system
+  syncWave: 5
   # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
-  - app: vault
-    enabled: "false"
-    syncWave: 20
+- app: vault
+  enabled: "false"
+  syncWave: 20
 
   # [TIER-FLEXIBLE] Identity provider (OIDC). Most user-facing apps depend on it.
-  - app: keycloak
-    enabled: "false"
-    syncWave: 30
+- app: keycloak
+  enabled: "false"
+  syncWave: 30
 
   # [TIER-FLEXIBLE] Identity-aware infrastructure access proxy (SSH / kube / DB).
-  - app: teleport
-    enabled: "false"
-    syncWave: 40
+- app: teleport
+  enabled: "false"
+  syncWave: 40
 
   # [TIER-FLEXIBLE] Prometheus + Grafana + Alertmanager bundle (cluster-wide observability).
-  - app: prometheus-stack
-    enabled: "false"
-    namespace: prometheus-stack-system
-    syncWave: 50
+- app: prometheus-stack
+  enabled: "false"
+  namespace: prometheus-stack-system
+  syncWave: 50
 
   # [TIER-FLEXIBLE] CrowdSec — open-source security engine with log analysis,
   # threat detection and community-driven blocklists. Deploys LAPI + agent DaemonSet.
-  - app: crowdsec
-    enabled: "false"
-    namespace: crowdsec
-    syncWave: 60
+- app: crowdsec
+  enabled: "false"
+  namespace: crowdsec
+  syncWave: 60

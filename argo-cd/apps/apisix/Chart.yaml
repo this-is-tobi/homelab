@@ -1,0 +1,11 @@
+apiVersion: v2
+type: application
+name: apisix
+version: 2.14.0
+appVersion: "3.16.0"
+description: Apache APISIX API Gateway with Ingress Controller for Kubernetes.
+dependencies:
+- name: apisix
+  alias: apisix
+  version: 2.14.0
+  repository: https://charts.apiseven.com

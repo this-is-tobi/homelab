@@ -9,19 +9,19 @@ gateway:
   gatewayName: homelab-gateway
   gatewayNamespace: kube-system
   routes:
-    - name: argo-cd
-      hostnames:
-        - gitops.ohmlab.fr
-      rules:
-        - backendService: argo-cd-argocd-server
-          backendPort: 80
-    - name: argo-cd-appset
-      hostnames:
-        - appset.gitops.ohmlab.fr
-      rules:
-        - path: /api/webhook
-          backendService: argo-cd-argocd-applicationset-controller
-          backendPort: 7000
+  - name: argo-cd
+    hostnames:
+    - gitops.ohmlab.fr
+    rules:
+    - backendService: argo-cd-argocd-server
+      backendPort: 80
+  - name: argo-cd-appset
+    hostnames:
+    - appset.gitops.ohmlab.fr
+    rules:
+    - path: /api/webhook
+      backendService: argo-cd-argocd-applicationset-controller
+      backendPort: 7000
 
 argo-cd:
   enabled: true
@@ -33,7 +33,7 @@ argo-cd:
       accounts.admin: apiKey,login
       oidc.config: |
         name: "Keycloak"
-        issuer: "https://sso.ohmlab.fr/realms/homelab"
+        issuer: "https://sso.core.ohmlab.fr/realms/homelab"
         clientID: "argo-cd"
         clientSecret: "$argo-cd-sso:OIDC_CLIENT_SECRET"
         requestedScopes: ["openid", "profile", "email", "groups"]
@@ -41,9 +41,9 @@ argo-cd:
     enabled: false
     argocdUrl: "https://gitops.ohmlab.fr"
     context:
-      provider: "self-hosted"
-      cluster: "homelab"
-      environment: "production"
+      provider: self-hosted
+      cluster: homelab
+      environment: production
     secret:
       create: false
       items:
@@ -62,10 +62,10 @@ argo-cd:
         token: $mattermost-token
   applicationSet:
     ingress:
-      hostname: "appset.gitops.ohmlab.fr"
+      hostname: appset.gitops.ohmlab.fr
   server:
     ingress:
-      hostname: "gitops.ohmlab.fr"
+      hostname: gitops.ohmlab.fr
   crds:
     install: false
     keep: true
@@ -73,11 +73,11 @@ argo-cd:
 vso:
   vaultStaticSecrets:
     argoCdAdmin:
-      mount: "homelab"
-      path: "platforms/production/argo-cd"
+      mount: homelab
+      path: platforms/production/argo-cd
     argoCdConfig:
-      mount: "homelab"
-      path: "platforms/production/argo-cd"
+      mount: homelab
+      path: platforms/production/argo-cd
     argoCdSso:
-      mount: "homelab"
-      path: "platforms/production/argo-cd"
+      mount: homelab
+      path: platforms/production/argo-cd

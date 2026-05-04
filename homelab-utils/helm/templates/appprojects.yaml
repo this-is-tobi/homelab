@@ -8,7 +8,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     app.kubernetes.io/managed-by: {{ $.Release.Name }}
-    app.kubernetes.io/part-of: homelab-core
+    app.kubernetes.io/part-of: ohmlab
     ohmlab.fr/instance-scope: {{ $scope | quote }}
   finalizers:
   - resources-finalizer.argocd.argoproj.io

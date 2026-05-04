@@ -3,48 +3,60 @@
 # Schema reference: ../_example/core.yaml
 
 apps:
-  - app: homelab-core
-    enabled: "true"
-    namespace: argocd-system
-    syncWave: -10
-    releaseName: homelab-core
-    chartPath: homelab-utils/helm
-  - app: longhorn
-    enabled: "true"
-    namespace: longhorn-system
-    releaseName: longhorn-system
-    syncWave: 0
-  - app: cilium
-    enabled: "true"
-    namespace: kube-system
-    syncWave: 5
-  - app: cert-manager
-    enabled: "true"
-    syncWave: 10
-  - app: ingress-nginx
-    enabled: "true"
-    syncWave: 10
-  - app: vault-operator
-    enabled: "true"
-    namespace: vault-operator-system
-    syncWave: 10
-  - app: kyverno
-    enabled: "false"  # Disabled during Cilium migration — crash-looping, not needed
-    namespace: kyverno
-    syncWave: 15
-  - app: cloudnative-pg
-    enabled: "true"
-    syncWave: 20
-  - app: sops
-    enabled: "true"
-    syncWave: 20
-  - app: prometheus-stack
-    enabled: "true"
-    syncWave: 50
-  - app: system-upgrade
-    enabled: "true"
-    syncWave: 60
-  - app: crowdsec
-    enabled: "false"  # Disabled during Cilium migration — agents stuck in Init
-    namespace: crowdsec
-    syncWave: 60
+- app: ohmlab
+  enabled: "true"
+  namespace: argocd-system
+  syncWave: -10
+  releaseName: ohmlab
+  chartPath: homelab-utils/helm
+- app: longhorn
+  enabled: "true"
+  namespace: longhorn-system
+  releaseName: longhorn-system
+  syncWave: 0
+- app: cilium
+  enabled: "false" # Reverted to flannel — Cilium BPF lockout on RPi4 arm64
+  namespace: kube-system
+  syncWave: 5
+- app: cert-manager
+  enabled: "true"
+  syncWave: 10
+- app: ingress-nginx
+  enabled: "true"
+  syncWave: 10
+- app: apisix
+  enabled: "false" # Replacement for ingress-nginx — toggle when ready
+  namespace: apisix
+  syncWave: 10
+- app: vault-operator
+  enabled: "true"
+  namespace: vault-operator-system
+  syncWave: 10
+- app: kyverno
+  enabled: "false" # Disabled during Cilium migration — crash-looping, not needed
+  namespace: kyverno
+  syncWave: 15
+- app: cloudnative-pg
+  enabled: "true"
+  syncWave: 20
+- app: sops
+  enabled: "true"
+  syncWave: 20
+- app: prometheus-stack
+  enabled: "true"
+  syncWave: 50
+- app: keycloak
+  enabled: "true"
+  namespace: keycloak-system
+  syncWave: 55
+- app: teleport
+  enabled: "true"
+  namespace: teleport-system
+  syncWave: 60
+- app: system-upgrade
+  enabled: "true"
+  syncWave: 60
+- app: crowdsec
+  enabled: "false" # Disabled during Cilium migration — agents stuck in Init
+  namespace: crowdsec
+  syncWave: 60

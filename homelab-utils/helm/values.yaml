@@ -201,7 +201,7 @@ rootManager:
     values: ""
   # -- Default git revision (branch, tag, commit) used to read the instance
   # folders and the `instance-manager` chart.
-  targetRevision: "main"
+  targetRevision: main
 
 projects:
   # AppProjects are split per scope to mirror real platform/tenant boundaries.
@@ -210,52 +210,52 @@ projects:
     # -- Render the `core` AppProject.
     enabled: true
     # -- Project name (referenced by `argo-cd/instances/<inst>/instance.yaml.projects.core`).
-    name: "admin-core"
+    name: admin-core
     description: "Homelab platform/core tier (infra, identity, observability, security)"
     sourceRepos:
-    - 'https://github.com/this-is-tobi/homelab.git'
+    - "https://github.com/this-is-tobi/homelab.git"
     destinations:
-    - namespace: '*'
-      server: 'https://kubernetes.default.svc'
+    - namespace: "*"
+      server: "https://kubernetes.default.svc"
     clusterResourceWhitelist:
-    - group: ''
-      kind: 'Namespace'
-    - group: 'rbac.authorization.k8s.io'
-      kind: 'ClusterRole'
-    - group: 'rbac.authorization.k8s.io'
-      kind: 'ClusterRoleBinding'
-    - group: 'apiextensions.k8s.io'
-      kind: 'CustomResourceDefinition'
-    - group: 'admissionregistration.k8s.io'
-      kind: 'MutatingWebhookConfiguration'
-    - group: 'admissionregistration.k8s.io'
-      kind: 'ValidatingWebhookConfiguration'
-    - group: 'scheduling.k8s.io'
-      kind: 'PriorityClass'
-    - group: 'storage.k8s.io'
-      kind: 'StorageClass'
-    - group: 'storage.k8s.io'
-      kind: 'CSIDriver'
-    - group: 'networking.k8s.io'
-      kind: 'IngressClass'
-    - group: 'apiregistration.k8s.io'
-      kind: 'APIService'
-    - group: 'cert-manager.io'
-      kind: '*'
-    - group: 'kyverno.io'
-      kind: '*'
-    - group: 'policies.kyverno.io'
-      kind: '*'
-    - group: 'policy'
-      kind: 'PodSecurityPolicy'
-    - group: 'gateway.networking.k8s.io'
-      kind: '*'
-    - group: 'cilium.io'
-      kind: '*'
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+    - group: scheduling.k8s.io
+      kind: PriorityClass
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: storage.k8s.io
+      kind: CSIDriver
+    - group: networking.k8s.io
+      kind: IngressClass
+    - group: apiregistration.k8s.io
+      kind: APIService
+    - group: cert-manager.io
+      kind: "*"
+    - group: kyverno.io
+      kind: "*"
+    - group: policies.kyverno.io
+      kind: "*"
+    - group: policy
+      kind: PodSecurityPolicy
+    - group: gateway.networking.k8s.io
+      kind: "*"
+    - group: cilium.io
+      kind: "*"
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
-    - group: '*'
-      kind: '*'
+    - group: "*"
+      kind: "*"
     namespaceResourceBlacklist: []
     roles:
     - name: admin
@@ -269,34 +269,34 @@ projects:
     # -- Render the `tenant` AppProject.
     enabled: true
     # -- Project name (referenced by `argo-cd/instances/<inst>/instance.yaml.projects.tenant`).
-    name: "admin-tenant"
-    description: "Homelab tenant/apps tier (user-facing services)"
+    name: admin-tenant
+    description: Homelab tenant/apps tier (user-facing services)
     sourceRepos:
-    - 'https://github.com/this-is-tobi/homelab.git'
+    - "https://github.com/this-is-tobi/homelab.git"
     destinations:
-    - namespace: '*'
-      server: 'https://kubernetes.default.svc'
+    - namespace: "*"
+      server: "https://kubernetes.default.svc"
     clusterResourceWhitelist:
-    - group: ''
-      kind: 'Namespace'
-    - group: 'networking.k8s.io'
-      kind: 'Ingress'
-    - group: 'networking.k8s.io'
-      kind: 'IngressClass'
-    - group: 'rbac.authorization.k8s.io'
-      kind: 'ClusterRole'
-    - group: 'rbac.authorization.k8s.io'
-      kind: 'ClusterRoleBinding'
-    - group: 'cert-manager.io'
-      kind: '*'
-    - group: 'apiextensions.k8s.io'
-      kind: 'CustomResourceDefinition'
-    - group: 'gateway.networking.k8s.io'
-      kind: '*'
+    - group: ""
+      kind: Namespace
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: networking.k8s.io
+      kind: IngressClass
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: cert-manager.io
+      kind: "*"
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: gateway.networking.k8s.io
+      kind: "*"
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
-    - group: '*'
-      kind: '*'
+    - group: "*"
+      kind: "*"
     namespaceResourceBlacklist: []
     roles:
     - name: admin
@@ -311,7 +311,7 @@ initSecrets:
   # -- Enable Vault init secrets job.
   enabled: true
   # -- Vault role used for authentication.
-  vaultRole: "vault-init-secrets"
+  vaultRole: vault-init-secrets
   # -- Whether to skip TLS verification when connecting to Vault.
   skipTLSVerify: false
   # -- Backoff limit for the init job.
@@ -323,14 +323,14 @@ initSecrets:
   resources:
     requests:
       # -- CPU requests for the init job container.
-      cpu: "50m"
+      cpu: 50m
       # -- Memory requests for the init job container.
-      memory: "64Mi"
+      memory: 64Mi
     limits:
       # -- CPU limits for the init job container.
-      cpu: "200m"
+      cpu: 200m
       # -- Memory limits for the init job container.
-      memory: "128Mi"
+      memory: 128Mi
   # -- List of secrets to initialize in Vault.
   # Secrets to initialize using template syntax:
   # - <random:N> generates random alphanumeric string of length N
@@ -340,126 +340,126 @@ initSecrets:
   # - Static values remain as-is
   # Supports nested JSON structure for organizing related secrets
   secrets:
-  - path: "homelab/platforms/production/cert-manager"
+  - path: homelab/platforms/production/cert-manager
     data:
-      email: "this-is-tobi@proton.me"
+      email: this-is-tobi@proton.me
       scaleway:
         accessKey: ""
         secretKey: ""
         projectId: ""
-        domain: "ohmlab.fr"
-  - path: "homelab/platforms/production/argo-cd"
+        domain: ohmlab.fr
+  - path: homelab/platforms/production/argo-cd
     data:
       admin:
-        username: "admin"
+        username: admin
         password: "<random:24>"
       keycloak:
-        endpoint: "https://sso.ohmlab.fr"
-        realm: "homelab"
-        clientId: "argo-cd"
+        endpoint: "https://sso.core.ohmlab.fr"
+        realm: homelab
+        clientId: argo-cd
         clientSecret: "<random:32>"
-  - path: "homelab/platforms/production/gitea"
+  - path: homelab/platforms/production/gitea
     data:
       admin:
-        username: "admin"
+        username: admin
         password: "<random:24>"
       postgres:
         admin:
-          username: "postgres"
+          username: postgres
           password: "<random:24>"
         app:
-          username: "gitea"
+          username: gitea
           password: "<random:24>"
-        database: "gitea"
-        host: "gitea-pg-cluster-rw"
+        database: gitea
+        host: gitea-pg-cluster-rw
         port: "5432"
         s3:
           accessKey: ""
-          bucketName: "ohmlab-backups"
-          bucketPrefix: "cnpg"
+          bucketName: ohmlab-backups
+          bucketPrefix: cnpg
           endpoint: "https://s3.fr-par.scw.cloud"
-          region: "fr-par"
+          region: fr-par
           secretKey: ""
       keycloak:
-        endpoint: "https://sso.ohmlab.fr"
-        realm: "homelab"
-        clientId: "gitea"
+        endpoint: "https://sso.core.ohmlab.fr"
+        realm: homelab
+        clientId: gitea
         clientSecret: "<random:32>"
-  - path: "homelab/platforms/production/mattermost"
+  - path: homelab/platforms/production/mattermost
     data:
       admin:
-        username: "admin"
+        username: admin
         password: "<random:24>"
       postgres:
         admin:
-          username: "postgres"
+          username: postgres
           password: "<random:24>"
         app:
-          username: "mattermost"
+          username: mattermost
           password: "<random:24>"
-        database: "mattermost"
-        host: "mattermost-pg-cluster-rw"
+        database: mattermost
+        host: mattermost-pg-cluster-rw
         port: "5432"
         s3:
           accessKey: ""
-          bucketName: "ohmlab-backups"
-          bucketPrefix: "cnpg"
+          bucketName: ohmlab-backups
+          bucketPrefix: cnpg
           endpoint: "https://s3.fr-par.scw.cloud"
-          region: "fr-par"
+          region: fr-par
           secretKey: ""
       s3:
         accessKey: ""
-        bucketName: "ohmlab-backups"
-        bucketPrefix: "cnpg"
+        bucketName: ohmlab-backups
+        bucketPrefix: cnpg
         endpoint: "https://s3.fr-par.scw.cloud"
-        region: "fr-par"
+        region: fr-par
         secretKey: ""
       keycloak:
-        endpoint: "https://sso.ohmlab.fr"
-        realm: "homelab"
-        clientId: "mattermost"
+        endpoint: "https://sso.core.ohmlab.fr"
+        realm: homelab
+        clientId: mattermost
         clientSecret: "<random:32>"
-  - path: "homelab/platforms/production/rustfs"
+  - path: homelab/platforms/production/rustfs
     data:
       admin:
         accessKey: "<random:16>"
         secretKey: "<random:32>"
-  - path: "homelab/platforms/production/prometheus-stack"
+  - path: homelab/platforms/production/prometheus-stack
     data:
       admin:
-        username: "admin"
+        username: admin
         password: "<random:24>"
       keycloak:
-        endpoint: "https://sso.ohmlab.fr"
-        realm: "homelab"
-        clientId: "grafana"
+        endpoint: "https://sso.core.ohmlab.fr"
+        realm: homelab
+        clientId: grafana
         clientSecret: "<random:32>"
-  - path: "homelab/platforms/production/keycloak"
+  - path: homelab/platforms/production/keycloak
     data:
       admin:
-        username: "admin"
+        username: admin
         password: "<random:24>"
       extras:
-        realm: "homelab"
-        rootDomain: "ohmlab.fr"
+        realm: homelab
+        rootDomain: ohmlab.fr
       postgres:
         admin:
-          username: "postgres"
+          username: postgres
           password: "<random:24>"
         app:
-          username: "keycloak"
+          username: keycloak
           password: "<random:24>"
-        database: "keycloak"
-        host: "keycloak-pg-cluster-rw"
+        database: keycloak
+        host: keycloak-pg-cluster-rw
         port: "5432"
         s3:
           accessKey: ""
-          bucketName: "ohmlab-backups"
-          bucketPrefix: "cnpg"
+          bucketName: ohmlab-backups
+          bucketPrefix: cnpg
           endpoint: "https://s3.fr-par.scw.cloud"
-          region: "fr-par"
+          region: fr-par
           secretKey: ""
-  - path: "homelab/platforms/production/sops-test"
+  - path: homelab/platforms/production/sops-test
     data:
       extras:
         secret: "<age:secret>"
@@ -467,7 +467,7 @@ initSecrets:
   # - path: "homelab/platforms/production/argo-workflows"
   #   data:
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "argo-workflows"
   #       clientSecret: "<random:32>"
@@ -494,7 +494,7 @@ initSecrets:
   #         region: "fr-par"
   #         secretKey: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "coder"
   #       clientSecret: "<random:32>"
@@ -528,7 +528,7 @@ initSecrets:
   #       region: "fr-par"
   #       secretKey: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "harbor"
   #       clientSecret: "<random:32>"
@@ -562,7 +562,7 @@ initSecrets:
   #       region: "fr-par"
   #       secretKey: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "mlflow"
   #       clientSecret: "<random:32>"
@@ -596,7 +596,7 @@ initSecrets:
   #       region: "fr-par"
   #       secretKey: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "outline"
   #       clientSecret: "<random:32>"
@@ -623,7 +623,7 @@ initSecrets:
   #         region: "fr-par"
   #         secretKey: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "sonarqube"
   #       clientSecret: "<random:32>"
@@ -632,7 +632,7 @@ initSecrets:
   #     admin:
   #       token: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "vault"
   #       clientSecret: "<random:32>"
@@ -641,7 +641,7 @@ initSecrets:
   #     admin:
   #       token: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "vault-operator"
   #       clientSecret: "<random:32>"
@@ -667,7 +667,7 @@ initSecrets:
   #         region: "fr-par"
   #         secretKey: ""
   #     keycloak:
-  #       endpoint: "https://sso.ohmlab.fr"
+  #       endpoint: "https://sso.core.ohmlab.fr"
   #       realm: "homelab"
   #       clientId: "vaultwarden"
   #       clientSecret: "<random:32>"

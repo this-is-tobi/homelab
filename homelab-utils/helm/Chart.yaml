@@ -1,9 +1,9 @@
 apiVersion: v2
-name: homelab-core
+name: ohmlab
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
-description: A Helm chart to deploy homelab-core.
+description: A Helm chart to deploy ohmlab.
 home: https://this-is-tobi.com/homelab
 deprecated: false
 annotations: {}

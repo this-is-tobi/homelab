@@ -52,7 +52,7 @@ valuesRepoURL: ""
 targetRevision: main
 
 # AppProject bindings for the two child AppSets. Both projects are created by
-# the `homelab-core` chart at bootstrap time.
+# the `ohmlab` chart at bootstrap time.
 projects:
   core: admin-core
   tenant: admin-tenant

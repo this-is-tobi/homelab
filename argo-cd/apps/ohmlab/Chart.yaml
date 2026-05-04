@@ -1,13 +1,13 @@
 apiVersion: v2
-name: homelab-core
+name: ohmlab
 type: application
 version: 0.1.0
 appVersion: "0.1.0"
 description: Self-managed wrapper around homelab-utils/helm. Deployed by ArgoCD as the root App in the app-of-apps tree.
 home: https://this-is-tobi.com/homelab
 dependencies:
-- name: homelab-core
-  alias: homelab-core
+- name: ohmlab
+  alias: ohmlab
   version: 0.1.0
   # Local file:// path during development. Switch to OCI URL when published:
   # repository: oci://ghcr.io/this-is-tobi/charts
