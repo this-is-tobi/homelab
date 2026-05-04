@@ -16,13 +16,13 @@
 #
 # NOT present (but unused by any K3s workload):
 #   - rpi_hevc_dec, bcm2835_codec, bcm2835_isp  (RPi proprietary V4L2 media pipeline)
-common_kernel_upgrade_package: "linux-image-arm64"
+common_kernel_upgrade_package: linux-image-arm64
 
 # Filenames used in /boot/firmware/ for the new kernel
 # The 'deb' suffix distinguishes from the RPi kernel (kernel8.img) as a fallback
-common_kernel_upgrade_image_name: "kernel8-deb.img"
-common_kernel_upgrade_initramfs_name: "initramfs8-deb"
-common_kernel_upgrade_tryboot_config: "tryboot.txt"
+common_kernel_upgrade_image_name: kernel8-deb.img
+common_kernel_upgrade_initramfs_name: initramfs8-deb
+common_kernel_upgrade_tryboot_config: tryboot.txt
 
 # How long to wait for the node to come back after tryboot reboot (seconds)
 common_kernel_upgrade_reboot_timeout: 300
@@ -35,6 +35,6 @@ common_kernel_upgrade_commit: true
 # update-initramfs should include them automatically (detects root device),
 # but we verify and force-add them as a safety net.
 common_kernel_upgrade_required_initramfs_modules:
-  - genet          # Ethernet — needed early for any network-dependent initramfs hooks
-  - bcm2835        # MMC host controller — root filesystem is on SD card
-  - ext4           # Root filesystem type (rootfstype=ext4 in cmdline.txt)
+  - genet # Ethernet — needed early for any network-dependent initramfs hooks
+  - bcm2835 # MMC host controller — root filesystem is on SD card
+  - ext4 # Root filesystem type (rootfstype=ext4 in cmdline.txt)

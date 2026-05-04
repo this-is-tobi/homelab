@@ -1,3 +1,4 @@
+---
 # Secrets file — encrypt with: ansible-vault encrypt inventory/group_vars/vault.yml
 #
 # This file holds all sensitive values referenced by the other group_vars files

@@ -27,9 +27,9 @@ gateway_crowdsec_default_acquis_docker:
 
 # Local CIDR ranges to whitelist (never ban).
 gateway_crowdsec_default_whitelists:
-  - "192.168.1.0/24"
-  - "10.42.0.0/16"
-  - "10.43.0.0/16"
+  - 192.168.1.0/24
+  - 10.42.0.0/16
+  - 10.43.0.0/16
 
 # Container memory limit.
-gateway_crowdsec_default_memory_limit: "256M"
+gateway_crowdsec_default_memory_limit: 256M

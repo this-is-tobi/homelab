@@ -60,14 +60,14 @@
 - name: Fix legacy raspi repo URL (.org -> .com)
   ansible.builtin.replace:
     path: /etc/apt/sources.list.d/raspi.list
-    regexp: 'archive\.raspberrypi\.org'
-    replace: 'archive.raspberrypi.com'
+    regexp: "archive\\.raspberrypi\\.org"
+    replace: archive.raspberrypi.com
   register: common_dist_upgrade_raspi_url
 
 - name: Fix raspi repo codename to match current release
   ansible.builtin.replace:
     path: /etc/apt/sources.list.d/raspi.list
-    regexp: '\bbullseye\b'
+    regexp: "\\bbullseye\\b"
     replace: "{{ common_dist_upgrade_current }}"
   register: common_dist_upgrade_raspi_codename
 
@@ -136,7 +136,7 @@
 
 - name: Reboot to load latest installed kernel
   ansible.builtin.reboot:
-    msg: "Rebooting to converge kernel before dist-upgrade"
+    msg: Rebooting to converge kernel before dist-upgrade
     reboot_timeout: 300
   when: common_dist_upgrade_kernel_check.rc != 0
 

@@ -1,20 +1,20 @@
+---
 k3sVersion: "v1.35.3+k3s1"
 k3sToken: "{{ vault_k3s_token }}"
 k3sCaData: "{{ vault_k3s_ca_data }}"
 k3sDatastoreEndpoint: "https://{{ hostvars[groups['gateway'][0]]['ansible_host'] }}:2379"
-k3sSystemdDir: "/etc/systemd/system"
-k3sDataDir: "/var/lib/rancher/k3s"
+k3sSystemdDir: /etc/systemd/system
+k3sDataDir: /var/lib/rancher/k3s
 k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
+k3sFlanneliface: eth0
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
+  --flannel-iface {{ k3sFlanneliface }}
 k3sExtraServerArgs: >-
   {{ k3sExtraArgs }}
-  --flannel-backend=none
-  --disable-network-policy
-  --disable-kube-proxy
   --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}
   --disable local-storage
   --disable traefik

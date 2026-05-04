@@ -1,3 +1,4 @@
+---
 - name: Copy ssh security conf file
   ansible.builtin.template:
     src: security.conf.j2

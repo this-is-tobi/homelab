@@ -5,9 +5,9 @@
     - name: Stop crowdsec if running
       community.docker.docker_compose_v2:
         state: absent
-        project_src: "/services/crowdsec"
+        project_src: /services/crowdsec
         files:
-          - "docker-compose.yml"
+          - docker-compose.yml
       ignore_errors: true
 
     - name: Stop firewall bouncer service
@@ -19,7 +19,7 @@
 
     - name: Remove crowdsec service dir
       ansible.builtin.file:
-        path: "/services/crowdsec"
+        path: /services/crowdsec
         state: absent
 
 - name: Deploy crowdsec when enabled
@@ -27,7 +27,7 @@
   block:
     - name: Create crowdsec service dir
       ansible.builtin.file:
-        path: "/services/crowdsec"
+        path: /services/crowdsec
         state: directory
         owner: root
         group: root
@@ -35,8 +35,8 @@
 
     - name: Copy docker-compose file
       ansible.builtin.template:
-        src: "docker-compose.yml.j2"
-        dest: "/services/crowdsec/docker-compose.yml"
+        src: docker-compose.yml.j2
+        dest: /services/crowdsec/docker-compose.yml
         owner: root
         group: root
         mode: "0640"
@@ -44,8 +44,8 @@
 
     - name: Copy acquis configuration
       ansible.builtin.template:
-        src: "acquis.yaml.j2"
-        dest: "/services/crowdsec/acquis.yaml"
+        src: acquis.yaml.j2
+        dest: /services/crowdsec/acquis.yaml
         owner: root
         group: root
         mode: "0640"
@@ -53,8 +53,8 @@
 
     - name: Copy whitelist configuration
       ansible.builtin.template:
-        src: "whitelist.yaml.j2"
-        dest: "/services/crowdsec/whitelist.yaml"
+        src: whitelist.yaml.j2
+        dest: /services/crowdsec/whitelist.yaml
         owner: root
         group: root
         mode: "0640"
@@ -63,9 +63,9 @@
     - name: Launch crowdsec engine
       community.docker.docker_compose_v2:
         state: present
-        project_src: "/services/crowdsec"
+        project_src: /services/crowdsec
         files:
-          - "docker-compose.yml"
+          - docker-compose.yml
         recreate: "{{ 'always' if (gateway_crowdsec_acquis is changed or gateway_crowdsec_whitelist is changed) else 'auto' }}"
       register: gateway_crowdsec_launch
 
@@ -92,9 +92,9 @@
     - name: Restart engine after CAPI registration
       community.docker.docker_compose_v2:
         state: present
-        project_src: "/services/crowdsec"
+        project_src: /services/crowdsec
         files:
-          - "docker-compose.yml"
+          - docker-compose.yml
         recreate: always
       when: gateway_crowdsec_capi_register is changed
 
@@ -131,7 +131,7 @@
 
     - name: Check if bouncer key file exists
       ansible.builtin.stat:
-        path: "/services/crowdsec/.bouncer-key"
+        path: /services/crowdsec/.bouncer-key
       register: gateway_crowdsec_bouncer_key_file
 
     - name: Delete stale bouncer registration
@@ -153,7 +153,7 @@
     - name: Save bouncer API key to file
       ansible.builtin.copy:
         content: "{{ gateway_crowdsec_bouncer_key.stdout }}"
-        dest: "/services/crowdsec/.bouncer-key"
+        dest: /services/crowdsec/.bouncer-key
         owner: root
         group: root
         mode: "0600"
@@ -162,7 +162,7 @@
 
     - name: Read bouncer API key
       ansible.builtin.slurp:
-        src: "/services/crowdsec/.bouncer-key"
+        src: /services/crowdsec/.bouncer-key
       register: gateway_crowdsec_saved_key
       no_log: true
 
@@ -189,8 +189,8 @@
 
     - name: Configure firewall bouncer
       ansible.builtin.template:
-        src: "crowdsec-firewall-bouncer.yaml.j2"
-        dest: "/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml"
+        src: crowdsec-firewall-bouncer.yaml.j2
+        dest: /etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml
         owner: root
         group: root
         mode: "0600"

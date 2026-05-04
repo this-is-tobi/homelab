@@ -1,3 +1,4 @@
+---
 - name: Disable services
   ansible.builtin.systemd:
     name: "{{ item }}"
@@ -13,7 +14,7 @@
 - name: Kill containerd shim processes
   ansible.builtin.command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
   register: k3s_pkill_containerd_shim_runc
-  changed_when: "k3s_pkill_containerd_shim_runc.rc == 0"
+  changed_when: k3s_pkill_containerd_shim_runc.rc == 0
   failed_when: false
 
 - name: Umount k3s filesystems
@@ -65,8 +66,8 @@
 - name: Enable SWAP in fstab (1/2)
   ansible.builtin.replace:
     path: /etc/fstab
-    regexp: '^# (.+?\sswap\s+sw\s+.*)$'
-    replace: '\1'
+    regexp: "^# (.+?\\sswap\\s+sw\\s+.*)$"
+    replace: "\\1"
 
 - name: Enable SWAP service (3/3)
   ansible.builtin.systemd:

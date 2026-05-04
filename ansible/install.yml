@@ -1,3 +1,4 @@
+---
 # All
 - name: OS Upgrade
   hosts: all

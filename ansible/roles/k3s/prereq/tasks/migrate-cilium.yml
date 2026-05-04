@@ -1,3 +1,4 @@
+---
 # Pre-migration cleanup: flannel → Cilium
 # Run BEFORE K3s restart with: --tags cilium-migrate
 # Removes flannel/Cilium residue so K3s starts clean with Cilium as sole CNI.

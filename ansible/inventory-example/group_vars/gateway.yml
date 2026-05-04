@@ -1,11 +1,12 @@
+---
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
-  version: "alpine3.22"
+  version: alpine3.22
   extraKubeAllowedIps: ""
   allowedIps: ""
 pihole:
   enabled: false
-  version: "2026.04.1"
+  version: 2026.04.1
   domain: pihole.{{ localRootDomain }}
   password: "{{ vault_pihole_password }}"
 wireguard:
@@ -13,11 +14,11 @@ wireguard:
   version: "15"
   domain: "vpn.{{ rootDomain }}"
   password: "{{ vault_wireguard_password }}"
-  ipRange: "10.8.0.x"
+  ipRange: 10.8.0.x
   allowedIps: "0.0.0.0/0, ::/0"
 crowdsec:
   enabled: false
-  version: "v1.7.7"
+  version: v1.7.7
   gid: "1000"
   # console_key: "{{ vault_crowdsec_console_key | default('') }}"
   # console_name: ""       # engine name shown in the console

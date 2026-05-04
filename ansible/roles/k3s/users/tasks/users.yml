@@ -1,3 +1,4 @@
+---
 - name: Create cert directory
   delegate_to: localhost
   ansible.builtin.file:

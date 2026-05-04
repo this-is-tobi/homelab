@@ -1,14 +1,15 @@
+---
 - name: Ensure "/etc/rancher/k3s" directory exists
   ansible.builtin.file:
-    path: "/etc/rancher/k3s"
+    path: /etc/rancher/k3s
     state: directory
     mode: "0700"
   when: k3s_registry_enabled
 
 - name: Copy registries yaml file
   ansible.builtin.template:
-    src: "registries.yml.j2"
-    dest: "/etc/rancher/k3s/registries.yml"
+    src: registries.yml.j2
+    dest: /etc/rancher/k3s/registries.yml
     owner: root
     group: root
     mode: "0600"
@@ -17,6 +18,6 @@
 
 - name: Remove registries config when registry is disabled
   ansible.builtin.file:
-    path: "/etc/rancher/k3s/registries.yml"
+    path: /etc/rancher/k3s/registries.yml
     state: absent
   when: not k3s_registry_enabled

@@ -1,3 +1,4 @@
+---
 - name: Ensure k3s config directory exists
   ansible.builtin.file:
     path: /etc/rancher/k3s
@@ -17,7 +18,7 @@
 
 - name: Copy k3s service file
   ansible.builtin.template:
-    src: "k3s.service.j2"
+    src: k3s.service.j2
     dest: "{{ k3sSystemdDir }}/k3s.service"
     owner: root
     group: root
@@ -27,8 +28,6 @@
   ansible.builtin.systemd:
     name: k3s
     daemon_reload: true
-    state: restarted
+    state: started
     enabled: true
-  timeout: 300
-  retries: 3
-  delay: 10
+  timeout: 360

@@ -24,8 +24,8 @@
 
 - name: Deploy kernel hardening sysctl
   ansible.builtin.template:
-    src: "sysctl-hardening.conf.j2"
-    dest: "/etc/sysctl.d/99-hardening.conf"
+    src: sysctl-hardening.conf.j2
+    dest: /etc/sysctl.d/99-hardening.conf
     owner: root
     group: root
     mode: "0644"
@@ -33,8 +33,8 @@
 
 - name: Populate /etc/hosts with cluster nodes
   ansible.builtin.template:
-    src: "hosts.j2"
-    dest: "/etc/hosts"
+    src: hosts.j2
+    dest: /etc/hosts
     owner: root
     group: root
     mode: "0644"

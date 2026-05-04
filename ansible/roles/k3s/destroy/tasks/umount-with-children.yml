@@ -1,3 +1,4 @@
+---
 - name: Get the list of mounted filesystems
   ansible.builtin.shell: set -o pipefail && cat /proc/mounts | awk '{ print $2}' | grep -E "^{{ mounted_fs }}"
   register: k3s_get_mounted_filesystems

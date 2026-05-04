@@ -1,5 +1,5 @@
 ---
 # k3s/deploy/masters defaults
-k3sSystemdDir: "/etc/systemd/system"
+k3sSystemdDir: /etc/systemd/system
 k3sExtraServerArgs: ""
 k3sExtraStorageArgs: ""

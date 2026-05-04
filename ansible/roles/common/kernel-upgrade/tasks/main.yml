@@ -48,12 +48,20 @@
         path: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
       register: common_kup_recovery_tryboot
 
+    - name: Backup config.txt before recovery commit
+      ansible.builtin.copy:
+        src: /boot/firmware/config.txt
+        dest: /boot/firmware/config.txt.rpi-backup
+        remote_src: true
+        mode: "0755"
+        force: false
+      when: common_kup_recovery_tryboot.stat.exists
+
     - name: Copy tryboot.txt to config.txt (recovery)
       ansible.builtin.copy:
         src: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
         dest: /boot/firmware/config.txt
         remote_src: true
-        backup: true
         mode: "0755"
       when: common_kup_recovery_tryboot.stat.exists
 
@@ -65,7 +73,7 @@
 
     - name: Recovery commit complete
       ansible.builtin.debug:
-        msg: "Debian kernel was running but config.txt not updated — fixed. Next power cycle is safe."
+        msg: Debian kernel was running but config.txt not updated — fixed. Next power cycle is safe.
 
 # ============================================================
 # Phase 1 — Install kernel, build initramfs, prepare boot files
@@ -74,8 +82,7 @@
 - name: Upgrade to Debian kernel
   when: not (common_kup_is_debian | bool)
   block:
-
-    # --- 1a. Install kernel package ---
+  # --- 1a. Install kernel package ---
 
     - name: Install Debian arm64 kernel package
       ansible.builtin.apt:
@@ -157,6 +164,31 @@
         remote_src: true
         mode: "0755"
 
+    # --- 1e. Patch device tree to remove cgroup_disable=memory ---
+    # The RPi4 DTB ships with cgroup_disable=memory in bootargs which
+    # disables the memory cgroup controller. The Debian kernel (with
+    # CONFIG_MEMCG_V1 disabled) has no cgroup_enable= override, so
+    # we must remove it from the DTB directly.
+
+    - name: Check if DTB has cgroup_disable=memory
+      ansible.builtin.shell:
+        cmd: >
+          dtc -I dtb -O dts /boot/firmware/bcm2711-rpi-4-b.dtb 2>/dev/null
+          | grep -c 'cgroup_disable=memory' || true
+      register: common_kup_dtb_cgroup
+      changed_when: false
+
+    - name: Patch DTB to remove cgroup_disable=memory
+      ansible.builtin.shell:
+        cmd: |
+          set -euo pipefail
+          cp /boot/firmware/bcm2711-rpi-4-b.dtb /boot/firmware/bcm2711-rpi-4-b.dtb.bak
+          dtc -I dtb -O dts /boot/firmware/bcm2711-rpi-4-b.dtb -o /tmp/rpi4.dts 2>/dev/null
+          sed -i 's/cgroup_disable=memory //' /tmp/rpi4.dts
+          dtc -I dts -O dtb /tmp/rpi4.dts -o /boot/firmware/bcm2711-rpi-4-b.dtb 2>/dev/null
+          rm -f /tmp/rpi4.dts
+      when: (common_kup_dtb_cgroup.stdout | int) > 0
+
     # --- 1d. Generate tryboot.txt ---
     # Built from current config.txt with kernel/initramfs overridden.
     # Keeps all existing settings (overlays, dtparams, boost, etc.) intact.
@@ -212,13 +244,26 @@
       failed_when: "'deb' not in common_kup_new_kernel.stdout"
 
     - name: Verify 52-bit virtual address space
-      # CONFIG_IKCONFIG is NOT set in the Debian kernel — no /proc/config.gz
-      # Verify from the config file installed by the kernel package instead
+    # CONFIG_IKCONFIG is NOT set in the Debian kernel — no /proc/config.gz
+    # Verify from the config file installed by the kernel package instead
       ansible.builtin.command:
         cmd: "grep '^CONFIG_ARM64_VA_BITS=' /boot/config-{{ common_kup_kver.stdout }}"
       register: common_kup_va_bits
       changed_when: false
       failed_when: "'CONFIG_ARM64_VA_BITS=52' not in common_kup_va_bits.stdout"
+
+    - name: Check if K3s binary is installed
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s
+      register: common_kup_k3s_binary
+
+    - name: Check if K3s service is enabled
+      ansible.builtin.command:
+        cmd: systemctl is-enabled k3s.service
+      register: common_kup_k3s_enabled
+      changed_when: false
+      failed_when: false
+      when: common_kup_k3s_binary.stat.exists
 
     - name: Verify K3s is running
       ansible.builtin.service_facts:
@@ -226,14 +271,18 @@
       retries: 6
       delay: 10
       until: (common_kup_service_facts.ansible_facts.services['k3s.service'].state | default('')) == 'running'
+      when:
+        - common_kup_k3s_binary.stat.exists
+        - common_kup_k3s_enabled.rc == 0
 
     - name: Display upgrade results
       ansible.builtin.debug:
         msg: >-
           SUCCESS — {{ inventory_hostname }}:
           kernel={{ common_kup_new_kernel.stdout }},
-          {{ common_kup_va_bits.stdout }},
-          k3s=running
+          {{ common_kup_va_bits.stdout }}{{ ',
+          k3s=running' if (common_kup_k3s_binary.stat.exists and (common_kup_k3s_enabled.rc | default(1)) == 0) else ',
+          k3s=not-running (expected for fresh deploy)' }}
 
     # ============================================================
     # Phase 4 — Commit (make permanent)
@@ -241,12 +290,20 @@
     # across power cycles. The original config.txt is backed up.
     # ============================================================
 
+    - name: Backup config.txt before commit
+      ansible.builtin.copy:
+        src: /boot/firmware/config.txt
+        dest: /boot/firmware/config.txt.rpi-backup
+        remote_src: true
+        mode: "0755"
+        force: false
+      when: common_kernel_upgrade_commit | bool
+
     - name: Make Debian kernel permanent — update config.txt
       ansible.builtin.copy:
         src: "/boot/firmware/{{ common_kernel_upgrade_tryboot_config }}"
         dest: /boot/firmware/config.txt
         remote_src: true
-        backup: true
         mode: "0755"
       when: common_kernel_upgrade_commit | bool
 

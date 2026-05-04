@@ -1,11 +1,12 @@
+---
 # Ansible infos
 ansible_user: debian
 ansible_port: 22
 ansible_password: "{{ vault_ansible_password }}"
 ansible_python_interpreter: /usr/bin/python3
 # Lab domains
-rootDomain: "ohmlab.fr"
-localRootDomain: "ohmlab.local"
+rootDomain: ohmlab.fr
+localRootDomain: ohmlab.local
 # Admin users
 adminUsers: []
 # - username: ""
