@@ -3,15 +3,15 @@ gateway:
   gatewayName: homelab-gateway
   gatewayNamespace: kube-system
   routes:
-    - name: longhorn
-      hostnames:
-        - longhorn.core.ohmlab.fr
-      rules:
-        - backendService: longhorn-frontend
-          backendPort: 80
+  - name: longhorn
+    hostnames:
+    - longhorn.core.ohmlab.fr
+    rules:
+    - backendService: longhorn-frontend
+      backendPort: 80
 
 longhorn:
   ingress:
     enabled: true
-    host: "longhorn.core.ohmlab.fr"
-    tlsSecret: "longhorn.core.ohmlab.fr-tls"
+    host: longhorn.core.ohmlab.fr
+    tlsSecret: longhorn.core.ohmlab.fr-tls
