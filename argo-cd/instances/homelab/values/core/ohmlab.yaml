@@ -22,7 +22,7 @@ gateway:
     hostnames:
     - gitops.core.ohmlab.fr
     rules:
-    - backendService: ohmlab-argocd-server
+    - backendService: argocd-server
       backendPort: 80
 
 rootManager:
@@ -66,11 +66,9 @@ argo-cd:
     webhook:
       ingress:
         enabled: true
-        ingressClassName: nginx
+        ingressClassName: apisix
         hostname: gitops-appset.core.ohmlab.fr
         annotations:
-          # DNS-01 issuer: works during bootstrap before ingress-nginx is
-          # available, and supports wildcards / private hosts.
           cert-manager.io/cluster-issuer: letsencrypt-dns-prod
         tls: true
         extraTls: []
@@ -80,11 +78,9 @@ argo-cd:
       maxUnavailable: 1
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: apisix
       hostname: gitops.core.ohmlab.fr
       annotations:
-        # DNS-01 issuer: works during bootstrap before ingress-nginx is
-        # available, and supports wildcards / private hosts.
         cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       tls: true
       extraTls: []
