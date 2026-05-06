@@ -7,7 +7,7 @@ gateway:
 argo-cd:
   # -- Enable ArgoCD core deployment
   enabled: true
-  # fullnameOverride: argo-cd-system-argocd
+  fullnameOverride: argocd
   crds:
     install: true
     keep: true
@@ -33,6 +33,7 @@ argo-cd:
             return hs
   redis-ha:
     enabled: true
+    fullnameOverride: argocd-redis-ha
   redis:
     metrics:
       enabled: true
@@ -59,15 +60,7 @@ argo-cd:
       targetCPUUtilizationPercentage: 75
       targetMemoryUtilizationPercentage: 75
     ingress:
-      enabled: true
-      hostname: "" # Add your ArgoCD server hostname here
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      tls: false
-      extraTls:
-      - hosts:
-        - "" # Add your ArgoCD server hostname here
-        secretName: "" # Add your ArgoCD server TLS secret name here
+      enabled: false
     metrics:
       enabled: true
       serviceMonitor:

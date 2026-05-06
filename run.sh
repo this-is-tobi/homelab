@@ -400,6 +400,7 @@ bootstrap_instance() {
     --create-namespace \
     --values "$values_file" \
     ${extra_args[@]+"${extra_args[@]}"} \
+    --force-conflicts \
     --wait \
     --timeout 10m
 
