@@ -29,7 +29,7 @@ server:
     enabled: true
     suppressAutomaticWildcards: false
     spec:
-      ingressClassName: nginx
+      ingressClassName: apisix
   service:
     type: ClusterIP
   log:

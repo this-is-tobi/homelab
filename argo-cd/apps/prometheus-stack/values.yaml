@@ -33,7 +33,7 @@ kube-prometheus-stack:
     adminPassword: ""
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: apisix
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:

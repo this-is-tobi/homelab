@@ -34,7 +34,7 @@ vault:
       size: 10Gi
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: apisix
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
       hosts:

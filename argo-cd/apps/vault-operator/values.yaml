@@ -351,11 +351,11 @@ vault:
   - "*"
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: apisix
     host: vault.core.ohmlab.fr
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+      k8s.apisix.apache.org/upstream-scheme: https
     tls:
       enabled: true
       secretName: vault-ingress-tls # Separate from vault-tls (used internally by operator)

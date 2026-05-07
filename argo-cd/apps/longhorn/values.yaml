@@ -7,12 +7,9 @@ gateway:
 longhorn:
   ingress:
     enabled: false
-    ingressClassName: nginx
+    ingressClassName: apisix
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      nginx.ingress.kubernetes.io/auth-realm: Authentication Required - Longhorn
-      nginx.ingress.kubernetes.io/auth-secret: longhorn-admin-htpasswd
-      nginx.ingress.kubernetes.io/auth-type: basic
     host: ""
     tls: true
     tlsSecret: longhorn-tls

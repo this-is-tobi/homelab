@@ -4,10 +4,9 @@ sonarqube:
     buildNumber: 26.3.0.120487
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: apisix
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-http-prod
-      ingressClassName: nginx
     hosts:
     - name: ""
       path: /

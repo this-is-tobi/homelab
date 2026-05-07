@@ -33,19 +33,7 @@ clusterIssuers: []
 #       - http01:
 #           ingress:
 #             serviceType: ClusterIP
-#             ingressClassName: nginx
-# - name: letsencrypt-http-prod
-#   spec:
-#     acme:
-#       email: ""
-#       server: https://acme-v02.api.letsencrypt.org/directory
-#       privateKeySecretRef:
-#         name: letsencrypt-http-prod-key
-#       solvers:
-#       - http01:
-#           ingress:
-#             serviceType: ClusterIP
-#             ingressClassName: nginx
+#             ingressClassName: apisix
 # - name: letsencrypt-dns-staging
 #   spec:
 #     acme:

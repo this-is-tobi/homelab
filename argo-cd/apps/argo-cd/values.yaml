@@ -348,7 +348,7 @@ argo-cd:
       maxUnavailable: 1
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: apisix
       hostname: appset.""
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod
@@ -372,7 +372,7 @@ argo-cd:
         enabled: true
     ingress:
       enabled: true
-      ingressClassName: nginx
+      ingressClassName: apisix
       hostname: ""
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-http-prod

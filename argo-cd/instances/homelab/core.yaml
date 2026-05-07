@@ -22,10 +22,10 @@ apps:
   enabled: "true"
   syncWave: 10
 - app: ingress-nginx
-  enabled: "true"
+  enabled: "false"
   syncWave: 10
 - app: apisix
-  enabled: "false" # Replacement for ingress-nginx — toggle when ready
+  enabled: "true"
   namespace: apisix
   syncWave: 10
 - app: vault-operator
