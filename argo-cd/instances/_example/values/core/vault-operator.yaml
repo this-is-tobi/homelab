@@ -255,13 +255,11 @@ vault:
   # Ingress
   ingress:
     enabled: true
-    ingressClassName: nginx
+    ingressClassName: apisix
     host: vault.core.example.com
     annotations:
-      # DNS-01 issuer: works during bootstrap before ingress-nginx is
-      # available, and supports wildcards / private hosts.
       cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      k8s.apisix.apache.org/upstream-scheme: https
     tls:
       enabled: true
       secretName: vault-ingress-tls  # Separate from vault-tls (used internally by operator)
