@@ -5,6 +5,8 @@ gateway:
   routes: []
 
 longhorn:
+  preUpgradeChecker:
+    jobEnabled: false
   ingress:
     enabled: false
     ingressClassName: apisix
