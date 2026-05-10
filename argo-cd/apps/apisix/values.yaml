@@ -33,6 +33,10 @@ apisix:
   etcd:
     enabled: true
     replicaCount: 3
+    auth:
+      rbac:
+        create: false
+        allowNoneAuthentication: true
     persistence:
       enabled: true
       size: 5Gi
