@@ -68,7 +68,7 @@ The admin owns the cluster lifecycle: provisioning hosts, bootstrapping ArgoCD, 
 4. Create `argo-cd/instances/<name>/values/{core,tenant}/` mirroring those catalogs (one values file per enabled app, plus `core/homelab-core.yaml` if the instance ships its own core ArgoCD).
 5. The root `manager` picks up the new folder automatically. For a brand-new admin cluster, run `./run.sh -b <name>` once against it; for a tenant-only instance attached to an existing core, just commit & push.
 
-See [Installation > Topologies](./03-installation.md#topologies) for the all-in-one / SaaS / dedicated-core variants.
+See `Installation > Topologies` for the all-in-one / SaaS / dedicated-core variants.
 
 ### Backups & disaster recovery
 
@@ -87,7 +87,7 @@ A platform user consumes the services running on the cluster (Gitea, Mattermost,
 
 ### Service catalogue
 
-See [Services > Access](./05-services.md#access) for the full list of user-facing endpoints (ArgoCD, Coder, Gitea, Grafana, Harbor, Mattermost, RustFS, Outline, SonarQube, Vaultwarden, ...).
+See `Services > Access` for the full list of user-facing endpoints (ArgoCD, Coder, Gitea, Grafana, Harbor, Mattermost, RustFS, Outline, SonarQube, Vaultwarden, ...).
 
 ### Personal ArgoCD sandbox
 

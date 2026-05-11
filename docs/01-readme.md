@@ -43,7 +43,7 @@ __Setup configuration:__
   - [`core.yaml`](../argo-cd/instances/homelab/core.yaml) — platform/core tier app catalog.
   - [`tenant.yaml`](../argo-cd/instances/homelab/tenant.yaml) — user-facing apps catalog.
 - Configure values in [./argo-cd/instances/homelab/values/core/](../argo-cd/instances/homelab/values/core/) and [./argo-cd/instances/homelab/values/tenant/](../argo-cd/instances/homelab/values/tenant/).
-- For a brand-new instance, copy the documented template at [./argo-cd/instances/_example/](../argo-cd/instances/_example/) (folders prefixed with `_` are excluded by the root manager and treated as templates). See [Installation > Tier-flexible apps](./03-installation.md#tier-flexible-apps) for apps (ingress, cert-manager, keycloak, prometheus-stack, ...) that can live in either tier depending on topology.
+- For a brand-new instance, copy the documented template at [./argo-cd/instances/_example/](../argo-cd/instances/_example/) (folders prefixed with `_` are excluded by the root manager and treated as templates). See `Installation > Tier-flexible apps` for apps (ingress, cert-manager, keycloak, prometheus-stack, ...) that can live in either tier depending on topology.
 
 __Install:__
 ```sh
