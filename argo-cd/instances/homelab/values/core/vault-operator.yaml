@@ -71,10 +71,18 @@ vault:
             endpoint: "https://s3.fr-par.scw.cloud"
             region: fr-par
             secretKey: ""
+    - path: homelab/platforms/production/core/argo-cd
+      # Core ArgoCD (bootstrapped via run.sh into argocd-system).
+      # Password is set at bootstrap time via $ARGOCD_ADMIN_PASSWORD; this entry
+      # serves as the Vault source-of-truth for rotation and auditing.
+      data:
+        admin:
+          username: admin
+          password: "<random:24>"
+          passwordHashed: "<bcrypt:admin.password>"
     - path: homelab/platforms/production/tenant/argo-cd
-      # Core/infra ArgoCD (system deployment manager).
-      # A future platform ArgoCD (for customers) would use a distinct path,
-      # e.g. homelab/platforms/production/tenant/platform-argo-cd
+      # Tenant ArgoCD instance (deployed as an ArgoCD app into argo-cd namespace).
+      # Credentials are injected at runtime via VSO into the argo-cd namespace.
       data:
         admin:
           username: admin
