@@ -39,3 +39,9 @@ rustfs:
       - console.s3.ohmlab.fr
   dataPersistence:
     size: 250Gi
+
+vso:
+  vaultStaticSecrets:
+    rustfsAdmin:
+      mount: homelab
+      path: platforms/production/tenant/rustfs

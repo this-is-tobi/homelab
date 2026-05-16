@@ -21,7 +21,7 @@ vault:
     # - Static values remain as-is
     # Supports nested JSON structure for organizing related secrets
     secrets:
-    - path: homelab/platforms/production/cert-manager
+    - path: homelab/platforms/production/core/cert-manager
       data:
         email: this-is-tobi@proton.me
         scaleway:
@@ -30,7 +30,7 @@ vault:
           projectId: ""
           domain: ohmlab.fr
     # Keycloak MUST come before apps that use <ref:...> to its clients
-    - path: homelab/platforms/production/keycloak
+    - path: homelab/platforms/production/core/keycloak
       data:
         admin:
           username: admin
@@ -39,7 +39,7 @@ vault:
         realm: homelab
         rootDomain: ohmlab.fr
         # Centralized OIDC client credentials — each app references these via
-        # <ref:homelab/platforms/production/keycloak#clients.<app>.clientSecret>
+        # <ref:homelab/platforms/production/core/keycloak#clients.<app>.clientSecret>
         # so keycloak policy only needs access to its own path.
         clients:
           argo-cd:
@@ -71,18 +71,18 @@ vault:
             endpoint: "https://s3.fr-par.scw.cloud"
             region: fr-par
             secretKey: ""
-    - path: homelab/platforms/production/argo-cd
+    - path: homelab/platforms/production/tenant/argo-cd
       # Core/infra ArgoCD (system deployment manager).
       # A future platform ArgoCD (for customers) would use a distinct path,
-      # e.g. homelab/platforms/production/platform-argo-cd
+      # e.g. homelab/platforms/production/tenant/platform-argo-cd
       data:
         admin:
           username: admin
           password: "<random:24>"
         keycloak:
           clientId: argo-cd
-          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.argo-cd.clientSecret>"
-    - path: homelab/platforms/production/gitea
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-cd.clientSecret>"
+    - path: homelab/platforms/production/tenant/gitea
       data:
         admin:
           username: admin
@@ -106,8 +106,8 @@ vault:
             secretKey: ""
         keycloak:
           clientId: gitea
-          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.gitea.clientSecret>"
-    - path: homelab/platforms/production/mattermost
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.gitea.clientSecret>"
+    - path: homelab/platforms/production/tenant/mattermost
       data:
         admin:
           username: admin
@@ -138,30 +138,30 @@ vault:
           secretKey: ""
         keycloak:
           clientId: mattermost
-          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.mattermost.clientSecret>"
-    - path: homelab/platforms/production/rustfs
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.mattermost.clientSecret>"
+    - path: homelab/platforms/production/tenant/rustfs
       data:
         admin:
           accessKey: "<random:16>"
           secretKey: "<random:32>"
-    - path: homelab/platforms/production/prometheus-stack
+    - path: homelab/platforms/production/core/prometheus-stack
       data:
         admin:
           username: admin
           password: "<random:24>"
         keycloak:
           clientId: grafana
-          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.grafana.clientSecret>"
-    - path: homelab/platforms/production/sops
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.grafana.clientSecret>"
+    - path: homelab/platforms/production/core/sops
       data:
         # base64-encoded age keys file (age-keygen output); set manually or via vault-init-secrets
         keys: ""
         public: "<age:public>"
-    - path: homelab/platforms/production/sops-test
+    - path: homelab/platforms/production/core/sops-test
       data:
         secret: "<age:secret>"
         public: "<age:public>"
-    - path: homelab/platforms/production/crowdsec
+    - path: homelab/platforms/production/core/crowdsec
       data:
         console:
           enrollKey: "" # Set manually in Vault (from https://app.crowdsec.net/security-engines)
@@ -184,12 +184,12 @@ vault:
             endpoint: "https://s3.fr-par.scw.cloud"
             region: fr-par
             secretKey: ""
-    # - path: "homelab/platforms/production/argo-workflows"
+    # - path: "homelab/platforms/production/tenant/argo-workflows"
     #   data:
     #     keycloak:
     #       clientId: "argo-workflows"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.argo-workflows.clientSecret>"
-    # - path: "homelab/platforms/production/coder"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-workflows.clientSecret>"
+    # - path: "homelab/platforms/production/tenant/coder"
     #   data:
     #     admin:
     #       username: "admin"
@@ -213,8 +213,8 @@ vault:
     #         secretKey: ""
     #     keycloak:
     #       clientId: "coder"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.coder.clientSecret>"
-    # - path: "homelab/platforms/production/harbor"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.coder.clientSecret>"
+    # - path: "homelab/platforms/production/tenant/harbor"
     #   data:
     #     admin:
     #       username: "admin"
@@ -245,8 +245,8 @@ vault:
     #       secretKey: ""
     #     keycloak:
     #       clientId: "harbor"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.harbor.clientSecret>"
-    # - path: "homelab/platforms/production/mlflow"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.harbor.clientSecret>"
+    # - path: "homelab/platforms/production/tenant/mlflow"
     #   data:
     #     admin:
     #       username: "admin"
@@ -277,8 +277,8 @@ vault:
     #       secretKey: ""
     #     keycloak:
     #       clientId: "mlflow"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.mlflow.clientSecret>"
-    # - path: "homelab/platforms/production/outline"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.mlflow.clientSecret>"
+    # - path: "homelab/platforms/production/tenant/outline"
     #   data:
     #     admin:
     #       username: "admin"
@@ -309,8 +309,8 @@ vault:
     #       secretKey: ""
     #     keycloak:
     #       clientId: "outline"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.outline.clientSecret>"
-    # - path: "homelab/platforms/production/sonarqube"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.outline.clientSecret>"
+    # - path: "homelab/platforms/production/tenant/sonarqube"
     #   data:
     #     admin:
     #       username: "admin"
@@ -334,22 +334,22 @@ vault:
     #         secretKey: ""
     #     keycloak:
     #       clientId: "sonarqube"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.sonarqube.clientSecret>"
-    # - path: "homelab/platforms/production/vault"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.sonarqube.clientSecret>"
+    # - path: "homelab/platforms/production/core/vault"
     #   data:
     #     admin:
     #       token: ""
     #     keycloak:
     #       clientId: "vault"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.vault.clientSecret>"
-    # - path: "homelab/platforms/production/vault-operator"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vault.clientSecret>"
+    # - path: "homelab/platforms/production/core/vault-operator"
     #   data:
     #     admin:
     #       token: ""
     #     keycloak:
     #       clientId: "vault-operator"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.vault-operator.clientSecret>"
-    # - path: "homelab/platforms/production/vaultwarden"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vault-operator.clientSecret>"
+    # - path: "homelab/platforms/production/core/vaultwarden"
     #   data:
     #     admin:
     #       token: "<random:24>"
@@ -372,7 +372,7 @@ vault:
     #         secretKey: ""
     #     keycloak:
     #       clientId: "vaultwarden"
-    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.vaultwarden.clientSecret>"
+    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
 
 vso:
   enabled: true

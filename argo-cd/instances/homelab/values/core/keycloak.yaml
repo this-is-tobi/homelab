@@ -58,3 +58,33 @@ cnpg:
         key: S3_SECRET_KEY
       region:
         key: S3_REGION
+
+vso:
+  vaultStaticSecrets:
+    keycloakAdmin:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    keycloakConfig:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    keycloakDbInfos:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    keycloakDbAdmin:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    keycloakDbApp:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    keycloakPgBackup:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    clientGitea:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    clientGrafana:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    clientArgoCd:
+      mount: homelab
+      path: platforms/production/core/keycloak
