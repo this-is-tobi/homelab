@@ -4,7 +4,7 @@
 apisix:
   replicaCount: 2
 
-  gateway:
+  service:
     type: LoadBalancer
     externalTrafficPolicy: Local
 
@@ -19,3 +19,19 @@ apisix:
     config:
       apisix:
         adminAPIVersion: v3
+
+gateway:
+  enabled: true
+  name: homelab-gateway
+  namespace: kube-system
+  domain: ohmlab.fr
+  clusterIssuer: letsencrypt-http-prod
+  dnsClusterIssuer: letsencrypt-dns-prod
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  extraListeners: []
+  tlsPassthroughListeners:
+  - name: tls-teleport
+    hostname: "*.teleport.core.ohmlab.fr"
+  - name: tls-teleport-apex
+    hostname: teleport.core.ohmlab.fr

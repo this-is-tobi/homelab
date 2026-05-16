@@ -3,16 +3,19 @@ apisix:
 
   replicaCount: 2
 
-  gateway:
+  service:
     type: LoadBalancer
     http:
       enabled: true
       containerPort: 9080
       servicePort: 80
     tls:
+      servicePort: 443
+
+  apisix:
+    ssl:
       enabled: true
       containerPort: 9443
-      servicePort: 443
 
   admin:
     enabled: true
@@ -26,6 +29,15 @@ apisix:
     config:
       apisix:
         adminAPIVersion: v3
+    gatewayProxy:
+      createDefault: true
+      provider:
+        controlPlane:
+          auth:
+            type: AdminKey
+            adminKey:
+              value: "edd1c9f034335f136f87ad84b625c8f1"
+      publishService: apisix/apisix-gateway
 
   dashboard:
     enabled: false
@@ -51,3 +63,15 @@ apisix:
     limits:
       cpu: 500m
       memory: 512Mi
+
+gateway:
+  enabled: false
+  name: homelab-gateway
+  namespace: kube-system
+  domain: ""
+  clusterIssuer: letsencrypt-http-prod
+  dnsClusterIssuer: letsencrypt-dns-prod
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  extraListeners: []
+  tlsPassthroughListeners: []
