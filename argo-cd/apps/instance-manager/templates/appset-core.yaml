@@ -79,3 +79,6 @@ spec:
             duration: 30s
             factor: 2
             maxDuration: 3m
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+{{- end }}
