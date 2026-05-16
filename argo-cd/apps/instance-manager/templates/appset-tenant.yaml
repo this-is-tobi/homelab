@@ -63,7 +63,6 @@ spec:
       destination:
         server: '{{ printf "{{ default %q .destination.server }}" $defaultServer }}'
         namespace: '{{ printf "{{ default (printf \"%s%%s%s\" .app) .namespace }}" $prefix $suffix }}'
-      ignoreDifferences: {{ `{{ if .ignoreDifferences }}{{ .ignoreDifferences | toJson }}{{ else }}null{{ end }}` }}
       syncPolicy:
         automated:
           prune: true
@@ -79,6 +78,11 @@ spec:
             duration: 30s
             factor: 2
             maxDuration: 3m
+  templatePatch: |
+    {{ "{{- if .ignoreDifferences }}" }}
+    spec:
+      ignoreDifferences: {{ "{{ .ignoreDifferences | toJson }}" }}
+    {{ "{{- end }}" }}
   syncPolicy:
     preserveResourcesOnDeletion: true
 {{- end }}
