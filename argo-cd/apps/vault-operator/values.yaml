@@ -258,7 +258,7 @@ vault:
         ttl: 1h
       - name: keycloak
         bound_service_account_names: [default, keycloak-vso]
-        bound_service_account_namespaces: [keycloak]
+        bound_service_account_namespaces: [keycloak-system]
         policies: [keycloak]
         ttl: 1h
       - name: mattermost
