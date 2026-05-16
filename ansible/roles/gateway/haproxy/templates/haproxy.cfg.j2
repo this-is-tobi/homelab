@@ -47,7 +47,10 @@ frontend homelab_entrypoint_lb
   acl too_many_conns sc0_conn_cur gt 100
   tcp-request connection track-sc0 src
   tcp-request connection reject if too_many_conns
-  default_backend homelab_entrypoint
+  # Route port 80 (plain HTTP) to node:80 and port 443 (TLS) to node:443
+  acl is_https dst_port 443
+  use_backend homelab_entrypoint_https if is_https
+  default_backend homelab_entrypoint_http
 
 # --- Kubernetes API (restricted access) ---
 frontend k3s_api_server_lb
@@ -58,10 +61,23 @@ frontend k3s_api_server_lb
 
 # --- Backends ---
 
-# Web entrypoint: route to ALL k3s nodes (kube-proxy forwards to nginx pods).
-# Workers are preferred (nginx runs there) but masters also forward correctly
-# via externalTrafficPolicy=Cluster.
-backend homelab_entrypoint
+# HTTP (port 80): route to node:80 — APISIX handles HTTP and redirects to HTTPS.
+# Workers preferred; masters as backup.
+backend homelab_entrypoint_http
+  mode tcp
+  balance leastconn
+  option tcp-check
+  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
+{% for host in groups['workers'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
+{% endfor %}
+{% for host in groups['masters'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check backup
+{% endfor %}
+
+# HTTPS (port 443): TLS passthrough to node:443 — APISIX terminates TLS.
+# Workers preferred; masters as backup.
+backend homelab_entrypoint_https
   mode tcp
   balance leastconn
   option tcp-check
