@@ -33,7 +33,7 @@ apps:
   namespace: vault-operator-system
   syncWave: 10
 - app: kyverno
-  enabled: "false" # Disabled during Cilium migration — crash-looping, not needed
+  enabled: "true"
   namespace: kyverno
   syncWave: 15
 - app: cloudnative-pg
