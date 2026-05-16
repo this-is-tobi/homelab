@@ -27,7 +27,7 @@
 #
 #   chartPath           override full chart path. Defaults to
 #                       `argo-cd/apps/<chart>`. Use this when the chart lives
-#                       outside the catalog, e.g. `homelab-utils/helm` for
+#                       outside the catalog, e.g. `utils/helm` for
 #                       the self-managed bootstrap chart.
 #
 #   valuesPath          override values file path. Defaults to
@@ -82,7 +82,7 @@ apps:
   namespace: argocd-system
   syncWave: -10
   releaseName: ohmlab
-  chartPath: homelab-utils/helm
+  chartPath: utils/helm
 
   # Vault operator — manages Vault clusters and Vault Secrets Operator.
 - app: vault-operator

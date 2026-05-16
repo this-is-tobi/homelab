@@ -123,7 +123,7 @@ flowchart LR
 | Path                                          | Purpose                                                                                                                                      |
 | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | [ansible/](../ansible/)                       | Infrastructure (gateway + K3s) provisioning roles & playbooks.                                                                               |
-| [homelab-utils/helm/](../homelab-utils/helm/) | Bootstrap chart — ships core ArgoCD, the root `manager` AppSet, and `admin-core` / `admin-tenant` AppProjects.                               |
+| [utils/helm/](../utils/helm/) | Bootstrap chart — ships core ArgoCD, the root `manager` AppSet, and `admin-core` / `admin-tenant` AppProjects.                               |
 | [argo-cd/apps/](../argo-cd/apps/)             | Helm chart catalog (`gitea`, `keycloak`, ..., plus the `instance-manager` chart used by the root manager).                                   |
 | [argo-cd/instances/](../argo-cd/instances/)   | Per-instance folders. One per cluster / tenant, each with `instance.yaml` + `core.yaml` / `tenant.yaml` + `values/{core,tenant}/<app>.yaml`. |
 | [run.sh](../run.sh)                           | Wrapper around Ansible + Helm with sane defaults.                                                                                            |
@@ -134,7 +134,7 @@ Before opening a PR:
 
 ```sh
 # Render the bootstrap chart against the homelab instance values
-helm template homelab-core ./homelab-utils/helm \
+helm template homelab-core ./utils/helm \
   -f argo-cd/instances/homelab/values/core/homelab-core.yaml
 
 # Render the per-instance chart for a given instance

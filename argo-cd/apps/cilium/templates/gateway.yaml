@@ -13,7 +13,7 @@ metadata:
   name: {{ .Values.gateway.name | default "homelab-gateway" }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.gateway.clusterIssuer | default "letsencrypt-http-prod" }}
+    cert-manager.io/cluster-issuer: {{ .Values.gateway.clusterIssuer | default "letsencrypt-dns-prod" }}
 spec:
   gatewayClassName: cilium
   listeners:
