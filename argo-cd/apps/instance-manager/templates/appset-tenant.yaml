@@ -63,6 +63,10 @@ spec:
       destination:
         server: '{{ printf "{{ default %q .destination.server }}" $defaultServer }}'
         namespace: '{{ printf "{{ default (printf \"%s%%s%s\" .app) .namespace }}" $prefix $suffix }}'
+      {{- if .ignoreDifferences }}
+      ignoreDifferences:
+        {{- .ignoreDifferences | toJson | nindent 8 }}
+      {{- end }}
       syncPolicy:
         automated:
           prune: true

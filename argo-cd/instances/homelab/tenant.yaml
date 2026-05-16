@@ -16,6 +16,16 @@ apps:
 - app: mattermost
   enabled: "true"
   syncWave: 110
+  ignoreDifferences:
+  # The mattermost chart always creates mattermost-mattermost-dbsecret with
+  # externalDriverType://externalConnectionString = "postgres://" (empty).
+  # VSO manages this secret's data from Vault. Tell ArgoCD to ignore the data
+  # field so it doesn't overwrite VSO's correct value on every sync.
+  - group: ""
+    kind: Secret
+    name: mattermost-mattermost-dbsecret
+    jqPathExpressions:
+    - .data
 - app: rustfs
   enabled: "true"
   syncWave: 110
