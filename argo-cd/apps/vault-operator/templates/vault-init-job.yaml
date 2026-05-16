@@ -1,14 +1,13 @@
 {{- if and .Values.vault.enabled .Values.vault.initSecrets.enabled }}
 ---
+# SA/Role/RoleBinding are regular app resources (not hooks) so ArgoCD always
+# maintains them and never prunes them between syncs (prune: true would otherwise
+# garbage-collect hook resources that lack a hook-delete-policy).
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: vault-init-secrets
   namespace: {{ .Release.Namespace }}
-  annotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-weight: "-5"
-    argocd.argoproj.io/sync-wave: "-1"
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -16,10 +15,6 @@ kind: Role
 metadata:
   name: vault-init-secrets
   namespace: {{ .Release.Namespace }}
-  annotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-weight: "-5"
-    argocd.argoproj.io/sync-wave: "-1"
 rules:
 - apiGroups: [""]
   resources: ["serviceaccounts/token"]
@@ -32,10 +27,6 @@ kind: RoleBinding
 metadata:
   name: vault-init-secrets
   namespace: {{ .Release.Namespace }}
-  annotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-weight: "-5"
-    argocd.argoproj.io/sync-wave: "-1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role

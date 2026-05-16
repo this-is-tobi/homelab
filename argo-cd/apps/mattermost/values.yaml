@@ -190,7 +190,10 @@ vso:
           - ".*"
           templates:
             mattermost.dbsecret:
-              text: 'postgres://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}?sslmode=disable&connect_timeout=10'
+              # VSO 1.3.x has a bug rendering mixed static-text/{{ }} templates when
+              # the destination key contains a dot. Use a single printf expression to
+              # avoid the issue — the entire value comes from one template action.
+              text: '{{ printf "postgres://%s:%s@%s:%s/%s?sslmode=disable&connect_timeout=10" (get .Secrets "postgres" | dig "app" "username" "") (get .Secrets "postgres" | dig "app" "password" "") (get .Secrets "postgres" | dig "host" "") (get .Secrets "postgres" | dig "port" "") (get .Secrets "postgres" | dig "database" "") }}'
     mattermostDbAdmin:
       mount: ""
       path: ""
