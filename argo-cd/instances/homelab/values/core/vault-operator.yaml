@@ -139,6 +139,12 @@ vault:
             endpoint: "https://s3.fr-par.scw.cloud"
             region: fr-par
             secretKey: ""
+    - path: homelab/platforms/production/sops
+      data:
+        extras:
+          # base64-encoded age keys file (age-keygen output); set manually or via vault-init-secrets
+          keys: ""
+          public: "<age:public>"
     - path: homelab/platforms/production/sops-test
       data:
         extras:
