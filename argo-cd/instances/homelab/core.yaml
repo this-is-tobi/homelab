@@ -8,7 +8,7 @@ apps:
   namespace: argocd-system
   syncWave: -10
   releaseName: ohmlab
-  chartPath: homelab-utils/helm
+  chartPath: utils/helm
 - app: longhorn
   enabled: "true"
   namespace: longhorn-system

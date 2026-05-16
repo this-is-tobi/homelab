@@ -2,7 +2,7 @@ gateway:
   enabled: true
   name: homelab-gateway
   domain: ohmlab.fr
-  clusterIssuer: letsencrypt-http-prod
+  clusterIssuer: letsencrypt-dns-prod
   dnsClusterIssuer: letsencrypt-dns-prod
   wildcardTlsSecret: gateway-wildcard-tls
   apexTlsSecret: gateway-wildcard-tls
