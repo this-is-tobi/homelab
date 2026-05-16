@@ -112,23 +112,14 @@ spec:
             memory: 32Mi
       containers:
       - name: init-secrets
-        image: {{ .Values.vault.initSecrets.image | default "ghcr.io/this-is-tobi/tools/homelab-utils:latest" }}
-        env:
-        - name: VAULT_ADDR
-          value: {{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) | quote }}
-        - name: VAULT_SKIP_VERIFY
-          value: {{ .Values.vault.initSecrets.skipTLSVerify | default "true" | quote }}
-        - name: VAULT_ROLE
-          value: {{ .Values.vault.initSecrets.vaultRole | default "vault-init-secrets" | quote }}
-        - name: NAMESPACE
-          value: {{ .Release.Namespace | quote }}
+        image: {{ .Values.vault.initSecrets.image | default "ghcr.io/this-is-tobi/homelab/utils:latest" }}
         command:
-        - /bin/bash
+        - /bin/sh
         - -c
         - |
           set -e
 
-          # Prepare secrets configuration JSON
+          # Write secrets config from Helm values into a temp file
           cat <<'SECRETS_CONFIG_EOF' > /tmp/secrets-config.json
           [
           {{- range $idx, $secret := .Values.vault.initSecrets.secrets }}
@@ -141,9 +132,18 @@ spec:
           ]
           SECRETS_CONFIG_EOF
 
-          # Run the vault init secrets script
-          export SECRETS_FILE=/tmp/secrets-config.json
-          ${HOME}/scripts/vault-init-secrets.sh
+          # Run the Go binary
+          ohmlab vault init \
+            --vault-addr={{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) | quote }} \
+            {{- if .Values.vault.initSecrets.skipTLSVerify }}
+            --skip-tls-verify \
+            {{- else }}
+            --ca-cert=/vault-ca/ca.crt \
+            {{- end }}
+            --auth-method={{ .Values.vault.initSecrets.authMethod | default "kubernetes" }} \
+            --auth-mount={{ .Values.vault.initSecrets.authMount | default "kubernetes" }} \
+            --role={{ .Values.vault.initSecrets.vaultRole | default "vault-init-secrets" | quote }} \
+            --config=/tmp/secrets-config.json
         resources:
           {{- toYaml .Values.vault.initSecrets.resources | nindent 10 }}
         securityContext:

@@ -70,61 +70,16 @@ spec:
       tolerations:
         {{- toYaml .Values.vault.initSecrets.tolerations | nindent 8 }}
       {{- end }}
-      initContainers:
-      - name: wait-for-vault
-        image: {{ .Values.vault.initSecrets.image | default "docker.io/curlimages/curl:8.5.0" }}
+      containers:
+      - name: init-secrets
+        image: {{ .Values.vault.initSecrets.image | default "ghcr.io/this-is-tobi/homelab/utils:latest" }}
         command:
         - /bin/sh
         - -c
         - |
           set -e
-          echo "Waiting for Vault to be ready..."
-          max_attempts=60
-          attempt=0
 
-          while [ $attempt -lt $max_attempts ]; do
-            if curl -k -s {{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) }}/v1/sys/health | grep -q "initialized"; then
-              echo "Vault is ready!"
-              exit 0
-            fi
-            echo "Waiting for Vault... (attempt $((attempt+1))/$max_attempts)"
-            sleep 5
-            attempt=$((attempt+1))
-          done
-
-          echo "Timeout waiting for Vault to become ready"
-          exit 1
-        resources:
-          requests:
-            cpu: 10m
-            memory: 16Mi
-          limits:
-            cpu: 50m
-            memory: 32Mi
-      containers:
-      - name: init-secrets
-        image: {{ .Values.vault.initSecrets.image | default "ghcr.io/this-is-tobi/tools/homelab-utils:latest" }}
-        env:
-        - name: VAULT_ADDR
-          value: {{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) | quote }}
-        {{- if .Values.vault.initSecrets.skipTLSVerify }}
-        - name: VAULT_SKIP_VERIFY
-          value: "true"
-        {{- else }}
-        - name: VAULT_CACERT
-          value: /vault-ca/ca.crt
-        {{- end }}
-        - name: VAULT_ROLE
-          value: {{ .Values.vault.initSecrets.vaultRole | default "vault-init-secrets" | quote }}
-        - name: NAMESPACE
-          value: {{ .Release.Namespace | quote }}
-        command:
-        - /bin/bash
-        - -c
-        - |
-          set -e
-
-          # Prepare secrets configuration JSON
+          # Write secrets config from Helm values into a temp file
           cat <<'SECRETS_CONFIG_EOF' > /tmp/secrets-config.json
           [
           {{- range $idx, $secret := .Values.vault.initSecrets.secrets }}
@@ -137,9 +92,18 @@ spec:
           ]
           SECRETS_CONFIG_EOF
 
-          # Run the vault init secrets script
-          export SECRETS_FILE=/tmp/secrets-config.json
-          ${HOME}/scripts/vault-init-secrets.sh
+          # Run the Go binary
+          ohmlab vault init \
+            --vault-addr={{ .Values.vault.initSecrets.vaultAddr | default (printf "https://%s.%s.svc.cluster.local:8200" .Values.vault.name .Release.Namespace) | quote }} \
+            {{- if .Values.vault.initSecrets.skipTLSVerify }}
+            --skip-tls-verify \
+            {{- else }}
+            --ca-cert=/vault-ca/ca.crt \
+            {{- end }}
+            --auth-method={{ .Values.vault.initSecrets.authMethod | default "kubernetes" }} \
+            --auth-mount={{ .Values.vault.initSecrets.authMount | default "kubernetes" }} \
+            --role={{ .Values.vault.initSecrets.vaultRole | default "vault-init-secrets" | quote }} \
+            --config=/tmp/secrets-config.json
         resources:
           {{- toYaml .Values.vault.initSecrets.resources | nindent 10 }}
         securityContext:

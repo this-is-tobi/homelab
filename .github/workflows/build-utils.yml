@@ -1,0 +1,33 @@
+name: Build utils image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "utils/**"
+      - ".github/workflows/build-utils.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "utils/**"
+      - ".github/workflows/build-utils.yml"
+
+jobs:
+  build:
+    uses: this-is-tobi/github-workflows/.github/workflows/build-docker.yml@v0
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    with:
+      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/utils
+      IMAGE_TAG: ${{ github.sha }}
+      IMAGE_DOCKERFILE: utils/docker/Dockerfile
+      IMAGE_CONTEXT: utils/
+      BUILD_AMD64: true
+      BUILD_ARM64: true
+      LATEST_TAG: ${{ github.ref == 'refs/heads/main' }}
+      CACHE: true
