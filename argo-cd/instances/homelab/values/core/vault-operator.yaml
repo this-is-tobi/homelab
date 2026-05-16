@@ -12,6 +12,7 @@ gateway:
 
 vault:
   initSecrets:
+    forceRotate: false
     # Secrets to initialize using template syntax:
     # - <random:N> generates random alphanumeric string of length N
     # - <uuid> generates UUID v4
@@ -71,6 +72,9 @@ vault:
             region: fr-par
             secretKey: ""
     - path: homelab/platforms/production/argo-cd
+      # Core/infra ArgoCD (system deployment manager).
+      # A future platform ArgoCD (for customers) would use a distinct path,
+      # e.g. homelab/platforms/production/platform-argo-cd
       data:
         admin:
           username: admin

@@ -103,6 +103,9 @@ spec:
             --auth-method={{ .Values.vault.initSecrets.authMethod | default "kubernetes" }} \
             --auth-mount={{ .Values.vault.initSecrets.authMount | default "kubernetes" }} \
             --role={{ .Values.vault.initSecrets.vaultRole | default "vault-init-secrets" | quote }} \
+            {{- if .Values.vault.initSecrets.forceRotate }}
+            --force-rotate \
+            {{- end }}
             --config=/tmp/secrets-config.json
         resources:
           {{- toYaml .Values.vault.initSecrets.resources | nindent 10 }}
