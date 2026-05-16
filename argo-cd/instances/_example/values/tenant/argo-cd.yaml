@@ -1,7 +1,7 @@
 argo-cd:
   configs:
     secret:
-      argocdServerAdminPassword: "$argo-cd-admin:password"
+      argocdServerAdminPassword: "$argo-cd-config:PASSWORD_HASHED"
     cm:
       url: "https://argo-cd.example.com"
       oidc.config: |
