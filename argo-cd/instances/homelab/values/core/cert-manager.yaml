@@ -2,6 +2,9 @@ cert-manager:
   crds:
     enabled: true
     keep: true
+  extraArgs:
+    - --dns01-recursive-nameservers=ns0.dom.scw.cloud:53,ns1.dom.scw.cloud:53
+    - --dns01-recursive-nameservers-only
 
 scaleway-certmanager-webhook:
   secret:
@@ -59,9 +62,3 @@ clusterIssuers:
           webhook:
             groupName: acme.scaleway.com
             solverName: scaleway
-
-vso:
-  vaultStaticSecrets:
-    scwCreds:
-      mount: homelab
-      path: platforms/production/cert-manager
