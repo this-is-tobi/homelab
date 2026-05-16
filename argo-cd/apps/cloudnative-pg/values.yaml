@@ -2,3 +2,7 @@ cloudnative-pg:
   crds:
     create: true
   replicaCount: 1
+
+plugin-barman-cloud:
+  crds:
+    create: true
