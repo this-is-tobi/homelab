@@ -25,7 +25,7 @@ jobs:
     with:
       IMAGE_NAME: ghcr.io/this-is-tobi/homelab/utils
       IMAGE_TAG: ${{ github.sha }}
-      IMAGE_DOCKERFILE: utils/docker/Dockerfile
+      IMAGE_DOCKERFILE: utils/Dockerfile
       IMAGE_CONTEXT: utils/
       BUILD_AMD64: true
       BUILD_ARM64: true
