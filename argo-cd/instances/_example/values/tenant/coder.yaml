@@ -69,16 +69,16 @@ vso:
   vaultStaticSecrets:
     coderDbInfos:
       mount: example
-      path: platforms/production/coder
+      path: platforms/production/tenant/coder
     coderDbAdmin:
       mount: example
-      path: platforms/production/coder
+      path: platforms/production/tenant/coder
     coderDbApp:
       mount: example
-      path: platforms/production/coder
+      path: platforms/production/tenant/coder
     coderPgBackup:
       mount: example
-      path: platforms/production/coder
+      path: platforms/production/tenant/coder
     coderSso:
       mount: example
-      path: platforms/production/coder
+      path: platforms/production/tenant/coder

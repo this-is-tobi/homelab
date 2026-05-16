@@ -48,31 +48,31 @@ vso:
   vaultStaticSecrets:
     keycloakAdmin:
       mount: example
-      path: platforms/production/keycloak
+      path: platforms/production/core/keycloak
     keycloakConfig:
       mount: example
-      path: platforms/production/keycloak
+      path: platforms/production/core/keycloak
     keycloakDbInfos:
       mount: example
-      path: platforms/production/keycloak
+      path: platforms/production/core/keycloak
     keycloakDbAdmin:
       mount: example
-      path: platforms/production/keycloak
+      path: platforms/production/core/keycloak
     keycloakDbApp:
       mount: example
-      path: platforms/production/keycloak
+      path: platforms/production/core/keycloak
     keycloakPgBackup:
       mount: example
-      path: platforms/production/keycloak
+      path: platforms/production/core/keycloak
     clientGitea:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea
     clientGrafana:
       mount: example
-      path: platforms/production/prometheus-stack
+      path: platforms/production/core/prometheus-stack
     clientArgoCd:
       mount: example
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd
     # clientRustfs:
     #   mount: "example"
-    #   path: "platforms/production/rustfs"
+    #   path: "platforms/production/tenant/rustfs"

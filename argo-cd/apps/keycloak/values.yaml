@@ -136,8 +136,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     keycloakAdmin:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -155,8 +155,8 @@ vso:
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
     keycloakConfig:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -176,8 +176,8 @@ vso:
             KEYCLOAK_REALM:
               text: '{{ get .Secrets "realm" }}'
     keycloakDbInfos:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -197,8 +197,8 @@ vso:
             DB_PORT:
               text: '{{ get .Secrets "postgres" | dig "port" "" }}'
     keycloakDbAdmin:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -216,8 +216,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
     keycloakDbApp:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -235,8 +235,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     keycloakPgBackup:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -262,8 +262,8 @@ vso:
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
     clientGitea:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -281,8 +281,8 @@ vso:
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "gitea" "clientSecret" "" }}'
     clientGrafana:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -300,8 +300,8 @@ vso:
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "grafana" "clientSecret" "" }}'
     clientArgoCd:
-      mount: homelab
-      path: platforms/production/keycloak
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h

@@ -42,19 +42,19 @@ vso:
   vaultStaticSecrets:
     vaultwardenAdmin:
       mount: example
-      path: platforms/production/vaultwarden
+      path: platforms/production/core/vaultwarden
     vaultwardenDbInfos:
       mount: example
-      path: platforms/production/vaultwarden
+      path: platforms/production/core/vaultwarden
     vaultwardenDbAdmin:
       mount: example
-      path: platforms/production/vaultwarden
+      path: platforms/production/core/vaultwarden
     vaultwardenDbApp:
       mount: example
-      path: platforms/production/vaultwarden
+      path: platforms/production/core/vaultwarden
     vaultwardenPgBackup:
       mount: example
-      path: platforms/production/vaultwarden
+      path: platforms/production/core/vaultwarden
     vaultwardenSso:
       mount: example
-      path: platforms/production/vaultwarden
+      path: platforms/production/core/vaultwarden

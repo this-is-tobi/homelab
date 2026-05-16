@@ -63,4 +63,4 @@ vso:
   vaultStaticSecrets:
     scwCreds:
       mount: example
-      path: platforms/production/cert-manager
+      path: platforms/production/core/cert-manager

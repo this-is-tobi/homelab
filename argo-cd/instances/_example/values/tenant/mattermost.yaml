@@ -64,16 +64,16 @@ vso:
   vaultStaticSecrets:
     mattermostS3:
       mount: example
-      path: platforms/production/mattermost
+      path: platforms/production/tenant/mattermost
     mattermostDbInfos:
       mount: example
-      path: platforms/production/mattermost
+      path: platforms/production/tenant/mattermost
     mattermostDbAdmin:
       mount: example
-      path: platforms/production/mattermost
+      path: platforms/production/tenant/mattermost
     mattermostDbApp:
       mount: example
-      path: platforms/production/mattermost
+      path: platforms/production/tenant/mattermost
     mattermostPgBackup:
       mount: example
-      path: platforms/production/mattermost
+      path: platforms/production/tenant/mattermost

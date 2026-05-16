@@ -26,4 +26,4 @@ vso:
   vaultStaticSecrets:
     rustfsAdmin:
       mount: example
-      path: platforms/production/rustfs
+      path: platforms/production/tenant/rustfs

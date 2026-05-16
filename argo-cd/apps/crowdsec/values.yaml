@@ -219,8 +219,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     crowdsecConsole:
-      mount: homelab
-      path: platforms/production/crowdsec
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h
@@ -240,8 +240,8 @@ vso:
             ENROLL_TAGS:
               text: '{{ get .Secrets "console" | dig "tags" "" }}'
     crowdsecDbAdmin:
-      mount: homelab
-      path: platforms/production/crowdsec
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h
@@ -259,8 +259,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
     crowdsecDbApp:
-      mount: homelab
-      path: platforms/production/crowdsec
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h
@@ -278,8 +278,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     crowdsecPgBackup:
-      mount: homelab
-      path: platforms/production/crowdsec
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h

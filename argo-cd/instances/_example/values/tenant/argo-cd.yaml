@@ -51,10 +51,10 @@ vso:
   vaultStaticSecrets:
     argoCdAdmin:
       mount: example
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd
     argoCdConfig:
       mount: example
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd
     argoCdSso:
       mount: example
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd

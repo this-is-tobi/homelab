@@ -79,8 +79,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     scwCreds:
-      mount: homelab
-      path: platforms/production/cert-manager
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: cert-manager-vso-default
       refreshAfter: 1h

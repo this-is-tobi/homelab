@@ -42,7 +42,7 @@ vso:
   vaultStaticSecrets:
     monitoringAdmin:
       mount: example
-      path: platforms/production/prometheus-stack
+      path: platforms/production/core/prometheus-stack
     monitoringSso:
       mount: example
-      path: platforms/production/prometheus-stack
+      path: platforms/production/core/prometheus-stack

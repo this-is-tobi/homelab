@@ -74,19 +74,19 @@ vso:
   vaultStaticSecrets:
     giteaAdmin:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea
     giteaDbInfos:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea
     giteaDbAdmin:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea
     giteaDbApp:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea
     giteaPgBackup:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea
     giteaSso:
       mount: example
-      path: platforms/production/gitea
+      path: platforms/production/tenant/gitea

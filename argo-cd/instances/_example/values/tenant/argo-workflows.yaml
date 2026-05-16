@@ -18,4 +18,4 @@ vso:
   vaultStaticSecrets:
     argoWorkflowsSso:
       mount: example
-      path: platforms/production/argo-workflows
+      path: platforms/production/tenant/argo-workflows

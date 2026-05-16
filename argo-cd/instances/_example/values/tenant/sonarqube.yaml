@@ -43,22 +43,22 @@ vso:
   vaultStaticSecrets:
     sonarqubeAdmin:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube
     sonarqubeProperties:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube
     sonarqubeDbInfos:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube
     sonarqubeDbAdmin:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube
     sonarqubeDbApp:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube
     sonarqubePgBackup:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube
     sonarqubeSso:
       mount: example
-      path: platforms/production/sonarqube
+      path: platforms/production/tenant/sonarqube

@@ -4,4 +4,4 @@ vso:
   vaultStaticSecrets:
     sopsAgeKeyFile:
       mount: example
-      path: platforms/production/sops
+      path: platforms/production/core/sops

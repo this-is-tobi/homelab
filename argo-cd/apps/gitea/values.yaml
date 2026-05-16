@@ -177,8 +177,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     giteaAdmin:
-      mount: homelab
-      path: platforms/production/gitea
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -196,8 +196,8 @@ vso:
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
     giteaDbInfos:
-      mount: homelab
-      path: platforms/production/gitea
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -217,8 +217,8 @@ vso:
             DB_PORT:
               text: '{{ get .Secrets "postgres" | dig "port" "" }}'
     giteaDbAdmin:
-      mount: homelab
-      path: platforms/production/gitea
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -236,8 +236,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
     giteaDbApp:
-      mount: homelab
-      path: platforms/production/gitea
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -255,8 +255,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     giteaPgBackup:
-      mount: homelab
-      path: platforms/production/gitea
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -282,8 +282,8 @@ vso:
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
     giteaSso:
-      mount: homelab
-      path: platforms/production/gitea
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h

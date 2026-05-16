@@ -98,8 +98,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     rustfsAdmin:
-      mount: homelab
-      path: platforms/production/rustfs
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: rustfs-vso-default
       refreshAfter: 1h

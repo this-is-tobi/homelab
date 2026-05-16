@@ -96,19 +96,19 @@ vso:
   vaultStaticSecrets:
     outlineS3:
       mount: example
-      path: platforms/production/outline
+      path: platforms/production/tenant/outline
     outlineDbInfos:
       mount: example
-      path: platforms/production/outline
+      path: platforms/production/tenant/outline
     outlineDbAdmin:
       mount: example
-      path: platforms/production/outline
+      path: platforms/production/tenant/outline
     outlineDbApp:
       mount: example
-      path: platforms/production/outline
+      path: platforms/production/tenant/outline
     outlinePgBackup:
       mount: example
-      path: platforms/production/outline
+      path: platforms/production/tenant/outline
     outlineSso:
       mount: example
-      path: platforms/production/outline
+      path: platforms/production/tenant/outline

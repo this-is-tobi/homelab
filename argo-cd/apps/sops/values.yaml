@@ -34,8 +34,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     sopsAgeKeyFile:
-      mount: homelab
-      path: platforms/production/sops
+      mount: ""
+      path: ""
       type: kv-v2
       vaultAuthRef: sops-vso-default
       refreshAfter: 1h

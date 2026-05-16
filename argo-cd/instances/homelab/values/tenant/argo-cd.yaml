@@ -74,10 +74,10 @@ vso:
   vaultStaticSecrets:
     argoCdAdmin:
       mount: homelab
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd
     argoCdConfig:
       mount: homelab
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd
     argoCdSso:
       mount: homelab
-      path: platforms/production/argo-cd
+      path: platforms/production/tenant/argo-cd

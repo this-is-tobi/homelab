@@ -59,78 +59,81 @@ vault:
     policies:
     - name: vault-init-secrets
       rules: |
-        # '+' matches any single path segment (production, staging, dev, ...)
-        path "homelab/data/platforms/+/*" {
+        # '+' matches any single path segment:
+        #   1st '+' = environment (production, staging, ...)
+        #   2nd '+' = tier (core, tenant)
+        #   '*'     = app name
+        path "homelab/data/platforms/+/+/*" {
           capabilities = ["create", "update", "read"]
         }
-        path "homelab/metadata/platforms/+/*" {
+        path "homelab/metadata/platforms/+/+/*" {
           capabilities = ["list", "read"]
         }
     - name: argo-cd
       rules: |
-        path "homelab/data/platforms/+/argo-cd" {
+        path "homelab/data/platforms/+/+/argo-cd" {
           capabilities = ["read", "list"]
         }
     - name: cert-manager
       rules: |
-        path "homelab/data/platforms/+/cert-manager" {
+        path "homelab/data/platforms/+/+/cert-manager" {
           capabilities = ["read", "list"]
         }
     - name: coder
       rules: |
-        path "homelab/data/platforms/+/coder" {
+        path "homelab/data/platforms/+/+/coder" {
           capabilities = ["read", "list"]
         }
     - name: gitea
       rules: |
-        path "homelab/data/platforms/+/gitea" {
+        path "homelab/data/platforms/+/+/gitea" {
           capabilities = ["read", "list"]
         }
     - name: harbor
       rules: |
-        path "homelab/data/platforms/+/harbor" {
+        path "homelab/data/platforms/+/+/harbor" {
           capabilities = ["read", "list"]
         }
     - name: keycloak
       rules: |
         # Keycloak reads its own secret only — client credentials are centralized
         # under keycloak's path at .clients.<app>.{clientId,clientSecret}
-        path "homelab/data/platforms/+/keycloak" {
+        path "homelab/data/platforms/+/+/keycloak" {
           capabilities = ["read", "list"]
         }
     - name: mattermost
       rules: |
-        path "homelab/data/platforms/+/mattermost" {
+        path "homelab/data/platforms/+/+/mattermost" {
           capabilities = ["read", "list"]
         }
     - name: rustfs
       rules: |
-        path "homelab/data/platforms/+/rustfs" {
+        path "homelab/data/platforms/+/+/rustfs" {
           capabilities = ["read", "list"]
         }
     - name: outline
       rules: |
-        path "homelab/data/platforms/+/outline" {
+        path "homelab/data/platforms/+/+/outline" {
           capabilities = ["read", "list"]
         }
     - name: prometheus-stack
       rules: |
-        path "homelab/data/platforms/+/prometheus-stack" {
+        path "homelab/data/platforms/+/+/prometheus-stack" {
           capabilities = ["read", "list"]
         }
     - name: sonarqube
       rules: |
-        path "homelab/data/platforms/+/sonarqube" {
+        path "homelab/data/platforms/+/+/sonarqube" {
           capabilities = ["read", "list"]
         }
     - name: sops
       rules: |
-        path "homelab/data/platforms/+/sops" {
+        path "homelab/data/platforms/+/+/sops" {
           capabilities = ["read", "list"]
         }
     - name: crowdsec
       rules: |
-        path "homelab/data/platforms/+/crowdsec" {
+        path "homelab/data/platforms/+/+/crowdsec" {
           capabilities = ["read", "list"]
         }
     auth:
