@@ -6,8 +6,9 @@ metadata:
     policies.kyverno.io/title: Sync Vault CA to all app namespaces
     policies.kyverno.io/description: >-
       Extracts only the ca.crt from vault-operator-system/vault-tls and
-      generates a vault-ca secret in every non-system namespace.
-      VSO VaultConnections reference this secret via caCertSecretRef.
+      generates a vault-ca secret in namespaces labelled with
+      ohmlab.fr/vault-access=true. VSO VaultConnections reference this
+      secret via caCertSecretRef.
 spec:
   rules:
   - name: sync-vault-ca
@@ -16,6 +17,9 @@ spec:
       - resources:
           kinds:
           - Namespace
+          selector:
+            matchLabels:
+              ohmlab.fr/vault-access: "true"
     preconditions:
       all:
       - key: "{{`{{request.object.metadata.name}}`}}"

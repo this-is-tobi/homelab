@@ -1,0 +1,36 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-latest-tag
+  annotations:
+    policies.kyverno.io/title: Disallow Latest Image Tag
+    policies.kyverno.io/description: >-
+      Container images should use a specific, immutable tag instead of 'latest'
+      to ensure reproducible deployments and avoid unexpected updates.
+      Starts in Audit mode — switch failureAction to Enforce once all workloads comply.
+spec:
+  background: true
+  rules:
+  - name: disallow-latest-tag
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - kyverno
+    validate:
+      failureAction: Audit
+      message: "Image tag 'latest' is not allowed. Use a specific tag or digest."
+      pattern:
+        spec:
+          containers:
+          - image: "!*:latest"
+          =(initContainers):
+          - image: "!*:latest"
+          =(ephemeralContainers):
+          - image: "!*:latest"
