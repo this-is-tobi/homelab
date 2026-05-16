@@ -76,6 +76,8 @@ backend homelab_entrypoint_http
 {% endfor %}
 
 # HTTPS (port 443): TLS passthrough to node:443 — APISIX terminates TLS.
+# Use plain TCP check (not check-ssl) because APISIX requires SNI for TLS, so
+# SNI-less health checks cause a handshake failure and mark backends as DOWN.
 # Workers preferred; masters as backup.
 backend homelab_entrypoint_https
   mode tcp
@@ -83,10 +85,10 @@ backend homelab_entrypoint_https
   option tcp-check
   default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
 {% for host in groups['workers'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check check-ssl verify none
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check
 {% endfor %}
 {% for host in groups['masters'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check check-ssl verify none backup
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check backup
 {% endfor %}
 
 backend k3s_api_server
