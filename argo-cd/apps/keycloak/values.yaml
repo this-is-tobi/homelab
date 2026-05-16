@@ -25,9 +25,9 @@ keycloak:
     password: ""
   ingress:
     enabled: true
-    className: nginx
+    className: apisix
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     hosts:
     - host: ""
       paths:
@@ -117,13 +117,18 @@ cnpg:
         value: ""
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: keycloak
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
@@ -131,8 +136,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     keycloakAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -150,8 +155,8 @@ vso:
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
     keycloakConfig:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -165,14 +170,14 @@ vso:
           - ".*"
           templates:
             ROOT_DOMAIN:
-              text: '{{ get .Secrets "extras" | dig "rootDomain" "" }}'
+              text: '{{ get .Secrets "rootDomain" }}'
             KEYCLOAK_DOMAIN:
               text: '{{ get .Secrets "domain" }}'
             KEYCLOAK_REALM:
-              text: '{{ get .Secrets "extras" | dig "realm" "" }}'
+              text: '{{ get .Secrets "realm" }}'
     keycloakDbInfos:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -192,8 +197,8 @@ vso:
             DB_PORT:
               text: '{{ get .Secrets "postgres" | dig "port" "" }}'
     keycloakDbAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -211,8 +216,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
     keycloakDbApp:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -230,8 +235,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     keycloakPgBackup:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -257,8 +262,8 @@ vso:
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
     clientGitea:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -272,12 +277,12 @@ vso:
           - ".*"
           templates:
             CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+              text: '{{ get .Secrets "clients" | dig "gitea" "clientId" "" }}'
             CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+              text: '{{ get .Secrets "clients" | dig "gitea" "clientSecret" "" }}'
     clientGrafana:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -291,12 +296,12 @@ vso:
           - ".*"
           templates:
             CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+              text: '{{ get .Secrets "clients" | dig "grafana" "clientId" "" }}'
             CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+              text: '{{ get .Secrets "clients" | dig "grafana" "clientSecret" "" }}'
     clientArgoCd:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/keycloak
       type: kv-v2
       vaultAuthRef: keycloak-vso-default
       refreshAfter: 1h
@@ -310,9 +315,9 @@ vso:
           - ".*"
           templates:
             CLIENT_ID:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+              text: '{{ get .Secrets "clients" | dig "argo-cd" "clientId" "" }}'
             CLIENT_SECRET:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+              text: '{{ get .Secrets "clients" | dig "argo-cd" "clientSecret" "" }}'
 
 keycloakConfigCli:
   enabled: true

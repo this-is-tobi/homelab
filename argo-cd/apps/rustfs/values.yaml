@@ -17,9 +17,9 @@ rustfs:
     consoleEnabled: true
   ingress:
     enabled: true
-    className: nginx
+    className: apisix
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     hosts:
     - host: ""
       paths:
@@ -28,9 +28,9 @@ rustfs:
     tls: []
   consoleIngress:
     enabled: true
-    className: nginx
+    className: apisix
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     hosts:
     - host: ""
       paths:
@@ -79,13 +79,18 @@ rustfs:
           topologyKey: kubernetes.io/hostname
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: rustfs
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
@@ -93,8 +98,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     rustfsAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/rustfs
       type: kv-v2
       vaultAuthRef: rustfs-vso-default
       refreshAfter: 1h

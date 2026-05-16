@@ -8,7 +8,7 @@ coder:
       host: ""
       wildcardHost: "*."
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       tls:
         enable: true
         secretName: ""

@@ -18,19 +18,24 @@ waultwarden:
     class: nginx
     nginxIngressAnnotations: false
     additionalAnnotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     hostname: ""
     tls: true
     tlsSecret: ""
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: vaultwarden
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"

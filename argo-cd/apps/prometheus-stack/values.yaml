@@ -35,7 +35,7 @@ kube-prometheus-stack:
       enabled: true
       ingressClassName: apisix
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       hosts:
       - ""
       tls:
@@ -72,13 +72,18 @@ kube-prometheus-stack:
       - kubernetes.io/pvc-protection
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: prometheus-stack
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
@@ -86,8 +91,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     monitoringAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/prometheus-stack
       type: kv-v2
       vaultAuthRef: prometheus-stack-vso-default
       refreshAfter: 1h
@@ -105,8 +110,8 @@ vso:
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
     monitoringSso:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/prometheus-stack
       type: kv-v2
       vaultAuthRef: prometheus-stack-vso-default
       refreshAfter: 1h

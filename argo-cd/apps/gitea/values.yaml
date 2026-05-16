@@ -9,9 +9,9 @@ gitea:
   ingress:
     enabled: true
     apiVersion: networking.k8s.io/v1
-    className: nginx
+    className: apisix
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     hosts:
     - host: ""
       paths:
@@ -158,13 +158,18 @@ cnpg:
         value: ""
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: gitea
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
@@ -172,8 +177,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     giteaAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/gitea
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -191,8 +196,8 @@ vso:
             password:
               text: '{{ get .Secrets "admin" | dig "password" "" }}'
     giteaDbInfos:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/gitea
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -212,8 +217,8 @@ vso:
             DB_PORT:
               text: '{{ get .Secrets "postgres" | dig "port" "" }}'
     giteaDbAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/gitea
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -231,8 +236,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
     giteaDbApp:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/gitea
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -250,8 +255,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     giteaPgBackup:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/gitea
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h
@@ -277,8 +282,8 @@ vso:
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
     giteaSso:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/gitea
       type: kv-v2
       vaultAuthRef: gitea-vso-default
       refreshAfter: 1h

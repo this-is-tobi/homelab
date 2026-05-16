@@ -26,7 +26,7 @@ harbor:
         core: ""
       className: nginx
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
   externalURL: ""
   persistence:
     enabled: true
@@ -113,13 +113,18 @@ cnpg:
         value: ""
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: harbor
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"

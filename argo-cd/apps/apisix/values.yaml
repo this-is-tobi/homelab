@@ -69,7 +69,7 @@ gateway:
   name: homelab-gateway
   namespace: kube-system
   domain: ""
-  clusterIssuer: letsencrypt-http-prod
+  clusterIssuer: letsencrypt-dns-prod
   dnsClusterIssuer: letsencrypt-dns-prod
   wildcardTlsSecret: gateway-wildcard-tls
   apexTlsSecret: gateway-wildcard-tls

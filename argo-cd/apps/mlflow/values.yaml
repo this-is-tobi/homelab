@@ -3,7 +3,7 @@ mlflow:
     enabled: true
     className: nginx
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       traefik.ingress.kubernetes.io/router.middlewares: mlflow-oauth2-proxy@kubernetescrd
     hosts:
     - host: ""
@@ -103,7 +103,7 @@ sso:
   ingress:
     enabled: true
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     path: /oauth2
     hosts:
     - ""
@@ -113,13 +113,18 @@ sso:
       - ""
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: mlflow
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"

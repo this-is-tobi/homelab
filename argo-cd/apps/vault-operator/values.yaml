@@ -59,168 +59,78 @@ vault:
     policies:
     - name: vault-init-secrets
       rules: |
-        # Allow creating/updating secrets in platforms/production path
-        path "homelab/data/*" {
+        # '+' matches any single path segment (production, staging, dev, ...)
+        path "homelab/data/platforms/+/*" {
           capabilities = ["create", "update", "read"]
         }
-        # Allow listing to check if secrets exist
-        path "homelab/metadata/*" {
+        path "homelab/metadata/platforms/+/*" {
           capabilities = ["list", "read"]
         }
     - name: argo-cd
       rules: |
-        path "homelab/data/platforms/production/argo-cd" {
+        path "homelab/data/platforms/+/argo-cd" {
           capabilities = ["read", "list"]
         }
     - name: cert-manager
       rules: |
-        path "homelab/data/platforms/production/cert-manager" {
+        path "homelab/data/platforms/+/cert-manager" {
           capabilities = ["read", "list"]
         }
     - name: coder
       rules: |
-        path "homelab/data/platforms/production/coder" {
+        path "homelab/data/platforms/+/coder" {
           capabilities = ["read", "list"]
         }
     - name: gitea
       rules: |
-        path "homelab/data/platforms/production/gitea" {
+        path "homelab/data/platforms/+/gitea" {
           capabilities = ["read", "list"]
         }
     - name: harbor
       rules: |
-        path "homelab/data/platforms/production/harbor" {
+        path "homelab/data/platforms/+/harbor" {
           capabilities = ["read", "list"]
         }
     - name: keycloak
       rules: |
-        path "homelab/data/platforms/production/keycloak" {
+        # Keycloak reads its own secret only — client credentials are centralized
+        # under keycloak's path at .clients.<app>.{clientId,clientSecret}
+        path "homelab/data/platforms/+/keycloak" {
           capabilities = ["read", "list"]
-        }
-        path "homelab/data/platforms/production/argo-cd" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/argo-workflows" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/coder" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/gitea" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/harbor" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/mattermost" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/mlflow" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/outline" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/rustfs" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/sonarqube" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/vault" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/vaultwarden" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
-        }
-        path "homelab/data/platforms/production/prometheus-stack" {
-          capabilities = ["read", "list"]
-          allowed_parameters = {
-            "data/keycloak/clientId" = []
-            "data/keycloak/clientSecret" = []
-          }
         }
     - name: mattermost
       rules: |
-        path "homelab/data/platforms/production/mattermost" {
+        path "homelab/data/platforms/+/mattermost" {
           capabilities = ["read", "list"]
         }
     - name: rustfs
       rules: |
-        path "homelab/data/platforms/production/rustfs" {
+        path "homelab/data/platforms/+/rustfs" {
           capabilities = ["read", "list"]
         }
     - name: outline
       rules: |
-        path "homelab/data/platforms/production/outline" {
+        path "homelab/data/platforms/+/outline" {
           capabilities = ["read", "list"]
         }
     - name: prometheus-stack
       rules: |
-        path "homelab/data/platforms/production/prometheus-stack" {
+        path "homelab/data/platforms/+/prometheus-stack" {
           capabilities = ["read", "list"]
         }
     - name: sonarqube
       rules: |
-        path "homelab/data/platforms/production/sonarqube" {
+        path "homelab/data/platforms/+/sonarqube" {
           capabilities = ["read", "list"]
         }
     - name: sops
       rules: |
-        path "homelab/data/platforms/production/sops" {
+        path "homelab/data/platforms/+/sops" {
           capabilities = ["read", "list"]
         }
     - name: crowdsec
       rules: |
-        path "homelab/data/platforms/production/crowdsec" {
+        path "homelab/data/platforms/+/crowdsec" {
           capabilities = ["read", "list"]
         }
     auth:
@@ -232,70 +142,91 @@ vault:
         policies: [vault-init-secrets]
         ttl: 10m
       - name: argo-cd
-        bound_service_account_names: [default, argo-cd-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [argo-cd]
         policies: [argo-cd]
         ttl: 1h
       - name: cert-manager
-        bound_service_account_names: [default, cert-manager-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [cert-manager]
         policies: [cert-manager]
         ttl: 1h
       - name: coder
-        bound_service_account_names: [default, coder-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [coder]
         policies: [coder]
         ttl: 1h
       - name: gitea
-        bound_service_account_names: [default, gitea-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [gitea]
         policies: [gitea]
         ttl: 1h
       - name: harbor
-        bound_service_account_names: [default, harbor-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [harbor]
         policies: [harbor]
         ttl: 1h
       - name: keycloak
-        bound_service_account_names: [default, keycloak-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [keycloak-system]
         policies: [keycloak]
         ttl: 1h
       - name: mattermost
-        bound_service_account_names: [default, mattermost-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [mattermost]
         policies: [mattermost]
         ttl: 1h
       - name: rustfs
-        bound_service_account_names: [default, rustfs-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [rustfs]
         policies: [rustfs]
         ttl: 1h
       - name: outline
-        bound_service_account_names: [default, outline-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [outline]
         policies: [outline]
         ttl: 1h
       - name: prometheus-stack
-        bound_service_account_names: [default, prometheus-stack-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [prometheus-stack]
         policies: [prometheus-stack]
         ttl: 1h
       - name: sonarqube
-        bound_service_account_names: [default, sonarqube-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [sonarqube]
         policies: [sonarqube]
         ttl: 1h
       - name: sops
-        bound_service_account_names: [default, sops-vso]
-        bound_service_account_namespaces: [sops]
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [kube-system]
         policies: [sops]
         ttl: 1h
       - name: crowdsec
-        bound_service_account_names: [default, crowdsec-vso]
+        bound_service_account_names: [vso]
         bound_service_account_namespaces: [crowdsec]
         policies: [crowdsec]
         ttl: 1h
+    # Multi-cluster JWT auth — enable per remote cluster.
+    # Each cluster gets its own mount (e.g., jwt-staging, jwt-prod-eu).
+    # Uses K8s SA tokens validated via JWKS — no cross-cluster API dependency.
+    # To enable: uncomment, set jwks_url to the remote cluster's OIDC discovery endpoint,
+    # and set initSecrets.authMethod=jwt + authMount=jwt-<cluster> in the remote instance.
+    # - type: jwt
+    #   path: jwt-remote
+    #   config:
+    #     oidc_discovery_url: ""  # https://<k8s-api>/.well-known/openid-configuration
+    #     # OR use jwks_url directly:
+    #     # jwks_url: "https://<k8s-api>/openid/v1/jwks"
+    #     bound_issuer: ""  # https://<k8s-api>
+    #     default_role: ""
+    #   roles:
+    #   - name: vault-init-secrets
+    #     bound_audiences: [vault]
+    #     bound_subject: ""
+    #     user_claim: sub
+    #     role_type: jwt
+    #     policies: [vault-init-secrets]
+    #     ttl: 10m
     secrets:
     - path: homelab
       type: kv
@@ -306,10 +237,12 @@ vault:
   initSecrets:
     enabled: true
     vaultRole: vault-init-secrets
+    authMethod: kubernetes
+    authMount: kubernetes
     skipTLSVerify: false
     backoffLimit: 3
     ttlSecondsAfterFinished: 86400
-    image: "ghcr.io/this-is-tobi/tools/homelab-utils:latest"
+    image: "ghcr.io/this-is-tobi/homelab/utils:latest"
     resources:
       requests:
         cpu: 50m
@@ -354,7 +287,7 @@ vault:
     ingressClassName: apisix
     host: vault.core.ohmlab.fr
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       k8s.apisix.apache.org/upstream-scheme: https
     tls:
       enabled: true

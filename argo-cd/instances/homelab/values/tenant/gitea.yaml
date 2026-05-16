@@ -105,24 +105,3 @@ cnpg:
         key: S3_SECRET_KEY
       region:
         key: S3_REGION
-
-vso:
-  vaultStaticSecrets:
-    giteaAdmin:
-      mount: homelab
-      path: platforms/production/gitea
-    giteaDbInfos:
-      mount: homelab
-      path: platforms/production/gitea
-    giteaDbAdmin:
-      mount: homelab
-      path: platforms/production/gitea
-    giteaDbApp:
-      mount: homelab
-      path: platforms/production/gitea
-    giteaPgBackup:
-      mount: homelab
-      path: platforms/production/gitea
-    giteaSso:
-      mount: homelab
-      path: platforms/production/gitea

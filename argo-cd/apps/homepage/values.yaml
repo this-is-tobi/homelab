@@ -16,9 +16,9 @@ homepage:
   ingress:
     main:
       enabled: true
-      className: nginx
+      className: apisix
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       hosts:
       - host: ""
         paths:

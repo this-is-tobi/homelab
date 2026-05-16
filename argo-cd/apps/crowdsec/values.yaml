@@ -200,13 +200,18 @@ cnpg:
 # Secrets are stored in Vault and synced to K8s via VaultStaticSecret.
 # Set mount/path per-instance in argo-cd/instances/<name>/values/core/crowdsec.yaml
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: crowdsec
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
@@ -214,8 +219,8 @@ vso:
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
     crowdsecConsole:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/crowdsec
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h
@@ -235,8 +240,8 @@ vso:
             ENROLL_TAGS:
               text: '{{ get .Secrets "console" | dig "tags" "" }}'
     crowdsecDbAdmin:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/crowdsec
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h
@@ -254,8 +259,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
     crowdsecDbApp:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/crowdsec
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h
@@ -273,8 +278,8 @@ vso:
             password:
               text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
     crowdsecPgBackup:
-      mount: ""
-      path: ""
+      mount: homelab
+      path: platforms/production/crowdsec
       type: kv-v2
       vaultAuthRef: crowdsec-vso-default
       refreshAfter: 1h

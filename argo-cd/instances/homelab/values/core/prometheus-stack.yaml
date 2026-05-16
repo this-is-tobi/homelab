@@ -49,12 +49,3 @@ kube-prometheus-stack:
         auth_url: "https://sso.core.ohmlab.fr/realms/homelab/protocol/openid-connect/auth"
         token_url: "https://sso.core.ohmlab.fr/realms/homelab/protocol/openid-connect/token"
         api_url: "https://sso.core.ohmlab.fr/realms/homelab/protocol/openid-connect/userinfo"
-
-vso:
-  vaultStaticSecrets:
-    monitoringAdmin:
-      mount: homelab
-      path: platforms/production/prometheus-stack
-    monitoringSso:
-      mount: homelab
-      path: platforms/production/prometheus-stack

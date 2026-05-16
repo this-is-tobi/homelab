@@ -11,7 +11,7 @@ longhorn:
     enabled: false
     ingressClassName: apisix
     annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-http-prod
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     host: ""
     tls: true
     tlsSecret: longhorn-tls

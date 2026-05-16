@@ -351,7 +351,7 @@ argo-cd:
       ingressClassName: apisix
       hostname: appset.""
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       tls: true
     metrics:
       enabled: true
@@ -375,7 +375,7 @@ argo-cd:
       ingressClassName: apisix
       hostname: ""
       annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-http-prod
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       tls: true
   repoServer:
     autoscaling:
@@ -401,13 +401,18 @@ argo-cd:
     keep: true
 
 vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
   vaultAuth:
     default:
       method: kubernetes
       mount: kubernetes
       kubernetes:
         role: argo-cd
-        serviceAccount: default
+        serviceAccount: vso
   vaultConnection:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
