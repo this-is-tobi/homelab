@@ -71,24 +71,3 @@ cnpg:
         key: S3_SECRET_KEY
       region:
         key: S3_REGION
-
-vso:
-  vaultStaticSecrets:
-    mattermostS3:
-      mount: homelab
-      path: platforms/production/mattermost
-    mattermostDbInfos:
-      mount: homelab
-      path: platforms/production/mattermost
-    mattermostDbSecret:
-      mount: homelab
-      path: platforms/production/mattermost
-    mattermostDbAdmin:
-      mount: homelab
-      path: platforms/production/mattermost
-    mattermostDbApp:
-      mount: homelab
-      path: platforms/production/mattermost
-    mattermostPgBackup:
-      mount: homelab
-      path: platforms/production/mattermost

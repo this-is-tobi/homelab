@@ -20,18 +20,3 @@ cnpg:
         key: S3_SECRET_KEY
       region:
         key: S3_REGION
-
-vso:
-  vaultStaticSecrets:
-    crowdsecConsole:
-      mount: homelab
-      path: platforms/production/crowdsec
-    crowdsecDbAdmin:
-      mount: homelab
-      path: platforms/production/crowdsec
-    crowdsecDbApp:
-      mount: homelab
-      path: platforms/production/crowdsec
-    crowdsecPgBackup:
-      mount: homelab
-      path: platforms/production/crowdsec

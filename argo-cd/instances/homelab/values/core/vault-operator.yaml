@@ -28,16 +28,56 @@ vault:
           secretKey: ""
           projectId: ""
           domain: ohmlab.fr
+    # Keycloak MUST come before apps that use <ref:...> to its clients
+    - path: homelab/platforms/production/keycloak
+      data:
+        admin:
+          username: admin
+          password: "<random:24>"
+        domain: sso.core.ohmlab.fr
+        realm: homelab
+        rootDomain: ohmlab.fr
+        # Centralized OIDC client credentials — each app references these via
+        # <ref:homelab/platforms/production/keycloak#clients.<app>.clientSecret>
+        # so keycloak policy only needs access to its own path.
+        clients:
+          argo-cd:
+            clientId: argo-cd
+            clientSecret: "<random:32>"
+          gitea:
+            clientId: gitea
+            clientSecret: "<random:32>"
+          grafana:
+            clientId: grafana
+            clientSecret: "<random:32>"
+          mattermost:
+            clientId: mattermost
+            clientSecret: "<random:32>"
+        postgres:
+          admin:
+            username: postgres
+            password: "<random:24>"
+          app:
+            username: keycloak
+            password: "<random:24>"
+          database: keycloak
+          host: keycloak-pg-cluster-rw
+          port: "5432"
+          s3:
+            accessKey: ""
+            bucketName: ohmlab-backups
+            bucketPrefix: cnpg
+            endpoint: "https://s3.fr-par.scw.cloud"
+            region: fr-par
+            secretKey: ""
     - path: homelab/platforms/production/argo-cd
       data:
         admin:
           username: admin
           password: "<random:24>"
         keycloak:
-          endpoint: "https://sso.core.ohmlab.fr"
-          realm: homelab
           clientId: argo-cd
-          clientSecret: "<random:32>"
+          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.argo-cd.clientSecret>"
     - path: homelab/platforms/production/gitea
       data:
         admin:
@@ -61,10 +101,8 @@ vault:
             region: fr-par
             secretKey: ""
         keycloak:
-          endpoint: "https://sso.core.ohmlab.fr"
-          realm: homelab
           clientId: gitea
-          clientSecret: "<random:32>"
+          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.gitea.clientSecret>"
     - path: homelab/platforms/production/mattermost
       data:
         admin:
@@ -95,10 +133,8 @@ vault:
           region: fr-par
           secretKey: ""
         keycloak:
-          endpoint: "https://sso.core.ohmlab.fr"
-          realm: homelab
           clientId: mattermost
-          clientSecret: "<random:32>"
+          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.mattermost.clientSecret>"
     - path: homelab/platforms/production/rustfs
       data:
         admin:
@@ -110,46 +146,17 @@ vault:
           username: admin
           password: "<random:24>"
         keycloak:
-          endpoint: "https://sso.core.ohmlab.fr"
-          realm: homelab
           clientId: grafana
-          clientSecret: "<random:32>"
-    - path: homelab/platforms/production/keycloak
-      data:
-        admin:
-          username: admin
-          password: "<random:24>"
-        extras:
-          realm: homelab
-          rootDomain: ohmlab.fr
-        postgres:
-          admin:
-            username: postgres
-            password: "<random:24>"
-          app:
-            username: keycloak
-            password: "<random:24>"
-          database: keycloak
-          host: keycloak-pg-cluster-rw
-          port: "5432"
-          s3:
-            accessKey: ""
-            bucketName: ohmlab-backups
-            bucketPrefix: cnpg
-            endpoint: "https://s3.fr-par.scw.cloud"
-            region: fr-par
-            secretKey: ""
+          clientSecret: "<ref:homelab/platforms/production/keycloak#clients.grafana.clientSecret>"
     - path: homelab/platforms/production/sops
       data:
-        extras:
-          # base64-encoded age keys file (age-keygen output); set manually or via vault-init-secrets
-          keys: ""
-          public: "<age:public>"
+        # base64-encoded age keys file (age-keygen output); set manually or via vault-init-secrets
+        keys: ""
+        public: "<age:public>"
     - path: homelab/platforms/production/sops-test
       data:
-        extras:
-          secret: "<age:secret>"
-          public: "<age:public>"
+        secret: "<age:secret>"
+        public: "<age:public>"
     - path: homelab/platforms/production/crowdsec
       data:
         console:
@@ -176,10 +183,8 @@ vault:
     # - path: "homelab/platforms/production/argo-workflows"
     #   data:
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "argo-workflows"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.argo-workflows.clientSecret>"
     # - path: "homelab/platforms/production/coder"
     #   data:
     #     admin:
@@ -203,10 +208,8 @@ vault:
     #         region: "fr-par"
     #         secretKey: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "coder"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.coder.clientSecret>"
     # - path: "homelab/platforms/production/harbor"
     #   data:
     #     admin:
@@ -237,10 +240,8 @@ vault:
     #       region: "fr-par"
     #       secretKey: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "harbor"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.harbor.clientSecret>"
     # - path: "homelab/platforms/production/mlflow"
     #   data:
     #     admin:
@@ -271,10 +272,8 @@ vault:
     #       region: "fr-par"
     #       secretKey: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "mlflow"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.mlflow.clientSecret>"
     # - path: "homelab/platforms/production/outline"
     #   data:
     #     admin:
@@ -305,10 +304,8 @@ vault:
     #       region: "fr-par"
     #       secretKey: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "outline"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.outline.clientSecret>"
     # - path: "homelab/platforms/production/sonarqube"
     #   data:
     #     admin:
@@ -332,28 +329,22 @@ vault:
     #         region: "fr-par"
     #         secretKey: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "sonarqube"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.sonarqube.clientSecret>"
     # - path: "homelab/platforms/production/vault"
     #   data:
     #     admin:
     #       token: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "vault"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.vault.clientSecret>"
     # - path: "homelab/platforms/production/vault-operator"
     #   data:
     #     admin:
     #       token: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "vault-operator"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.vault-operator.clientSecret>"
     # - path: "homelab/platforms/production/vaultwarden"
     #   data:
     #     admin:
@@ -376,10 +367,8 @@ vault:
     #         region: "fr-par"
     #         secretKey: ""
     #     keycloak:
-    #       endpoint: "https://sso.core.ohmlab.fr"
-    #       realm: "homelab"
     #       clientId: "vaultwarden"
-    #       clientSecret: "<random:32>"
+    #       clientSecret: "<ref:homelab/platforms/production/keycloak#clients.vaultwarden.clientSecret>"
 
 vso:
   enabled: true
