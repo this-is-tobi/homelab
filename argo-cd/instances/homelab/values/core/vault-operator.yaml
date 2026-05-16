@@ -79,6 +79,7 @@ vault:
         admin:
           username: admin
           password: "<random:24>"
+          passwordHashed: "<bcrypt:admin.password>"
         keycloak:
           clientId: argo-cd
           clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-cd.clientSecret>"
