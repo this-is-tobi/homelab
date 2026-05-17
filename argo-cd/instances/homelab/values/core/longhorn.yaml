@@ -11,7 +11,7 @@ gateway:
       backendPort: 80
 
 oidc:
-  enabled: true
+  enabled: false
   hostname: longhorn.core.ohmlab.fr
   discoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab/.well-known/openid-configuration"
   tlsSecret: longhorn.core.ohmlab.fr-tls
