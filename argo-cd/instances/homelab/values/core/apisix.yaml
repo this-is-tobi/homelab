@@ -38,6 +38,9 @@ gateway:
   wildcardTlsSecret: gateway-wildcard-tls
   apexTlsSecret: gateway-wildcard-tls
   extraListeners: []
+  extraDnsNames:
+  - "*.core.ohmlab.fr"
+  - "*.s3.ohmlab.fr"
   tlsPassthroughListeners:
   - name: tls-teleport
     hostname: "*.teleport.core.ohmlab.fr"
