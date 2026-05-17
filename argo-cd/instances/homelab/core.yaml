@@ -46,6 +46,14 @@ apps:
     name: apisix-ingress-controller-webhook
     jqPathExpressions:
     - .webhooks[].clientConfig.caBundle
+  # etcd StatefulSet: VCT status injected by Kubernetes; checksum annotation
+  # derived from the operator-managed jwt-token secret (ignored above).
+  - group: apps
+    kind: StatefulSet
+    name: apisix-etcd
+    jqPathExpressions:
+    - .spec.volumeClaimTemplates[].status
+    - .spec.template.metadata.annotations["checksum/token-secret"]
 - app: vault-operator
   enabled: "true"
   namespace: vault-operator-system
