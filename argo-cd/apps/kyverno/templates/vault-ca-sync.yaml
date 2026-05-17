@@ -9,6 +9,9 @@ metadata:
       generates a vault-ca secret in namespaces labelled with
       ohmlab.fr/vault-access=true. VSO VaultConnections reference this
       secret via caCertSecretRef.
+    # Kyverno rejects patches to immutable generate-rule fields via its
+    # admission webhook, so ArgoCD must replace (delete + create) the policy.
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   rules:
   - name: sync-vault-ca
