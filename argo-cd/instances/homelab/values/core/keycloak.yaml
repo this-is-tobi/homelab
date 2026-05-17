@@ -46,7 +46,7 @@ cnpg:
       app:
         secretName: keycloak-pg-cluster-app
   backup:
-    enabled: true
+    enabled: false  # S3 keys not configured yet — re-enable when available
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
@@ -86,5 +86,11 @@ vso:
       mount: homelab
       path: platforms/production/core/keycloak
     clientArgoCd:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    clientArgoCdCore:
+      mount: homelab
+      path: platforms/production/core/keycloak
+    clientVault:
       mount: homelab
       path: platforms/production/core/keycloak
