@@ -25,28 +25,6 @@ argo-cd:
             hs = {}
             hs.status = "Healthy"
             return hs
-        gateway.networking.k8s.io/Gateway:
-          health.lua: |
-            hs = {}
-            if obj.status ~= nil and obj.status.conditions ~= nil then
-              for i, condition in ipairs(obj.status.conditions) do
-                if condition.type == "Programmed" and condition.status == "True" then
-                  hs.status = "Healthy"
-                  hs.message = condition.message
-                  return hs
-                end
-              end
-              for i, condition in ipairs(obj.status.conditions) do
-                if condition.type == "Programmed" and condition.status == "False" then
-                  hs.status = "Degraded"
-                  hs.message = condition.message
-                  return hs
-                end
-              end
-            end
-            hs.status = "Progressing"
-            hs.message = "Waiting for Gateway to be reconciled"
-            return hs
       oidc.config: |
         name: Keycloak
         issuer: ""

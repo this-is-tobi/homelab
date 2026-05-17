@@ -882,24 +882,24 @@ keycloakConfigCli:
         #   - "phone"
         #   - "offline_access"
         #   - "microprofile-jwt"
-        # clientScopes:
-        # - name: "groups"
-        #   description: "User groups"
-        #   protocol: "openid-connect"
-        #   attributes:
-        #     "include.in.token.scope": "true"
-        #     "display.on.consent.screen": "true"
-        #   protocolMappers:
-        #   - name: "groups"
-        #     protocol: "openid-connect"
-        #     protocolMapper: "oidc-group-membership-mapper"
-        #     consentRequired: false
-        #     config:
-        #       "full.path": "false"
-        #       "id.token.claim": "true"
-        #       "access.token.claim": "true"
-        #       "claim.name": "groups"
-        #       "userinfo.token.claim": "true"
+        clientScopes:
+        - name: groups
+          description: User groups
+          protocol: openid-connect
+          attributes:
+            include.in.token.scope: "true"
+            display.on.consent.screen: "true"
+          protocolMappers:
+          - name: groups
+            protocol: openid-connect
+            protocolMapper: oidc-group-membership-mapper
+            consentRequired: false
+            config:
+              full.path: "false"
+              id.token.claim: "true"
+              access.token.claim: "true"
+              claim.name: groups
+              userinfo.token.claim: "true"
         # roles:
         #   realm:
         #   - name: "admin"

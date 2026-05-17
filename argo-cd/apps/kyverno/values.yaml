@@ -33,6 +33,7 @@ kyverno:
           - watch
           - create
           - update
+          - delete
     resources:
       requests:
         cpu: 50m

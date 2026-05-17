@@ -62,6 +62,34 @@ argo-cd:
         clientID: "argo-cd-core"
         clientSecret: "$argocd-core-oidc:OIDC_CLIENT_SECRET"
         requestedScopes: ["openid", "profile", "email", "groups"]
+      resource.customizations: |
+        networking.k8s.io/Ingress:
+          health.lua: |
+            hs = {}
+            hs.status = "Healthy"
+            return hs
+        gateway.networking.k8s.io/Gateway:
+          health.lua: |
+            hs = {}
+            if obj.status ~= nil and obj.status.conditions ~= nil then
+              for i, condition in ipairs(obj.status.conditions) do
+                if condition.type == "Programmed" and condition.status == "True" then
+                  hs.status = "Healthy"
+                  hs.message = condition.message
+                  return hs
+                end
+              end
+              for i, condition in ipairs(obj.status.conditions) do
+                if condition.type == "Programmed" and condition.status == "False" then
+                  hs.status = "Degraded"
+                  hs.message = condition.message
+                  return hs
+                end
+              end
+            end
+            hs.status = "Progressing"
+            hs.message = "Waiting for Gateway to be reconciled"
+            return hs
   applicationSet:
     pdb:
       enabled: true
