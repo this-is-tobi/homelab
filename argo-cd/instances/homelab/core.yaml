@@ -78,3 +78,11 @@ apps:
   enabled: "true"
   namespace: crowdsec
   syncWave: 60
+  ignoreDifferences:
+  # lapi-secrets contains randomly-generated csLapiSecret and registrationToken
+  # created at first install — must not be overwritten on re-sync.
+  - group: ""
+    kind: Secret
+    name: crowdsec-lapi-secrets
+    jqPathExpressions:
+    - .data
