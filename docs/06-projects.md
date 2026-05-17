@@ -120,13 +120,13 @@ flowchart LR
 
 ### Repository layout
 
-| Path                                          | Purpose                                                                                                                                      |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| [ansible/](../ansible/)                       | Infrastructure (gateway + K3s) provisioning roles & playbooks.                                                                               |
-| [utils/helm/](../utils/helm/) | Bootstrap chart — ships core ArgoCD, the root `manager` AppSet, and `admin-core` / `admin-tenant` AppProjects.                               |
-| [argo-cd/apps/](../argo-cd/apps/)             | Helm chart catalog (`gitea`, `keycloak`, ..., plus the `instance-manager` chart used by the root manager).                                   |
-| [argo-cd/instances/](../argo-cd/instances/)   | Per-instance folders. One per cluster / tenant, each with `instance.yaml` + `core.yaml` / `tenant.yaml` + `values/{core,tenant}/<app>.yaml`. |
-| [run.sh](../run.sh)                           | Wrapper around Ansible + Helm with sane defaults.                                                                                            |
+| Path                                        | Purpose                                                                                                                                      |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [ansible/](../ansible/)                     | Infrastructure (gateway + K3s) provisioning roles & playbooks.                                                                               |
+| [utils/helm/](../utils/helm/)               | Bootstrap chart — ships core ArgoCD, the root `manager` AppSet, and `admin-core` / `admin-tenant` AppProjects.                               |
+| [argo-cd/apps/](../argo-cd/apps/)           | Helm chart catalog (`gitea`, `keycloak`, ..., plus the `instance-manager` chart used by the root manager).                                   |
+| [argo-cd/instances/](../argo-cd/instances/) | Per-instance folders. One per cluster / tenant, each with `instance.yaml` + `core.yaml` / `tenant.yaml` + `values/{core,tenant}/<app>.yaml`. |
+| [run.sh](../run.sh)                         | Wrapper around Ansible + Helm with sane defaults.                                                                                            |
 
 ### Local validation
 
