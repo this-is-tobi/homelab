@@ -35,16 +35,29 @@
     - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/gateway.yml
+  pre_tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+      tags: always
   roles:
     - role: common/hostname
+      tags: [gateway, hostname]
     - role: common/locales
+      tags: [gateway, locales]
     - role: common/ssh
+      tags: [gateway, ssh]
     - role: common/hardening
+      tags: [gateway, hardening]
     - role: common/docker
+      tags: [gateway, docker]
     - role: gateway/haproxy
+      tags: [gateway, haproxy]
     - role: gateway/wireguard
+      tags: [gateway, wireguard]
     - role: gateway/pihole
+      tags: [gateway, pihole]
     - role: gateway/crowdsec
+      tags: [gateway, crowdsec]
   tags:
     - gateway
 
