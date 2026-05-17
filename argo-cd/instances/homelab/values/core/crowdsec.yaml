@@ -8,7 +8,7 @@ cnpg:
       app:
         secretName: crowdsec-pg-cluster-app
   backup:
-    enabled: true
+    enabled: false
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:
