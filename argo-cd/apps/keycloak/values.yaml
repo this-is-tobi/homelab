@@ -907,7 +907,7 @@ keycloakConfigCli:
         #   - name: "user"
         #     description: "Standard user role"
         users:
-        - username: "$(env:ADMIN_USER_USERNAME)"
+        - username: "$(env:ADMIN_USER_USERNAME)@$(env:ROOT_DOMAIN)"
           email: "$(env:ADMIN_USER_USERNAME)@$(env:ROOT_DOMAIN)"
           firstName: Admin
           lastName: User
@@ -919,4 +919,3 @@ keycloakConfigCli:
             temporary: false
           groups:
           - /admin
-        # groups: []
