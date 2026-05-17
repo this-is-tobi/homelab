@@ -7,6 +7,14 @@ apps:
   enabled: "true"
   namespace: argo-cd
   syncWave: 100
+  ignoreDifferences:
+  # argocd-secret contains a randomly-generated server.secretkey at first install
+  # plus admin.password set at runtime — must not be overwritten on re-sync.
+  - group: ""
+    kind: Secret
+    name: argocd-secret
+    jqPathExpressions:
+    - .data
 - app: actions-runner-controller
   enabled: "false" # Disabled during Cilium migration — crash-looping
   syncWave: 110
