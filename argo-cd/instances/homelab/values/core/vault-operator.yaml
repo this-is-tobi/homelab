@@ -403,6 +403,26 @@ vault:
     #       clientId: "vaultwarden"
     #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
 
+vault:
+  externalConfig:
+    oidcEnabled: true
+    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
+    oidcRedirectUris:
+    - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
+    - "https://vault.core.ohmlab.fr/oidc/callback"
+  extraEnvsConfig:
+  - name: VAULT_OIDC_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: vault-oidc-credentials
+        key: VAULT_OIDC_CLIENT_SECRET
+        optional: true
+
+vaultOidcCredentials:
+  enabled: true
+  mount: homelab
+  path: platforms/production/core/keycloak
+
 vso:
   enabled: true
 
