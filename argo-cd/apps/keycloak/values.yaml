@@ -464,6 +464,93 @@ keycloakConfigCli:
   #       name: keycloak-clients-vaultwarden
   #       key: CLIENT_SECRET
   config:
+    master:
+      inline:
+        realm: master
+        enabled: true
+        displayName: Master
+        displayNameHtml: <b>Master</b> Realm
+        registrationAllowed: false
+        registrationEmailAsUsername: true
+        editUsernameAllowed: false
+        resetPasswordAllowed: true
+        rememberMe: true
+        verifyEmail: false
+        loginWithEmailAllowed: true
+        duplicateEmailsAllowed: false
+        ssoSessionIdleTimeout: 1800
+        ssoSessionMaxLifespan: 36000
+        offlineSessionIdleTimeout: 2592000
+        accessTokenLifespan: 300
+        bruteForceProtected: true
+        permanentLockout: false
+        maxFailureWaitSeconds: 900
+        minimumQuickLoginWaitSeconds: 60
+        waitIncrementSeconds: 60
+        quickLoginCheckMilliSeconds: 1000
+        maxDeltaTimeSeconds: 43200
+        failureFactor: 5
+        roles:
+          realm:
+          - name: admin
+            description: Administrator role with all permissions
+            composite: true
+            composites:
+              realm:
+              - realm-admin
+              - create-realm
+              - manage-realm
+              - manage-users
+              - manage-clients
+              - manage-events
+              - manage-authorization
+              - impersonation
+              - view-profile
+              - manage-account
+              - manage-account-links
+              - offline_access
+          - name: realm-admin
+            description: Realm administrator
+          - name: create-realm
+            description: Create realm
+          - name: manage-realm
+            description: Manage realm
+          - name: manage-users
+            description: Manage users
+          - name: manage-clients
+            description: Manage clients
+          - name: manage-events
+            description: Manage events
+          - name: manage-authorization
+            description: Manage authorization
+          - name: impersonation
+            description: Impersonate users
+          - name: view-profile
+            description: View profile
+          - name: manage-account
+            description: Manage account
+          - name: manage-account-links
+            description: Manage account links
+          - name: offline_access
+            description: Offline access
+        groups:
+        - name: admin
+          path: /admin
+          realmRoles:
+          - admin
+        users:
+        - username: "$(env:ADMIN_USER_USERNAME)@$(env:ROOT_DOMAIN)"
+          email: "$(env:ADMIN_USER_USERNAME)@$(env:ROOT_DOMAIN)"
+          firstName: Admin
+          lastName: User
+          enabled: true
+          emailVerified: true
+          credentials:
+          - type: password
+            value: "$(env:ADMIN_USER_PASSWORD)"
+            temporary: false
+          groups:
+          - /admin
     homelab:
       inline:
         realm: "$(env:KEYCLOAK_REALM)"
@@ -491,6 +578,48 @@ keycloakConfigCli:
         maxDeltaTimeSeconds: 43200
         failureFactor: 5
         roles:
+          realm:
+          - name: admin
+            description: Administrator role with all permissions
+            composite: true
+            composites:
+              realm:
+              - realm-admin
+              - create-realm
+              - manage-realm
+              - manage-users
+              - manage-clients
+              - manage-events
+              - manage-authorization
+              - impersonation
+              - view-profile
+              - manage-account
+              - manage-account-links
+              - offline_access
+          - name: realm-admin
+            description: Realm administrator
+          - name: create-realm
+            description: Create realm
+          - name: manage-realm
+            description: Manage realm
+          - name: manage-users
+            description: Manage users
+          - name: manage-clients
+            description: Manage clients
+          - name: manage-events
+            description: Manage events
+          - name: manage-authorization
+            description: Manage authorization
+          - name: impersonation
+            description: Impersonate users
+          - name: view-profile
+            description: View profile
+          - name: manage-account
+            description: Manage account
+          - name: manage-account-links
+            description: Manage account links
+          - name: offline_access
+            description: Offline access
           client:
             grafana:
             - name: grafanaadmin
@@ -502,6 +631,8 @@ keycloakConfigCli:
         groups:
         - name: admin
           path: /admin
+          realmRoles:
+          - admin
           clientRoles:
             grafana:
             - grafanaadmin
