@@ -94,3 +94,6 @@ vso:
     clientVault:
       mount: homelab
       path: platforms/production/core/keycloak
+    clientLonghorn:
+      mount: homelab
+      path: platforms/production/core/keycloak
