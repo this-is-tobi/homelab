@@ -14,6 +14,11 @@ dependencies:
   version: 9.4.17
   repository: https://argoproj.github.io/argo-helm
   condition: argo-cd.enabled
+- name: vso-utils
+  alias: vso
+  version: 2.0.0
+  repository: https://this-is-tobi.github.io/helm-charts
+  condition: vso.enabled
 sources:
 - https://github.com/this-is-tobi/homelab
 maintainers:

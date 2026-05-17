@@ -345,7 +345,7 @@ bootstrap_instance() {
   log "Bootstrapping ohmlab for instance: $instance"
 
   log "Updating chart dependencies..."
-  helm dependency update "$SCRIPT_PATH/homelab-utils/helm" >/dev/null
+  helm dependency update "$SCRIPT_PATH/utils/helm" >/dev/null
 
   # Phase 1: If ArgoCD CRDs don't exist yet, install the chart with only
   # ArgoCD enabled (CRDs + core components). This solves the chicken-and-egg
@@ -361,7 +361,7 @@ bootstrap_instance() {
       kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
     fi
 
-    helm upgrade --install ohmlab "$SCRIPT_PATH/homelab-utils/helm" \
+    helm upgrade --install ohmlab "$SCRIPT_PATH/utils/helm" \
       --namespace argocd-system \
       --create-namespace \
       --values "$values_file" \
@@ -369,6 +369,7 @@ bootstrap_instance() {
       --set projects.core.enabled=false \
       --set projects.tenant.enabled=false \
       --set gateway.enabled=false \
+      --set vso.enabled=false \
       --wait \
       --timeout 10m
 
@@ -395,11 +396,12 @@ bootstrap_instance() {
   # Phase 2: Full install/upgrade with all resources (AppProjects, root
   # Application, HTTPRoutes). CRDs are now present from phase 1 or prior run.
   log "Installing/upgrading ohmlab release..."
-  helm upgrade --install ohmlab "$SCRIPT_PATH/homelab-utils/helm" \
+  helm upgrade --install ohmlab "$SCRIPT_PATH/utils/helm" \
     --namespace argocd-system \
     --create-namespace \
     --values "$values_file" \
     ${extra_args[@]+"${extra_args[@]}"} \
+    --set vso.enabled=false \
     --force-conflicts \
     --wait \
     --timeout 10m

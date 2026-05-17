@@ -664,3 +664,24 @@ initSecrets:
   #       realm: "homelab"
   #       clientId: "vaultwarden"
   #       clientSecret: "<random:32>"
+# VSO (Vault Secrets Operator) integration for the core ArgoCD in argocd-system.
+# Disabled by default so bootstrap (run.sh) can run before vault-operator / VSO
+# are deployed. Enabled in ohmlab.yaml once the full stack is running.
+vso:
+  # -- Enable VSO integration. Set to true in instance values AFTER vault-operator
+  # is deployed so VaultStaticSecret CRDs are available.
+  enabled: false
+  extraObjects: []
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: ""
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultStaticSecrets: {}

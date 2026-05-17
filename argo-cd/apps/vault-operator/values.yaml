@@ -74,6 +74,17 @@ vault:
         path "homelab/data/platforms/+/+/argo-cd" {
           capabilities = ["read", "list"]
         }
+    - name: argo-cd-core
+      rules: |
+        # Same as argo-cd but bound to argocd-system SA (core ArgoCD VSO)
+        path "homelab/data/platforms/+/+/argo-cd" {
+          capabilities = ["read", "list"]
+        }
+    - name: vault
+      rules: |
+        path "homelab/data/platforms/+/+/keycloak" {
+          capabilities = ["read", "list"]
+        }
     - name: cert-manager
       rules: |
         path "homelab/data/platforms/+/+/cert-manager" {
@@ -148,6 +159,12 @@ vault:
         bound_service_account_names: [vso]
         bound_service_account_namespaces: [argo-cd]
         policies: [argo-cd]
+        ttl: 1h
+      - name: argo-cd-core
+        # VSO service account in argocd-system for the core ArgoCD OIDC secret
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [argocd-system]
+        policies: [argo-cd-core]
         ttl: 1h
       - name: cert-manager
         bound_service_account_names: [vso]
@@ -230,6 +247,34 @@ vault:
     #     role_type: jwt
     #     policies: [vault-init-secrets]
     #     ttl: 10m
+    #
+    # Vault UI OIDC auth via Keycloak.
+    # Pre-requisites:
+    #   1. Keycloak is up and the 'vault' client is configured.
+    #   2. vault-oidc-credentials secret exists in vault-operator-system with key
+    #      VAULT_OIDC_CLIENT_SECRET (populated via VSO from core/keycloak).
+    #   3. Vault pod spec has envFrom: [{secretRef: {name: vault-oidc-credentials}}]
+    #      (add under vault.envsConfig in instance values).
+    # The 'vault' policy allows VSO in vault-operator-system to read core/keycloak
+    # so the OIDC client secret can be injected as an env var.
+    # - type: oidc
+    #   path: oidc
+    #   config:
+    #     oidc_discovery_url: "https://sso.core.ohmlab.fr/realms/homelab"
+    #     oidc_client_id: "vault"
+    #     oidc_client_secret: '{{ env "VAULT_OIDC_CLIENT_SECRET" }}'
+    #     default_role: "keycloak"
+    #   roles:
+    #   - name: keycloak
+    #     user_claim: preferred_username
+    #     groups_claim: groups
+    #     bound_audiences: ["vault"]
+    #     allowed_redirect_uris:
+    #       - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
+    #       - "https://vault.core.ohmlab.fr/oidc/callback"
+    #     oidc_scopes: ["openid", "profile", "email", "groups"]
+    #     policies: ["default"]
+    #     ttl: 1h
     secrets:
     - path: homelab
       type: kv

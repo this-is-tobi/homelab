@@ -42,14 +42,23 @@ vault:
         # <ref:homelab/platforms/production/core/keycloak#clients.<app>.clientSecret>
         # so keycloak policy only needs access to its own path.
         clients:
+          # Core services — must use distinct clientIds to avoid collision with
+          # tenant apps that share the same 'homelab' realm.
+          argo-cd-core:
+            clientId: argo-cd-core
+            clientSecret: "<random:32>"
+          vault:
+            clientId: vault
+            clientSecret: "<random:32>"
+          grafana:
+            clientId: grafana
+            clientSecret: "<random:32>"
+          # Tenant services
           argo-cd:
             clientId: argo-cd
             clientSecret: "<random:32>"
           gitea:
             clientId: gitea
-            clientSecret: "<random:32>"
-          grafana:
-            clientId: grafana
             clientSecret: "<random:32>"
           mattermost:
             clientId: mattermost
@@ -75,11 +84,15 @@ vault:
       # Core ArgoCD (bootstrapped via run.sh into argocd-system).
       # Password is set at bootstrap time via $ARGOCD_ADMIN_PASSWORD; this entry
       # serves as the Vault source-of-truth for rotation and auditing.
+      # OIDC is enabled after Keycloak is up — injected via VSO into argocd-system.
       data:
         admin:
           username: admin
           password: "<random:24>"
           passwordHashed: "<bcrypt:admin.password>"
+        keycloak:
+          clientId: argo-cd-core
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-cd-core.clientSecret>"
     - path: homelab/platforms/production/tenant/argo-cd
       # Tenant ArgoCD instance (deployed as an ArgoCD app into argo-cd namespace).
       # Credentials are injected at runtime via VSO into the argo-cd namespace.
