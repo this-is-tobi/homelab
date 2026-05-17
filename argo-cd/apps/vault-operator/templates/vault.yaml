@@ -156,6 +156,9 @@ spec:
     value: "true"
   - name: SKIP_SETCAP
     value: "true"
+  {{- if .Values.vault.extraEnvsConfig }}
+  {{- toYaml .Values.vault.extraEnvsConfig | nindent 2 }}
+  {{- end }}
   serviceAccount: {{ .Values.vault.serviceAccount }}
   {{- if .Values.vault.caNamespaces }}
   caNamespaces:

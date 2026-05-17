@@ -57,6 +57,6 @@ apps:
   enabled: "true"
   syncWave: 60
 - app: crowdsec
-  enabled: "false" # Disabled during Cilium migration — agents stuck in Init
+  enabled: "true"
   namespace: crowdsec
   syncWave: 60

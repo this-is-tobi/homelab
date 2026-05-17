@@ -103,12 +103,12 @@
         seconds: 15
       when: gateway_crowdsec_capi_register is changed
 
-    - name: Check console enrollment status
-      ansible.builtin.command:
-        cmd: docker exec crowdsec cat /etc/crowdsec/console.yaml
-      register: gateway_crowdsec_console_config
-      changed_when: false
+    - name: Check console enrollment key hash file
+      ansible.builtin.slurp:
+        src: /services/crowdsec/.console-key-hash
+      register: gateway_crowdsec_key_hash_file
       failed_when: false
+      when: crowdsec.console_key | default('') | length > 0
 
     - name: Enroll in CrowdSec console
       ansible.builtin.command:
@@ -117,11 +117,28 @@
           --name {{ crowdsec.console_name | default(inventory_hostname) }}
           {{ (crowdsec.console_tags | default('gateway')).split() | map('regex_replace', '^', '--tags ') | join(' ') }}
           {{ crowdsec.console_key }}
+      vars:
+        current_key_hash: "{{ crowdsec.console_key | hash('sha256') }}"
+        stored_key_hash: >-
+          {{ (gateway_crowdsec_key_hash_file.content | default('') | b64decode | trim)
+          if gateway_crowdsec_key_hash_file is not skipped else '' }}
       when:
         - crowdsec.console_key | default('') | length > 0
-        - "'share_custom: true' not in gateway_crowdsec_console_config.stdout"
-      changed_when: true
+        - current_key_hash != stored_key_hash
+      register: gateway_crowdsec_console_enroll
+      changed_when: gateway_crowdsec_console_enroll.rc == 0
       failed_when: false
+      no_log: true
+
+    - name: Save console enrollment key hash
+      ansible.builtin.copy:
+        content: "{{ crowdsec.console_key | hash('sha256') }}"
+        dest: /services/crowdsec/.console-key-hash
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+      when: gateway_crowdsec_console_enroll is changed
 
     - name: Check if bouncer is already registered
       ansible.builtin.command:
