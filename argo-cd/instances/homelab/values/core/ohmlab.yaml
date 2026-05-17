@@ -160,7 +160,7 @@ vso:
       mount: homelab
       path: platforms/production/core/argo-cd
       type: kv-v2
-      vaultAuthRef: vso-default
+      vaultAuthRef: ohmlab-vso-default
       refreshAfter: 1h
       hmacSecretData: true
       destination:

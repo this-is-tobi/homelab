@@ -44,8 +44,7 @@ gitea:
     oauth:
     - name: Keycloak
       provider: openidConnect
-      key: ""
-      secret: ""
+      existingSecret: gitea-sso
       autoDiscoverUrl: ""
       scopes: openid profile email roles groups
       adminGroup: admin
@@ -299,4 +298,8 @@ vso:
             OIDC_CLIENT_ID:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+            key:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            secret:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'

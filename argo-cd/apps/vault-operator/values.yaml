@@ -166,6 +166,11 @@ vault:
         path "homelab/data/platforms/+/+/crowdsec" {
           capabilities = ["read", "list"]
         }
+    - name: longhorn
+      rules: |
+        path "homelab/data/platforms/+/+/longhorn" {
+          capabilities = ["read", "list"]
+        }
     auth:
     - type: kubernetes
       roles:
@@ -244,6 +249,11 @@ vault:
         bound_service_account_names: [vso]
         bound_service_account_namespaces: [crowdsec]
         policies: [crowdsec]
+        ttl: 1h
+      - name: longhorn
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [longhorn-system]
+        policies: [longhorn]
         ttl: 1h
       # VSO service account in vault-operator-system for vault-oidc-credentials.
       # Uses the 'vault' policy (read homelab/data/platforms/+/+/keycloak).

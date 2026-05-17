@@ -360,6 +360,25 @@ vso:
               text: '{{ get .Secrets "clients" | dig "vault" "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "vault" "clientSecret" "" }}'
+    clientLonghorn:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: keycloak-clients-longhorn
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            CLIENT_ID:
+              text: '{{ get .Secrets "clients" | dig "longhorn" "clientId" "" }}'
+            CLIENT_SECRET:
+              text: '{{ get .Secrets "clients" | dig "longhorn" "clientSecret" "" }}'
 
 keycloakConfigCli:
   enabled: true
@@ -417,6 +436,11 @@ keycloakConfigCli:
     valueFrom:
       secretKeyRef:
         name: keycloak-clients-vault
+        key: CLIENT_SECRET
+  - name: LONGHORN_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-longhorn
         key: CLIENT_SECRET
   - name: ADMIN_USER_USERNAME
     valueFrom:
@@ -692,6 +716,34 @@ keycloakConfigCli:
           - "https://vault.core.$(env:ROOT_DOMAIN)/oidc/callback"
           webOrigins:
           - "https://vault.core.$(env:ROOT_DOMAIN)"
+          protocol: openid-connect
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: true
+          serviceAccountsEnabled: false
+          defaultClientScopes:
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
+          optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        - clientId: longhorn
+          name: Longhorn
+          description: Distributed block storage UI
+          enabled: true
+          clientAuthenticatorType: client-secret
+          secret: "$(env:LONGHORN_CLIENT_SECRET)"
+          redirectUris:
+          - "https://longhorn.core.$(env:ROOT_DOMAIN)/*"
+          webOrigins:
+          - "https://longhorn.core.$(env:ROOT_DOMAIN)"
           protocol: openid-connect
           publicClient: false
           standardFlowEnabled: true

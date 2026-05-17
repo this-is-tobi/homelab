@@ -1,0 +1,45 @@
+{{- if .Values.oidc.enabled }}
+---
+# ApisixRoute for Longhorn with OIDC protection.
+# The `secretRef` field points to the `longhorn-sso` K8s secret (populated by VSO)
+# which must contain `client_id` and `client_secret` keys for the openid-connect plugin.
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: longhorn-oidc
+  namespace: {{ .Release.Namespace }}
+spec:
+  http:
+  - name: longhorn
+    match:
+      hosts:
+      - {{ .Values.oidc.hostname | quote }}
+      paths:
+      - "/*"
+    backends:
+    - serviceName: longhorn-frontend
+      servicePort: 80
+    plugins:
+    - name: openid-connect
+      enable: true
+      secretRef: longhorn-sso
+      config:
+        discovery: {{ .Values.oidc.discoveryUrl | quote }}
+        redirect_uri: {{ printf "https://%s/oidc/callback" .Values.oidc.hostname | quote }}
+        scope: "openid profile email roles groups"
+        bearer_only: false
+        logout_path: /oidc/logout
+        post_logout_redirect_uri: {{ printf "https://%s/" .Values.oidc.hostname | quote }}
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixtTLS
+metadata:
+  name: longhorn-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  hosts:
+  - {{ .Values.oidc.hostname | quote }}
+  secret:
+    name: {{ .Values.oidc.tlsSecret | default "longhorn-tls" | quote }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

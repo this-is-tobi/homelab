@@ -2,5 +2,8 @@ dependencies:
 - name: longhorn
   repository: https://charts.longhorn.io
   version: 1.11.2
-digest: sha256:876a18f4a6c0430bf485559d760225dbaf4baf316dae254cdf68cda06136f83e
-generated: "2026-05-16T23:25:43.81732+02:00"
+- name: vso-utils
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 2.0.0
+digest: sha256:a3b4cd14e7015f5196501414bf1b00ea799eb129ff1a8c14aacd87ba23db01d7
+generated: "2026-05-17T23:15:13.918131+02:00"

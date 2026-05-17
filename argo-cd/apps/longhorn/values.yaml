@@ -4,6 +4,54 @@ gateway:
   gatewayNamespace: ""
   routes: []
 
+oidc:
+  enabled: false
+  hostname: ""
+  discoveryUrl: ""
+  tlsSecret: ""
+
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: longhorn
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultStaticSecrets:
+    longhornSso:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: longhorn-system-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: longhorn-sso
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            OIDC_CLIENT_ID:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            OIDC_CLIENT_SECRET:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+            client_id:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            client_secret:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+
 longhorn:
   preUpgradeChecker:
     jobEnabled: false
