@@ -76,6 +76,9 @@ spec:
   dnsNames:
     - "*.{{ .Values.gateway.domain }}"
     - "{{ .Values.gateway.domain }}"
+    {{- range .Values.gateway.extraDnsNames }}
+    - {{ . | quote }}
+    {{- end }}
 ---
 # HTTP → HTTPS redirect
 apiVersion: gateway.networking.k8s.io/v1

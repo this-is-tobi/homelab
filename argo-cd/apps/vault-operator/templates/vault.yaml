@@ -189,6 +189,10 @@ spec:
   {{- if .Values.vault.extraEnvsConfig }}
   {{- toYaml .Values.vault.extraEnvsConfig | nindent 2 }}
   {{- end }}
+  {{- if .Values.vault.envsConfig }}
+  envsConfig:
+  {{- toYaml .Values.vault.envsConfig | nindent 2 }}
+  {{- end }}
   serviceAccount: {{ .Values.vault.serviceAccount }}
   {{- if .Values.vault.caNamespaces }}
   caNamespaces:

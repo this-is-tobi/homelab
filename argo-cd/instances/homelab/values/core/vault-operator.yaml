@@ -418,7 +418,7 @@ vault:
     oidcRedirectUris:
     - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     - "https://vault.core.ohmlab.fr/oidc/callback"
-  extraEnvsConfig:
+  envsConfig:
   - name: VAULT_OIDC_CLIENT_SECRET
     valueFrom:
       secretKeyRef:

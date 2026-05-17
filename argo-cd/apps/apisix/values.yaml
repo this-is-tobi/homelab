@@ -74,4 +74,5 @@ gateway:
   wildcardTlsSecret: gateway-wildcard-tls
   apexTlsSecret: gateway-wildcard-tls
   extraListeners: []
+  extraDnsNames: []
   tlsPassthroughListeners: []
