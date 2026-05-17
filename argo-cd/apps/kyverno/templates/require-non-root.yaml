@@ -23,6 +23,13 @@ spec:
           namespaces:
           - kube-system
           - kyverno
+          # System / infrastructure components with upstream root requirements
+          - longhorn-system
+          - prometheus-stack
+          - system-upgrade
+          - ingress-nginx
+          - cert-manager
+          - teleport-system
     validate:
       failureAction: Audit
       message: "Containers must not run as root. Set runAsNonRoot: true or runAsUser > 0."

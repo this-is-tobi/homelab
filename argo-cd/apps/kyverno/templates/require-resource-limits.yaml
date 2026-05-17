@@ -22,6 +22,9 @@ spec:
           namespaces:
           - kube-system
           - kyverno
+          # System components managed by upstream charts without configurable limits
+          - longhorn-system
+          - system-upgrade
     validate:
       failureAction: Audit
       message: "CPU and memory limits are required for all containers."

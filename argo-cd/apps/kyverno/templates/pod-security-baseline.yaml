@@ -23,6 +23,11 @@ spec:
           namespaces:
           - kube-system
           - kyverno
+          # System components that legitimately require privileged / hostNetwork
+          - longhorn-system
+          - prometheus-stack
+          - system-upgrade
+          - ingress-nginx
     validate:
       failureAction: Audit
       podSecurity:

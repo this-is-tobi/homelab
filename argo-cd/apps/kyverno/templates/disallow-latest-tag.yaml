@@ -23,6 +23,8 @@ spec:
           namespaces:
           - kube-system
           - kyverno
+          # Internal tooling images — always built as :latest by design
+          - vault-operator-system
     validate:
       failureAction: Audit
       message: "Image tag 'latest' is not allowed. Use a specific tag or digest."
