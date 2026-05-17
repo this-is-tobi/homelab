@@ -119,9 +119,39 @@ spec:
     policies:
       {{- toYaml .Values.vault.externalConfig.policies | nindent 6 }}
     {{- end }}
-    {{- if .Values.vault.externalConfig.auth }}
+    {{- if or .Values.vault.externalConfig.auth .Values.vault.externalConfig.oidcEnabled }}
     auth:
+      {{- if .Values.vault.externalConfig.auth }}
       {{- toYaml .Values.vault.externalConfig.auth | nindent 6 }}
+      {{- end }}
+      {{- if .Values.vault.externalConfig.oidcEnabled }}
+      - type: oidc
+        path: oidc
+        config:
+          oidc_discovery_url: {{ .Values.vault.externalConfig.oidcDiscoveryUrl | quote }}
+          oidc_client_id: {{ .Values.vault.externalConfig.oidcClientId | quote }}
+          oidc_client_secret: '{{ "{{" }} env "VAULT_OIDC_CLIENT_SECRET" {{ "}}" }}'
+          default_role: {{ .Values.vault.externalConfig.oidcDefaultRole | quote }}
+        roles:
+        - name: {{ .Values.vault.externalConfig.oidcRoleName | quote }}
+          user_claim: preferred_username
+          groups_claim: groups
+          bound_audiences:
+          - {{ .Values.vault.externalConfig.oidcClientId | quote }}
+          bound_claims:
+            groups:
+            {{- toYaml .Values.vault.externalConfig.oidcBoundGroups | nindent 12 }}
+          allowed_redirect_uris:
+          {{- toYaml .Values.vault.externalConfig.oidcRedirectUris | nindent 10 }}
+          oidc_scopes:
+          - openid
+          - profile
+          - email
+          - groups
+          policies:
+          - {{ .Values.vault.externalConfig.oidcRoleName | quote }}
+          ttl: 1h
+      {{- end }}
     {{- end }}
     {{- if .Values.vault.externalConfig.secrets }}
     secrets:
