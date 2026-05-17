@@ -175,6 +175,10 @@ vso:
               text: '{{ get .Secrets "domain" }}'
             KEYCLOAK_REALM:
               text: '{{ get .Secrets "realm" }}'
+            ADMIN_USER_USERNAME:
+              text: '{{ get .Secrets "adminUser" | dig "username" "" }}'
+            ADMIN_USER_PASSWORD:
+              text: '{{ get .Secrets "adminUser" | dig "password" "" }}'
     keycloakDbInfos:
       mount: ""
       path: ""
@@ -318,6 +322,44 @@ vso:
               text: '{{ get .Secrets "clients" | dig "argo-cd" "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "argo-cd" "clientSecret" "" }}'
+    clientArgoCdCore:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: keycloak-clients-argocd-core
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            CLIENT_ID:
+              text: '{{ get .Secrets "clients" | dig "argo-cd-core" "clientId" "" }}'
+            CLIENT_SECRET:
+              text: '{{ get .Secrets "clients" | dig "argo-cd-core" "clientSecret" "" }}'
+    clientVault:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: keycloak-clients-vault
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            CLIENT_ID:
+              text: '{{ get .Secrets "clients" | dig "vault" "clientId" "" }}'
+            CLIENT_SECRET:
+              text: '{{ get .Secrets "clients" | dig "vault" "clientSecret" "" }}'
 
 keycloakConfigCli:
   enabled: true
@@ -366,6 +408,26 @@ keycloakConfigCli:
       secretKeyRef:
         name: keycloak-clients-argocd
         key: CLIENT_SECRET
+  - name: ARGOCD_CORE_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-argocd-core
+        key: CLIENT_SECRET
+  - name: VAULT_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-vault
+        key: CLIENT_SECRET
+  - name: ADMIN_USER_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-config
+        key: ADMIN_USER_USERNAME
+  - name: ADMIN_USER_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-config
+        key: ADMIN_USER_PASSWORD
   # - name: ARGOWORKFLOWS_CLIENT_SECRET
   #   valueFrom:
   #     secretKeyRef:
@@ -545,7 +607,65 @@ keycloakConfigCli:
           - phone
           - offline_access
           - microprofile-jwt
-        # - clientId: "argo-workflows"
+        - clientId: argo-cd-core
+          name: Argo CD (core)
+          description: Core GitOps ArgoCD instance (argocd-system)
+          enabled: true
+          clientAuthenticatorType: client-secret
+          secret: "$(env:ARGOCD_CORE_CLIENT_SECRET)"
+          redirectUris:
+          - "https://gitops.core.$(env:ROOT_DOMAIN)/*"
+          - "https://gitops.core.$(env:ROOT_DOMAIN)/auth/callback"
+          webOrigins:
+          - "https://gitops.core.$(env:ROOT_DOMAIN)"
+          protocol: openid-connect
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: true
+          serviceAccountsEnabled: false
+          defaultClientScopes:
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
+          optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        - clientId: vault
+          name: Vault
+          description: HashiCorp Vault UI OIDC login
+          enabled: true
+          clientAuthenticatorType: client-secret
+          secret: "$(env:VAULT_CLIENT_SECRET)"
+          redirectUris:
+          - "https://vault.core.$(env:ROOT_DOMAIN)/*"
+          - "https://vault.core.$(env:ROOT_DOMAIN)/ui/vault/auth/oidc/oidc/callback"
+          - "https://vault.core.$(env:ROOT_DOMAIN)/oidc/callback"
+          webOrigins:
+          - "https://vault.core.$(env:ROOT_DOMAIN)"
+          protocol: openid-connect
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: true
+          serviceAccountsEnabled: false
+          defaultClientScopes:
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
+          optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
         #   name: "Argo Workflows"
         #   description: "Workflow engine"
         #   enabled: true
@@ -786,5 +906,17 @@ keycloakConfigCli:
         #     description: "Administrator role"
         #   - name: "user"
         #     description: "Standard user role"
-        # users: []
+        users:
+        - username: "$(env:ADMIN_USER_USERNAME)"
+          email: "$(env:ADMIN_USER_USERNAME)@$(env:ROOT_DOMAIN)"
+          firstName: Admin
+          lastName: User
+          enabled: true
+          emailVerified: true
+          credentials:
+          - type: password
+            value: "$(env:ADMIN_USER_PASSWORD)"
+            temporary: false
+          groups:
+          - /admin
         # groups: []

@@ -66,6 +66,25 @@ vault:
         path "homelab/data/platforms/+/+/*" {
           capabilities = ["create", "update", "read"]
         }
+    - name: admin
+      rules: |
+        # Full access to all homelab secrets for OIDC admin users.
+        # Assigned via Vault OIDC role bound to the 'admin' Keycloak group.
+        path "homelab/*" {
+          capabilities = ["create", "read", "update", "delete", "list", "patch"]
+        }
+        path "sys/policies/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+        path "sys/auth/*" {
+          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+        }
+        path "auth/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
+        path "identity/*" {
+          capabilities = ["create", "read", "update", "delete", "list"]
+        }
         path "homelab/metadata/platforms/+/+/*" {
           capabilities = ["list", "read"]
         }
@@ -250,30 +269,32 @@ vault:
     #
     # Vault UI OIDC auth via Keycloak.
     # Pre-requisites:
-    #   1. Keycloak is up and the 'vault' client is configured.
-    #   2. vault-oidc-credentials secret exists in vault-operator-system with key
+    #   1. Keycloak is up with the 'vault' client registered (done via keycloak-config-cli).
+    #   2. vault-oidc-credentials secret in vault-operator-system with key
     #      VAULT_OIDC_CLIENT_SECRET (populated via VSO from core/keycloak).
     #   3. Vault pod spec has envFrom: [{secretRef: {name: vault-oidc-credentials}}]
     #      (add under vault.envsConfig in instance values).
-    # The 'vault' policy allows VSO in vault-operator-system to read core/keycloak
-    # so the OIDC client secret can be injected as an env var.
+    # Role: 'admin' — only members of the Keycloak 'admin' group can log in.
+    # Policy: grants full homelab/* + sys/auth/* + identity/* access.
     # - type: oidc
     #   path: oidc
     #   config:
     #     oidc_discovery_url: "https://sso.core.ohmlab.fr/realms/homelab"
     #     oidc_client_id: "vault"
     #     oidc_client_secret: '{{ env "VAULT_OIDC_CLIENT_SECRET" }}'
-    #     default_role: "keycloak"
+    #     default_role: "admin"
     #   roles:
-    #   - name: keycloak
+    #   - name: admin
     #     user_claim: preferred_username
     #     groups_claim: groups
     #     bound_audiences: ["vault"]
+    #     bound_claims:
+    #       groups: ["/admin"]
     #     allowed_redirect_uris:
     #       - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     #       - "https://vault.core.ohmlab.fr/oidc/callback"
     #     oidc_scopes: ["openid", "profile", "email", "groups"]
-    #     policies: ["default"]
+    #     policies: ["admin"]
     #     ttl: 1h
     secrets:
     - path: homelab

@@ -59,7 +59,7 @@ cnpg:
       app:
         secretName: mattermost-pg-cluster-app
   backup:
-    enabled: true
+    enabled: false  # S3 keys not configured yet — re-enable when available
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
     s3Credentials:

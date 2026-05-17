@@ -35,6 +35,13 @@ vault:
         admin:
           username: admin
           password: "<random:24>"
+        # Admin user in the homelab realm (for OIDC login into apps).
+        # This is distinct from the Keycloak service-admin (above).
+        # Password is injected by VSO into keycloak-config secret → used by
+        # keycloak-config-cli to create the user on first deploy.
+        adminUser:
+          username: admin
+          password: "<random:24>"
         domain: sso.core.ohmlab.fr
         realm: homelab
         rootDomain: ohmlab.fr
@@ -400,4 +407,4 @@ vso:
   enabled: true
 
 backup-utils:
-  enabled: true
+  enabled: false  # S3 keys not configured yet — re-enable when available
