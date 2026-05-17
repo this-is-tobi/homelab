@@ -10,6 +10,7 @@ oidc:
   discoveryUrl: ""
   tlsSecret: ""
 
+vso:
   extraObjects:
   - apiVersion: v1
     kind: ServiceAccount
