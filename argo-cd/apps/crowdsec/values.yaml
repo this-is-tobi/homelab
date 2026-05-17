@@ -60,8 +60,11 @@ crowdsec:
   # -- Agent: DaemonSet that parses container & host logs
   agent:
     acquisition:
-    - namespace: ingress-nginx
-      podName: ingress-nginx-controller-*
+    # APISIX replaced ingress-nginx — watch apisix pods using the nginx parser.
+    # The APISIX access log format is set to nginx combined (with extra fields
+    # appended after "$http_user_agent") so crowdsecurity/nginx-logs can parse.
+    - namespace: apisix
+      podName: apisix-*
       program: nginx
     env:
     - name: COLLECTIONS
