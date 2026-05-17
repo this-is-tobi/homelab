@@ -438,6 +438,20 @@ vso:
       enabled: true
       type: ClusterIP
       port: 8080
+  # VSO resources: VaultConnection and VaultAuth for managing VSO secrets
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: vault-operator
+        serviceAccount: vso
+      vaultConnectionRef: default
 
 backup-utils:
   fullnameOverride: backup

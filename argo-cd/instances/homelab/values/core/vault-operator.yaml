@@ -433,6 +433,19 @@ vaultOidcCredentials:
 
 vso:
   enabled: true
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: vault-operator
+        serviceAccount: vso
+      vaultConnectionRef: default
 
 backup-utils:
   enabled: false  # S3 keys not configured yet — re-enable when available
