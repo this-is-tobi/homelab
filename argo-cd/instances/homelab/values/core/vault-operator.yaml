@@ -40,7 +40,7 @@ vault:
         # Password is injected by VSO into keycloak-config secret → used by
         # keycloak-config-cli to create the user on first deploy.
         adminUser:
-          username: admin
+          username: admin@ohmlab.fr
           password: "<random:24>"
         domain: sso.core.ohmlab.fr
         realm: homelab
