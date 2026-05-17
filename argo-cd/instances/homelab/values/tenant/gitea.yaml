@@ -26,7 +26,14 @@ gitea:
       username: admin
       email: admin@ohmlab.fr
       existingSecret: gitea-admin
-    oauth: []
+    oauth:
+    - name: Keycloak
+      provider: openidConnect
+      existingSecret: gitea-sso
+      autoDiscoverUrl: "https://sso.core.ohmlab.fr/realms/homelab/.well-known/openid-configuration"
+      scopes: openid profile email roles groups
+      adminGroup: /admin
+      groupClaimName: groups
     config:
       database:
         HOST: gitea-pg-cluster-rw
@@ -72,16 +79,6 @@ gitea:
         secretKeyRef:
           name: gitea-pg-cluster-app
           key: password
-    - name: GITEA__oauth2_client__CLIENT_ID
-      valueFrom:
-        secretKeyRef:
-          name: gitea-sso
-          key: OIDC_CLIENT_ID
-    - name: GITEA__oauth2_client__CLIENT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: gitea-sso
-          key: OIDC_CLIENT_SECRET
 
 cnpg:
   mode: primary

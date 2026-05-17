@@ -10,8 +10,24 @@ gateway:
     - backendService: longhorn-frontend
       backendPort: 80
 
+oidc:
+  enabled: true
+  hostname: longhorn.core.ohmlab.fr
+  discoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab/.well-known/openid-configuration"
+  tlsSecret: longhorn.core.ohmlab.fr-tls
+
+vso:
+  vaultStaticSecrets:
+    longhornSso:
+      mount: homelab
+      path: platforms/production/core/longhorn
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
+      namespace: longhorn-system
+
 longhorn:
   ingress:
-    enabled: true
-    host: longhorn.core.ohmlab.fr
-    tlsSecret: longhorn.core.ohmlab.fr-tls
+    enabled: false

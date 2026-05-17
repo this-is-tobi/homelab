@@ -70,6 +70,9 @@ vault:
           mattermost:
             clientId: mattermost
             clientSecret: "<random:32>"
+          longhorn:
+            clientId: longhorn
+            clientSecret: "<random:32>"
         postgres:
           admin:
             username: postgres
@@ -173,6 +176,11 @@ vault:
         admin:
           accessKey: "<random:16>"
           secretKey: "<random:32>"
+    - path: homelab/platforms/production/core/longhorn
+      data:
+        keycloak:
+          clientId: longhorn
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.longhorn.clientSecret>"
     - path: homelab/platforms/production/core/prometheus-stack
       data:
         admin:
