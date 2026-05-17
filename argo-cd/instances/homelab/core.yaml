@@ -28,6 +28,24 @@ apps:
   enabled: "true"
   namespace: apisix
   syncWave: 10
+  ignoreDifferences:
+  # etcd-jwt-token and webhook cert are auto-managed by the operator.
+  # ValidatingWebhookConfiguration caBundle is injected at runtime.
+  - group: ""
+    kind: Secret
+    name: apisix-etcd-jwt-token
+    jqPathExpressions:
+    - .data
+  - group: ""
+    kind: Secret
+    name: apisix-ingress-controller-webhook-cert
+    jqPathExpressions:
+    - .data
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+    name: apisix-ingress-controller-webhook
+    jqPathExpressions:
+    - .webhooks[].clientConfig.caBundle
 - app: vault-operator
   enabled: "true"
   namespace: vault-operator-system
