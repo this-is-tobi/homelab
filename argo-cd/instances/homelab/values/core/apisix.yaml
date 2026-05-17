@@ -4,6 +4,14 @@
 apisix:
   replicaCount: 2
 
+  nginx:
+    logs:
+      # Standard nginx combined format so CrowdSec crowdsecurity/nginx-logs
+      # parser can parse access logs without a custom GROK.
+      # Extra APISIX fields (host, upstream info) are appended after the
+      # standard fields so the nginx GROK still matches the prefix.
+      accessLogFormat: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $http_host $request_time $upstream_addr $upstream_status $upstream_response_time'
+
   service:
     type: LoadBalancer
     externalTrafficPolicy: Local
