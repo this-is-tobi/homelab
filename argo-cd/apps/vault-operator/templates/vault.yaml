@@ -132,7 +132,7 @@ spec:
         config:
           oidc_discovery_url: {{ .Values.vault.externalConfig.oidcDiscoveryUrl | quote }}
           oidc_client_id: {{ .Values.vault.externalConfig.oidcClientId | quote }}
-          oidc_client_secret: {{- `{{ env "VAULT_OIDC_CLIENT_SECRET" }}` | noquote }}
+          oidc_client_secret: ${ .Env.VAULT_OIDC_CLIENT_SECRET | quote }
           default_role: {{ .Values.vault.externalConfig.oidcDefaultRole | quote }}
         roles:
         - name: {{ .Values.vault.externalConfig.oidcRoleName | quote }}
