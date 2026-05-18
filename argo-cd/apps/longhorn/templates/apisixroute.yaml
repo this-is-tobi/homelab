@@ -42,4 +42,17 @@ spec:
   secret:
     name: {{ .Values.oidc.tlsSecret | default "longhorn-tls" | quote }}
     namespace: {{ .Release.Namespace }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: longhorn-tls
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: {{ .Values.oidc.tlsSecret | default "longhorn-tls" | quote }}
+  issuerRef:
+    name: letsencrypt-dns-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - {{ .Values.oidc.hostname | quote }}
 {{- end }}
