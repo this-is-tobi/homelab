@@ -1,22 +1,3 @@
-gateway:
-  enabled: true
-  gatewayName: homelab-gateway
-  gatewayNamespace: kube-system
-  routes:
-  - name: longhorn
-    listener: https-wildcard
-    hostnames:
-    - longhorn.core.ohmlab.fr
-    rules:
-    - backendService: longhorn-frontend
-      backendPort: 80
-
-oidc:
-  enabled: true
-  hostname: longhorn.core.ohmlab.fr
-  discoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab/.well-known/openid-configuration"
-  tlsSecret: longhorn.core.ohmlab.fr-tls
-
 vso:
   vaultStaticSecrets:
     longhornSso:
@@ -51,5 +32,10 @@ vso:
 
 longhorn:
   ingress:
-    enabled: false
+    enabled: true
+    ingressClassName: apisix
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     host: longhorn.core.ohmlab.fr
+    tls: true
+    tlsSecret: longhorn-tls

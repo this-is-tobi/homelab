@@ -11,6 +11,19 @@ gateway:
       backendPort: 8200
 
 vault:
+  externalConfig:
+    oidcEnabled: true
+    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
+    oidcRedirectUris:
+    - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
+    - "https://vault.core.ohmlab.fr/oidc/callback"
+  envsConfig:
+  - name: VAULT_OIDC_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: vault-oidc-credentials
+        key: VAULT_OIDC_CLIENT_SECRET
+        optional: true
   initSecrets:
     forceRotate: false
     # Secrets to initialize using template syntax:
@@ -72,6 +85,9 @@ vault:
             clientSecret: "<random:32>"
           longhorn:
             clientId: longhorn
+            clientSecret: "<random:32>"
+          rustfs:
+            clientId: rustfs
             clientSecret: "<random:32>"
         postgres:
           admin:
@@ -413,21 +429,6 @@ vault:
     #     keycloak:
     #       clientId: "vaultwarden"
     #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
-
-vault:
-  externalConfig:
-    oidcEnabled: true
-    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
-    oidcRedirectUris:
-    - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
-    - "https://vault.core.ohmlab.fr/oidc/callback"
-  envsConfig:
-  - name: VAULT_OIDC_CLIENT_SECRET
-    valueFrom:
-      secretKeyRef:
-        name: vault-oidc-credentials
-        key: VAULT_OIDC_CLIENT_SECRET
-        optional: true
 
 vaultOidcCredentials:
   enabled: true
