@@ -67,7 +67,7 @@ vso:
     clientGitea:
       mount: example
       path: platforms/production/tenant/gitea
-    clientGrafana:
+    clientGrafanaCore:
       mount: example
       path: platforms/production/core/prometheus-stack
     clientArgoCd:
