@@ -1,0 +1,28 @@
+{{- if .Values.dashboard.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: apisix-dashboard
+  namespace: {{ .Release.Namespace }}
+  {{- with .Values.dashboard.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.dashboard.ingressClassName }}
+  rules:
+  - host: {{ .Values.dashboard.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: apisix-admin
+            port:
+              number: 9180
+  tls:
+  - hosts:
+    - {{ .Values.dashboard.host }}
+    secretName: apisix-dashboard-tls
+{{- end }}

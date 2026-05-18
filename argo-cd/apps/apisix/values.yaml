@@ -76,3 +76,10 @@ gateway:
   extraListeners: []
   extraDnsNames: []
   tlsPassthroughListeners: []
+
+dashboard:
+  enabled: false
+  host: ""
+  ingressClassName: apisix
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns-prod

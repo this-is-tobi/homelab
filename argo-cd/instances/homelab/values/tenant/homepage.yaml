@@ -22,7 +22,7 @@ homepage:
       layout:
       - Core Services:
           style: row
-          columns: 3
+          columns: 4
       - Platform Services:
           style: row
           columns: 3
@@ -46,6 +46,11 @@ homepage:
           siteMonitor: https://gitops.core.ohmlab.fr
           description: Admin services deployment manager
           icon: argo-cd.png
+      - APISIX:
+          href: https://apisix.core.ohmlab.fr/ui/
+          siteMonitor: https://apisix.core.ohmlab.fr/ui/
+          description: API Gateway dashboard
+          icon: apisix.png
       - Longhorn:
           href: https://longhorn.core.ohmlab.fr
           siteMonitor: https://longhorn.core.ohmlab.fr
