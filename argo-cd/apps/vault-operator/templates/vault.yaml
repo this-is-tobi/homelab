@@ -78,8 +78,6 @@ spec:
     {{- end }}
   config:
     ui: {{ .Values.vault.config.ui }}
-    ui_config:
-      default_auth_method: {{ .Values.vault.config.defaultAuthMethod | quote }}
     # disable_mlock: in Kubernetes, memory is managed by cgroups/resource limits
     # so mlock is unnecessary. Setting true allows running as non-root without
     # IPC_LOCK/SETFCAP capabilities, which is the more secure approach in containers.
@@ -129,10 +127,12 @@ spec:
       {{- if .Values.vault.externalConfig.oidcEnabled }}
       - type: oidc
         path: oidc
+        options:
+          listing_visibility: "unauth"
         config:
           oidc_discovery_url: {{ .Values.vault.externalConfig.oidcDiscoveryUrl | quote }}
           oidc_client_id: {{ .Values.vault.externalConfig.oidcClientId | quote }}
-          oidc_client_secret: ${ .Env.VAULT_OIDC_CLIENT_SECRET | quote }
+          oidc_client_secret: ${ .Env.VAULT_OIDC_CLIENT_SECRET }
           default_role: {{ .Values.vault.externalConfig.oidcDefaultRole | quote }}
         roles:
         - name: {{ .Values.vault.externalConfig.oidcRoleName | quote }}

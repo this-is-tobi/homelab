@@ -49,7 +49,6 @@ vault:
       secretName: vault-unseal-keys
   config:
     ui: true
-    defaultAuthMethod: oidc
     tls:
       enabled: true
     telemetry:
@@ -293,7 +292,7 @@ vault:
     # Role: 'admin' — only members of the Keycloak '/admin' group can log in.
     oidcEnabled: true
     oidcDiscoveryUrl: ""
-    oidcClientId: "vault"
+    oidcClientId: "vault-core"
     oidcDefaultRole: "admin"
     oidcRoleName: "admin"
     oidcBoundGroups:
