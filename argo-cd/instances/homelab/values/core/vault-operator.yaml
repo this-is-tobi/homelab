@@ -24,15 +24,12 @@ vault:
         name: vault-oidc-credentials
         key: VAULT_OIDC_CLIENT_SECRET
         optional: true
-  initSecrets:
-    forceRotate: false
-    # Secrets to initialize using template syntax:
-    # - <random:N> generates random alphanumeric string of length N
-    # - <uuid> generates UUID v4
-    # - <age:secret> generates age secret key
-    # - <age:public> generates age public key (pair with secret key)
-    # - Static values remain as-is
-    # Supports nested JSON structure for organizing related secrets
+
+# New ohmlab hierarchical configuration
+# Maps instance-specific secrets and identity config for use by ohmlab CLI tools
+ohmlab:
+  vault:
+    # Declarative secrets configuration for ohmlab vault secrets command
     secrets:
     - path: homelab/platforms/production/core/cert-manager
       data:
@@ -453,3 +450,17 @@ vso:
 
 backup-utils:
   enabled: false  # S3 keys not configured yet — re-enable when available
+
+# Instance-specific ohmlab identity configuration
+# The secrets are defined earlier in the file under ohmlab.vault.secrets
+ohmlab:
+  vault:
+    identity:
+      groups:
+      - name: homelab-admins
+        policies:
+        - admin
+      groupAliases:
+      - name: "/admin"
+        group: homelab-admins
+        mountAccessor: ""  # Auto-discovered if empty (finds first 'oidc' mount)
