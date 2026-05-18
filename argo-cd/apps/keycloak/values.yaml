@@ -379,6 +379,25 @@ vso:
               text: '{{ get .Secrets "clients" | dig "longhorn" "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "longhorn" "clientSecret" "" }}'
+    clientRustfs:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: keycloak-clients-rustfs
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            CLIENT_ID:
+              text: '{{ get .Secrets "clients" | dig "rustfs" "clientId" "" }}'
+            CLIENT_SECRET:
+              text: '{{ get .Secrets "clients" | dig "rustfs" "clientSecret" "" }}'
 
 keycloakConfigCli:
   enabled: true
@@ -441,6 +460,11 @@ keycloakConfigCli:
     valueFrom:
       secretKeyRef:
         name: keycloak-clients-longhorn
+        key: CLIENT_SECRET
+  - name: RUSTFS_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-rustfs
         key: CLIENT_SECRET
   - name: ADMIN_USER_USERNAME
     valueFrom:
@@ -750,6 +774,36 @@ keycloakConfigCli:
           implicitFlowEnabled: false
           directAccessGrantsEnabled: true
           serviceAccountsEnabled: false
+          defaultClientScopes:
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
+          optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        - clientId: rustfs
+          name: RustFS
+          description: S3-compatible object storage
+          enabled: true
+          clientAuthenticatorType: client-secret
+          secret: "$(env:RUSTFS_CLIENT_SECRET)"
+          redirectUris:
+          - "https://console.s3.$(env:ROOT_DOMAIN)/rustfs/admin/v3/oidc/callback/default"
+          webOrigins:
+          - "https://console.s3.$(env:ROOT_DOMAIN)"
+          protocol: openid-connect
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          attributes:
+            token.endpoint.auth.method: client_secret_post
           defaultClientScopes:
           - web-origins
           - acr

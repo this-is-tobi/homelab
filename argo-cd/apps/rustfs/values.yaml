@@ -5,78 +5,50 @@ gateway:
   routes: []
 
 rustfs:
-  deploymentType: statefulset
-  replicaCount: 4
-  podManagementPolicy: Parallel
-  auth:
+  mode:
+    standalone:
+      enabled: true
+    distributed:
+      enabled: false
+
+  secret:
     existingSecret: rustfs-admin
-    existingSecretAccessKeyKey: ACCESS_KEY
-    existingSecretSecretKeyKey: SECRET_KEY
+
   config:
-    logLevel: info
-    consoleEnabled: true
+    rustfs:
+      address: ":9000"
+      console_address: ":9001"
+      console_enable: "true"
+      log_level: info
+      region: eu-west-1
+
   ingress:
-    enabled: true
-    className: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    hosts:
-    - host: ""
-      paths:
-      - path: /
-        pathType: Prefix
-    tls: []
-  consoleIngress:
-    enabled: true
-    className: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    hosts:
-    - host: ""
-      paths:
-      - path: /
-        pathType: Prefix
-    tls: []
-  dataPersistence:
-    enabled: true
-    size: 100Gi
-    accessModes:
-    - ReadWriteOnce
-  logsPersistence:
     enabled: false
-    size: 5Gi
-    accessModes:
-    - ReadWriteOnce
+
+  gatewayApi:
+    enabled: false
+
+  storageclass:
+    name: longhorn
+    dataStorageSize: 500Gi
+    logStorageSize: 1Gi
+
   resources:
     limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
       cpu: 500m
       memory: 1Gi
-    requests:
-      cpu: 100m
-      memory: 512Mi
-  podSecurityContext:
-    fsGroup: 1001
+
   containerSecurityContext:
-    allowPrivilegeEscalation: false
-    runAsNonRoot: true
-    runAsUser: 1001
-    runAsGroup: 1001
-    readOnlyRootFilesystem: false
     capabilities:
       drop:
       - ALL
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-            - key: app.kubernetes.io/name
-              operator: In
-              values:
-              - rustfs
-          topologyKey: kubernetes.io/hostname
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+
+  extraEnv: []
 
 vso:
   extraObjects:
@@ -112,7 +84,24 @@ vso:
           excludes:
           - ".*"
           templates:
-            ACCESS_KEY:
+            RUSTFS_ROOT_USER:
               text: '{{ get .Secrets "admin" | dig "accessKey" "" }}'
-            SECRET_KEY:
+            RUSTFS_ROOT_PASSWORD:
               text: '{{ get .Secrets "admin" | dig "secretKey" "" }}'
+    rustfsOidc:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: rustfs-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: rustfs-oidc
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            RUSTFS_IDENTITY_OPENID_CLIENT_SECRET:
+              text: '{{ get .Secrets "clients" | dig "rustfs" "clientSecret" "" }}'

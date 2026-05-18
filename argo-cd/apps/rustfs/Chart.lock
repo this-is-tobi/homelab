@@ -1,9 +1,9 @@
 dependencies:
 - name: rustfs
-  repository: oci://registry-1.docker.io/cloudpirates
-  version: 0.8.4
+  repository: https://charts.rustfs.com
+  version: 0.3.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:d474790521f4f16f4180316c863e4662f75a215bfd8465de4d50d034c40b4ce7
-generated: "2026-05-02T02:32:03.936958+02:00"
+digest: sha256:34bc959ad7a7c025dbdfb308165ffc8c1f6384ef3f3104bdba91615c625e7ca2
+generated: "2026-05-18T15:39:13.060335+02:00"
