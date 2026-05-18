@@ -284,7 +284,7 @@ vso:
               text: '{{ get .Secrets "clients" | dig "gitea" "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "gitea" "clientSecret" "" }}'
-    clientGrafana:
+    clientGrafanaCore:
       mount: ""
       path: ""
       type: kv-v2
@@ -292,7 +292,7 @@ vso:
       refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: keycloak-clients-grafana
+        name: keycloak-clients-grafana-core
         create: true
         type: Opaque
         transformation:
@@ -300,9 +300,9 @@ vso:
           - ".*"
           templates:
             CLIENT_ID:
-              text: '{{ get .Secrets "clients" | dig "grafana" "clientId" "" }}'
+              text: '{{ get .Secrets "clients" | dig "grafana-core" "clientId" "" }}'
             CLIENT_SECRET:
-              text: '{{ get .Secrets "clients" | dig "grafana" "clientSecret" "" }}'
+              text: '{{ get .Secrets "clients" | dig "grafana-core" "clientSecret" "" }}'
     clientArgoCd:
       mount: ""
       path: ""
@@ -341,7 +341,7 @@ vso:
               text: '{{ get .Secrets "clients" | dig "argo-cd-core" "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "argo-cd-core" "clientSecret" "" }}'
-    clientVault:
+    clientVaultCore:
       mount: ""
       path: ""
       type: kv-v2
@@ -349,7 +349,7 @@ vso:
       refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: keycloak-clients-vault
+        name: keycloak-clients-vault-core
         create: true
         type: Opaque
         transformation:
@@ -357,10 +357,10 @@ vso:
           - ".*"
           templates:
             CLIENT_ID:
-              text: '{{ get .Secrets "clients" | dig "vault" "clientId" "" }}'
+              text: '{{ get .Secrets "clients" | dig "vault-core" "clientId" "" }}'
             CLIENT_SECRET:
-              text: '{{ get .Secrets "clients" | dig "vault" "clientSecret" "" }}'
-    clientLonghorn:
+              text: '{{ get .Secrets "clients" | dig "vault-core" "clientSecret" "" }}'
+    clientLonghornCore:
       mount: ""
       path: ""
       type: kv-v2
@@ -368,7 +368,7 @@ vso:
       refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: keycloak-clients-longhorn
+        name: keycloak-clients-longhorn-core
         create: true
         type: Opaque
         transformation:
@@ -376,9 +376,9 @@ vso:
           - ".*"
           templates:
             CLIENT_ID:
-              text: '{{ get .Secrets "clients" | dig "longhorn" "clientId" "" }}'
+              text: '{{ get .Secrets "clients" | dig "longhorn-core" "clientId" "" }}'
             CLIENT_SECRET:
-              text: '{{ get .Secrets "clients" | dig "longhorn" "clientSecret" "" }}'
+              text: '{{ get .Secrets "clients" | dig "longhorn-core" "clientSecret" "" }}'
     clientRustfs:
       mount: ""
       path: ""
@@ -436,10 +436,10 @@ keycloakConfigCli:
       secretKeyRef:
         name: keycloak-clients-gitea
         key: CLIENT_SECRET
-  - name: GRAFANA_CLIENT_SECRET
+  - name: GRAFANA_CORE_CLIENT_SECRET
     valueFrom:
       secretKeyRef:
-        name: keycloak-clients-grafana
+        name: keycloak-clients-grafana-core
         key: CLIENT_SECRET
   - name: ARGOCD_CLIENT_SECRET
     valueFrom:
@@ -451,15 +451,15 @@ keycloakConfigCli:
       secretKeyRef:
         name: keycloak-clients-argocd-core
         key: CLIENT_SECRET
-  - name: VAULT_CLIENT_SECRET
+  - name: VAULT_CORE_CLIENT_SECRET
     valueFrom:
       secretKeyRef:
-        name: keycloak-clients-vault
+        name: keycloak-clients-vault-core
         key: CLIENT_SECRET
-  - name: LONGHORN_CLIENT_SECRET
+  - name: LONGHORN_CORE_CLIENT_SECRET
     valueFrom:
       secretKeyRef:
-        name: keycloak-clients-longhorn
+        name: keycloak-clients-longhorn-core
         key: CLIENT_SECRET
   - name: RUSTFS_CLIENT_SECRET
     valueFrom:
@@ -627,12 +627,12 @@ keycloakConfigCli:
           - phone
           - offline_access
           - microprofile-jwt
-        - clientId: grafana
-          name: Grafana
-          description: Monitoring dashboards
+        - clientId: grafana-core
+          name: Grafana Core
+          description: Monitoring dashboards (core)
           enabled: true
           clientAuthenticatorType: client-secret
-          secret: "$(env:GRAFANA_CLIENT_SECRET)"
+          secret: "$(env:GRAFANA_CORE_CLIENT_SECRET)"
           redirectUris:
           - "https://monitoring.$(env:ROOT_DOMAIN)/*"
           - "https://monitoring.$(env:ROOT_DOMAIN)/login/generic_oauth"
@@ -669,7 +669,7 @@ keycloakConfigCli:
               multivalued: "true"
               userinfo.token.claim: "true"
               id.token.claim: "true"
-              client_id: grafana
+              client_id: grafana-core
         - clientId: argo-cd
           name: Argo CD
           description: GitOps continuous delivery
@@ -728,12 +728,12 @@ keycloakConfigCli:
           - phone
           - offline_access
           - microprofile-jwt
-        - clientId: vault
-          name: Vault
-          description: HashiCorp Vault UI OIDC login
+        - clientId: vault-core
+          name: Vault Core
+          description: HashiCorp Vault UI OIDC login (core)
           enabled: true
           clientAuthenticatorType: client-secret
-          secret: "$(env:VAULT_CLIENT_SECRET)"
+          secret: "$(env:VAULT_CORE_CLIENT_SECRET)"
           redirectUris:
           - "https://vault.core.$(env:ROOT_DOMAIN)/*"
           - "https://vault.core.$(env:ROOT_DOMAIN)/ui/vault/auth/oidc/oidc/callback"
@@ -758,12 +758,12 @@ keycloakConfigCli:
           - phone
           - offline_access
           - microprofile-jwt
-        - clientId: longhorn
-          name: Longhorn
-          description: Distributed block storage UI
+        - clientId: longhorn-core
+          name: Longhorn Core
+          description: Distributed block storage UI (core)
           enabled: true
           clientAuthenticatorType: client-secret
-          secret: "$(env:LONGHORN_CLIENT_SECRET)"
+          secret: "$(env:LONGHORN_CORE_CLIENT_SECRET)"
           redirectUris:
           - "https://longhorn.core.$(env:ROOT_DOMAIN)/*"
           webOrigins:
