@@ -582,7 +582,7 @@ keycloakConfigCli:
           - name: offline_access
             description: Offline access
           client:
-            grafana:
+            grafana-core:
             - name: grafanaadmin
               description: Grafana administrator role
             - name: admin
@@ -595,7 +595,7 @@ keycloakConfigCli:
           realmRoles:
           - admin
           clientRoles:
-            grafana:
+            grafana-core:
             - grafanaadmin
         clients:
         - clientId: gitea
