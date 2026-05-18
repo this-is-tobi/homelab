@@ -17,7 +17,7 @@ vault:
     oidcRedirectUris:
     - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     - "https://vault.core.ohmlab.fr/oidc/callback"
-  envsConfig:
+  extraEnvsConfig:
   - name: VAULT_OIDC_CLIENT_SECRET
     valueFrom:
       secretKeyRef:
@@ -206,11 +206,6 @@ ohmlab:
           clientId: grafana-core
           clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.grafana-core.clientSecret>"
     - path: homelab/platforms/production/core/sops
-      data:
-        # base64-encoded age keys file (age-keygen output); set manually or via vault-init-secrets
-        keys: ""
-        public: "<age:public>"
-    - path: homelab/platforms/production/core/sops-test
       data:
         secret: "<age:secret>"
         public: "<age:public>"
@@ -458,6 +453,7 @@ ohmlab:
     identity:
       groups:
       - name: homelab-admins
+        type: external
         policies:
         - admin
       groupAliases:
