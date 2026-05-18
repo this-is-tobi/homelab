@@ -295,47 +295,198 @@ func (c *Client) Health() error {
 	return nil
 }
 
+// IdentityCreateGroup creates or updates an identity group with policies.
+// Idempotent: updates existing group if it already exists.
+func (c *Client) IdentityCreateGroup(name string, policies []string) (string, error) {
+	path := "/v1/identity/group"
+	body := map[string]any{
+		"name":     name,
+		"policies": policies,
+	}
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return "", fmt.Errorf("marshal group data: %w", err)
+	}
+
+	resp, err := c.rawRequest("POST", path, payload)
+	if err != nil {
+		return "", fmt.Errorf("create group %s: %w", name, err)
+	}
+
+	var result struct {
+		Data struct {
+			ID string `json:"id"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return "", fmt.Errorf("decode group response: %w", err)
+	}
+
+	if result.Data.ID == "" {
+		return "", fmt.Errorf("group creation returned empty ID for %s", name)
+	}
+
+	slog.Info("created/updated identity group", "name", name, "id", result.Data.ID, "policies", policies)
+	return result.Data.ID, nil
+}
+
+// IdentityCreateGroupAlias creates or updates a group alias mapping an external
+// identity claim (e.g., OIDC group claim) to an internal group.
+// Idempotent: updates existing alias if it already exists.
+func (c *Client) IdentityCreateGroupAlias(name, groupID, mountAccessor string) error {
+	path := "/v1/identity/group-alias"
+	body := map[string]string{
+		"name":             name,
+		"canonical_id":     groupID,
+		"mount_accessor":   mountAccessor,
+	}
+	payload, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("marshal group-alias data: %w", err)
+	}
+
+	_, err = c.rawRequest("POST", path, payload)
+	if err != nil {
+		return fmt.Errorf("create group-alias %s: %w", name, err)
+	}
+
+	slog.Info("created/updated group-alias", "name", name, "group_id", groupID, "mount_accessor", mountAccessor)
+	return nil
+}
+
+// GetAuthMountAccessor retrieves the accessor ID for an auth mount by type and path.
+// If path is empty, returns the first matching auth mount of that type.
+// Returns empty string if mount not found.
+func (c *Client) GetAuthMountAccessor(authType, authPath string) (string, error) {
+	path := "/v1/sys/auth"
+	resp, err := c.rawRequest("GET", path, nil)
+	if err != nil {
+		return "", fmt.Errorf("list auth mounts: %w", err)
+	}
+
+	type AuthMount struct {
+		Accessor string `json:"accessor"`
+		Type     string `json:"type"`
+		Path     string `json:"path"`
+	}
+
+	type AuthMounts map[string]AuthMount
+
+	var result struct {
+		Data AuthMounts `json:"data"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return "", fmt.Errorf("decode auth mounts response: %w", err)
+	}
+
+	// If specific path provided, return its accessor
+	if authPath != "" {
+		// Normalize path (add trailing slash if needed)
+		if !strings.HasSuffix(authPath, "/") {
+			authPath += "/"
+		}
+		if mount, ok := result.Data[authPath]; ok && mount.Type == authType {
+			return mount.Accessor, nil
+		}
+		return "", fmt.Errorf("auth mount not found: type=%s, path=%s", authType, authPath)
+	}
+
+	// Find first matching auth type
+	for path, mount := range result.Data {
+		if mount.Type == authType {
+			slog.Info("found auth mount", "type", authType, "path", path, "accessor", mount.Accessor)
+			return mount.Accessor, nil
+		}
+	}
+
+	return "", fmt.Errorf("no auth mount found of type %s", authType)
+}
+
+// GetLeaderAddress discovers the active Vault leader node address by querying /v1/sys/leader.
+// Returns the leader's address URL, or empty string if discovery fails.
+// No authentication required for this endpoint.
+func (c *Client) GetLeaderAddress() (string, error) {
+	path := "/v1/sys/leader"
+	resp, err := c.rawRequest("GET", path, nil)
+	if err != nil {
+		return "", fmt.Errorf("query leader endpoint: %w", err)
+	}
+
+	var result struct {
+		LeaderAddress string `json:"leader_address"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return "", fmt.Errorf("decode leader response: %w", err)
+	}
+
+	if result.LeaderAddress == "" {
+		return "", fmt.Errorf("no active leader found")
+	}
+
+	return result.LeaderAddress, nil
+}
+
 func (c *Client) rawRequest(method, path string, body []byte) ([]byte, error) {
-	url := c.addr + path
+	// Retry logic for transient errors
+	const maxRetries = 3
+	backoff := time.Millisecond * 100
 
-	var bodyReader io.Reader
-	if body != nil {
-		bodyReader = bytes.NewReader(body)
-	}
-
-	req, err := http.NewRequest(method, url, bodyReader)
-	if err != nil {
-		return nil, fmt.Errorf("create request: %w", err)
-	}
-
-	if c.token != "" {
-		req.Header.Set("X-Vault-Token", c.token)
-	}
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("HTTP %s %s: %w", method, path, err)
-	}
-	defer resp.Body.Close()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("read response body: %w", err)
-	}
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		// Try to extract Vault error messages
-		var vaultErr struct {
-			Errors []string `json:"errors"`
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			slog.Debug("retrying request after backoff", "attempt", attempt, "delay", backoff)
+			time.Sleep(backoff)
+			backoff = time.Duration(float64(backoff) * 2) // exponential backoff
 		}
-		if json.Unmarshal(respBody, &vaultErr) == nil && len(vaultErr.Errors) > 0 {
-			return respBody, fmt.Errorf("status %d: %s", resp.StatusCode, strings.Join(vaultErr.Errors, "; "))
+
+		url := c.addr + path
+
+		var bodyReader io.Reader
+		if body != nil {
+			bodyReader = bytes.NewReader(body)
 		}
-		return respBody, fmt.Errorf("status %d: %s", resp.StatusCode, string(respBody))
+
+		req, err := http.NewRequest(method, url, bodyReader)
+		if err != nil {
+			return nil, fmt.Errorf("create request: %w", err)
+		}
+
+		if c.token != "" {
+			req.Header.Set("X-Vault-Token", c.token)
+		}
+		if body != nil {
+			req.Header.Set("Content-Type", "application/json")
+		}
+
+		resp, err := c.client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("HTTP %s %s: %w", method, path, err)
+		}
+		defer resp.Body.Close()
+
+		respBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("read response body: %w", err)
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			// 429 is retryable (transient rate-limiting)
+			if resp.StatusCode == 429 && attempt < maxRetries-1 {
+				slog.Debug("got 429, will retry", "attempt", attempt+1)
+				continue
+			}
+
+			// Try to extract Vault error messages
+			var vaultErr struct {
+				Errors []string `json:"errors"`
+			}
+			if json.Unmarshal(respBody, &vaultErr) == nil && len(vaultErr.Errors) > 0 {
+				return respBody, fmt.Errorf("status %d: %s", resp.StatusCode, strings.Join(vaultErr.Errors, "; "))
+			}
+			return respBody, fmt.Errorf("status %d: %s", resp.StatusCode, string(respBody))
+		}
+
+		return respBody, nil
 	}
 
-	return respBody, nil
+	return nil, fmt.Errorf("max retries exceeded")
 }

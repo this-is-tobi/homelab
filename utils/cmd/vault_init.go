@@ -68,7 +68,7 @@ func init() {
 	f.BoolVar(&vaultSkipTLS, "skip-tls-verify", os.Getenv("VAULT_SKIP_VERIFY") == "true", "skip TLS verification")
 	f.StringVar(&vaultAuthMethod, "auth-method", envOrDefault("VAULT_AUTH_METHOD", "kubernetes"), "auth method: kubernetes, jwt, approle, token")
 	f.StringVar(&vaultAuthMount, "auth-mount", envOrDefault("VAULT_AUTH_MOUNT", ""), "auth mount path (defaults to method name)")
-	f.StringVar(&vaultRole, "role", envOrDefault("VAULT_ROLE", "vault-init-secrets"), "Vault auth role name")
+	f.StringVar(&vaultRole, "role", envOrDefault("VAULT_ROLE", "vault-post-config"), "Vault auth role name")
 	f.StringVar(&vaultToken, "token", "", "Vault token (for token auth, or use VAULT_TOKEN env)")
 	f.StringVar(&vaultRoleID, "role-id", envOrDefault("VAULT_ROLE_ID", ""), "AppRole role ID")
 	f.StringVar(&vaultSecretID, "secret-id", envOrDefault("VAULT_SECRET_ID", ""), "AppRole secret ID")

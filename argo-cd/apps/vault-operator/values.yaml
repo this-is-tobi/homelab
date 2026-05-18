@@ -57,7 +57,7 @@ vault:
       disableHostname: true
   externalConfig:
     policies:
-    - name: vault-init-secrets
+    - name: vault-post-config
       rules: |
         # '+' matches any single path segment:
         #   1st '+' = environment (production, staging, ...)
@@ -174,10 +174,10 @@ vault:
     auth:
     - type: kubernetes
       roles:
-      - name: vault-init-secrets
-        bound_service_account_names: [vault-init-secrets]
+      - name: vault-post-config
+        bound_service_account_names: [vault-post-config]
         bound_service_account_namespaces: [vault-operator-system]
-        policies: [vault-init-secrets]
+        policies: [vault-post-config]
         ttl: 10m
       - name: argo-cd
         bound_service_account_names: [vso]
@@ -305,31 +305,6 @@ vault:
       options:
         version: 2
   startupSecrets: []
-  initSecrets:
-    enabled: true
-    vaultRole: vault-init-secrets
-    authMethod: kubernetes
-    authMount: kubernetes
-    skipTLSVerify: false
-    forceRotate: false
-    backoffLimit: 3
-    ttlSecondsAfterFinished: 86400
-    image: "ghcr.io/this-is-tobi/homelab/utils:latest"
-    resources:
-      requests:
-        cpu: 50m
-        memory: 64Mi
-      limits:
-        cpu: 200m
-        memory: 128Mi
-    # Secrets to initialize using template syntax:
-    # - <random:N> generates random alphanumeric string of length N
-    # - <uuid> generates UUID v4
-    # - <age:secret> generates age secret key
-    # - <age:public> generates age public key (pair with secret key)
-    # - Static values remain as-is
-    # Supports nested JSON structure for organizing related secrets
-    secrets: []
   resources:
     vault:
       limits:
@@ -479,3 +454,45 @@ backup-utils:
       envFrom:
       - secretRef:
           name: vault-backup
+
+# Hierarchical configuration structure for ohmlab utilities
+# Used to configure Vault and other services declaratively in Git
+# Values are rendered into JSON configs consumed by ohmlab CLI tools
+#
+# Naming convention:
+#   ohmlab.<service>.<config-type>
+#
+# Example:
+#   ohmlab.vault.secrets  → ohmlab vault secrets --config <rendered-json>
+#   ohmlab.vault.identity → ohmlab vault identity --config <rendered-json>
+#   ohmlab.harbor.<type>  → ohmlab harbor <type> --config <rendered-json>
+#
+ohmlab:
+  vault:
+    # Job execution configuration for post-config tasks
+    config:
+      image: "ghcr.io/this-is-tobi/homelab/utils:latest"
+      vaultRole: vault-post-config
+      authMethod: kubernetes
+      authMount: kubernetes
+      skipTLSVerify: false
+      forceRotate: false
+      backoffLimit: 3
+      ttlSecondsAfterFinished: 86400
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
+      nodeSelector: {}
+      tolerations: []
+    # Secrets configuration for ohmlab vault secrets command
+    # Rendered as JSON array of secret entries in post-config job
+    secrets: []
+    # Identity configuration for ohmlab vault identity command
+    # Rendered as JSON object with groups and groupAliases in post-config job
+    identity:
+      groups: []
+      groupAliases: []
