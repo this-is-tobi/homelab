@@ -37,7 +37,29 @@ gateway:
   dnsClusterIssuer: letsencrypt-dns-prod
   wildcardTlsSecret: gateway-wildcard-tls
   apexTlsSecret: gateway-wildcard-tls
-  extraListeners: []
+  extraListeners:
+  - name: https-wildcard-core
+    protocol: HTTPS
+    port: 443
+    hostname: "*.core.ohmlab.fr"
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: gateway-wildcard-tls
+    allowedRoutes:
+      namespaces:
+        from: All
+  - name: https-wildcard-s3
+    protocol: HTTPS
+    port: 443
+    hostname: "*.s3.ohmlab.fr"
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: gateway-wildcard-tls
+    allowedRoutes:
+      namespaces:
+        from: All
   extraDnsNames:
   - "*.core.ohmlab.fr"
   - "*.s3.ohmlab.fr"

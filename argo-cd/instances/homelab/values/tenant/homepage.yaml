@@ -83,8 +83,8 @@ homepage:
           description: Team communication service
           icon: mattermost.png
       - Rustfs:
-          href: https://rustfs.ohmlab.fr
-          siteMonitor: https://rustfs.ohmlab.fr
+          href: https://console.s3.ohmlab.fr
+          siteMonitor: https://console.s3.ohmlab.fr
           description: Store data with s3 standard
           icon: rustfs.png
     widgets:

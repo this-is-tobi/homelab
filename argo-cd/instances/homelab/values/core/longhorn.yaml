@@ -4,6 +4,7 @@ gateway:
   gatewayNamespace: kube-system
   routes:
   - name: longhorn
+    listener: https-wildcard-core
     hostnames:
     - longhorn.core.ohmlab.fr
     rules:
