@@ -67,11 +67,14 @@ vault:
           argo-cd-core:
             clientId: argo-cd-core
             clientSecret: "<random:32>"
-          vault:
-            clientId: vault
+          vault-core:
+            clientId: vault-core
             clientSecret: "<random:32>"
-          grafana:
-            clientId: grafana
+          grafana-core:
+            clientId: grafana-core
+            clientSecret: "<random:32>"
+          longhorn-core:
+            clientId: longhorn-core
             clientSecret: "<random:32>"
           # Tenant services
           argo-cd:
@@ -82,9 +85,6 @@ vault:
             clientSecret: "<random:32>"
           mattermost:
             clientId: mattermost
-            clientSecret: "<random:32>"
-          longhorn:
-            clientId: longhorn
             clientSecret: "<random:32>"
           rustfs:
             clientId: rustfs
@@ -198,16 +198,16 @@ vault:
     - path: homelab/platforms/production/core/longhorn
       data:
         keycloak:
-          clientId: longhorn
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.longhorn.clientSecret>"
+          clientId: longhorn-core
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.longhorn-core.clientSecret>"
     - path: homelab/platforms/production/core/prometheus-stack
       data:
         admin:
           username: admin
           password: "<random:24>"
         keycloak:
-          clientId: grafana
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.grafana.clientSecret>"
+          clientId: grafana-core
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.grafana-core.clientSecret>"
     - path: homelab/platforms/production/core/sops
       data:
         # base64-encoded age keys file (age-keygen output); set manually or via vault-init-secrets
