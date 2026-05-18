@@ -70,9 +70,7 @@ spec:
           {{- end }}
           
           if LEADER_ADDR=$(ohmlab vault leader $LEADER_FLAGS 2>/dev/null); then
-            [ -n "$LEADER_ADDR" ] && echo "Discovered leader: $LEADER_ADDR" && VAULT_ADDR="$LEADER_ADDR" || echo "Leader discovery failed, using service: $SERVICE_ADDR"
-          else
-            echo "Leader discovery failed, using service: $SERVICE_ADDR"
+            [ -n "$LEADER_ADDR" ] && VAULT_ADDR="$LEADER_ADDR"
           fi
           
           # Common flags for all tasks (use discovered leader or fall back to service)
@@ -85,29 +83,21 @@ spec:
           
           # Task 1: Configure Vault secrets
           {{- if .Values.ohmlab.vault.secrets }}
-          echo "=== Configuring Vault secrets ==="
           cat > /tmp/secrets-config.json <<'EOF'
           {{ .Values.ohmlab.vault.secrets | toJson }}
           EOF
           
-          ohmlab vault init $COMMON_FLAGS {{- if .Values.ohmlab.vault.config.forceRotate }} --force-rotate{{- end }} --config=/tmp/secrets-config.json
-          {{- else }}
-          echo "No secrets to configure"
+          ohmlab vault secret $COMMON_FLAGS {{- if .Values.ohmlab.vault.config.forceRotate }} --force-rotate{{- end }} --config=/tmp/secrets-config.json
           {{- end }}
           
           # Task 2: Configure Vault identity
           {{- if or .Values.ohmlab.vault.identity.groups .Values.ohmlab.vault.identity.groupAliases }}
-          echo "=== Configuring Vault identity ==="
           cat > /tmp/identity-config.json <<'EOF'
           {{ .Values.ohmlab.vault.identity | toJson }}
           EOF
           
           ohmlab vault identity $COMMON_FLAGS --config=/tmp/identity-config.json
-          {{- else }}
-          echo "No identity to configure"
           {{- end }}
-          
-          echo "=== Post-config tasks completed ==="
         resources:
           {{- toYaml .Values.ohmlab.vault.config.resources | nindent 10 }}
         securityContext:

@@ -59,34 +59,36 @@ vault:
     policies:
     - name: vault-post-config
       rules: |
-        # '+' matches any single path segment:
+        # KV secrets: '+' matches any single path segment:
         #   1st '+' = environment (production, staging, ...)
         #   2nd '+' = tier (core, tenant)
         #   '*'     = app name
         path "homelab/data/platforms/+/+/*" {
           capabilities = ["create", "update", "read"]
         }
+        # Identity groups and aliases (OIDC group mapping)
+        path "identity/group" {
+          capabilities = ["create", "update", "read"]
+        }
+        path "identity/group/*" {
+          capabilities = ["create", "update", "read"]
+        }
+        path "identity/group-alias" {
+          capabilities = ["create", "update", "read"]
+        }
+        path "identity/group-alias/*" {
+          capabilities = ["create", "update", "read"]
+        }
+        # Read auth mounts (for auto-discovery of mount accessors)
+        path "sys/auth" {
+          capabilities = ["read", "list"]
+        }
     - name: admin
       rules: |
-        # Full access to all homelab secrets for OIDC admin users.
+        # Superadmin policy — equivalent to root token access.
         # Assigned via Vault OIDC role bound to the 'admin' Keycloak group.
-        path "homelab/*" {
-          capabilities = ["create", "read", "update", "delete", "list", "patch"]
-        }
-        path "sys/policies/*" {
-          capabilities = ["create", "read", "update", "delete", "list"]
-        }
-        path "sys/auth/*" {
-          capabilities = ["create", "read", "update", "delete", "list", "sudo"]
-        }
-        path "auth/*" {
-          capabilities = ["create", "read", "update", "delete", "list"]
-        }
-        path "identity/*" {
-          capabilities = ["create", "read", "update", "delete", "list"]
-        }
-        path "homelab/metadata/platforms/+/+/*" {
-          capabilities = ["list", "read"]
+        path "*" {
+          capabilities = ["create", "read", "update", "delete", "list", "sudo", "patch"]
         }
     - name: argo-cd
       rules: |

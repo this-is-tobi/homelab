@@ -9,6 +9,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -295,12 +296,33 @@ func (c *Client) Health() error {
 	return nil
 }
 
-// IdentityCreateGroup creates or updates an identity group with policies.
-// Idempotent: updates existing group if it already exists.
-func (c *Client) IdentityCreateGroup(name string, policies []string) (string, error) {
+// IdentityCreateGroup creates or updates an identity group with the given type and policies.
+// groupType must be "internal" or "external"; defaults to "internal" if empty.
+// Idempotent: if the group exists with the correct type it is updated in-place;
+// if it exists with the wrong type it is deleted and recreated (type is immutable in Vault).
+func (c *Client) IdentityCreateGroup(name, groupType string, policies []string) (string, error) {
+	if groupType == "" {
+		groupType = "internal"
+	}
+
+	// Check whether the group already exists and whether its type matches.
+	existing, err := c.GetIdentityGroupByName(name)
+	if err != nil {
+		return "", fmt.Errorf("check existing group %s: %w", name, err)
+	}
+	if existing != nil && existing.Type != groupType {
+		slog.Warn("group exists with wrong type, deleting and recreating",
+			"name", name, "current_type", existing.Type, "desired_type", groupType)
+		delPath := fmt.Sprintf("/v1/identity/group/id/%s", existing.ID)
+		if _, err := c.rawRequest("DELETE", delPath, nil); err != nil {
+			return "", fmt.Errorf("delete group %s for recreation: %w", name, err)
+		}
+	}
+
 	path := "/v1/identity/group"
 	body := map[string]any{
 		"name":     name,
+		"type":     groupType,
 		"policies": policies,
 	}
 	payload, err := json.Marshal(body)
@@ -311,6 +333,17 @@ func (c *Client) IdentityCreateGroup(name string, policies []string) (string, er
 	resp, err := c.rawRequest("POST", path, payload)
 	if err != nil {
 		return "", fmt.Errorf("create group %s: %w", name, err)
+	}
+
+	// Vault sometimes returns 200 with data, sometimes 204/empty — handle both.
+	if len(resp) == 0 {
+		slog.Info("created/updated identity group (no response body)", "name", name, "type", groupType, "policies", policies)
+		g, err := c.GetIdentityGroupByName(name)
+		if err != nil || g == nil {
+			return "", fmt.Errorf("retrieve group ID for %s after creation: %w", name, err)
+		}
+		slog.Info("retrieved group ID after creation", "name", name, "id", g.ID)
+		return g.ID, nil
 	}
 
 	var result struct {
@@ -326,31 +359,80 @@ func (c *Client) IdentityCreateGroup(name string, policies []string) (string, er
 		return "", fmt.Errorf("group creation returned empty ID for %s", name)
 	}
 
-	slog.Info("created/updated identity group", "name", name, "id", result.Data.ID, "policies", policies)
+	slog.Info("created/updated identity group", "name", name, "type", groupType, "id", result.Data.ID, "policies", policies)
 	return result.Data.ID, nil
 }
 
 // IdentityCreateGroupAlias creates or updates a group alias mapping an external
-// identity claim (e.g., OIDC group claim) to an internal group.
-// Idempotent: updates existing alias if it already exists.
+// identity claim (e.g., OIDC group claim) to an external Vault group.
+// Idempotent: skips if alias with same name+mount already exists, updates if
+// the name differs, creates if no alias exists yet.
 func (c *Client) IdentityCreateGroupAlias(name, groupID, mountAccessor string) error {
-	path := "/v1/identity/group-alias"
+	// Check existing alias on this group by reading identity/group/id/{id}
+	groupPath := fmt.Sprintf("/v1/identity/group/id/%s", groupID)
+	groupResp, err := c.rawRequest("GET", groupPath, nil)
+	if err != nil {
+		return fmt.Errorf("read group %s for alias check: %w", groupID, err)
+	}
+
+	var groupData struct {
+		Data struct {
+			Alias *struct {
+				ID            string `json:"id"`
+				Name          string `json:"name"`
+				MountAccessor string `json:"mount_accessor"`
+			} `json:"alias"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(groupResp, &groupData); err != nil {
+		return fmt.Errorf("decode group alias data: %w", err)
+	}
+
+	existingAlias := groupData.Data.Alias
+
+	// Already correct — nothing to do.
+	if existingAlias != nil && existingAlias.Name == name && existingAlias.MountAccessor == mountAccessor {
+		slog.Info("group-alias already exists and is correct, skipping",
+			"name", name, "group_id", groupID, "mount_accessor", mountAccessor)
+		return nil
+	}
+
+	// Alias exists but with different values — update via PUT.
+	if existingAlias != nil {
+		slog.Info("updating existing group-alias",
+			"alias_id", existingAlias.ID, "old_name", existingAlias.Name, "new_name", name)
+		updatePath := fmt.Sprintf("/v1/identity/group-alias/id/%s", existingAlias.ID)
+		body := map[string]string{
+			"name":           name,
+			"canonical_id":   groupID,
+			"mount_accessor": mountAccessor,
+		}
+		payload, err := json.Marshal(body)
+		if err != nil {
+			return fmt.Errorf("marshal group-alias update: %w", err)
+		}
+		if _, err := c.rawRequest("POST", updatePath, payload); err != nil {
+			return fmt.Errorf("update group-alias %s: %w", name, err)
+		}
+		slog.Info("updated group-alias", "name", name, "group_id", groupID, "mount_accessor", mountAccessor)
+		return nil
+	}
+
+	// No alias yet — create.
 	body := map[string]string{
-		"name":             name,
-		"canonical_id":     groupID,
-		"mount_accessor":   mountAccessor,
+		"name":           name,
+		"canonical_id":   groupID,
+		"mount_accessor": mountAccessor,
 	}
 	payload, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("marshal group-alias data: %w", err)
 	}
-
-	_, err = c.rawRequest("POST", path, payload)
-	if err != nil {
+	if _, err = c.rawRequest("POST", "/v1/identity/group-alias", payload); err != nil {
 		return fmt.Errorf("create group-alias %s: %w", name, err)
 	}
 
-	slog.Info("created/updated group-alias", "name", name, "group_id", groupID, "mount_accessor", mountAccessor)
+	slog.Info("created group-alias", "name", name, "group_id", groupID, "mount_accessor", mountAccessor)
 	return nil
 }
 
@@ -424,6 +506,63 @@ func (c *Client) GetLeaderAddress() (string, error) {
 	}
 
 	return result.LeaderAddress, nil
+}
+
+// IdentityGroupAlias holds the key fields of a group's existing alias.
+type IdentityGroupAlias struct {
+	ID            string
+	Name          string
+	MountAccessor string
+}
+
+// IdentityGroup holds the key fields of an existing Vault identity group.
+type IdentityGroup struct {
+	ID    string
+	Type  string
+	Alias *IdentityGroupAlias // nil if no alias exists
+}
+
+// GetIdentityGroupByName retrieves a group's ID, type, and alias by name.
+// Returns nil (no error) when the group does not exist.
+func (c *Client) GetIdentityGroupByName(name string) (*IdentityGroup, error) {
+	path := fmt.Sprintf("/v1/identity/group/name/%s", url.QueryEscape(name))
+	resp, err := c.rawRequest("GET", path, nil)
+	if err != nil {
+		// 404 means group doesn't exist yet — not an error
+		if strings.Contains(err.Error(), "status 404") {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get group by name %s: %w", name, err)
+	}
+
+	var result struct {
+		Data struct {
+			ID    string `json:"id"`
+			Type  string `json:"type"`
+			Alias *struct {
+				ID            string `json:"id"`
+				Name          string `json:"name"`
+				MountAccessor string `json:"mount_accessor"`
+			} `json:"alias"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(resp, &result); err != nil {
+		return nil, fmt.Errorf("decode group response: %w", err)
+	}
+
+	if result.Data.ID == "" {
+		return nil, fmt.Errorf("group %s has no ID", name)
+	}
+
+	g := &IdentityGroup{ID: result.Data.ID, Type: result.Data.Type}
+	if result.Data.Alias != nil && result.Data.Alias.ID != "" {
+		g.Alias = &IdentityGroupAlias{
+			ID:            result.Data.Alias.ID,
+			Name:          result.Data.Alias.Name,
+			MountAccessor: result.Data.Alias.MountAccessor,
+		}
+	}
+	return g, nil
 }
 
 func (c *Client) rawRequest(method, path string, body []byte) ([]byte, error) {

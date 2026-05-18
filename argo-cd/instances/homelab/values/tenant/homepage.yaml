@@ -50,7 +50,7 @@ homepage:
           href: https://apisix.core.ohmlab.fr/ui/
           siteMonitor: https://apisix.core.ohmlab.fr/ui/
           description: API Gateway dashboard
-          icon: apisix.png
+          icon: apache.png
       - Longhorn:
           href: https://longhorn.core.ohmlab.fr
           siteMonitor: https://longhorn.core.ohmlab.fr

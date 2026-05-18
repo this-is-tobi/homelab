@@ -20,7 +20,7 @@ argo-cd:
       policy.csv: |
         p, role:none, *, *, */*, deny
         p, role:admin, *, *, */*, allow
-        g, admin, role:admin
+        g, /admin, role:admin
     policy.default: role:none
     scopes: "[groups]"
     cm:
@@ -461,7 +461,7 @@ ohmlab:
           endpoint: "https://s3.fr-par.scw.cloud"
           region: fr-par
           secretKey: ""
-  - path: homelab/platforms/production/sops-test
+  - path: homelab/platforms/production/sops
     data:
       extras:
         secret: "<age:secret>"

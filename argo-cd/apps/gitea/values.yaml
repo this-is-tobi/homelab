@@ -47,7 +47,7 @@ gitea:
       existingSecret: gitea-sso
       autoDiscoverUrl: ""
       scopes: openid profile email roles groups
-      adminGroup: admin
+      adminGroup: /admin
       groupClaimName: groups
       # groupTeamMap: ""
       # groupTeamMapRemoval: true
