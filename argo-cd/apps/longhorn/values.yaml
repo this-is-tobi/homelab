@@ -64,6 +64,7 @@ longhorn:
     host: ""
     tls: true
     tlsSecret: longhorn-tls
+    pathType: Prefix
   persistence:
     defaultClass: true
     defaultFsType: ext4
