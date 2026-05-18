@@ -82,7 +82,7 @@ vso:
     clientGitea:
       mount: homelab
       path: platforms/production/core/keycloak
-    clientGrafana:
+    clientGrafanaCore:
       mount: homelab
       path: platforms/production/core/keycloak
     clientArgoCd:
@@ -91,10 +91,10 @@ vso:
     clientArgoCdCore:
       mount: homelab
       path: platforms/production/core/keycloak
-    clientVault:
+    clientVaultCore:
       mount: homelab
       path: platforms/production/core/keycloak
-    clientLonghorn:
+    clientLonghornCore:
       mount: homelab
       path: platforms/production/core/keycloak
     clientRustfs:
