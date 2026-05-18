@@ -51,4 +51,5 @@ vso:
 
 longhorn:
   ingress:
-    enabled: false
+    enabled: true
+    host: longhorn.core.ohmlab.fr
