@@ -10,6 +10,7 @@ gateway:
     - backendService: rustfs
       backendPort: 9000
   - name: rustfs-console
+    listener: https-wildcard-s3
     hostnames:
     - console.s3.ohmlab.fr
     rules:
