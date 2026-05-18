@@ -7,42 +7,54 @@ gateway:
     hostnames:
     - s3.ohmlab.fr
     rules:
-    - backendService: rustfs
+    - backendService: rustfs-svc
       backendPort: 9000
   - name: rustfs-console
-    listener: https-wildcard-s3
+    listener: https-wildcard
     hostnames:
     - console.s3.ohmlab.fr
     rules:
-    - backendService: rustfs-console
+    - backendService: rustfs-svc
       backendPort: 9001
 
 rustfs:
   ingress:
-    hosts:
-    - host: s3.ohmlab.fr
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: rustfs-tls
-      hosts:
-      - s3.ohmlab.fr
-  consoleIngress:
-    hosts:
-    - host: console.s3.ohmlab.fr
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: rustfs-console-tls
-      hosts:
-      - console.s3.ohmlab.fr
-  dataPersistence:
-    size: 250Gi
+    enabled: false
+  gatewayApi:
+    enabled: false
+  storageclass:
+    dataStorageSize: 500Gi
+  config:
+    rustfs:
+      region: eu-west-1
+  extraEnv:
+  - name: RUSTFS_IDENTITY_OPENID_ENABLE
+    value: "on"
+  - name: RUSTFS_IDENTITY_OPENID_CONFIG_URL
+    value: "https://sso.core.ohmlab.fr/realms/homelab/.well-known/openid-configuration"
+  - name: RUSTFS_IDENTITY_OPENID_CLIENT_ID
+    value: "rustfs"
+  - name: RUSTFS_IDENTITY_OPENID_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: rustfs-oidc
+        key: RUSTFS_IDENTITY_OPENID_CLIENT_SECRET
+  - name: RUSTFS_IDENTITY_OPENID_SCOPES
+    value: "openid,profile,email,groups"
+  - name: RUSTFS_IDENTITY_OPENID_GROUPS_CLAIM
+    value: "groups"
+  - name: RUSTFS_IDENTITY_OPENID_USERNAME_CLAIM
+    value: "preferred_username"
+  - name: RUSTFS_IDENTITY_OPENID_ROLE_POLICY
+    value: "consoleAdmin"
+  - name: RUSTFS_IDENTITY_OPENID_DISPLAY_NAME
+    value: "Keycloak"
 
 vso:
   vaultStaticSecrets:
     rustfsAdmin:
       mount: homelab
       path: platforms/production/tenant/rustfs
+    rustfsOidc:
+      mount: homelab
+      path: platforms/production/core/keycloak

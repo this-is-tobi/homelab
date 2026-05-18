@@ -176,6 +176,9 @@ vault:
         admin:
           accessKey: "<random:16>"
           secretKey: "<random:32>"
+        keycloak:
+          clientId: rustfs
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.rustfs.clientSecret>"
     - path: homelab/platforms/production/core/longhorn
       data:
         keycloak:
