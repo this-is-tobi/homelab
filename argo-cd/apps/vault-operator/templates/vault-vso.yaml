@@ -56,5 +56,5 @@ spec:
       templates:
         VAULT_OIDC_CLIENT_SECRET:
           text: >-
-            {{`{{ get .Secrets "clients" | dig "vault" "clientSecret" "" }}`}}
+            {{`{{ get .Secrets "clients" | dig "vault-core" "clientSecret" "" }}`}}
 {{- end }}
