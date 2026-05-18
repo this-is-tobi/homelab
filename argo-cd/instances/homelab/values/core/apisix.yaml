@@ -68,3 +68,7 @@ gateway:
     hostname: "*.teleport.core.ohmlab.fr"
   - name: tls-teleport-apex
     hostname: teleport.core.ohmlab.fr
+
+dashboard:
+  enabled: true
+  host: apisix.core.ohmlab.fr
