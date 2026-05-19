@@ -32,7 +32,7 @@ vso:
 
 longhorn:
   ingress:
-    enabled: true
+    enabled: false
     ingressClassName: apisix
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-dns-prod
