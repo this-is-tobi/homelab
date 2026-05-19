@@ -30,3 +30,5 @@ homelab-utils/helm/secret-values.yaml
 
 # Local backup files
 backups/
+
+**/secret-values.yaml
