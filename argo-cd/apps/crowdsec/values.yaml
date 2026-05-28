@@ -155,7 +155,7 @@ crowdsec:
 # -- CNPG PostgreSQL cluster for LAPI persistence
 cnpg:
   fullnameOverride: crowdsec-pg-cluster
-  imageName: "ghcr.io/cloudnative-pg/postgresql:17.7"
+  imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
   extraSpec:
     enablePDB: false
   mode: primary

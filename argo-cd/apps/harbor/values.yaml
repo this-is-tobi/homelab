@@ -70,7 +70,7 @@ harbor:
 
 cnpg:
   fullnameOverride: harbor-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.7
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.10
   mode: primary
   dbName: harbor
   credentials:

@@ -72,7 +72,7 @@ keycloak:
 
 cnpg:
   fullnameOverride: keycloak-pg-cluster
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.7
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.10
   extraSpec:
     enablePDB: false
   mode: primary
