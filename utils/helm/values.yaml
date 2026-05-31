@@ -87,6 +87,28 @@ argo-cd:
       serviceMonitor:
         enabled: true
 
+# VSO (Vault Secrets Operator) integration for the core ArgoCD in argocd-system.
+# Disabled by default so bootstrap (run.sh) can run before vault-operator / VSO
+# are deployed. Enabled in ohmlab.yaml once the full stack is running.
+vso:
+  # -- Enable VSO integration. Set to true in instance values AFTER vault-operator
+  # is deployed so VaultStaticSecret CRDs are available.
+  enabled: false
+  extraObjects: []
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: ""
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultStaticSecrets: {}
+
 rootManager:
   # -- Enable the root `manager` ApplicationSet that discovers every instance
   # under `argo-cd/instances/*` and renders one per-instance Application
@@ -247,39 +269,73 @@ ohmlab:
     # - Static values remain as-is
     # Supports nested JSON structure for organizing related secrets
     secrets:
-  - path: homelab/platforms/production/cert-manager
-    data:
-      email: this-is-tobi@proton.me
-      scaleway:
-        accessKey: ""
-        secretKey: ""
-        projectId: ""
-        domain: ohmlab.fr
-  - path: homelab/platforms/production/argo-cd
-    data:
-      admin:
-        username: admin
-        password: "<random:24>"
-      keycloak:
-        endpoint: "https://sso.core.ohmlab.fr"
-        realm: homelab
-        clientId: argo-cd
-        clientSecret: "<random:32>"
-  - path: homelab/platforms/production/gitea
-    data:
-      admin:
-        username: admin
-        password: "<random:24>"
-      postgres:
+    - path: homelab/platforms/production/cert-manager
+      data:
+        email: this-is-tobi@proton.me
+        scaleway:
+          accessKey: ""
+          secretKey: ""
+          projectId: ""
+          domain: ohmlab.fr
+    - path: homelab/platforms/production/argo-cd
+      data:
         admin:
-          username: postgres
+          username: admin
           password: "<random:24>"
-        app:
-          username: gitea
+        keycloak:
+          endpoint: "https://sso.core.ohmlab.fr"
+          realm: homelab
+          clientId: argo-cd
+          clientSecret: "<random:32>"
+    - path: homelab/platforms/production/gitea
+      data:
+        admin:
+          username: admin
           password: "<random:24>"
-        database: gitea
-        host: gitea-pg-cluster-rw
-        port: "5432"
+        postgres:
+          admin:
+            username: postgres
+            password: "<random:24>"
+          app:
+            username: gitea
+            password: "<random:24>"
+          database: gitea
+          host: gitea-pg-cluster-rw
+          port: "5432"
+          s3:
+            accessKey: ""
+            bucketName: ohmlab-backups
+            bucketPrefix: cnpg
+            endpoint: "https://s3.fr-par.scw.cloud"
+            region: fr-par
+            secretKey: ""
+        keycloak:
+          endpoint: "https://sso.core.ohmlab.fr"
+          realm: homelab
+          clientId: gitea
+          clientSecret: "<random:32>"
+    - path: homelab/platforms/production/mattermost
+      data:
+        admin:
+          username: admin
+          password: "<random:24>"
+        postgres:
+          admin:
+            username: postgres
+            password: "<random:24>"
+          app:
+            username: mattermost
+            password: "<random:24>"
+          database: mattermost
+          host: mattermost-pg-cluster-rw
+          port: "5432"
+          s3:
+            accessKey: ""
+            bucketName: ohmlab-backups
+            bucketPrefix: cnpg
+            endpoint: "https://s3.fr-par.scw.cloud"
+            region: fr-par
+            secretKey: ""
         s3:
           accessKey: ""
           bucketName: ohmlab-backups
@@ -287,315 +343,260 @@ ohmlab:
           endpoint: "https://s3.fr-par.scw.cloud"
           region: fr-par
           secretKey: ""
-      keycloak:
-        endpoint: "https://sso.core.ohmlab.fr"
-        realm: homelab
-        clientId: gitea
-        clientSecret: "<random:32>"
-  - path: homelab/platforms/production/mattermost
-    data:
-      admin:
-        username: admin
-        password: "<random:24>"
-      postgres:
+        keycloak:
+          endpoint: "https://sso.core.ohmlab.fr"
+          realm: homelab
+          clientId: mattermost
+          clientSecret: "<random:32>"
+    - path: homelab/platforms/production/rustfs
+      data:
         admin:
-          username: postgres
-          password: "<random:24>"
-        app:
-          username: mattermost
-          password: "<random:24>"
-        database: mattermost
-        host: mattermost-pg-cluster-rw
-        port: "5432"
-        s3:
-          accessKey: ""
-          bucketName: ohmlab-backups
-          bucketPrefix: cnpg
-          endpoint: "https://s3.fr-par.scw.cloud"
-          region: fr-par
-          secretKey: ""
-      s3:
-        accessKey: ""
-        bucketName: ohmlab-backups
-        bucketPrefix: cnpg
-        endpoint: "https://s3.fr-par.scw.cloud"
-        region: fr-par
-        secretKey: ""
-      keycloak:
-        endpoint: "https://sso.core.ohmlab.fr"
-        realm: homelab
-        clientId: mattermost
-        clientSecret: "<random:32>"
-  - path: homelab/platforms/production/rustfs
-    data:
-      admin:
-        accessKey: "<random:16>"
-        secretKey: "<random:32>"
-  - path: homelab/platforms/production/prometheus-stack
-    data:
-      admin:
-        username: admin
-        password: "<random:24>"
-      keycloak:
-        endpoint: "https://sso.core.ohmlab.fr"
-        realm: homelab
-        clientId: grafana
-        clientSecret: "<random:32>"
-  - path: homelab/platforms/production/keycloak
-    data:
-      admin:
-        username: admin
-        password: "<random:24>"
-      extras:
-        realm: homelab
-        rootDomain: ohmlab.fr
-      postgres:
+          accessKey: "<random:16>"
+          secretKey: "<random:32>"
+    - path: homelab/platforms/production/prometheus-stack
+      data:
         admin:
-          username: postgres
+          username: admin
           password: "<random:24>"
-        app:
-          username: keycloak
+        keycloak:
+          endpoint: "https://sso.core.ohmlab.fr"
+          realm: homelab
+          clientId: grafana
+          clientSecret: "<random:32>"
+    - path: homelab/platforms/production/keycloak
+      data:
+        admin:
+          username: admin
           password: "<random:24>"
-        database: keycloak
-        host: keycloak-pg-cluster-rw
-        port: "5432"
-        s3:
-          accessKey: ""
-          bucketName: ohmlab-backups
-          bucketPrefix: cnpg
-          endpoint: "https://s3.fr-par.scw.cloud"
-          region: fr-par
-          secretKey: ""
-  - path: homelab/platforms/production/sops
-    data:
-      extras:
-        secret: "<age:secret>"
-        public: "<age:public>"
-  # - path: "homelab/platforms/production/argo-workflows"
-  #   data:
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "argo-workflows"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/coder"
-  #   data:
-  #     admin:
-  #       username: "admin"
-  #       password: "<random:24>"
-  #     postgres:
-  #       admin:
-  #         username: "postgres"
-  #         password: "<random:24>"
-  #       app:
-  #         username: "coder"
-  #         password: "<random:24>"
-  #       database: "coder"
-  #       host: "coder-pg-cluster-rw"
-  #       port: "5432"
-  #       s3:
-  #         accessKey: ""
-  #         bucketName: "ohmlab-backups"
-  #         bucketPrefix: "cnpg"
-  #         endpoint: "https://s3.fr-par.scw.cloud"
-  #         region: "fr-par"
-  #         secretKey: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "coder"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/harbor"
-  #   data:
-  #     admin:
-  #       username: "admin"
-  #       password: "<random:24>"
-  #     postgres:
-  #       admin:
-  #         username: "postgres"
-  #         password: "<random:24>"
-  #       app:
-  #         username: "harbor"
-  #         password: "<random:24>"
-  #       database: "harbor"
-  #       host: "harbor-pg-cluster-rw"
-  #       port: "5432"
-  #       s3:
-  #         accessKey: ""
-  #         bucketName: "ohmlab-backups"
-  #         bucketPrefix: "cnpg"
-  #         endpoint: "https://s3.fr-par.scw.cloud"
-  #         region: "fr-par"
-  #         secretKey: ""
-  #     s3:
-  #       accessKey: ""
-  #       bucketName: "ohmlab-backups"
-  #       bucketPrefix: "cnpg"
-  #       endpoint: "https://s3.fr-par.scw.cloud"
-  #       region: "fr-par"
-  #       secretKey: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "harbor"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/mlflow"
-  #   data:
-  #     admin:
-  #       username: "admin"
-  #       password: "<random:24>"
-  #     postgres:
-  #       admin:
-  #         username: "postgres"
-  #         password: "<random:24>"
-  #       app:
-  #         username: "mlflow"
-  #         password: "<random:24>"
-  #       database: "mlflow"
-  #       host: "mlflow-pg-cluster-rw"
-  #       port: "5432"
-  #       s3:
-  #         accessKey: ""
-  #         bucketName: "ohmlab-backups"
-  #         bucketPrefix: "cnpg"
-  #         endpoint: "https://s3.fr-par.scw.cloud"
-  #         region: "fr-par"
-  #         secretKey: ""
-  #     s3:
-  #       accessKey: ""
-  #       bucketName: "ohmlab-backups"
-  #       bucketPrefix: "cnpg"
-  #       endpoint: "https://s3.fr-par.scw.cloud"
-  #       region: "fr-par"
-  #       secretKey: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "mlflow"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/outline"
-  #   data:
-  #     admin:
-  #       username: "admin"
-  #       password: "<random:24>"
-  #     postgres:
-  #       admin:
-  #         username: "postgres"
-  #         password: "<random:24>"
-  #       app:
-  #         username: "outline"
-  #         password: "<random:24>"
-  #       database: "outline"
-  #       host: "outline-pg-cluster-rw"
-  #       port: "5432"
-  #       s3:
-  #         accessKey: ""
-  #         bucketName: "ohmlab-backups"
-  #         bucketPrefix: "cnpg"
-  #         endpoint: "https://s3.fr-par.scw.cloud"
-  #         region: "fr-par"
-  #         secretKey: ""
-  #     s3:
-  #       accessKey: ""
-  #       bucketName: "ohmlab-backups"
-  #       bucketPrefix: "cnpg"
-  #       endpoint: "https://s3.fr-par.scw.cloud"
-  #       region: "fr-par"
-  #       secretKey: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "outline"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/sonarqube"
-  #   data:
-  #     admin:
-  #       username: "admin"
-  #       password: "<random:24>"
-  #     postgres:
-  #       admin:
-  #         username: "postgres"
-  #         password: "<random:24>"
-  #       app:
-  #         username: "sonarqube"
-  #         password: "<random:24>"
-  #       database: "sonarqube"
-  #       host: "sonarqube-pg-cluster-rw"
-  #       port: "5432"
-  #       s3:
-  #         accessKey: ""
-  #         bucketName: "ohmlab-backups"
-  #         bucketPrefix: "cnpg"
-  #         endpoint: "https://s3.fr-par.scw.cloud"
-  #         region: "fr-par"
-  #         secretKey: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "sonarqube"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/vault"
-  #   data:
-  #     admin:
-  #       token: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "vault"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/vault-operator"
-  #   data:
-  #     admin:
-  #       token: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "vault-operator"
-  #       clientSecret: "<random:32>"
-  # - path: "homelab/platforms/production/vaultwarden"
-  #   data:
-  #     admin:
-  #       token: "<random:24>"
-  #     postgres:
-  #       admin:
-  #         username: "postgres"
-  #         password: "<random:24>"
-  #       app:
-  #         username: "vaultwarden"
-  #         password: "<random:24>"
-  #       database: "vaultwarden"
-  #       host: "vaultwarden-pg-cluster-rw"
-  #       port: "5432"
-  #       s3:
-  #         accessKey: ""
-  #         bucketName: "ohmlab-backups"
-  #         bucketPrefix: "cnpg"
-  #         endpoint: "https://s3.fr-par.scw.cloud"
-  #         region: "fr-par"
-  #         secretKey: ""
-  #     keycloak:
-  #       endpoint: "https://sso.core.ohmlab.fr"
-  #       realm: "homelab"
-  #       clientId: "vaultwarden"
-  #       clientSecret: "<random:32>"
-# VSO (Vault Secrets Operator) integration for the core ArgoCD in argocd-system.
-# Disabled by default so bootstrap (run.sh) can run before vault-operator / VSO
-# are deployed. Enabled in ohmlab.yaml once the full stack is running.
-vso:
-  # -- Enable VSO integration. Set to true in instance values AFTER vault-operator
-  # is deployed so VaultStaticSecret CRDs are available.
-  enabled: false
-  extraObjects: []
-  vaultAuth:
-    default:
-      method: kubernetes
-      mount: kubernetes
-      kubernetes:
-        role: ""
-        serviceAccount: vso
-  vaultConnection:
-    default:
-      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-      skipTLSVerify: false
-      caCertSecretRef: vault-ca
-  vaultStaticSecrets: {}
+        extras:
+          realm: homelab
+          rootDomain: ohmlab.fr
+        postgres:
+          admin:
+            username: postgres
+            password: "<random:24>"
+          app:
+            username: keycloak
+            password: "<random:24>"
+          database: keycloak
+          host: keycloak-pg-cluster-rw
+          port: "5432"
+          s3:
+            accessKey: ""
+            bucketName: ohmlab-backups
+            bucketPrefix: cnpg
+            endpoint: "https://s3.fr-par.scw.cloud"
+            region: fr-par
+            secretKey: ""
+    - path: homelab/platforms/production/sops
+      data:
+        extras:
+          secret: "<age:secret>"
+          public: "<age:public>"
+    # - path: "homelab/platforms/production/argo-workflows"
+    #   data:
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "argo-workflows"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/coder"
+    #   data:
+    #     admin:
+    #       username: "admin"
+    #       password: "<random:24>"
+    #     postgres:
+    #       admin:
+    #         username: "postgres"
+    #         password: "<random:24>"
+    #       app:
+    #         username: "coder"
+    #         password: "<random:24>"
+    #       database: "coder"
+    #       host: "coder-pg-cluster-rw"
+    #       port: "5432"
+    #       s3:
+    #         accessKey: ""
+    #         bucketName: "ohmlab-backups"
+    #         bucketPrefix: "cnpg"
+    #         endpoint: "https://s3.fr-par.scw.cloud"
+    #         region: "fr-par"
+    #         secretKey: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "coder"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/harbor"
+    #   data:
+    #     admin:
+    #       username: "admin"
+    #       password: "<random:24>"
+    #     postgres:
+    #       admin:
+    #         username: "postgres"
+    #         password: "<random:24>"
+    #       app:
+    #         username: "harbor"
+    #         password: "<random:24>"
+    #       database: "harbor"
+    #       host: "harbor-pg-cluster-rw"
+    #       port: "5432"
+    #       s3:
+    #         accessKey: ""
+    #         bucketName: "ohmlab-backups"
+    #         bucketPrefix: "cnpg"
+    #         endpoint: "https://s3.fr-par.scw.cloud"
+    #         region: "fr-par"
+    #         secretKey: ""
+    #     s3:
+    #       accessKey: ""
+    #       bucketName: "ohmlab-backups"
+    #       bucketPrefix: "cnpg"
+    #       endpoint: "https://s3.fr-par.scw.cloud"
+    #       region: "fr-par"
+    #       secretKey: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "harbor"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/mlflow"
+    #   data:
+    #     admin:
+    #       username: "admin"
+    #       password: "<random:24>"
+    #     postgres:
+    #       admin:
+    #         username: "postgres"
+    #         password: "<random:24>"
+    #       app:
+    #         username: "mlflow"
+    #         password: "<random:24>"
+    #       database: "mlflow"
+    #       host: "mlflow-pg-cluster-rw"
+    #       port: "5432"
+    #       s3:
+    #         accessKey: ""
+    #         bucketName: "ohmlab-backups"
+    #         bucketPrefix: "cnpg"
+    #         endpoint: "https://s3.fr-par.scw.cloud"
+    #         region: "fr-par"
+    #         secretKey: ""
+    #     s3:
+    #       accessKey: ""
+    #       bucketName: "ohmlab-backups"
+    #       bucketPrefix: "cnpg"
+    #       endpoint: "https://s3.fr-par.scw.cloud"
+    #       region: "fr-par"
+    #       secretKey: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "mlflow"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/outline"
+    #   data:
+    #     admin:
+    #       username: "admin"
+    #       password: "<random:24>"
+    #     postgres:
+    #       admin:
+    #         username: "postgres"
+    #         password: "<random:24>"
+    #       app:
+    #         username: "outline"
+    #         password: "<random:24>"
+    #       database: "outline"
+    #       host: "outline-pg-cluster-rw"
+    #       port: "5432"
+    #       s3:
+    #         accessKey: ""
+    #         bucketName: "ohmlab-backups"
+    #         bucketPrefix: "cnpg"
+    #         endpoint: "https://s3.fr-par.scw.cloud"
+    #         region: "fr-par"
+    #         secretKey: ""
+    #     s3:
+    #       accessKey: ""
+    #       bucketName: "ohmlab-backups"
+    #       bucketPrefix: "cnpg"
+    #       endpoint: "https://s3.fr-par.scw.cloud"
+    #       region: "fr-par"
+    #       secretKey: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "outline"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/sonarqube"
+    #   data:
+    #     admin:
+    #       username: "admin"
+    #       password: "<random:24>"
+    #     postgres:
+    #       admin:
+    #         username: "postgres"
+    #         password: "<random:24>"
+    #       app:
+    #         username: "sonarqube"
+    #         password: "<random:24>"
+    #       database: "sonarqube"
+    #       host: "sonarqube-pg-cluster-rw"
+    #       port: "5432"
+    #       s3:
+    #         accessKey: ""
+    #         bucketName: "ohmlab-backups"
+    #         bucketPrefix: "cnpg"
+    #         endpoint: "https://s3.fr-par.scw.cloud"
+    #         region: "fr-par"
+    #         secretKey: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "sonarqube"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/vault"
+    #   data:
+    #     admin:
+    #       token: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "vault"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/vault-operator"
+    #   data:
+    #     admin:
+    #       token: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "vault-operator"
+    #       clientSecret: "<random:32>"
+    # - path: "homelab/platforms/production/vaultwarden"
+    #   data:
+    #     admin:
+    #       token: "<random:24>"
+    #     postgres:
+    #       admin:
+    #         username: "postgres"
+    #         password: "<random:24>"
+    #       app:
+    #         username: "vaultwarden"
+    #         password: "<random:24>"
+    #       database: "vaultwarden"
+    #       host: "vaultwarden-pg-cluster-rw"
+    #       port: "5432"
+    #       s3:
+    #         accessKey: ""
+    #         bucketName: "ohmlab-backups"
+    #         bucketPrefix: "cnpg"
+    #         endpoint: "https://s3.fr-par.scw.cloud"
+    #         region: "fr-par"
+    #         secretKey: ""
+    #     keycloak:
+    #       endpoint: "https://sso.core.ohmlab.fr"
+    #       realm: "homelab"
+    #       clientId: "vaultwarden"
+    #       clientSecret: "<random:32>"
