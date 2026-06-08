@@ -1,7 +1,7 @@
 dependencies:
 - name: gitea
   repository: https://dl.gitea.com/charts
-  version: 12.5.3
+  version: 12.6.0
 - name: valkey
   repository: oci://registry-1.docker.io/cloudpirates
   version: 0.20.0
@@ -11,5 +11,5 @@ dependencies:
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:6f43b3ed3126d0d7125c2d5d46ccfdf009d93d61b7d693fae41d4a389c49a865
-generated: "2026-05-02T02:30:58.753073+02:00"
+digest: sha256:09ac7ad569f485b50726a6ebacecd66192ecc4783b1a64c0622ea520ad0c8f4e
+generated: "2026-06-10T22:53:56.005129+02:00"
