@@ -1,12 +1,12 @@
 dependencies:
 - name: cert-manager
   repository: https://charts.jetstack.io
-  version: v1.20.2
+  version: v1.20.3
 - name: scaleway-certmanager-webhook
   repository: https://helm.scw.cloud
   version: 0.4.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:9f7621623c0a84d298b9bd6425eaeb78ca08ecf7dede55a6b94500c0bbc29a43
-generated: "2026-05-02T02:30:39.555826+02:00"
+digest: sha256:409fdbe1958fe8a102d7b5bba4e69b270250a595dd7479a04b84cbe927f58a75
+generated: "2026-06-28T22:25:47.545519+02:00"
