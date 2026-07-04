@@ -12,17 +12,25 @@ gateway:
 
 vault:
   externalConfig:
-    oidcEnabled: true
-    # Backend-only call (Vault fetching provider metadata/JWKS) — uses the
-    # in-cluster Service, not the public hostname. The public hostname would
-    # route out through the router and back in (NAT hairpin), which this
-    # network doesn't support and which reliably resets the TLS handshake,
-    # breaking every vault-configurer apply that needs to (re)write Vault
-    # config after this OIDC step (auth methods are applied before policies,
-    # so any newly added policy silently never gets created until this
-    # succeeds). oidcRedirectUris below is the user-facing browser flow and
-    # correctly stays on the public hostname.
-    oidcDiscoveryUrl: "http://keycloak.keycloak-system.svc.cluster.local:8080/realms/homelab"
+    # TEMPORARILY DISABLED (2026-07-05) — do not just flip this back to true.
+    # Root cause: reaching Keycloak via the internal Service avoids the NAT
+    # hairpin on the public hostname, but Keycloak's realm issuer is fixed to
+    # the public hostname (sso.core.ohmlab.fr) regardless of which path you
+    # use to reach it. go-oidc enforces that the discovery URL and the
+    # issuer it returns match exactly, so the internal-Service URL fails
+    # with "issuer URL provided to client did not match the issuer URL
+    # returned by provider" — a hard rejection, not a connectivity problem.
+    # vault-configurer applies auth methods before policies in a single
+    # pass, so this failure was silently blocking every newly added Vault
+    # policy (including apisix's) from ever being created.
+    # Proper fix: add a CoreDNS rewrite/hosts entry so *.ohmlab.fr resolves
+    # internally to apisix's ClusterIP (split-horizon DNS), then restore
+    # oidcDiscoveryUrl to the public hostname below so it matches the
+    # issuer while never touching the WAN. Until that's in place, human
+    # OIDC login to Vault's UI is unavailable — token/K8s-auth access is
+    # unaffected.
+    oidcEnabled: false
+    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
     oidcRedirectUris:
     - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     - "https://vault.core.ohmlab.fr/oidc/callback"
