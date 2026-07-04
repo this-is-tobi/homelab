@@ -14,6 +14,21 @@ vault-operator:
     requests:
       cpu: 100m
       memory: 128Mi
+  # The operator is a plain Go binary — run it as nobody (matches the
+  # webhook's upstream defaults).
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    fsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+      - ALL
   webhook:
     enabled: true
     replicas: 2
@@ -173,6 +188,11 @@ vault:
         path "homelab/data/platforms/+/+/longhorn" {
           capabilities = ["read", "list"]
         }
+    - name: apisix
+      rules: |
+        path "homelab/data/platforms/+/+/apisix" {
+          capabilities = ["read", "list"]
+        }
     auth:
     - type: kubernetes
       roles:
@@ -257,6 +277,11 @@ vault:
         bound_service_account_namespaces: [longhorn-system]
         policies: [longhorn]
         ttl: 1h
+      - name: apisix
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [apisix]
+        policies: [apisix]
+        ttl: 1h
       # VSO service account in vault-operator-system for vault-oidc-credentials.
       # Uses the 'vault' policy (read homelab/data/platforms/+/+/keycloak).
       - name: vault-operator
@@ -292,7 +317,9 @@ vault:
     # (vaultOidcCredentials.enabled: true + path in instance values).
     # Vault pod picks up VAULT_OIDC_CLIENT_SECRET via extraEnvsConfig (optional: true).
     # Role: 'admin' — only members of the Keycloak '/admin' group can log in.
-    oidcEnabled: true
+    # Disabled by default — instances turn it on and provide discovery URL +
+    # redirect URIs (see instances/homelab/values/core/vault-operator.yaml).
+    oidcEnabled: false
     oidcDiscoveryUrl: ""
     oidcClientId: "vault-core"
     oidcDefaultRole: "admin"
@@ -473,6 +500,9 @@ ohmlab:
   vault:
     # Job execution configuration for post-config tasks
     config:
+      # Internal tooling image, built from utils/ in this repo — `:latest`
+      # deliberately tracks main (the CLI version follows the same git history
+      # as these charts). Kyverno's disallow-latest-tag excludes this namespace.
       image: "ghcr.io/this-is-tobi/homelab/utils:latest"
       vaultRole: vault-post-config
       authMethod: kubernetes

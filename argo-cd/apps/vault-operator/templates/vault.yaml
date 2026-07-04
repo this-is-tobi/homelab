@@ -101,7 +101,12 @@ spec:
         {{- if gt (.Values.vault.size | int) 1 }}
         retry_join:
           {{- range $i := until (.Values.vault.size | int) }}
+          {{- if $.Values.vault.config.tls.enabled }}
+          - leader_api_addr: https://{{ $.Values.vault.name }}-{{ $i }}.{{ $.Release.Namespace }}.svc.cluster.local:8200
+            leader_ca_cert_file: /vault/tls/ca.crt
+          {{- else }}
           - leader_api_addr: http://{{ $.Values.vault.name }}-{{ $i }}.{{ $.Release.Namespace }}.svc.cluster.local:8200
+          {{- end }}
           {{- end }}
         {{- end }}
       {{- else if .Values.vault.storage.file }}
@@ -141,10 +146,9 @@ spec:
           bound_audiences:
           - {{ .Values.vault.externalConfig.oidcClientId | quote }}
           bound_claims:
-            groups:
-            {{- toYaml .Values.vault.externalConfig.oidcBoundGroups | nindent 12 }}
-          allowed_redirect_uris:
-          {{- toYaml .Values.vault.externalConfig.oidcRedirectUris | nindent 10 }}
+            # toJson keeps valid (flow-style) YAML even when the list is empty.
+            groups: {{ .Values.vault.externalConfig.oidcBoundGroups | toJson }}
+          allowed_redirect_uris: {{ .Values.vault.externalConfig.oidcRedirectUris | toJson }}
           oidc_scopes:
           - openid
           - profile
