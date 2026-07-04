@@ -25,10 +25,23 @@ vault:
         key: VAULT_OIDC_CLIENT_SECRET
         optional: true
 
-# New ohmlab hierarchical configuration
-# Maps instance-specific secrets and identity config for use by ohmlab CLI tools
+# Ohmlab hierarchical configuration — secrets AND identity for the ohmlab CLI.
+# IMPORTANT: this must stay a single `ohmlab:` block. YAML duplicate keys are
+# silently resolved last-wins by Helm, so a second `ohmlab:` block later in the
+# file would drop everything defined here.
 ohmlab:
   vault:
+    # Identity configuration for ohmlab vault identity command
+    identity:
+      groups:
+      - name: homelab-admins
+        type: external
+        policies:
+        - admin
+      groupAliases:
+      - name: "/admin"
+        group: homelab-admins
+        mountAccessor: ""  # Auto-discovered if empty (finds first 'oidc' mount)
     # Declarative secrets configuration for ohmlab vault secrets command
     secrets:
     - path: homelab/platforms/production/core/cert-manager
@@ -209,6 +222,14 @@ ohmlab:
       data:
         secret: "<age:secret>"
         public: "<age:public>"
+    - path: homelab/platforms/production/core/apisix
+      # APISIX admin API credentials — delivered by VSO into apisix/apisix-admin.
+      # Rotation: change here is NOT enough — the apisix pods read the key via
+      # env, so restart the apisix deployment after a rotate.
+      data:
+        admin:
+          adminKey: "<random:32>"
+          viewerKey: "<random:32>"
     - path: homelab/platforms/production/core/crowdsec
       data:
         console:
@@ -445,18 +466,3 @@ vso:
 
 backup-utils:
   enabled: false  # S3 keys not configured yet — re-enable when available
-
-# Instance-specific ohmlab identity configuration
-# The secrets are defined earlier in the file under ohmlab.vault.secrets
-ohmlab:
-  vault:
-    identity:
-      groups:
-      - name: homelab-admins
-        type: external
-        policies:
-        - admin
-      groupAliases:
-      - name: "/admin"
-        group: homelab-admins
-        mountAccessor: ""  # Auto-discovered if empty (finds first 'oidc' mount)

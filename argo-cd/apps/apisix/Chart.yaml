@@ -9,3 +9,16 @@ dependencies:
   alias: apisix
   version: 2.14.0
   repository: https://charts.apiseven.com
+# Standalone etcd for APISIX config storage — replaces the apisix chart's
+# bundled bitnami etcd subchart (bitnamilegacy images are frozen/unmaintained).
+- name: etcd
+  alias: etcd
+  version: 0.8.1
+  repository: oci://registry-1.docker.io/cloudpirates
+  condition: etcd.enabled
+# VSO integration — delivers the admin API credentials from Vault as the
+# `apisix-admin` secret (keys: admin, viewer).
+- name: vso-utils
+  alias: vso
+  version: 2.0.0
+  repository: https://this-is-tobi.github.io/helm-charts

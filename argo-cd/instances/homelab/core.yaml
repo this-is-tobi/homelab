@@ -27,7 +27,8 @@ apps:
 - app: apisix
   enabled: "true"
   namespace: apisix
-  syncWave: 10
+  # After vault-operator (10): the admin credentials come from Vault via VSO.
+  syncWave: 12
   ignoreDifferences:
   # etcd-jwt-token and webhook cert are auto-managed by the operator.
   # ValidatingWebhookConfiguration caBundle is injected at runtime.

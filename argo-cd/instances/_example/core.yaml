@@ -19,6 +19,11 @@
 #                       Convention: core uses -10..60, tenant uses 100..200.
 #
 #   namespace           target namespace (defaults to `app` value).
+#                       Naming convention: plain app name for everything;
+#                       `-system` suffix only where an upstream chart expects
+#                       it (longhorn-system) or for cluster-critical singletons
+#                       (argocd-system, vault-operator-system, keycloak-system,
+#                       teleport-system). Tenant apps are always plain.
 #
 #   releaseName         helm release name (defaults to `app` value).
 #
@@ -40,7 +45,9 @@
 #   destination.server  override destination cluster (defaults to instance
 #                       default). Use to push specific apps to remote clusters.
 #
-#   hook                ArgoCD sync hook annotation (defaults to "Sync").
+#   ignoreDifferences   list of ArgoCD ignoreDifferences entries (group, kind,
+#                       name, jqPathExpressions) applied to the generated App.
+#                       Use for operator-managed fields (rotated secrets, ...).
 #
 # -----------------------------------------------------------------------------
 # Tier conventions
@@ -53,8 +60,8 @@
 # Tier-flexible apps  [IMPORTANT]
 # -----------------------------------------------------------------------------
 # Some apps are needed on whichever cluster runs the workloads — typically:
-#   longhorn, cert-manager, ingress-nginx, vault, keycloak, teleport,
-#   prometheus-stack.
+#   longhorn, cert-manager, ingress-nginx, apisix, cilium, vault, keycloak,
+#   teleport, prometheus-stack, crowdsec.
 #
 # These are listed BOTH in core.yaml AND in tenant.yaml (disabled in both, with
 # different default `syncWave`s appropriate to each tier). Pick ONE tier per
@@ -93,31 +100,26 @@ apps:
   # Kyverno — policy engine for secret distribution and security policies.
 - app: kyverno
   enabled: "false"
-  namespace: kyverno
   syncWave: 15
 
   # PostgreSQL operator — used by Keycloak, Gitea, Mattermost, Outline, ...
 - app: cloudnative-pg
   enabled: "false"
-  namespace: cloudnative-pg-system
   syncWave: 20
 
   # SOPS / age decryption controller for encrypted manifests.
 - app: sops
   enabled: "false"
-  namespace: sops-system
   syncWave: 20
 
   # Continuous vulnerability scanning of cluster workloads.
 - app: trivy-operator
   enabled: "false"
-  namespace: trivy-operator-system
   syncWave: 50
 
   # Rancher's OS-level upgrade controller for K3s nodes.
 - app: system-upgrade
   enabled: "false"
-  namespace: system-upgrade-system
   syncWave: 60
 
   # ---------------------------------------------------------------------------
@@ -133,22 +135,20 @@ apps:
   # [TIER-FLEXIBLE] X.509 certificate management (Let's Encrypt, internal CA, ...).
 - app: cert-manager
   enabled: "false"
-  namespace: cert-manager-system
   syncWave: 10
 
   # [TIER-FLEXIBLE] Ingress controller — terminates TLS and routes external traffic.
 - app: ingress-nginx
   enabled: "false"
-  namespace: ingress-nginx-system
   syncWave: 10
   # [TIER-FLEXIBLE] APISIX API Gateway — alternative ingress controller with Gateway API.
 - app: apisix
   enabled: "false"
-  namespace: apisix
-  syncWave: 10
+  # After vault-operator (10): admin credentials come from Vault via VSO.
+  syncWave: 12
   # [TIER-FLEXIBLE] Cilium CNI — eBPF networking, Gateway API, kube-proxy replacement.
 - app: cilium
-  enabled: \"false\"
+  enabled: "false"
   namespace: kube-system
   syncWave: 5
   # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
@@ -159,22 +159,22 @@ apps:
   # [TIER-FLEXIBLE] Identity provider (OIDC). Most user-facing apps depend on it.
 - app: keycloak
   enabled: "false"
+  namespace: keycloak-system
   syncWave: 30
 
   # [TIER-FLEXIBLE] Identity-aware infrastructure access proxy (SSH / kube / DB).
 - app: teleport
   enabled: "false"
+  namespace: teleport-system
   syncWave: 40
 
   # [TIER-FLEXIBLE] Prometheus + Grafana + Alertmanager bundle (cluster-wide observability).
 - app: prometheus-stack
   enabled: "false"
-  namespace: prometheus-stack-system
   syncWave: 50
 
   # [TIER-FLEXIBLE] CrowdSec — open-source security engine with log analysis,
   # threat detection and community-driven blocklists. Deploys LAPI + agent DaemonSet.
 - app: crowdsec
   enabled: "false"
-  namespace: crowdsec
   syncWave: 60

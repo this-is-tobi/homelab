@@ -16,13 +16,18 @@ apisix:
     ssl:
       enabled: true
       containerPort: 9443
-
-  admin:
-    enabled: true
-    type: ClusterIP
-    credentials:
-      admin: ""
-      viewer: ""
+    # NOTE: chart path is `apisix.admin.*` (nested under the chart's own
+    # `apisix:` key) — a previous top-level `admin:` block here was silently
+    # ignored, leaving the publicly-documented default admin key active.
+    admin:
+      enabled: true
+      type: ClusterIP
+      # Admin API credentials come from Vault via VSO (see `vso:` below) —
+      # the chart injects them as env vars from the `apisix-admin` secret.
+      credentials:
+        admin: ""
+        viewer: ""
+        secretName: apisix-admin
 
   ingress-controller:
     enabled: true
@@ -36,29 +41,49 @@ apisix:
           auth:
             type: AdminKey
             adminKey:
-              value: "edd1c9f034335f136f87ad84b625c8f1"
+              valueFrom:
+                secretKeyRef:
+                  name: apisix-admin
+                  key: admin
       publishService: apisix/apisix-gateway
 
   dashboard:
     enabled: false
 
+  # Bundled bitnami etcd subchart DISABLED — upstream marks it dev/test-only
+  # (bitnamilegacy images are frozen). Replaced by the standalone cloudpirates
+  # etcd dependency (top-level `etcd:` block below) via externalEtcd.
   etcd:
-    enabled: true
-    replicaCount: 3
-    preUpgradeJob:
-      enabled: false
-    auth:
-      rbac:
-        create: false
-        allowNoneAuthentication: true
-    persistence:
-      enabled: true
-      size: 5Gi
-      storageClass: longhorn
+    enabled: false
+
+  externalEtcd:
+    host:
+    - http://apisix-etcd:2379
+    # Empty user disables etcd authentication (in-cluster, ClusterIP-only —
+    # same posture as the previous bundled etcd with RBAC disabled).
+    user: ""
+    password: ""
 
   resources:
     requests:
       cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# Standalone etcd (cloudpirates chart) — APISIX config storage.
+# Keeps the historical service name so apisix.etcd.host needs no change.
+etcd:
+  enabled: true
+  fullnameOverride: apisix-etcd
+  replicaCount: 3
+  persistence:
+    enabled: true
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 50m
       memory: 128Mi
     limits:
       cpu: 500m
@@ -83,3 +108,44 @@ dashboard:
   ingressClassName: apisix
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-dns-prod
+
+# VSO — pulls the admin API credentials from Vault into the `apisix-admin`
+# secret. Instance values must provide vaultStaticSecrets.apisixAdmin.{mount,path}.
+vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: apisix
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultStaticSecrets:
+    apisixAdmin:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: apisix-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: apisix-admin
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            admin:
+              text: '{{ get .Secrets "admin" | dig "adminKey" "" }}'
+            viewer:
+              text: '{{ get .Secrets "admin" | dig "viewerKey" "" }}'

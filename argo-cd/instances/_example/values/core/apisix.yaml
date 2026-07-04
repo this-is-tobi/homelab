@@ -1,0 +1,51 @@
+# APISIX instance overrides — TEMPLATE.
+# Gateway API-based ingress; replacement for ingress-nginx (enable one at a time).
+# See instances/homelab/values/core/apisix.yaml for a real, working example
+# (extra listeners, TLS passthrough for Teleport, CrowdSec-friendly log format).
+
+apisix:
+  replicaCount: 2
+
+  service:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  ingress-controller:
+    enabled: true
+    config:
+      apisix:
+        adminAPIVersion: v3
+
+# Standalone etcd (cloudpirates chart) — replaces the bundled bitnami etcd.
+etcd:
+  replicaCount: 3
+  persistence:
+    storageClass: longhorn
+    size: 5Gi
+
+# Admin API credentials from Vault — REQUIRED (render fails fast when empty).
+# Declare the secret under ohmlab.vault.secrets (vault-operator values) as:
+#   path: <mount>/platforms/<env>/core/apisix
+#   data: { admin: { adminKey: "<random:32>", viewerKey: "<random:32>" } }
+vso:
+  vaultStaticSecrets:
+    apisixAdmin:
+      mount: ""
+      path: ""
+
+gateway:
+  enabled: true
+  name: homelab-gateway
+  namespace: kube-system
+  domain: example.com
+  clusterIssuer: letsencrypt-dns-prod
+  dnsClusterIssuer: letsencrypt-dns-prod
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  extraListeners: []
+  extraDnsNames: []
+  tlsPassthroughListeners: []
+
+dashboard:
+  enabled: false
+  host: apisix.example.com

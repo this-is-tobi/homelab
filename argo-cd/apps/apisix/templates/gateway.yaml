@@ -17,6 +17,10 @@ metadata:
 spec:
   gatewayClassName: apisix
   listeners:
+    # allowedRoutes `from: All` is a deliberate single-tenant trade-off: every
+    # namespace is ArgoCD-managed from this repo (admin-* AppProjects), so any
+    # namespace may attach routes. Switch to Selector-based allowedRoutes if
+    # untrusted tenants ever get namespace access.
     - name: http
       protocol: HTTP
       port: 80
