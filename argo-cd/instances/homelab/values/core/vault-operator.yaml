@@ -13,7 +13,16 @@ gateway:
 vault:
   externalConfig:
     oidcEnabled: true
-    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
+    # Backend-only call (Vault fetching provider metadata/JWKS) — uses the
+    # in-cluster Service, not the public hostname. The public hostname would
+    # route out through the router and back in (NAT hairpin), which this
+    # network doesn't support and which reliably resets the TLS handshake,
+    # breaking every vault-configurer apply that needs to (re)write Vault
+    # config after this OIDC step (auth methods are applied before policies,
+    # so any newly added policy silently never gets created until this
+    # succeeds). oidcRedirectUris below is the user-facing browser flow and
+    # correctly stays on the public hostname.
+    oidcDiscoveryUrl: "http://keycloak.keycloak-system.svc.cluster.local:8080/realms/homelab"
     oidcRedirectUris:
     - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     - "https://vault.core.ohmlab.fr/oidc/callback"
