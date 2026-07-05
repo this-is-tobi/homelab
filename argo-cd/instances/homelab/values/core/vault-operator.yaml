@@ -162,6 +162,8 @@ ohmlab:
         admin:
           username: admin
           password: "<random:24>"
+        valkey:
+          password: "<random:32>"
         postgres:
           admin:
             username: postgres

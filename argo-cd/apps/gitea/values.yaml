@@ -59,16 +59,32 @@ gitea:
       groupClaimName: groups
       # groupTeamMap: ""
       # groupTeamMapRemoval: true
+    # Valkey URIs carry the auth password, so they arrive via GITEA__* env
+    # vars from the gitea-valkey-auth secret (additionalConfigFromEnvs below)
+    # instead of the plain-text app.ini.
+    additionalConfigFromEnvs:
+    - name: GITEA__CACHE__HOST
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: cache-host
+    - name: GITEA__SESSION__PROVIDER_CONFIG
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: session-config
+    - name: GITEA__QUEUE__CONN_STR
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: queue-conn
     config:
       cache:
         ADAPTER: redis
-        HOST: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       session:
         PROVIDER: redis
-        PROVIDER_CONFIG: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       queue:
         TYPE: redis
-        CONN_STR: "redis://gitea-valkey:6379/0?pool_size=100&idle_timeout=180s&"
       database:
         DB_TYPE: postgres
         HOST: ""
@@ -115,8 +131,19 @@ valkey:
   fullnameOverride: gitea-valkey
   architecture: standalone
   replicaCount: 1
+  # Password auth — delivered from Vault via VSO (gitea-valkey-auth secret,
+  # key `password`); gitea receives it embedded in the rediss:// URIs.
   auth:
-    enabled: false
+    enabled: true
+    existingSecret: gitea-valkey-auth
+    existingSecretPasswordKey: password
+  # Server TLS on port 6380 (chart switches service+container port when
+  # enabled). Cert issued by templates/valkey-certificates.yaml; authClients
+  # stays off because gitea's redis URI cannot carry a client cert.
+  tls:
+    enabled: true
+    existingSecret: gitea-valkey-tls
+    authClients: false
   service:
     port: 6379
   resources:
@@ -192,6 +219,32 @@ vso:
       skipTLSVerify: false
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
+    # Valkey password + full connection URIs (password embedded, so they are
+    # delivered as a secret and injected via GITEA__* env vars rather than
+    # living in the plain-text app.ini config).
+    giteaValkeyAuth:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: gitea-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: gitea-valkey-auth
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            password:
+              text: '{{ get .Secrets "valkey" | dig "password" "" }}'
+            cache-host:
+              text: 'rediss://:{{ get .Secrets "valkey" | dig "password" "" }}@gitea-valkey:6380/0?pool_size=100&idle_timeout=180s&skipverify=true&'
+            session-config:
+              text: 'rediss://:{{ get .Secrets "valkey" | dig "password" "" }}@gitea-valkey:6380/0?pool_size=100&idle_timeout=180s&skipverify=true&'
+            queue-conn:
+              text: 'rediss://:{{ get .Secrets "valkey" | dig "password" "" }}@gitea-valkey:6380/0?pool_size=100&idle_timeout=180s&skipverify=true&'
     giteaAdmin:
       mount: ""
       path: ""

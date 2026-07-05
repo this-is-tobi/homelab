@@ -1,0 +1,61 @@
+# Namespace-local PKI for valkey (session store / cache / queue). Server-side
+# TLS only: gitea's redis client cannot present client certs or pin a custom
+# CA through its connection URI, so valkey runs with authClients=false and
+# gitea connects with rediss://...&skipverify=true — encrypted transport,
+# server identity unverified. Full mutual auth is a mesh/WireGuard concern.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: gitea-valkey-selfsigned
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gitea-valkey-ca
+spec:
+  isCA: true
+  commonName: gitea-valkey-ca
+  secretName: gitea-valkey-ca
+  duration: 87600h
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: gitea-valkey-selfsigned
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: gitea-valkey-ca
+spec:
+  ca:
+    secretName: gitea-valkey-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gitea-valkey-tls
+spec:
+  secretName: gitea-valkey-tls
+  duration: 2160h
+  renewBefore: 360h
+  usages:
+  - server auth
+  # valkey-cli health probes connect with --cert/--key: allow client usage too.
+  - client auth
+  dnsNames:
+  - gitea-valkey
+  - gitea-valkey.{{ .Release.Namespace }}
+  - gitea-valkey.{{ .Release.Namespace }}.svc
+  - gitea-valkey.{{ .Release.Namespace }}.svc.cluster.local
+  - gitea-valkey-headless
+  - "*.gitea-valkey-headless.{{ .Release.Namespace }}.svc.cluster.local"
+  - localhost
+  ipAddresses:
+  - 127.0.0.1
+  issuerRef:
+    name: gitea-valkey-ca
+    kind: Issuer

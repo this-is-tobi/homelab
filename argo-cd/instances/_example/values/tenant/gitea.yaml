@@ -70,8 +70,10 @@ cnpg:
       region:
         key: S3_REGION
 
-vso:
   vaultStaticSecrets:
+    giteaValkeyAuth:
+      mount: example
+      path: platforms/production/tenant/gitea
     giteaAdmin:
       mount: example
       path: platforms/production/tenant/gitea
