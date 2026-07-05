@@ -1,0 +1,69 @@
+{{- if .Values.tls.enabled }}
+{{- $svc := .Values.tls.serviceName | default "vault" }}
+{{- $ns := .Release.Namespace }}
+---
+# Namespace-local selfsigned bootstrap issuer -> CA -> server certificate.
+# The resulting `vault-server-tls` secret (tls.crt / tls.key / ca.crt) is
+# mounted into the Vault server pods (see values.yaml) and referenced by the
+# raft retry_join stanzas.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $svc }}-selfsigned
+  namespace: {{ $ns }}
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $svc }}-ca
+  namespace: {{ $ns }}
+spec:
+  isCA: true
+  commonName: {{ $svc }}-ca
+  secretName: {{ $svc }}-ca
+  duration: {{ .Values.tls.caDurationHours | default "87600h" }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    kind: Issuer
+    name: {{ $svc }}-selfsigned
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $svc }}-ca
+  namespace: {{ $ns }}
+spec:
+  ca:
+    secretName: {{ $svc }}-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $svc }}-server-tls
+  namespace: {{ $ns }}
+spec:
+  secretName: {{ $svc }}-server-tls
+  issuerRef:
+    kind: Issuer
+    name: {{ $svc }}-ca
+  dnsNames:
+  # Cluster service names (active/standby routed via the main service).
+  - {{ $svc }}
+  - {{ $svc }}.{{ $ns }}
+  - {{ $svc }}.{{ $ns }}.svc
+  - {{ $svc }}.{{ $ns }}.svc.cluster.local
+  - {{ $svc }}-active
+  - {{ $svc }}-active.{{ $ns }}.svc.cluster.local
+  - {{ $svc }}-standby
+  - {{ $svc }}-standby.{{ $ns }}.svc.cluster.local
+  # Per-pod DNS through the headless service (raft peers).
+  - '*.{{ $svc }}-internal'
+  - '*.{{ $svc }}-internal.{{ $ns }}.svc'
+  - '*.{{ $svc }}-internal.{{ $ns }}.svc.cluster.local'
+  ipAddresses:
+  - 127.0.0.1
+{{- end }}

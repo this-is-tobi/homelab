@@ -1,5 +1,30 @@
+# Internal TLS for the standalone Vault chart (tier-flexible alternative to
+# the bank-vaults `vault-operator` app, which manages its own TLS).
+# A namespace-local cert-manager chain (selfsigned -> CA -> server cert) is
+# rendered by templates/certificates.yaml and mounted into the server pods.
+tls:
+  enabled: true
+  # Must match the helm release name (the AppSet defaults releaseName to the
+  # app name, i.e. `vault`) — used for service DNS SANs and secret names.
+  serviceName: vault
+  # CA validity; server certs are renewed automatically by cert-manager.
+  caDurationHours: 87600h
+
 vault:
+  global:
+    # Drive probes / injector / service scheme from TLS state.
+    tlsDisable: false
   server:
+    extraEnvironmentVars:
+      VAULT_CACERT: /vault/userconfig/vault-server-tls/ca.crt
+    volumes:
+    - name: vault-server-tls
+      secret:
+        secretName: vault-server-tls
+    volumeMounts:
+    - name: vault-server-tls
+      mountPath: /vault/userconfig/vault-server-tls
+      readOnly: true
     ha:
       enabled: true
       replicas: 3
@@ -9,15 +34,32 @@ vault:
         config: |
           ui = true
           listener "tcp" {
-            tls_disable = 1
             address = "[::]:8200"
             cluster_address = "[::]:8201"
+            tls_cert_file = "/vault/userconfig/vault-server-tls/tls.crt"
+            tls_key_file = "/vault/userconfig/vault-server-tls/tls.key"
+            tls_client_ca_file = "/vault/userconfig/vault-server-tls/ca.crt"
             telemetry {
               unauthenticated_metrics_access = "false"
             }
           }
           storage "raft" {
             path = "/vault/data"
+            retry_join {
+              leader_api_addr = "https://vault-0.vault-internal:8200"
+              leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+              leader_tls_servername = "vault"
+            }
+            retry_join {
+              leader_api_addr = "https://vault-1.vault-internal:8200"
+              leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+              leader_tls_servername = "vault"
+            }
+            retry_join {
+              leader_api_addr = "https://vault-2.vault-internal:8200"
+              leader_ca_cert_file = "/vault/userconfig/vault-server-tls/ca.crt"
+              leader_tls_servername = "vault"
+            }
           }
           service_registration "kubernetes" {}
           telemetry {
@@ -27,16 +69,20 @@ vault:
     standalone:
       enabled: false
     auditStorage:
-      enable: true
+      # NOTE: chart key is `enabled` (a previous `enable:` typo silently
+      # disabled audit storage).
+      enabled: true
       size: 10Gi
     dataStorage:
-      enable: true
+      enabled: true
       size: 10Gi
     ingress:
       enabled: true
       ingressClassName: apisix
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-dns-prod
+        # Vault serves TLS internally — connect upstream over https.
+        k8s.apisix.apache.org/upstream-scheme: https
       hosts:
       - host: ""
         paths:
