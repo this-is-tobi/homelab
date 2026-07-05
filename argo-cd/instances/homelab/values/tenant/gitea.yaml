@@ -49,7 +49,28 @@ gitea:
     #     secretName: "gitea-app-ini-oauth"
     # - configMap:
     #     name: "gitea-app-ini-plaintext"
+    # ⚠ This list REPLACES (not merges with) the catalog default in
+    # argo-cd/apps/gitea/values.yaml — the valkey entries below must stay in
+    # sync with it or the cache/session/queue config silently falls back to
+    # 127.0.0.1:6379 (this broke the 2026-07-05 valkey-TLS rollout).
     additionalConfigFromEnvs:
+    # Valkey URIs carry the auth password → delivered via env from the
+    # gitea-valkey-auth secret (VSO), never in the plain-text app.ini.
+    - name: GITEA__CACHE__HOST
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: cache-host
+    - name: GITEA__SESSION__PROVIDER_CONFIG
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: session-config
+    - name: GITEA__QUEUE__CONN_STR
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: queue-conn
     - name: GITEA__openid__ENABLE_OPENID_SIGNIN
       value: "false"
     - name: GITEA__openid__ENABLE_OPENID_SIGNUP
