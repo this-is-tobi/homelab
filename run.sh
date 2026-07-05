@@ -354,10 +354,13 @@ bootstrap_instance() {
     log "ArgoCD CRDs not present — phase 1: installing ArgoCD components only..."
 
     # Install Gateway API CRDs first if the chart uses HTTPRoutes.
-    if ! kubectl get crd httproutes.gateway.networking.k8s.io &>/dev/null; then
-      log "Gateway API CRDs not found — installing..."
+    # Experimental channel: TLSRoute (teleport passthrough) + traefik's
+    # kubernetesGateway experimentalChannel require it. Keep the version in
+    # sync with what the live cluster runs (bundle-version annotation).
+    if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
+      log "Gateway API CRDs (experimental channel) not found — installing..."
       kubectl apply --server-side -f \
-        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml 2>/dev/null
+        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 2>/dev/null
       kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
     fi
 
@@ -377,11 +380,11 @@ bootstrap_instance() {
   fi
 
   # Install Gateway API CRDs if still missing (upgrade path where ArgoCD was
-  # already present but Gateway API was not).
-  if ! kubectl get crd httproutes.gateway.networking.k8s.io &>/dev/null; then
-    log "Gateway API CRDs not found — installing..."
+  # already present but Gateway API was not). Experimental channel — see phase 1.
+  if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
+    log "Gateway API CRDs (experimental channel) not found — installing..."
     kubectl apply --server-side -f \
-      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml 2>/dev/null
+      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 2>/dev/null
     kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
   fi
 

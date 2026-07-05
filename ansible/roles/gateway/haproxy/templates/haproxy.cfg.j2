@@ -39,6 +39,21 @@ frontend stats
 {% endif %}
 
 # --- Web traffic (HTTP/HTTPS) ---
+{# APISIX→Traefik migration (docs/09-traefik-migration.md):
+   - haproxy.traefikHosts / traefikHostSuffixes route selected SNIs to the
+     traefik backend (node:traefikHttpsPort) while everything else keeps
+     hitting the default ingress.
+   - haproxy.ingressDefault flips the default backends (port 80 + unmatched
+     SNIs) from apisix (node:80/443) to traefik.
+   With no migration vars set, this template renders the historical config. #}
+{% set traefik_sni_hosts = haproxy.traefikHosts | default([]) %}
+{% set traefik_sni_suffixes = haproxy.traefikHostSuffixes | default([]) %}
+{% set traefik_http_port = haproxy.traefikHttpPort | default(8080) %}
+{% set traefik_https_port = haproxy.traefikHttpsPort | default(8443) %}
+{% set default_is_traefik = (haproxy.ingressDefault | default('apisix')) == 'traefik' %}
+{% set default_http_port = traefik_http_port if default_is_traefik else 80 %}
+{% set default_https_port = traefik_https_port if default_is_traefik else 443 %}
+{% set traefik_sni_routing = (traefik_sni_hosts | length > 0) or (traefik_sni_suffixes | length > 0) %}
 frontend homelab_entrypoint_lb
   bind *:80
   bind *:443
@@ -47,8 +62,22 @@ frontend homelab_entrypoint_lb
   acl too_many_conns sc0_conn_cur gt 100
   tcp-request connection track-sc0 src
   tcp-request connection reject if too_many_conns
-  # Route port 80 (plain HTTP) to node:80 and port 443 (TLS) to node:443
+  # Route port 80 (plain HTTP) and port 443 (TLS) to the ingress controller
   acl is_https dst_port 443
+{% if traefik_sni_routing %}
+  # Wait for the TLS ClientHello on 443 to read the SNI (plain HTTP on 80 is
+  # accepted immediately and never waits on the inspect-delay).
+  tcp-request inspect-delay 5s
+  tcp-request content accept if !is_https
+  tcp-request content accept if { req_ssl_hello_type 1 }
+{% if traefik_sni_hosts | length > 0 %}
+  acl sni_traefik req_ssl_sni -i {{ traefik_sni_hosts | join(' ') }}
+{% endif %}
+{% if traefik_sni_suffixes | length > 0 %}
+  acl sni_traefik req_ssl_sni -i -m end {{ traefik_sni_suffixes | join(' ') }}
+{% endif %}
+  use_backend traefik_entrypoint_https if is_https sni_traefik
+{% endif %}
   use_backend homelab_entrypoint_https if is_https
   default_backend homelab_entrypoint_http
 
@@ -61,22 +90,22 @@ frontend k3s_api_server_lb
 
 # --- Backends ---
 
-# HTTP (port 80): route to node:80 — APISIX handles HTTP and redirects to HTTPS.
-# Workers preferred; masters as backup.
+# HTTP (port 80): plain HTTP to the default ingress controller, which
+# redirects to HTTPS. Workers preferred; masters as backup.
 backend homelab_entrypoint_http
   mode tcp
   balance leastconn
   option tcp-check
   default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
 {% for host in groups['workers'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ default_http_port }} check
 {% endfor %}
 {% for host in groups['masters'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:80 check backup
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ default_http_port }} check backup
 {% endfor %}
 
-# HTTPS (port 443): TLS passthrough to node:443 — APISIX terminates TLS.
-# Use plain TCP check (not check-ssl) because APISIX requires SNI for TLS, so
+# HTTPS (port 443): TLS passthrough — the ingress controller terminates TLS.
+# Use plain TCP check (not check-ssl) because the controllers require SNI, so
 # SNI-less health checks cause a handshake failure and mark backends as DOWN.
 # Workers preferred; masters as backup.
 backend homelab_entrypoint_https
@@ -85,11 +114,26 @@ backend homelab_entrypoint_https
   option tcp-check
   default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
 {% for host in groups['workers'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ default_https_port }} check
 {% endfor %}
 {% for host in groups['masters'] %}
-  server {{ host }} {{ hostvars[host]['ansible_host'] }}:443 check backup
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ default_https_port }} check backup
 {% endfor %}
+{% if traefik_sni_routing %}
+
+# Traefik (migration): TLS passthrough to the traefik LoadBalancer host port.
+backend traefik_entrypoint_https
+  mode tcp
+  balance leastconn
+  option tcp-check
+  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
+{% for host in groups['workers'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ traefik_https_port }} check
+{% endfor %}
+{% for host in groups['masters'] %}
+  server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ traefik_https_port }} check backup
+{% endfor %}
+{% endif %}
 
 backend k3s_api_server
   mode tcp

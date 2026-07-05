@@ -66,11 +66,18 @@ crowdsec:
     - namespace: apisix
       podName: apisix-*
       program: nginx
+    # Traefik (APISIX replacement in progress, docs/09-traefik-migration.md) —
+    # JSON access logs parsed by the crowdsecurity/traefik collection. Inert
+    # until traefik pods exist and receive traffic.
+    - namespace: traefik
+      podName: traefik-*
+      program: traefik
     env:
     - name: COLLECTIONS
       value: >-
         crowdsecurity/linux
         crowdsecurity/nginx
+        crowdsecurity/traefik
         crowdsecurity/base-http-scenarios
         crowdsecurity/http-cve
         crowdsecurity/whitelist-good-actors

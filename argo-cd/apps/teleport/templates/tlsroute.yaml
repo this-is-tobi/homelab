@@ -8,10 +8,18 @@ kind: TLSRoute
 metadata:
   name: {{ .name }}
 spec:
+  {{- $listener := .listener }}
   parentRefs:
+    # See httproute templates: extraParentRefs supports dual-gateway attach
+    # during ingress-controller migrations.
     - name: {{ $gatewayName }}
       namespace: {{ $gatewayNamespace }}
-      sectionName: {{ .listener }}
+      sectionName: {{ $listener }}
+    {{- range $.Values.gateway.extraParentRefs }}
+    - name: {{ .name }}
+      namespace: {{ .namespace | default $gatewayNamespace }}
+      sectionName: {{ $listener }}
+    {{- end }}
   hostnames:
     {{- range .hostnames }}
     - {{ . | quote }}

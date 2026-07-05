@@ -4,6 +4,12 @@ haproxy:
   version: alpine3.22
   extraKubeAllowedIps: ""
   allowedIps: ""
+  # --- Ingress-controller migration routing (docs/09-traefik-migration.md) ---
+  # ingressDefault: apisix       # backend for port 80 + unmatched SNIs (apisix|traefik)
+  # traefikHttpPort: 8080        # traefik node port (HTTP) while apisix owns 80
+  # traefikHttpsPort: 8443       # traefik node port (TLS) while apisix owns 443
+  # traefikHosts: []             # exact SNIs routed to traefik
+  # traefikHostSuffixes: []      # SNI suffixes for wildcards
 pihole:
   enabled: false
   version: 2026.04.1

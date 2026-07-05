@@ -75,6 +75,11 @@ otherwise Traefik wins on footprint and fit.
 
 ## Decision
 
+> **Status: in execution** — the migration is prepared and running per
+> [09-traefik-migration.md](./09-traefik-migration.md) (traefik deployed
+> alongside APISIX on ports 8080/8443, per-hostname SNI cutover at the
+> gateway HAProxy).
+
 1. **Now**: keep APISIX. It was just hardened; churning the only
    internet-facing component twice in one quarter is worse than its
    footprint. No action.

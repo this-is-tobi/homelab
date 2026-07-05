@@ -1,0 +1,126 @@
+{{- if .Values.gateway.enabled -}}
+{{- $gwName := .Values.gateway.name | default "homelab-gateway-traefik" }}
+{{- $gwNs := .Values.gateway.namespace | default "kube-system" }}
+{{- $httpPort := .Values.gateway.httpPort | default 8000 }}
+{{- $httpsPort := .Values.gateway.httpsPort | default 8443 }}
+{{- $wildcardSecret := .Values.gateway.wildcardTlsSecret | default "gateway-wildcard-tls" }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: traefik
+spec:
+  controllerName: traefik.io/gateway-controller
+---
+# Listener ports are the traefik entryPoint CONTAINER ports (web=8000,
+# websecure=8443) — Traefik binds Gateway listeners to entryPoints by port.
+# External exposure (Service ports, klipper host ports, gateway HAProxy) is
+# independent of these values.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ $gwName }}
+  namespace: {{ $gwNs }}
+spec:
+  gatewayClassName: traefik
+  listeners:
+    # allowedRoutes `from: All` is the same deliberate single-tenant trade-off
+    # as on the APISIX gateway: every namespace is ArgoCD-managed from this
+    # repo. Listener NAMES mirror the APISIX gateway so app routes keep a
+    # single sectionName while attached to both gateways during migration.
+    - name: http
+      protocol: HTTP
+      port: {{ $httpPort }}
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https-wildcard
+      protocol: HTTPS
+      port: {{ $httpsPort }}
+      hostname: "*.{{ .Values.gateway.domain }}"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ $wildcardSecret }}
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https-apex
+      protocol: HTTPS
+      port: {{ $httpsPort }}
+      hostname: "{{ .Values.gateway.domain }}"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.apexTlsSecret | default "gateway-wildcard-tls" }}
+      allowedRoutes:
+        namespaces:
+          from: All
+{{- range .Values.gateway.extraWildcardListeners }}
+    - name: {{ .name }}
+      protocol: HTTPS
+      port: {{ $httpsPort }}
+      hostname: {{ .hostname | quote }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .tlsSecret | default $wildcardSecret }}
+      allowedRoutes:
+        namespaces:
+          from: All
+{{- end }}
+{{- range .Values.gateway.tlsPassthroughListeners }}
+    - name: {{ .name }}
+      protocol: TLS
+      port: {{ $httpsPort }}
+      hostname: {{ .hostname | quote }}
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: All
+{{- end }}
+{{- if .Values.gateway.manageCertificate }}
+---
+# Wildcard certificate — only rendered once this app owns it (after the
+# apisix app, which manages the same Certificate today, is decommissioned).
+# cert-manager adopts the existing secret without re-issuing.
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gateway-wildcard-tls
+  namespace: {{ $gwNs }}
+spec:
+  secretName: {{ $wildcardSecret }}
+  issuerRef:
+    name: {{ .Values.gateway.dnsClusterIssuer | default "letsencrypt-dns-prod" }}
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.{{ .Values.gateway.domain }}"
+    - "{{ .Values.gateway.domain }}"
+    {{- range .Values.gateway.extraDnsNames }}
+    - {{ . | quote }}
+    {{- end }}
+{{- end }}
+---
+# HTTP → HTTPS redirect (mirrors the APISIX gateway's redirect route; distinct
+# name to coexist in the same namespace). ACME HTTP-01 solver traffic is not
+# affected during migration: port 80 stays routed to APISIX until the final
+# cutover (see docs/09-traefik-migration.md).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-to-https-redirect-traefik
+  namespace: {{ $gwNs }}
+spec:
+  parentRefs:
+    - name: {{ $gwName }}
+      namespace: {{ $gwNs }}
+      sectionName: http
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+{{- end }}

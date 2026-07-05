@@ -1,0 +1,30 @@
+# Traefik instance overrides — see argo-cd/apps/traefik/values.yaml for the
+# hardened catalog defaults and docs/09-traefik-migration.md for the
+# APISIX→Traefik migration sequence.
+#
+# While coexisting with another ingress controller, the Service exposes
+# 8080/8443 (klipper-lb host-port constraint); after decommissioning the old
+# controller, set traefik.ports.{web,websecure}.exposedPort to 80/443.
+
+traefik:
+  deployment:
+    replicas: 2
+
+gateway:
+  enabled: true
+  name: homelab-gateway-traefik
+  namespace: kube-system
+  domain: example.com
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  # true once this app owns the cert-manager Certificate (i.e. no other
+  # gateway app manages the same Certificate anymore).
+  manageCertificate: false
+  dnsClusterIssuer: letsencrypt-dns-prod
+  extraDnsNames: []
+  extraWildcardListeners: []
+  # - name: https-wildcard-core
+  #   hostname: "*.core.example.com"
+  tlsPassthroughListeners: []
+  # - name: tls-teleport
+  #   hostname: "*.teleport.core.example.com"

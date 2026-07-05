@@ -8,10 +8,19 @@ kind: HTTPRoute
 metadata:
   name: {{ .name }}
 spec:
+  {{- $listener := .listener | default "https-wildcard" }}
   parentRefs:
+    # Primary gateway first; extraParentRefs lets a route attach to a second
+    # gateway (same listener names) during an ingress-controller migration —
+    # the gateway HAProxy then decides which controller receives the traffic.
     - name: {{ $gatewayName }}
       namespace: {{ $gatewayNamespace }}
-      sectionName: {{ .listener | default "https-wildcard" }}
+      sectionName: {{ $listener }}
+    {{- range $.Values.gateway.extraParentRefs }}
+    - name: {{ .name }}
+      namespace: {{ .namespace | default $gatewayNamespace }}
+      sectionName: {{ $listener }}
+    {{- end }}
   hostnames:
     {{- range .hostnames }}
     - {{ . | quote }}

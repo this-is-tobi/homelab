@@ -2,6 +2,9 @@ gateway:
   enabled: false
   gatewayName: ""
   gatewayNamespace: ""
+  # Extra gateways to also attach routes to (e.g. during the APISIX→Traefik
+  # migration): [{name, namespace?}] — sectionName is reused from the route.
+  extraParentRefs: []
   routes: []
 
 kube-prometheus-stack:

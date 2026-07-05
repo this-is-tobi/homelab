@@ -30,6 +30,13 @@ back to `$KUBECONFIG` / `~/.kube/config` (static certs or token).
 ```sh
 # Find ips on local subnet
 sudo nmap -sN 192.168.1.1/24
+
+# Traefik dashboard (never exposed publicly)
+kubectl -n traefik port-forward deploy/traefik 8080:8080
+# → http://localhost:8080/dashboard/
+
+# Test a hostname through the traefik path during the ingress migration
+curl -vk --resolve <host>:8443:<node-ip> https://<host>:8443/
 ```
 
 ## Disk

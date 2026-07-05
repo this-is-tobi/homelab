@@ -1,0 +1,127 @@
+# Traefik v3 — hardened defaults for the ohmlab catalog.
+#
+# MIGRATION MODE (see docs/09-traefik-migration.md): the Service exposes
+# 8080/8443 so klipper-lb can bind them on every node while APISIX still owns
+# host ports 80/443. The gateway HAProxy routes selected SNIs to node:8443.
+# At APISIX decommission, flip exposedPort to 80/443 (instance values) in the
+# same change as the HAProxy backend port swap.
+traefik:
+  deployment:
+    replicas: 2
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  topologySpreadConstraints:
+  - labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: traefik
+    maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+
+  # No phone-home: no version check, no anonymous usage data.
+  global:
+    checkNewVersion: false
+    sendAnonymousUsage: false
+
+  ingressClass:
+    enabled: true
+    isDefaultClass: false
+    name: traefik
+
+  providers:
+    kubernetesCRD:
+      enabled: true
+    kubernetesIngress:
+      enabled: true
+    kubernetesGateway:
+      enabled: true
+      # Experimental channel = TLSRoute/TCPRoute support (teleport passthrough).
+      # Requires the Gateway API *experimental* CRDs (installed by run.sh).
+      experimentalChannel: true
+
+  # The chart's own Gateway/GatewayClass are replaced by templates/gateway.yaml
+  # (multi-listener wildcard setup mirroring the APISIX gateway's listener
+  # names, so routes can attach to both gateways during the migration).
+  gateway:
+    enabled: false
+  gatewayClass:
+    enabled: false
+
+  ports:
+    web:
+      # Gateway API listeners must reference this CONTAINER port (8000), not
+      # the Service port — Traefik matches listeners against entryPoints.
+      port: 8000
+      expose:
+        default: true
+      exposedPort: 8080
+    websecure:
+      port: 8443
+      expose:
+        default: true
+      exposedPort: 8443
+
+  service:
+    enabled: true
+    type: LoadBalancer
+    spec:
+      # Preserve source addresses on the node-local hop (klipper-lb).
+      externalTrafficPolicy: Local
+
+  log:
+    level: INFO
+  # JSON access logs — parsed by the crowdsecurity/traefik collection
+  # (crowdsec agent acquisition on namespace=traefik, program=traefik).
+  accessLog:
+    enabled: true
+    format: json
+
+  metrics:
+    prometheus:
+      # Don't gate rendering on the CRD being present (fresh-bootstrap
+      # ordering: prometheus-stack syncs at wave 50, after traefik).
+      disableAPICheck: true
+      service:
+        enabled: true
+      serviceMonitor:
+        enabled: true
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+  # Chart defaults already run as non-root (65532) with dropped capabilities,
+  # readOnlyRootFilesystem and RuntimeDefault seccomp — compliant with the
+  # kyverno pod-security-baseline / require-non-root policies.
+
+# Gateway API resources rendered by templates/gateway.yaml.
+# Listener NAMES mirror the APISIX homelab-gateway so app routes can attach to
+# both gateways with the same sectionName during the per-hostname migration.
+gateway:
+  enabled: false
+  name: homelab-gateway-traefik
+  namespace: kube-system
+  domain: ""
+  # Must match the traefik entryPoint container ports above.
+  httpPort: 8000
+  httpsPort: 8443
+  # TLS secret shared with the APISIX gateway (same namespace). The
+  # cert-manager Certificate stays owned by the apisix app while both
+  # gateways coexist — set manageCertificate=true only after the apisix app
+  # is decommissioned.
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  manageCertificate: false
+  dnsClusterIssuer: letsencrypt-dns-prod
+  extraDnsNames: []
+  # [{name, hostname, tlsSecret?}] — extra HTTPS Terminate listeners.
+  extraWildcardListeners: []
+  # [{name, hostname}] — TLS Passthrough listeners (e.g. teleport).
+  tlsPassthroughListeners: []
