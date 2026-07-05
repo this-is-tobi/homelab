@@ -67,6 +67,15 @@ spec:
         automated:
           prune: true
           selfHeal: true
+        # Label every managed namespace declaratively. The kyverno
+        # sync-vault-ca generate policy keys on ohmlab.fr/vault-access to
+        # distribute Vault's CA (secret vault-ca) for VSO VaultConnections —
+        # without this label on the namespace the whole secret chain
+        # silently breaks (manual labels do not survive re-creates).
+        managedNamespaceMetadata:
+          labels:
+            ohmlab.fr/vault-access: "true"
+            ohmlab.fr/managed-by: '{{ $instance }}'
         syncOptions:
         - CreateNamespace=true
         - ApplyOutOfSyncOnly=true

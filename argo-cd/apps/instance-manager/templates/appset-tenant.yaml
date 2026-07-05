@@ -67,6 +67,13 @@ spec:
         automated:
           prune: true
           selfHeal: true
+        # Same rationale as appset-core: the ohmlab.fr/vault-access label
+        # drives the kyverno sync-vault-ca policy that delivers Vault's CA
+        # to VSO VaultConnections in every managed namespace.
+        managedNamespaceMetadata:
+          labels:
+            ohmlab.fr/vault-access: "true"
+            ohmlab.fr/managed-by: '{{ $instance }}'
         syncOptions:
         - CreateNamespace=true
         - ApplyOutOfSyncOnly=true
