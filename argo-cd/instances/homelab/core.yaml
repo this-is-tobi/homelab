@@ -25,7 +25,7 @@ apps:
   enabled: "false"
   syncWave: 10
 # Standing ingress replacement for APISIX — runs alongside it during the
-# per-hostname migration (docs/09-traefik-migration.md). Serves no public
+# per-hostname migration (docs/08-traefik-migration.md). Serves no public
 # traffic until the gateway HAProxy routes SNIs to node:8443.
 - app: traefik
   enabled: "true"
