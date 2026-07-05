@@ -6,6 +6,19 @@ gateway:
 
 gitea:
   replicaCount: 3
+  # The image is rootless (uid/gid 1000) but the chart leaves the security
+  # context empty by default — declare it explicitly so the kyverno
+  # require-non-root policy (which checks fields, not images) admits the pods.
+  podSecurityContext:
+    fsGroup: 1000
+    runAsUser: 1000
+    runAsGroup: 1000
+    runAsNonRoot: true
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
   ingress:
     enabled: true
     apiVersion: networking.k8s.io/v1
