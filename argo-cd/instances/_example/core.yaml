@@ -142,7 +142,7 @@ apps:
   enabled: "false"
   syncWave: 10
   # [TIER-FLEXIBLE] Traefik v3 — recommended ingress + Gateway API implementation
-  # (stateless, Kubernetes-API-only config; see docs/08-ingress-controller-analysis.md).
+  # (stateless, Kubernetes-API-only config; see docs/08-traefik-migration.md).
 - app: traefik
   enabled: "false"
   namespace: traefik

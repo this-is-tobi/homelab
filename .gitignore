@@ -30,3 +30,6 @@ ansible/secrets/
 
 # Local backup files
 backups/
+
+# Local-only notes (kept out of the repo deliberately)
+.local/

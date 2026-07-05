@@ -1,5 +1,5 @@
 # Traefik instance overrides — see argo-cd/apps/traefik/values.yaml for the
-# hardened catalog defaults and docs/09-traefik-migration.md for the
+# hardened catalog defaults and docs/08-traefik-migration.md for the
 # APISIX→Traefik migration sequence.
 #
 # While coexisting with another ingress controller, the Service exposes

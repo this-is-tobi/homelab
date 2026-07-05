@@ -1,7 +1,9 @@
 # APISIX → Traefik migration runbook
 
-> Executes the decision in [08-ingress-controller-analysis.md](./08-ingress-controller-analysis.md).
-> Traefik v3 becomes the standing ingress + Gateway API implementation;
+> Traefik v3 becomes the standing ingress + Gateway API implementation
+> (chosen for its small footprint, stateless Kubernetes-API-only config
+> and Gateway API conformance — full candidate analysis kept in local
+> notes, out of the published docs);
 > APISIX (and its etcd) is decommissioned at the end. Written 2026-07;
 > tick the checkboxes as phases complete.
 
