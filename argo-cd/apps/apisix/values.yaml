@@ -16,6 +16,10 @@ apisix:
     ssl:
       enabled: true
       containerPort: 9443
+      # Trust anchor for outbound TLS (etcd verify + any upstream verify).
+      # The etcd client secret carries the etcd CA as ca.crt (cert-manager).
+      existingCASecret: apisix-etcd-client
+      certCAFilename: ca.crt
     # NOTE: chart path is `apisix.admin.*` (nested under the chart's own
     # `apisix:` key) — a previous top-level `admin:` block here was silently
     # ignored, leaving the publicly-documented default admin key active.
@@ -53,14 +57,26 @@ apisix:
   # Bundled bitnami etcd subchart DISABLED — upstream marks it dev/test-only
   # (bitnamilegacy images are frozen). Replaced by the standalone cloudpirates
   # etcd dependency (top-level `etcd:` block below) via externalEtcd.
+  # KEEP THIS A SINGLE `etcd:` KEY — a duplicate would silently win/lose
+  # fields (YAML last-wins). auth.tls is read for externalEtcd connections
+  # too, despite living under `etcd.` in the upstream chart: it mounts the
+  # client cert at /etcd-ssl (issued by templates/etcd-certificates.yaml;
+  # etcd enforces --client-cert-auth, so this is mandatory).
   etcd:
     enabled: false
+    auth:
+      tls:
+        enabled: true
+        existingSecret: apisix-etcd-client
+        certFilename: tls.crt
+        certKeyFilename: tls.key
+        verify: true
+        sni: apisix-etcd
 
   externalEtcd:
     host:
-    - http://apisix-etcd:2379
-    # Empty user disables etcd authentication (in-cluster, ClusterIP-only —
-    # same posture as the previous bundled etcd with RBAC disabled).
+    - https://apisix-etcd:2379
+    # No password auth — identity comes from the mutual-TLS client cert.
     user: ""
     password: ""
 
@@ -78,6 +94,15 @@ etcd:
   enabled: true
   fullnameOverride: apisix-etcd
   replicaCount: 3
+  # Mutual TLS on both the client port (2379) and peer links (2380).
+  # Secrets are issued by templates/etcd-certificates.yaml; health probes use
+  # the plaintext metrics port (2381) and are unaffected.
+  auth:
+    enabled: true
+    existingSecret: apisix-etcd-server
+    peer:
+      enabled: true
+      existingSecret: apisix-etcd-peer
   persistence:
     enabled: true
     size: 5Gi

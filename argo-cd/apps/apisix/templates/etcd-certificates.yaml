@@ -1,0 +1,106 @@
+{{- if .Values.etcd.enabled }}
+{{- $ns := .Release.Namespace }}
+{{- $name := .Values.etcd.fullnameOverride | default "apisix-etcd" }}
+# Namespace-local PKI for the APISIX config store. etcd holds every route,
+# upstream and SSL object — including the private keys of gateway TLS certs —
+# so both client-to-server and peer links run mutual TLS. All certs descend
+# from a dedicated CA; cert-manager renews leaves automatically.
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $name }}-selfsigned
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $name }}-ca
+spec:
+  isCA: true
+  commonName: {{ $name }}-ca
+  secretName: {{ $name }}-ca
+  duration: 87600h # 10y — rotating the CA requires an etcd + apisix restart
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ $name }}-selfsigned
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ $name }}-ca
+spec:
+  ca:
+    secretName: {{ $name }}-ca
+---
+# Server certificate — presented on the client port (2379).
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $name }}-server
+spec:
+  secretName: {{ $name }}-server
+  duration: 2160h # 90d
+  renewBefore: 360h
+  usages:
+  - server auth
+  - client auth
+  dnsNames:
+  - {{ $name }}
+  - {{ $name }}.{{ $ns }}
+  - {{ $name }}.{{ $ns }}.svc
+  - {{ $name }}.{{ $ns }}.svc.cluster.local
+  - {{ $name }}-headless
+  - {{ $name }}-headless.{{ $ns }}.svc.cluster.local
+  - "*.{{ $name }}-headless.{{ $ns }}.svc.cluster.local"
+  - localhost
+  ipAddresses:
+  - 127.0.0.1
+  issuerRef:
+    name: {{ $name }}-ca
+    kind: Issuer
+---
+# Peer certificate — mutual TLS between etcd members (2380).
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $name }}-peer
+spec:
+  secretName: {{ $name }}-peer
+  duration: 2160h
+  renewBefore: 360h
+  usages:
+  - server auth
+  - client auth
+  dnsNames:
+  - {{ $name }}-headless
+  - {{ $name }}-headless.{{ $ns }}.svc.cluster.local
+  - "*.{{ $name }}-headless.{{ $ns }}.svc.cluster.local"
+  - localhost
+  ipAddresses:
+  - 127.0.0.1
+  issuerRef:
+    name: {{ $name }}-ca
+    kind: Issuer
+---
+# Client certificate — presented by the APISIX data plane to etcd
+# (etcd runs with --client-cert-auth, so a CA-signed client cert is
+# mandatory, not optional).
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $name }}-client
+spec:
+  secretName: {{ $name }}-client
+  duration: 2160h
+  renewBefore: 360h
+  usages:
+  - client auth
+  commonName: apisix
+  issuerRef:
+    name: {{ $name }}-ca
+    kind: Issuer
+{{- end }}
