@@ -15,6 +15,7 @@ coder:
         wildcardSecretName: ""
     envUseClusterAccessURL: false
     env:
+    # When enabling: append ?sslmode=require to the DSN — CNPG serves TLS by default.
     - name: CODER_PG_CONNECTION_URL
       value: ""
     - name: CODER_ACCESS_URL

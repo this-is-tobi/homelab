@@ -30,6 +30,7 @@ sonarqube:
     enabled: false
   jdbcOverwrite:
     enable: true
+    # Instance values must append ?sslmode=require — CNPG serves TLS by default.
     jdbcUrl: ""
     jdbcUsername: ""
     jdbcSecretName: sonarqube-pg-cluster-app

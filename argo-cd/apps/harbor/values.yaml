@@ -61,7 +61,7 @@ harbor:
       coreDatabase: harbor
       username: harbor
       existingSecret: harbor-pg-cluster-app
-      sslmode: disable
+      sslmode: require
   metrics:
     enabled: true
     serviceMonitor:
