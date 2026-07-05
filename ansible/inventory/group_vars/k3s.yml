@@ -9,6 +9,13 @@ k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 k3sFlanneliface: eth0
+# --- CNI selection ---
+# flannel (current): keep `--flannel-iface` below.
+# Cilium PHASE 1 (SSH-safe, see argo-cd/apps/cilium/values.yaml): replace the
+# flannel flag with:  --flannel-backend=none --disable-network-policy
+# Do NOT pass --disable-kube-proxy — phase 1 keeps kube-proxy so Cilium never
+# attaches BPF to eth0 (the May 2026 SSH-lockout root cause).
+# Migration entrypoint: ansible-playbook install.yml --tags cilium-migrate
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
