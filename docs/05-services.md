@@ -252,6 +252,39 @@ flowchart LR
     pod -->|envFrom / volume| secret
 ```
 
+VSO talks to Vault over TLS and validates the server against a `vault-ca`
+secret present in every app namespace. That secret is distributed by the
+Kyverno `sync-vault-ca` generate policy, which targets namespaces labelled
+`ohmlab.fr/vault-access=true`. The label itself is applied declaratively by
+the instance-manager ApplicationSets (`managedNamespaceMetadata`), so it
+survives namespace re-creation. **The whole secret chain silently stops if
+that label disappears** — `ohmlab check` reports failing `VaultStaticSecret`
+resources, which is the first symptom.
+
+Each app also gets a dedicated least-privilege Vault policy
+(`homelab/data/platforms/+/+/<app>`, read-only) and a Kubernetes auth role
+bound to the `vso` ServiceAccount **in the app's own namespace** — a role
+bound to the wrong namespace fails with `403 namespace not authorized`.
+
+### Security policies
+
+Four Kyverno ClusterPolicies guard admissions (see
+[argo-cd/apps/kyverno/templates/](../argo-cd/apps/kyverno/templates/)):
+
+| Policy                    | Action  | Notes                                                                            |
+| ------------------------- | ------- | -------------------------------------------------------------------------------- |
+| `pod-security-baseline`   | Enforce | PSS baseline; infra namespaces needing hostPath excluded                         |
+| `require-non-root`        | Enforce | runAsNonRoot; nginx/log-reader namespaces excluded                               |
+| `disallow-latest-tag`     | Enforce | `:latest` blocked; internal tooling images excluded                              |
+| `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods mid-incident is worse than a report |
+
+Actions are configurable per instance via `policies.<name>.failureAction` in
+the kyverno app values. In-cluster traffic is encrypted wherever the
+component supports it: CNPG PostgreSQL serves TLS and every client connects
+with `sslmode=require`; APISIX⇄etcd uses mutual TLS (etcd stores gateway TLS
+private keys); gitea⇄valkey uses password auth over TLS; Vault, ArgoCD and
+Teleport terminate TLS themselves behind the gateway.
+
 ### Monitoring
 
 The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Argocd and Trivy-operator to increase metrics coming from these applications.

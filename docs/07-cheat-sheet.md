@@ -1,5 +1,30 @@
 # Cheat Sheet
 
+## ohmlab CLI
+
+The Go CLI in [utils/](../utils/) ships operational commands (built as
+`ghcr.io/this-is-tobi/homelab/utils`, or `go run .` from `utils/`):
+
+```sh
+# Read-only platform health sweep: nodes, ArgoCD apps, VSO secret sync,
+# Vault HA state, crashlooping pods, Kyverno violations.
+# Exits non-zero when problems are found (cron/CI friendly).
+ohmlab check
+
+# Initialize/repair declarative Vault secrets (idempotent — used by the
+# vault-post-config Job; can be run manually after a Vault recovery)
+ohmlab vault secret --config secrets.json --auth-method token
+
+# Configure Vault identity groups/aliases (OIDC group mapping)
+ohmlab vault identity --config identity.json
+
+# Discover the active Vault raft leader
+ohmlab vault leader
+```
+
+`ohmlab check` uses the in-cluster ServiceAccount when available and falls
+back to `$KUBECONFIG` / `~/.kube/config` (static certs or token).
+
 ## Network
 
 ```sh
