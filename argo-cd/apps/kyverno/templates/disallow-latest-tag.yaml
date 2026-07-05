@@ -3,11 +3,14 @@ kind: ClusterPolicy
 metadata:
   name: disallow-latest-tag
   annotations:
+    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
+    # zero-replica RS history otherwise reports stale violations forever.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/title: Disallow Latest Image Tag
     policies.kyverno.io/description: >-
       Container images should use a specific, immutable tag instead of 'latest'
       to ensure reproducible deployments and avoid unexpected updates.
-      Starts in Audit mode — switch failureAction to Enforce once all workloads comply.
+      failureAction comes from values (policies.disallowLatestTag).
 spec:
   background: true
   rules:
@@ -25,8 +28,11 @@ spec:
           - kyverno
           # Internal tooling images — always built as :latest by design
           - vault-operator-system
+          # Upstream chart hardcodes a busybox:latest config-init container
+          # with no values knob (candidate for an upstream PR).
+          - homepage
     validate:
-      failureAction: Audit
+      failureAction: {{ .Values.policies.disallowLatestTag.failureAction | default "Audit" }}
       message: "Image tag 'latest' is not allowed. Use a specific tag or digest."
       pattern:
         spec:

@@ -56,3 +56,19 @@ kyverno:
         memory: 64Mi
       limits:
         memory: 256Mi
+
+# Per-policy failureAction. Enforce blocks non-compliant admission; Audit only
+# reports. baseline / non-root / latest-tag ship as Enforce (zero live
+# violations as of 2026-07-05 — excluded namespaces are carved out in each
+# policy template). resource-limits stays Audit: it is the most likely to
+# reject pods created by upstream operators/hooks mid-incident, which is a
+# worse failure mode than a report entry.
+policies:
+  podSecurityBaseline:
+    failureAction: Enforce
+  requireNonRoot:
+    failureAction: Enforce
+  disallowLatestTag:
+    failureAction: Enforce
+  requireResourceLimits:
+    failureAction: Audit

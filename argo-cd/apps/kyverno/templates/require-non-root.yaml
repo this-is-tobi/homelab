@@ -3,11 +3,14 @@ kind: ClusterPolicy
 metadata:
   name: require-non-root
   annotations:
+    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
+    # zero-replica RS history otherwise reports stale violations forever.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/title: Require Non-Root Containers
     policies.kyverno.io/description: >-
       Containers must not run as root (UID 0). Either runAsNonRoot: true or
       runAsUser > 0 must be set in the security context.
-      Starts in Audit mode — switch failureAction to Enforce once all workloads comply.
+      failureAction comes from values (policies.requireNonRoot).
 spec:
   background: true
   rules:
@@ -35,7 +38,7 @@ spec:
           # Log-processing agent reads host logs as root
           - crowdsec
     validate:
-      failureAction: Audit
+      failureAction: {{ .Values.policies.requireNonRoot.failureAction | default "Audit" }}
       message: "Containers must not run as root. Set runAsNonRoot: true or runAsUser > 0."
       anyPattern:
       - spec:

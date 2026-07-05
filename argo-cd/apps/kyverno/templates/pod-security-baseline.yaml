@@ -3,11 +3,13 @@ kind: ClusterPolicy
 metadata:
   name: pod-security-baseline
   annotations:
+    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
+    # zero-replica RS history otherwise reports stale violations forever.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/title: Enforce Pod Security Standards (Baseline)
     policies.kyverno.io/description: >-
       Enforces the Pod Security Standards baseline profile cluster-wide.
-      Starts in Audit mode — violations are logged but not blocked.
-      Switch failureAction to Enforce once all pods comply.
+      failureAction comes from values (policies.podSecurityBaseline).
 spec:
   background: true
   rules:
@@ -31,7 +33,7 @@ spec:
           # Log-processing agent needs hostPath (/var/log, container runtime)
           - crowdsec
     validate:
-      failureAction: Audit
+      failureAction: {{ .Values.policies.podSecurityBaseline.failureAction | default "Audit" }}
       podSecurity:
         level: baseline
         version: latest

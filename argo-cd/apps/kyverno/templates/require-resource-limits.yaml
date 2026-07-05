@@ -3,10 +3,13 @@ kind: ClusterPolicy
 metadata:
   name: require-resource-limits
   annotations:
+    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
+    # zero-replica RS history otherwise reports stale violations forever.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
     policies.kyverno.io/title: Require CPU and Memory Limits
     policies.kyverno.io/description: >-
       All containers must specify CPU and memory limits to prevent resource starvation.
-      Starts in Audit mode — switch failureAction to Enforce once all workloads comply.
+      failureAction comes from values (policies.requireResourceLimits).
 spec:
   background: true
   rules:
@@ -26,7 +29,7 @@ spec:
           - longhorn-system
           - system-upgrade
     validate:
-      failureAction: Audit
+      failureAction: {{ .Values.policies.requireResourceLimits.failureAction | default "Audit" }}
       message: "CPU and memory limits are required for all containers."
       pattern:
         spec:
