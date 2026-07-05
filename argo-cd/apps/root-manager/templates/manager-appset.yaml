@@ -50,8 +50,9 @@ spec:
         app.kubernetes.io/managed-by: {{ .Values.releaseName }}
         app.kubernetes.io/part-of: ohmlab
         ohmlab.fr/instance-name: '{{ `{{ .path.basename }}` }}'
-      finalizers:
-      - resources-finalizer.argocd.argoproj.io
+      # NO resources-finalizer — deleting an instance-manager Application
+      # must not cascade into deleting the instance AppSets (see
+      # instance-manager/templates/appset-core.yaml for the incident note).
     spec:
       project: {{ .Values.project | default "admin-core" | quote }}
       revisionHistoryLimit: 3

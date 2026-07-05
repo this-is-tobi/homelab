@@ -44,8 +44,8 @@ spec:
         {{- include "instance-manager.labels" . | nindent 8 }}
         ohmlab.fr/instance-scope: "tenant"
         ohmlab.fr/app-name: '{{ `{{ .app }}` }}'
-      finalizers:
-      - resources-finalizer.argocd.argoproj.io
+      # NO resources-finalizer — see appset-core.yaml: app deletion must
+      # never cascade into deleting live resources.
     spec:
       project: {{ $project | quote }}
       revisionHistoryLimit: 3

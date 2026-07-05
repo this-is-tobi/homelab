@@ -25,8 +25,9 @@ metadata:
   labels:
     app.kubernetes.io/managed-by: {{ .Release.Name }}
     app.kubernetes.io/part-of: ohmlab
-  finalizers:
-  - resources-finalizer.argocd.argoproj.io
+  # NO resources-finalizer — deleting the root Application must never
+  # cascade down the manager tree (see instance-manager appset-core.yaml
+  # for the 2026-07-04 incident note).
 spec:
   project: {{ .Values.projects.core.name | default "admin-core" | quote }}
   revisionHistoryLimit: 3

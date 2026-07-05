@@ -44,8 +44,12 @@ spec:
         {{- include "instance-manager.labels" . | nindent 8 }}
         ohmlab.fr/instance-scope: "core"
         ohmlab.fr/app-name: '{{ `{{ .app }}` }}'
-      finalizers:
-      - resources-finalizer.argocd.argoproj.io
+      # NO resources-finalizer here, deliberately: with it, deleting an
+      # Application (UI click, kubectl, generator hiccup) cascades into
+      # deleting the app's live resources — on 2026-07-04 this nearly took
+      # down the production ingress (homelab-apisix stuck terminating,
+      # auto-sync frozen for 19h). Disabling an app in core.yaml now orphans
+      # its resources; clean them up explicitly if that is what you want.
     spec:
       project: {{ $project | quote }}
       revisionHistoryLimit: 3
