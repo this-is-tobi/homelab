@@ -28,6 +28,8 @@ spec:
           - prometheus-stack
           - system-upgrade
           - ingress-nginx
+          # Log-processing agent needs hostPath (/var/log, container runtime)
+          - crowdsec
     validate:
       failureAction: Audit
       podSecurity:

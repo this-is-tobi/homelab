@@ -23,11 +23,19 @@ gitea:
       - ""
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  initContainers:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
   serviceAccount:
     create: true
     automountServiceAccountToken: true
@@ -67,6 +75,8 @@ gitea:
         NAME: ""
         USER: ""
         PASSWD: ""
+        # CNPG serves TLS by default — encrypt the connection (gitea default is disable).
+        SSL_MODE: require
       cron.GIT_GC_REPOS:
         ENABLED: false
       server:
@@ -109,6 +119,13 @@ valkey:
     enabled: false
   service:
     port: 6379
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
 
 cnpg:
   fullnameOverride: gitea-pg-cluster

@@ -9,8 +9,57 @@ kube-prometheus-stack:
     upgradeJob:
       enabled: true
       forceConflicts: true
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    # Applies to the config-reloader (init + sidecar) in prometheus/alertmanager pods.
+    prometheusConfigReloader:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 64Mi
+  kube-state-metrics:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  prometheus-node-exporter:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
   prometheus:
     prometheusSpec:
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: 1500m
+          memory: 2Gi
       scrapeConfigSelector:
         matchLabels: {}
       ruleSelector:
@@ -31,6 +80,26 @@ kube-prometheus-stack:
                 storage: 100Gi
   grafana:
     adminPassword: ""
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    initChownData:
+      resources:
+        limits:
+          cpu: 100m
+          memory: 128Mi
+    sidecar:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
     ingress:
       enabled: true
       ingressClassName: apisix

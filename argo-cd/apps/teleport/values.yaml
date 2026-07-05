@@ -6,8 +6,23 @@ gateway:
 
 server:
   enabled: true
+  # Applied to both auth and proxy pods (and their init containers).
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
   operator:
     enabled: true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
   auth:
     enabled: true
   proxy:

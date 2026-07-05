@@ -2,6 +2,29 @@ cert-manager:
   crds:
     enabled: true
     keep: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  webhook:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
+  cainjector:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
   prometheus:
     enabled: true
     servicemonitor:
@@ -11,6 +34,13 @@ scaleway-certmanager-webhook:
   secret:
     accessKey: ""
     secretKey: ""
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
 
 defaultWildcard:
   enabled: true

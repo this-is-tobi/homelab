@@ -23,6 +23,8 @@ keycloak:
     name: ""
     username: ""
     password: ""
+    # CNPG serves TLS by default — encrypt the JDBC connection.
+    jdbcParams: "sslmode=require"
   ingress:
     enabled: true
     className: apisix
@@ -41,6 +43,15 @@ keycloak:
     enabled: false
   mariadb:
     enabled: false
+  initContainers:
+    copyQuarkusLib:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
   resources:
     requests:
       memory: 1Gi
@@ -404,7 +415,8 @@ keycloakConfigCli:
   fullnameOverride: keycloak-config-cli
   backoffLimit: 3
   image:
-    tag: latest-26
+    # Pinned (multi-arch) — was latest-26; bump alongside Keycloak upgrades.
+    tag: 6.5.1-26
   env:
     KEYCLOAK_URL: "http://keycloak:8080"
     KEYCLOAK_USER: admin
