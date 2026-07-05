@@ -1,0 +1,75 @@
+# ohmlab wrapper values — TEMPLATE (see instances/homelab/values/core/ohmlab.yaml
+# for a real, working example).
+#
+# Owns:
+# - The CORE ArgoCD installation (in argocd-system namespace)
+# - The root `manager` ApplicationSet (discovers every instance under
+#   `argo-cd/instances/*` and renders one per-instance Application)
+# - The `admin-core` and `admin-tenant` AppProjects
+#
+# Bootstrap is intentionally bare: admin login only, no OIDC, no notifications.
+# This avoids any chicken-and-egg with vault-operator / Vault / Keycloak.
+
+# Gateway API routes for the core ArgoCD UI. Enable once a Gateway exists
+# (e.g. the apisix or cilium app); leave disabled for ingress-based setups.
+gateway:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""
+  routes: []
+  # - name: argocd-core
+  #   hostnames:
+  #   - gitops.core.example.com
+  #   rules:
+  #   - backendService: argocd-server
+  #     backendPort: 80
+
+rootManager:
+  enabled: true
+  repoURL:
+    # Repo holding the `argo-cd/` tree (charts + instances + values).
+    sources: https://github.com/this-is-tobi/homelab.git
+    # Optional separate values repo. Defaults to `sources`.
+    values: ""
+  targetRevision: main
+
+# AppProjects for the two tiers. Names are referenced by
+# `instances/<name>/instance.yaml` (projects.core / projects.tenant).
+projects:
+  core:
+    enabled: true
+    name: admin-core
+  tenant:
+    enabled: true
+    name: admin-tenant
+
+argo-cd:
+  enabled: true
+  configs:
+    secret:
+      # Set at bootstrap via:
+      #   ARGOCD_ADMIN_PASSWORD=... ./run.sh -b <instance>
+      # or leave empty to let the chart auto-generate one.
+      argocdServerAdminPassword: ""
+    cm:
+      url: "" # e.g. https://gitops.core.example.com
+      # OIDC via Keycloak — enable once Keycloak is up (see the homelab
+      # instance for a full example wired to VSO).
+      # oidc.config: |
+      #   name: "Keycloak"
+      #   issuer: "https://sso.core.example.com/realms/homelab"
+      #   clientID: "argo-cd-core"
+      #   clientSecret: "$argocd-core-oidc:OIDC_CLIENT_SECRET"
+      #   requestedScopes: ["openid", "profile", "email", "groups"]
+  server:
+    ingress:
+      enabled: false
+  crds:
+    install: true
+    keep: true
+
+# VSO integration — injects secrets from Vault into argocd-system after
+# vault-operator is deployed. Keep disabled until the Vault stack is running
+# (run.sh forces --set vso.enabled=false during bootstrap anyway).
+vso:
+  enabled: false

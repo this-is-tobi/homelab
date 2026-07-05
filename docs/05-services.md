@@ -95,7 +95,7 @@ All services helm charts and versions are managed through ArgoCD ApplicationSets
 
 ### Management
 
-Services are managed by a **two-level** ApplicationSet hierarchy declared by the `homelab-core` chart in the `argocd-system` namespace:
+Services are managed by a **two-level** ApplicationSet hierarchy declared by the `ohmlab` chart in the `argocd-system` namespace:
 
 - The root `manager` AppSet discovers each instance folder and emits one Application per instance pointing at the `instance-manager` chart.
 - That chart renders two child AppSets per instance — `core-<instance>` (platform tier, bound to `admin-core` AppProject) and `tenant-<instance>` (apps tier, bound to `admin-tenant` AppProject).

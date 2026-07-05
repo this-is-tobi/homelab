@@ -9,7 +9,7 @@ flowchart LR
     contrib([Contributor])
 
     admin -->|provisions| infra[Gateway + K3s]
-    admin -->|bootstraps| core[homelab-core]
+    admin -->|bootstraps| core[ohmlab]
     core -->|drives| platforms[Apps & SSO]
     user -->|consumes| platforms
     contrib -->|PRs| repo[(Git repo)]
@@ -32,7 +32,7 @@ The admin owns the cluster lifecycle: provisioning hosts, bootstrapping ArgoCD, 
    kubectl config use-context homelab
    ARGOCD_ADMIN_PASSWORD=<choose-a-password> ./run.sh -b homelab
    ```
-4. Once `keycloak` is healthy, enable OIDC for the core ArgoCD by uncommenting the `oidc.config` block in [argo-cd/instances/homelab/values/core/homelab-core.yaml](../argo-cd/instances/homelab/values/core/homelab-core.yaml).
+4. Once `keycloak` is healthy, enable OIDC for the core ArgoCD by uncommenting the `oidc.config` block in [argo-cd/instances/homelab/values/core/ohmlab.yaml](../argo-cd/instances/homelab/values/core/ohmlab.yaml).
 
 ### Enable / disable services
 
@@ -65,7 +65,7 @@ The admin owns the cluster lifecycle: provisioning hosts, bootstrapping ArgoCD, 
 1. Create the folder `argo-cd/instances/<name>/` (copy from [_example/](../argo-cd/instances/_example/) as a template; drop the leading underscore — folders prefixed with `_` are excluded by the root manager AppSet and treated as templates).
 2. Edit `instance.yaml` to set the destination cluster, env, repos, project bindings.
 3. Populate `core.yaml` and/or `tenant.yaml` with the apps the instance should run.
-4. Create `argo-cd/instances/<name>/values/{core,tenant}/` mirroring those catalogs (one values file per enabled app, plus `core/homelab-core.yaml` if the instance ships its own core ArgoCD).
+4. Create `argo-cd/instances/<name>/values/{core,tenant}/` mirroring those catalogs (one values file per enabled app, plus `core/ohmlab.yaml` if the instance ships its own core ArgoCD).
 5. The root `manager` picks up the new folder automatically. For a brand-new admin cluster, run `./run.sh -b <name>` once against it; for a tenant-only instance attached to an existing core, just commit & push.
 
 See `Installation > Topologies` for the all-in-one / SaaS / dedicated-core variants.
@@ -134,8 +134,8 @@ Before opening a PR:
 
 ```sh
 # Render the bootstrap chart against the homelab instance values
-helm template homelab-core ./utils/helm \
-  -f argo-cd/instances/homelab/values/core/homelab-core.yaml
+helm template ohmlab ./utils/helm \
+  -f argo-cd/instances/homelab/values/core/ohmlab.yaml
 
 # Render the per-instance chart for a given instance
 helm template instance-homelab ./argo-cd/apps/instance-manager \

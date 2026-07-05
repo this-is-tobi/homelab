@@ -1,6 +1,0 @@
-dependencies:
-- name: ohmlab
-  repository: file://../../../utils/helm
-  version: 0.1.0
-digest: sha256:65f301ac1871fa07451363d3bac82d662a7b2b20ab48ace6b5d74e57d681e7c2
-generated: "2026-05-31T20:47:21.731568+02:00"

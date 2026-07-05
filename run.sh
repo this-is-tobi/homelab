@@ -439,9 +439,13 @@ while getopts "hdekp:t:ub:y" flag; do
     u) UPDATE="true" ;;
     b) BOOTSTRAP_INSTANCE="${OPTARG}" ;;
     y) YES="true" ;;
-    h | *)
+    h)
       print_help
       exit 0
+      ;;
+    *)
+      print_help
+      exit 1
       ;;
   esac
 done

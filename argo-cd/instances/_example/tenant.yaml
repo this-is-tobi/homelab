@@ -20,8 +20,8 @@
 # Tier-flexible apps  [IMPORTANT]
 # -----------------------------------------------------------------------------
 # Some cluster-infra apps are listed BOTH here and in core.yaml — typically:
-#   longhorn, cert-manager, ingress-nginx, vault, keycloak, teleport,
-#   prometheus-stack.
+#   longhorn, cert-manager, ingress-nginx, apisix, cilium, vault, keycloak,
+#   teleport, prometheus-stack, crowdsec.
 #
 # Pick ONE tier per instance and enable the app there; leave the other side
 # disabled. See core.yaml for the topology guidance and the rationale.
@@ -49,6 +49,24 @@ apps:
 - app: ingress-nginx
   enabled: "false"
   syncWave: 85
+
+  # [TIER-FLEXIBLE] APISIX API Gateway — alternative ingress controller with Gateway API.
+- app: apisix
+  enabled: "false"
+  namespace: apisix
+  syncWave: 85
+
+  # [TIER-FLEXIBLE] Cilium CNI — eBPF networking, Gateway API, kube-proxy replacement.
+- app: cilium
+  enabled: "false"
+  namespace: kube-system
+  syncWave: 82
+
+  # [TIER-FLEXIBLE] CrowdSec — security engine (log analysis, blocklists).
+- app: crowdsec
+  enabled: "false"
+  namespace: crowdsec
+  syncWave: 98
 
   # [TIER-FLEXIBLE] HashiCorp Vault — secret store. Requires `vault-operator` (core-only).
 - app: vault

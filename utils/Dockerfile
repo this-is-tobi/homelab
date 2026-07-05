@@ -22,9 +22,9 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
     -ldflags="-s -w \
-      -X github.com/this-is-tobi/homelab/homelab-utils/cmd.version=${VERSION} \
-      -X github.com/this-is-tobi/homelab/homelab-utils/cmd.commit=${COMMIT} \
-      -X github.com/this-is-tobi/homelab/homelab-utils/cmd.date=${BUILD_DATE}" \
+      -X github.com/this-is-tobi/homelab/utils/cmd.version=${VERSION} \
+      -X github.com/this-is-tobi/homelab/utils/cmd.commit=${COMMIT} \
+      -X github.com/this-is-tobi/homelab/utils/cmd.date=${BUILD_DATE}" \
     -o /ohmlab .
 
 # =============================================================================

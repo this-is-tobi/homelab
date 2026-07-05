@@ -76,7 +76,7 @@ To create admin access to the machines, provide admin user information in `group
 
 Applications are managed by a **two-level** ApplicationSet hierarchy:
 
-1. The root `manager` ApplicationSet (shipped by `homelab-core`) discovers every folder under [./argo-cd/instances/](../argo-cd/instances/) and emits one Application per instance pointing at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart.
+1. The root `manager` ApplicationSet (shipped by `ohmlab`) discovers every folder under [./argo-cd/instances/](../argo-cd/instances/) and emits one Application per instance pointing at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart.
 2. That chart in turn renders **two child ApplicationSets per instance** — `core-<instance>` and `tenant-<instance>` — that fan out into the actual leaf Applications.
 
 Configuration is split per instance and per scope:
@@ -88,7 +88,7 @@ Configuration is split per instance and per scope:
 | [./argo-cd/instances/\<instance\>/tenant.yaml](../argo-cd/instances/homelab/tenant.yaml)                                     | Tenant tier app catalog (user-facing services).                                                               |
 | [./argo-cd/instances/\<instance\>/values/core/\<app\>.yaml](../argo-cd/instances/homelab/values/core/)                       | Per-instance Helm values for each core app.                                                                   |
 | [./argo-cd/instances/\<instance\>/values/tenant/\<app\>.yaml](../argo-cd/instances/homelab/values/tenant/)                   | Per-instance Helm values for each tenant app.                                                                 |
-| [./argo-cd/instances/\<instance\>/values/core/homelab-core.yaml](../argo-cd/instances/homelab/values/core/homelab-core.yaml) | Bootstrap values for core ArgoCD + the root `manager` AppSet + the `admin-core` / `admin-tenant` AppProjects. |
+| [./argo-cd/instances/\<instance\>/values/core/ohmlab.yaml](../argo-cd/instances/homelab/values/core/ohmlab.yaml) | Bootstrap values for core ArgoCD + the root `manager` AppSet + the `admin-core` / `admin-tenant` AppProjects. |
 | [./argo-cd/apps/\<app\>/](../argo-cd/apps/)                                                                                  | Helm chart catalog (chart sources only — values live in the trees above).                                     |
 
 To enable or disable a service for an instance, edit the matching `core.yaml` or `tenant.yaml` and flip the `"enabled"` field on the relevant entry.
@@ -98,7 +98,7 @@ Per-app overrides supported in the JSON catalogues (all optional):
 | Field                | Default                                                  | Use case                                                                         |
 | -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | `chart`              | same as `app`                                            | Use a different chart directory under `argo-cd/apps/`.                           |
-| `chartPath`          | `argo-cd/apps/<chart>`                                   | Point at a chart **outside** `argo-cd/apps/` (e.g. self-managed `homelab-core`). |
+| `chartPath`          | `argo-cd/apps/<chart>`                                   | Point at a chart **outside** `argo-cd/apps/` (e.g. self-managed `ohmlab`). |
 | `releaseName`        | same as `app`                                            | Adopt an existing helm release for self-management.                              |
 | `namespace`          | `<prefix><app><suffix>`                                  | Pin to an explicit namespace (e.g. `argocd-system`).                             |
 | `destination.server` | `instance.yaml.destination.server`                       | Target a different cluster (multi-cluster).                                      |
@@ -150,12 +150,12 @@ kubectl config use-context homelab
 ./run.sh -b homelab
 ```
 
-This installs the `homelab-core` Helm release in the `argocd-system` namespace, which contains:
+This installs the `ohmlab` Helm release in the `argocd-system` namespace, which contains:
 - The **core ArgoCD** instance (engine; not user-facing).
 - The root `manager` ApplicationSet (discovers every instance under `argo-cd/instances/*`).
 - The `admin-core` and `admin-tenant` AppProjects.
 
-The root manager then renders one `instance-<name>` Application per discovered folder. That Application points at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart, which produces two child ApplicationSets (`core-<name>` and `tenant-<name>`). The first sync wave (-10) reconciles `homelab-core` itself onto the chart in git — the bootstrap release is then **self-managed**.
+The root manager then renders one `instance-<name>` Application per discovered folder. That Application points at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart, which produces two child ApplicationSets (`core-<name>` and `tenant-<name>`). The first sync wave (-10) reconciles `ohmlab` itself onto the chart in git — the bootstrap release is then **self-managed**.
 
 ```mermaid
 sequenceDiagram
@@ -165,7 +165,7 @@ sequenceDiagram
     participant Git as Git repo
     participant K8s as Kubernetes
     Op->>Helm: ./run.sh -b homelab
-    Helm->>K8s: install homelab-core release<br/>(ArgoCD + root manager AppSet + AppProjects)
+    Helm->>K8s: install ohmlab release<br/>(ArgoCD + root manager AppSet + AppProjects)
     Core->>Git: discover argo-cd/instances/*/
     loop For each instance folder
         Core->>K8s: render Application instance-<name><br/>(via instance-manager chart)
@@ -175,7 +175,7 @@ sequenceDiagram
         Core->>Git: read app chart and values
         Core->>K8s: apply Application (sync-wave order)
     end
-    Core->>Core: adopt homelab-core release<br/>(self-management)
+    Core->>Core: adopt ohmlab release<br/>(self-management)
 ```
 
 > __*Notes*__:
@@ -186,7 +186,7 @@ sequenceDiagram
 >
 > *Bootstrap admin password: pass `ARGOCD_ADMIN_PASSWORD=mypass ./run.sh -b homelab` to set it explicitly. Without this var, the ArgoCD chart auto-generates a password and stores it in `argocd-initial-admin-secret`; the script prints it at the end of the run.*
 >
-> *OIDC for the core ArgoCD is intentionally disabled at bootstrap. Enable it in [argo-cd/instances/homelab/values/core/homelab-core.yaml](../argo-cd/instances/homelab/values/core/homelab-core.yaml) once Keycloak is ready (uncomment the `oidc.config` block and provide the client secret out-of-band).*
+> *OIDC for the core ArgoCD is intentionally disabled at bootstrap. Enable it in [argo-cd/instances/homelab/values/core/ohmlab.yaml](../argo-cd/instances/homelab/values/core/ohmlab.yaml) once Keycloak is ready (uncomment the `oidc.config` block and provide the client secret out-of-band).*
 
 ## Destroy
 
@@ -289,7 +289,7 @@ flowchart TB
         runsh["./run.sh -b homelab"]
     end
 
-    subgraph bootstrap["Helm release: homelab-core (argocd-system)"]
+    subgraph bootstrap["Helm release: ohmlab (argocd-system)"]
         coreArgo["core ArgoCD"]
         projC["AppProject: admin-core"]
         projT["AppProject: admin-tenant"]
@@ -303,7 +303,7 @@ flowchart TB
     end
 
     subgraph apps["Leaf Applications"]
-        selfApp["homelab-core (self)"]
+        selfApp["ohmlab (self)"]
         coreApps["longhorn, cert-manager,<br/>vault-operator, keycloak,<br/>prometheus-stack, ..."]
         tenantApps["argo-cd (personal),<br/>gitea, mattermost,<br/>rustfs, teleport, ..."]
     end
@@ -338,7 +338,7 @@ Adding a new instance is purely declarative — just create a folder under [argo
 
 1. Create `argo-cd/instances/<name>/instance.yaml` (cluster destination, repos, project bindings).
 2. Create `argo-cd/instances/<name>/core.yaml` and/or `argo-cd/instances/<name>/tenant.yaml`.
-3. Create `argo-cd/instances/<name>/values/core/` and/or `argo-cd/instances/<name>/values/tenant/` with at least a `homelab-core.yaml` (under `core/`) for the self-managed bootstrap App when shipping core on that cluster.
+3. Create `argo-cd/instances/<name>/values/core/` and/or `argo-cd/instances/<name>/values/tenant/` with at least a `ohmlab.yaml` (under `core/`) for the self-managed bootstrap App when shipping core on that cluster.
 4. Bootstrap the **first** instance with `./run.sh -b <name>` against its target cluster; subsequent instances are then picked up automatically by the existing root manager.
 
 ### Topologies
@@ -424,7 +424,7 @@ Apps are reconciled in `syncWave` order. Default ordering for the homelab instan
 
 | Wave | Tier   | Apps                                                                          |
 | ---- | ------ | ----------------------------------------------------------------------------- |
-| -10  | core   | `homelab-core` (self)                                                         |
+| -10  | core   | `ohmlab` (self)                                                         |
 | 0    | core   | `longhorn`                                                                    |
 | 10   | core   | `cert-manager`, `ingress-nginx`, `vault-operator`                             |
 | 20   | core   | `cloudnative-pg`, `sops`, `vault`                                             |

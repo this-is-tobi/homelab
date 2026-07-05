@@ -26,9 +26,7 @@ ansible/secrets/
 **/tmpcharts*/
 
 # Helm secret local values
-homelab-utils/helm/secret-values.yaml
+**/secret-values.yaml
 
 # Local backup files
 backups/
-
-**/secret-values.yaml

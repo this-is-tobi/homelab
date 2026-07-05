@@ -24,10 +24,8 @@ projects:
 scopes:
   core:
     enabled: true
-    syncWaveBase: 0
   tenant:
     enabled: true
-    syncWaveBase: 100
 
 # Default namespace pattern for generated apps: "<prefix><app><suffix>".
 namespacePrefix: ""

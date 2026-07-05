@@ -1,6 +1,6 @@
 # Tenant (apps) tier app catalog for the `homelab` instance.
 # Slim list — only what is actually deployed.
-# Schema reference: ../_example/core.yaml
+# Schema reference: ../_example/tenant.yaml
 
 apps:
 - app: argo-cd
