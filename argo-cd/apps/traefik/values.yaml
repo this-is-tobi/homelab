@@ -1,6 +1,6 @@
 # Traefik v3 — hardened defaults for the ohmlab catalog.
 #
-# MIGRATION MODE (see docs/08-traefik-migration.md): the Service exposes
+# MIGRATION MODE (see .local/traefik-migration.md (local notes)): the Service exposes
 # 8080/8443 so klipper-lb can bind them on every node while APISIX still owns
 # host ports 80/443. The gateway HAProxy routes selected SNIs to node:8443.
 # At APISIX decommission, flip exposedPort to 80/443 (instance values) in the

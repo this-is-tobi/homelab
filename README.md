@@ -19,7 +19,6 @@ __Table of Contents__ *- md sources*:
 - [Services](./docs/05-services.md)
 - [Projects](./docs/06-projects.md)
 - [Cheat sheet](./docs/07-cheat-sheet.md)
-- [Traefik migration runbook](./docs/08-traefik-migration.md)
 
 ## Quickstart
 

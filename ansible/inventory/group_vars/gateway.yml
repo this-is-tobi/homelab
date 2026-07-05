@@ -5,7 +5,7 @@ haproxy:
   extraKubeAllowedIps: ""
   allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
-  # --- APISIX→Traefik migration routing (docs/08-traefik-migration.md) ---
+  # --- APISIX→Traefik migration routing (.local/traefik-migration.md (local notes)) ---
   # Uncomment per cutover step; unset = historical apisix-only routing.
   # ingressDefault: apisix       # backend for port 80 + unmatched SNIs (apisix|traefik)
   # traefikHttpPort: 8080        # traefik node port (HTTP) while apisix owns 80

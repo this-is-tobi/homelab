@@ -106,7 +106,7 @@ spec:
 # HTTP → HTTPS redirect (mirrors the APISIX gateway's redirect route; distinct
 # name to coexist in the same namespace). ACME HTTP-01 solver traffic is not
 # affected during migration: port 80 stays routed to APISIX until the final
-# cutover (see docs/08-traefik-migration.md).
+# cutover (see .local/traefik-migration.md (local notes)).
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:

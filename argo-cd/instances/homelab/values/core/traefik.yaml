@@ -1,6 +1,6 @@
 # Traefik instance overrides for `homelab`.
 #
-# MIGRATION MODE — coexisting with APISIX (docs/08-traefik-migration.md):
+# MIGRATION MODE — coexisting with APISIX (.local/traefik-migration.md (local notes)):
 # klipper-lb binds Service ports as host ports on every node, and APISIX
 # still owns 80/443, so traefik exposes 8080/8443. The gateway HAProxy
 # routes migrated SNIs to node:8443 (ansible: haproxy.traefikHosts).

@@ -5,7 +5,7 @@ version: 41.0.1
 appVersion: "v3.7.5"
 description: >-
   Traefik v3 edge router — standing replacement for APISIX as the cluster
-  ingress + Gateway API implementation (see docs/08-traefik-migration.md).
+  ingress + Gateway API implementation (see .local/traefik-migration.md (local notes)).
   Stateless: all config lives in the Kubernetes API, no external store,
   no admin API.
 dependencies:
