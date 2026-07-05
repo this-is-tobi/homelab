@@ -105,6 +105,9 @@ cnpg:
 
 vso:
   vaultStaticSecrets:
+    giteaValkeyAuth:
+      mount: homelab
+      path: platforms/production/tenant/gitea
     giteaAdmin:
       mount: homelab
       path: platforms/production/tenant/gitea
