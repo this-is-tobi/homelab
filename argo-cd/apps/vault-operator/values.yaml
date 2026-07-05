@@ -264,7 +264,9 @@ vault:
         ttl: 1h
       - name: sops
         bound_service_account_names: [vso]
-        bound_service_account_namespaces: [kube-system]
+        # The sops app deploys to its own `sops` namespace (catalog default =
+        # app name); this previously said kube-system, which 403'd every sync.
+        bound_service_account_namespaces: [sops]
         policies: [sops]
         ttl: 1h
       - name: crowdsec
