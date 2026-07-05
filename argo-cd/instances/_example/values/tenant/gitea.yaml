@@ -40,7 +40,25 @@ gitea:
     #     secretName: "gitea-app-ini-oauth"
     # - configMap:
     #     name: "gitea-app-ini-plaintext"
+    # ⚠ This list REPLACES (not merges with) the catalog default in
+    # argo-cd/apps/gitea/values.yaml — keep the valkey entries below or the
+    # cache/session/queue config silently falls back to 127.0.0.1:6379.
     additionalConfigFromEnvs:
+    - name: GITEA__CACHE__HOST
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: cache-host
+    - name: GITEA__SESSION__PROVIDER_CONFIG
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: session-config
+    - name: GITEA__QUEUE__CONN_STR
+      valueFrom:
+        secretKeyRef:
+          name: gitea-valkey-auth
+          key: queue-conn
     - name: GITEA__database__PASSWD
       valueFrom:
         secretKeyRef:
