@@ -9,7 +9,10 @@ argo-cd:
     secret:
       argocdServerAdminPassword: ""
     params:
-      server.insecure: true
+      # TLS end-to-end: argocd-server serves TLS itself (using the cert-manager
+      # issued `argocd-server-tls` secret); the ingress annotation below makes
+      # APISIX use https towards the upstream.
+      server.insecure: false
     rbac:
       policy.csv: |
         p, role:none, *, *, */*, deny
@@ -39,6 +42,13 @@ argo-cd:
     podDisruptionBudget:
       maxUnavailable: 1
   redis:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi
     metrics:
       enabled: true
       serviceMonitor:
@@ -333,6 +343,13 @@ argo-cd:
         enabled: true
   controller:
     replicas: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
     pdb:
       enabled: true
       maxUnavailable: 1
@@ -343,13 +360,20 @@ argo-cd:
   applicationSet:
     enabled: true
     replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     pdb:
       enabled: true
       maxUnavailable: 1
     ingress:
       enabled: true
       ingressClassName: apisix
-      hostname: appset.""
+      hostname: ""
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-dns-prod
       tls: true
@@ -363,6 +387,13 @@ argo-cd:
     autoscaling:
       enabled: false
       minReplicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
     pdb:
       enabled: true
       maxUnavailable: 1
@@ -376,11 +407,21 @@ argo-cd:
       hostname: ""
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-dns-prod
+        # argocd-server serves TLS (server.insecure: false) — connect upstream over https.
+        k8s.apisix.apache.org/upstream-scheme: https
       tls: true
   repoServer:
     autoscaling:
       enabled: false
       minReplicas: 1
+    # Also applied to the copyutil init container (chart default fallback).
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
     pdb:
       enabled: true
       maxUnavailable: 1

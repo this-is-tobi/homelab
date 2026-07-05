@@ -13,17 +13,11 @@
 # providing the clientSecret either inline (replaced manually) or via a
 # VaultStaticSecret applied out-of-band into argocd-system.
 
+# UI is exposed via the argocd-server Ingress (apisix) below — the previous
+# HTTPRoute duplicated the same hostname and targeted the plain-http port,
+# which no longer answers now that argocd-server serves TLS (server.insecure: false).
 gateway:
-  enabled: true
-  gatewayName: homelab-gateway
-  gatewayNamespace: kube-system
-  routes:
-  - name: argocd-core
-    hostnames:
-    - gitops.core.ohmlab.fr
-    rules:
-    - backendService: argocd-server
-      backendPort: 80
+  enabled: false
 
 rootManager:
   enabled: true
@@ -94,15 +88,16 @@ argo-cd:
     pdb:
       enabled: true
       maxUnavailable: 1
-    webhook:
-      ingress:
-        enabled: true
-        ingressClassName: apisix
-        hostname: gitops-appset.core.ohmlab.fr
-        annotations:
-          cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-        tls: true
-        extraTls: []
+    # NOTE: the chart key is `applicationSet.ingress` (NOT `.webhook.ingress`) —
+    # the old nesting silently rendered nothing.
+    ingress:
+      enabled: true
+      ingressClassName: apisix
+      hostname: gitops-appset.core.ohmlab.fr
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
+      tls: true
+      extraTls: []
   server:
     pdb:
       enabled: true
@@ -113,6 +108,8 @@ argo-cd:
       hostname: gitops.core.ohmlab.fr
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-dns-prod
+        # argocd-server serves TLS (server.insecure: false) — connect upstream over https.
+        k8s.apisix.apache.org/upstream-scheme: https
       tls: true
       extraTls: []
   crds:
