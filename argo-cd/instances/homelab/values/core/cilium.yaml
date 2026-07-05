@@ -1,5 +1,8 @@
+# PHASE 1: disabled — APISIX owns the Gateway API; cilium.gatewayAPI is off
+# (see argo-cd/apps/cilium/values.yaml header). Re-evaluate in phase 2 if
+# Cilium is ever promoted to gateway duty.
 gateway:
-  enabled: true
+  enabled: false
   name: homelab-gateway
   domain: ohmlab.fr
   clusterIssuer: letsencrypt-dns-prod

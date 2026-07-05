@@ -8,6 +8,12 @@ k3sFlanneliface: eth0
 k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
+# --- CNI selection ---
+# flannel (default): keep `--flannel-iface` below.
+# Cilium phase 1 (SSH-safe): replace the flannel flag with
+#   --flannel-backend=none --disable-network-policy
+# (keep kube-proxy — do NOT pass --disable-kube-proxy; see
+# argo-cd/apps/cilium/values.yaml for the full rationale).
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}  --node-ip={{ k3sNodeIP }}  --flannel-iface {{ k3sFlanneliface }}
 k3sExtraServerArgs: >-

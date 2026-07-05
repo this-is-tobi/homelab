@@ -1,0 +1,45 @@
+#!/bin/sh
+# Dead-man switch for the Cilium migration window.
+#
+# RPis have no out-of-band management: if BPF programs on the uplink ever
+# drop inbound SSH, the only recovery is physical access. This watchdog
+# detects loss of connectivity to the gateway and recovers automatically:
+#   1. after {{ cilium_watchdog_detach_after | default(9) }} consecutive failed checks (~3 min): detach XDP/TC BPF
+#      from the uplink so the kernel stack takes over again;
+#   2. after {{ cilium_watchdog_reboot_after | default(15) }} consecutive failed checks (~5 min): reboot the node
+#      (clears all BPF state; K3s/Cilium re-attach cleanly on boot).
+#
+# Remove after the migration is validated:
+#   systemctl disable --now cilium-watchdog
+#
+# NOTE: full binary paths on purpose — systemd units do not inherit a user
+# PATH, and a bare `tc` silently failed on some nodes during the last attempt.
+
+GATEWAY_IP="{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
+IFACE="{{ cilium_watchdog_iface | default('eth0') }}"
+
+TC=/usr/sbin/tc; [ -x "$TC" ] || TC=/sbin/tc
+IP=/usr/sbin/ip; [ -x "$IP" ] || IP=/sbin/ip
+
+fails=0
+while true; do
+  if /bin/ping -c1 -W2 "$GATEWAY_IP" >/dev/null 2>&1; then
+    fails=0
+  else
+    fails=$((fails + 1))
+    /usr/bin/logger -t cilium-watchdog "gateway $GATEWAY_IP unreachable ($fails)"
+  fi
+
+  if [ "$fails" -eq {{ cilium_watchdog_detach_after | default(9) }} ]; then
+    /usr/bin/logger -t cilium-watchdog "detaching BPF from $IFACE"
+    "$IP" link set dev "$IFACE" xdp off 2>/dev/null || true
+    "$TC" qdisc del dev "$IFACE" clsact 2>/dev/null || true
+  fi
+
+  if [ "$fails" -ge {{ cilium_watchdog_reboot_after | default(15) }} ]; then
+    /usr/bin/logger -t cilium-watchdog "still unreachable — rebooting"
+    /usr/bin/systemctl reboot
+  fi
+
+  sleep 20
+done

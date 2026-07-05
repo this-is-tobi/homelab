@@ -1,12 +1,51 @@
+# Cilium-implemented Gateway API Gateway (templates/gateway.yaml).
+# OFF in phase 1: APISIX owns the Gateway API on this cluster and
+# cilium.gatewayAPI is disabled below.
+gateway:
+  enabled: false
+  name: ""
+  domain: ""
+  clusterIssuer: letsencrypt-dns-prod
+  dnsClusterIssuer: letsencrypt-dns-prod
+  wildcardTlsSecret: gateway-wildcard-tls
+  apexTlsSecret: gateway-wildcard-tls
+  extraListeners: []
+  tlsPassthroughListeners: []
+
 cilium:
   # ==========================================================================
-  # CILIUM — Primary CNI (flannel fully replaced)
+  # CILIUM — PHASE 1: SSH-safe configuration (no BPF on physical interfaces)
   # ==========================================================================
-  # K3s is configured with:
-  #   --flannel-backend=none --disable-network-policy --disable-kube-proxy
+  # Post-mortem of the May 2026 lockout (docs/cilium-migration-investigation):
+  # the previous config combined kubeProxyReplacement + devices=eth0 +
+  # bpf.masquerade. In that mode Cilium MUST attach TC programs to eth0 for
+  # NodePort/masquerade — `bpf.hostLegacyRouting: true` does NOT prevent that
+  # (it only routes host-originated egress through the kernel stack). During
+  # agent restarts those eth0 programs go stale and drop inbound SSH — fatal
+  # on RPis with no out-of-band access.
   #
-  # Cilium provides: CNI, kube-proxy replacement, NetworkPolicy, Hubble.
-  # Envoy/Gateway API disabled until kernel upgrade (CONFIG_ARM64_VA_BITS=52).
+  # Phase 1 therefore removes every eth0 attachment point:
+  #   - kubeProxyReplacement: false  → K3s keeps kube-proxy for Services.
+  #     K3s flags: --flannel-backend=none --disable-network-policy
+  #     (do NOT pass --disable-kube-proxy).
+  #   - tunnel/vxlan routing         → same datapath model as flannel, no
+  #     direct route manipulation on the uplink.
+  #   - bpf.masquerade: false        → iptables masquerade.
+  #   - no `devices`, no socketLB, no bandwidthManager, no hostFirewall,
+  #     no nodeinit.
+  # BPF then only attaches to Cilium-owned virtual devices (lxc*, cilium_host,
+  # cilium_vxlan): an agent crash degrades pod networking at worst — SSH,
+  # kubelet and etcd traffic never crosses a Cilium BPF program.
+  #
+  # ACCEPTANCE GATE after every rollout, on EVERY node:
+  #   tc filter show dev eth0 ingress   → must be empty
+  #   tc filter show dev eth0 egress    → must be empty
+  #   ip link show dev eth0             → no "xdp" section
+  #
+  # PHASE 2 (optional, later): flip kubeProxyReplacement + native routing +
+  # bpf.masquerade node-by-node behind the cilium-watchdog dead-man switch
+  # (ansible k3s/prereq role) and a canary worker. Expect eth0 TC programs —
+  # that is the accepted trade-off of KPR.
   # ==========================================================================
 
   # --- CNI paths ---
@@ -17,25 +56,19 @@ cilium:
     confPath: /etc/cni/net.d
     exclusive: true
 
-  # --- Kube-proxy replacement ---
-  # Cilium replaces kube-proxy entirely (K3s started with --disable-kube-proxy)
-  kubeProxyReplacement: true
+  # --- Kube-proxy coexistence (PHASE 1) ---
+  # kube-proxy stays in charge of Services; Cilium only does CNI + policy.
+  kubeProxyReplacement: false
+  # Direct API access via the HAProxy VIP — avoids depending on kube-proxy
+  # for the agent's own control-plane connectivity.
   k8sServiceHost: 192.168.1.99
   k8sServicePort: 6443
 
-  # --- Device selection ---
-  # Explicitly target eth0 — avoids auto-detection edge cases on RPi.
-  devices: eth0
-
-  # --- Routing ---
-  # Native routing — Cilium installs direct node routes for pod CIDRs.
-  # No VXLAN/Geneve overlay — direct L2 path between RPi nodes on same subnet.
-  routingMode: native
-  autoDirectNodeRoutes: true
-  ipv4NativeRoutingCIDR: 10.42.0.0/16
+  # --- Routing: vxlan overlay (same model as flannel) ---
+  routingMode: tunnel
+  tunnelProtocol: vxlan
 
   # --- IPAM ---
-  # Use the existing K3s pod CIDR — Cilium takes over IP allocation.
   ipam:
     operator:
       clusterPoolIPv4PodCIDRList:
@@ -50,13 +83,11 @@ cilium:
 
   # --- BPF settings ---
   bpf:
-    masquerade: true
+    # iptables masquerade — BPF masquerade would attach to the uplink.
+    masquerade: false
     # Host-generated traffic (SSH, node-exporter, kubelet, etc.) uses the
-    # regular kernel network stack instead of the BPF datapath.  This prevents
-    # Cilium from ever blocking out-of-band management access to the nodes.
+    # regular kernel network stack instead of the BPF datapath.
     hostLegacyRouting: true
-    # Kernel 6.12 supports tproxy for L7 without envoy fallback
-    tproxy: true
 
   enableIPv4Masquerade: true
   enableIPv6Masquerade: false
@@ -64,24 +95,36 @@ cilium:
     enabled: false
 
   # --- WireGuard encryption ---
+  # Candidate for phase 2: node-to-node encryption without sidecars
+  # (`encryption.enabled: true, type: wireguard`) — no eth0 TC involved.
   encryption:
     enabled: false
 
-  # --- Gateway API ---
-  # Requires envoy + Debian arm64 kernel (CONFIG_ARM64_VA_BITS=52)
-  # Kernel upgraded via: ansible-playbook install.yml --tags kernel-upgrade
+  # --- Gateway API / L7 ---
+  # APISIX owns the Gateway API implementation on this cluster. Cilium's
+  # gateway/envoy/l7 stack stays off in phase 1 (fewer moving parts).
   gatewayAPI:
-    enabled: true
-
-  # --- Envoy (standalone DaemonSet) ---
-  # Requires Debian arm64 kernel (CONFIG_ARM64_VA_BITS=52) for tcmalloc
-  # Kernel upgraded via: ansible-playbook install.yml --tags kernel-upgrade
+    enabled: false
   envoy:
-    enabled: true
+    enabled: false
+  l7Proxy: false
 
-  # --- L7 proxy ---
-  # Enabled — envoy is available after kernel upgrade
-  l7Proxy: true
+  # --- Socket LB ---
+  # Off — only required for kube-proxy replacement (phase 2). cgroup BPF
+  # hooks are another stale-state source during rollouts.
+  socketLB:
+    enabled: false
+
+  # --- Node init ---
+  # GKE/kops helper DaemonSet — unnecessary on K3s and touches host state.
+  nodeinit:
+    enabled: false
+
+  # --- Bandwidth manager ---
+  # NEVER enable on this cluster: attaches TC BPF to eth0 (see header).
+  bandwidthManager:
+    enabled: false
+    bbr: false
 
   # --- Operator ---
   operator:
@@ -130,7 +173,6 @@ cilium:
       - tcp
       - flow
       - icmp
-      - httpV2:exemplars=true;labelsContext=source_ip,source_namespace,source_workload,destination_ip,destination_namespace,destination_workload,traffic_direction
       serviceMonitor:
         enabled: true
     tls:
@@ -170,27 +212,3 @@ cilium:
     serviceMonitor:
       enabled: true
       trustCRDsExist: true
-
-  # --- Node init ---
-  nodeinit:
-    enabled: true
-
-  # --- Socket LB ---
-  # Accelerates service routing by intercepting at socket level (cgroup BPF).
-  # hostNamespaceOnly: only intercept in host netns — avoids stale reverse
-  # SK map entries and pod-level side effects (see Cilium GH#42649).
-  socketLB:
-    enabled: true
-    hostNamespaceOnly: true
-
-  # --- Bandwidth manager ---
-  # DISABLED — bandwidthManager attaches TC BPF programs to the node's
-  # physical interface (eth0).  During DaemonSet rollouts the old agent exits
-  # but those TC programs persist as stale BPF that drops all TCP traffic
-  # (SSH, etcd, K3s API) until the new agent re-attaches.  On a 9-node RPi
-  # cluster this consistently causes SSH lockouts and etcd quorum loss.
-  # Re-enable only after confirming rollout-safe behavior in a future Cilium
-  # version.
-  bandwidthManager:
-    enabled: false
-    bbr: false
