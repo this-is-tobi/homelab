@@ -6,12 +6,22 @@ haproxy:
   allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
   # --- APISIX→Traefik migration routing (.local/traefik-migration.md (local notes)) ---
-  # Uncomment per cutover step; unset = historical apisix-only routing.
-  # ingressDefault: apisix       # backend for port 80 + unmatched SNIs (apisix|traefik)
-  # traefikHttpPort: 8080        # traefik node port (HTTP) while apisix owns 80
-  # traefikHttpsPort: 8443       # traefik node port (TLS) while apisix owns 443
-  # traefikHosts: []             # exact SNIs routed to traefik, e.g. [git.ohmlab.fr]
-  # traefikHostSuffixes: []      # SNI suffixes for wildcards, e.g. [.teleport.core.ohmlab.fr]
+  # Round 1 (2026-07-17): verified hostnames on the traefik path (node:8443).
+  # git.ohmlab.fr and s3.ohmlab.fr were already dead on apisix (etcd down) —
+  # traefik serving them is a strict improvement.
+  # Held back: sso.core + teleport (round 2, highest stakes), vault.core
+  # (needs HTTPS-upstream BackendTLSPolicy), monitoring (sync pending),
+  # gitops UIs (ServersTransport cutover).
+  ingressDefault: apisix         # port 80 + unmatched SNIs stay on apisix
+  traefikHttpPort: 8080
+  traefikHttpsPort: 8443
+  traefikHosts:
+  - ohmlab.fr
+  - git.ohmlab.fr
+  - mattermost.ohmlab.fr
+  - console.s3.ohmlab.fr
+  - s3.ohmlab.fr
+  traefikHostSuffixes: []
 pihole:
   enabled: true
   version: 2026.04.1

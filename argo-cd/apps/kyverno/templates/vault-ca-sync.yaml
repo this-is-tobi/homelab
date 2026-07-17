@@ -50,3 +50,29 @@ spec:
         type: Opaque
         data:
           ca.crt: "{{`{{caCrt}}`}}"
+  # BackendTLSPolicy (Gateway API) only accepts ConfigMap CA refs with a
+  # plain-text ca.crt — generate one next to the vault Service for the
+  # traefik HTTPS-upstream validation (vault-operator templates reference it).
+  - name: sync-vault-ca-configmap
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          names:
+          - vault-operator-system
+    context:
+    - name: caCrt
+      apiCall:
+        urlPath: /api/v1/namespaces/vault-operator-system/secrets/vault-tls
+        jmesPath: "data.\"ca.crt\""
+    generate:
+      generateExisting: true
+      synchronize: true
+      apiVersion: v1
+      kind: ConfigMap
+      name: vault-ca
+      namespace: vault-operator-system
+      data:
+        data:
+          ca.crt: "{{`{{caCrt | base64_decode(@)}}`}}"

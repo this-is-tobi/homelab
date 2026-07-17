@@ -360,7 +360,7 @@ bootstrap_instance() {
     if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
       log "Gateway API CRDs (experimental channel) not found — installing..."
       kubectl apply --server-side -f \
-        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml 2>/dev/null
+        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml 2>/dev/null
       kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
     fi
 
@@ -384,7 +384,7 @@ bootstrap_instance() {
   if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
     log "Gateway API CRDs (experimental channel) not found — installing..."
     kubectl apply --server-side -f \
-      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml 2>/dev/null
+      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml 2>/dev/null
     kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
   fi
 

@@ -6,6 +6,9 @@ gateway:
   # migration): [{name, namespace?}] — sectionName is reused from the route.
   extraParentRefs: []
   routes: []
+  # BackendTLSPolicy so Gateway-API controllers connect to vault over TLS
+  # (see templates/backendtlspolicy.yaml). Requires Gateway API ≥v1.6 CRDs.
+  backendTLS: false
 
 # Bank Vaults Operator Configuration
 vault-operator:

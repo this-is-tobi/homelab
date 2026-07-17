@@ -5,6 +5,9 @@ gateway:
   # Traefik migration: dual-attach; HAProxy decides which controller serves.
   extraParentRefs:
   - name: homelab-gateway-traefik
+  # Vault serves TLS on 8200 — traefik validates it via BackendTLSPolicy
+  # against the kyverno-generated vault-ca ConfigMap.
+  backendTLS: true
   routes:
   - name: vault
     hostnames:
