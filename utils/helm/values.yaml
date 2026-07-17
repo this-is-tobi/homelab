@@ -2,7 +2,14 @@ gateway:
   enabled: false
   gatewayName: ""
   gatewayNamespace: ""
+  # Extra gateways to also attach routes to (e.g. during the APISIX→Traefik
+  # migration): [{name, namespace?}] — sectionName is reused from the route.
+  extraParentRefs: []
   routes: []
+  # BackendTLSPolicy entries for TLS-serving backends (templates/
+  # backendtlspolicy.yaml): [{name, serviceName, hostname, caConfigMap? |
+  # wellKnownCACertificates?}]. Requires Gateway API ≥v1.6 CRDs.
+  backendTLSPolicies: []
 
 argo-cd:
   # -- Enable ArgoCD core deployment

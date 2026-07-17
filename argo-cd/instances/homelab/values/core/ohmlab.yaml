@@ -13,11 +13,35 @@
 # providing the clientSecret either inline (replaced manually) or via a
 # VaultStaticSecret applied out-of-band into argocd-system.
 
-# UI is exposed via the argocd-server Ingress (apisix) below — the previous
-# HTTPRoute duplicated the same hostname and targeted the plain-http port,
-# which no longer answers now that argocd-server serves TLS (server.insecure: false).
+# UI is exposed via the argocd-server Ingress on the APISIX path.
+# Traefik migration: HTTPRoutes attach to the traefik gateway ONLY
+# (primary = homelab-gateway-traefik) — argocd-server serves TLS on 443,
+# which traefik validates via BackendTLSPolicy (argocd-server-tls is the
+# cert-manager LE cert); APISIX keeps the annotated Ingress. HAProxy
+# decides which controller receives gitops.core.ohmlab.fr traffic.
 gateway:
-  enabled: false
+  enabled: true
+  gatewayName: homelab-gateway-traefik
+  gatewayNamespace: kube-system
+  backendTLSPolicies:
+  - name: argocd-server
+    serviceName: argocd-server
+    hostname: gitops.core.ohmlab.fr
+  routes:
+  - name: argocd-server
+    listener: https-wildcard-core
+    hostnames:
+    - gitops.core.ohmlab.fr
+    rules:
+    - backendService: argocd-server
+      backendPort: 443
+  - name: argocd-appset-webhook
+    listener: https-wildcard-core
+    hostnames:
+    - gitops-appset.core.ohmlab.fr
+    rules:
+    - backendService: argocd-applicationset-controller
+      backendPort: 7000
 
 rootManager:
   enabled: true

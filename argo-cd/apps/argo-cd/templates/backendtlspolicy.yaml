@@ -1,0 +1,29 @@
+{{- if .Values.gateway.enabled }}
+{{- range .Values.gateway.backendTLSPolicies }}
+---
+# Gateway API HTTPS-upstream validation: the target Service serves TLS, so
+# Gateway-API controllers (traefik) must connect with TLS and verify the
+# backend certificate. argocd-server serves the cert-manager-issued cert
+# from the argocd-server-tls secret, so a well-known (public) CA validates.
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: {{ .name }}
+spec:
+  targetRefs:
+  - group: ""
+    kind: Service
+    name: {{ .serviceName }}
+  validation:
+    {{- if .caConfigMap }}
+    caCertificateRefs:
+    - group: ""
+      kind: ConfigMap
+      name: {{ .caConfigMap }}
+    {{- else }}
+    wellKnownCACertificates: {{ .wellKnownCACertificates | default "System" }}
+    {{- end }}
+    # SNI sent to and validated against the backend certificate.
+    hostname: {{ .hostname }}
+{{- end }}
+{{- end }}
