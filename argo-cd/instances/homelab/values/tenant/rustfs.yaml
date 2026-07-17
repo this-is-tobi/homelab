@@ -86,4 +86,4 @@ vso:
       path: platforms/production/tenant/rustfs
     rustfsOidc:
       mount: homelab
-      path: platforms/production/core/keycloak
+      path: platforms/production/tenant/rustfs
