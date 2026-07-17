@@ -6,12 +6,11 @@ haproxy:
   allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
   # --- APISIX→Traefik migration routing (.local/traefik-migration.md (local notes)) ---
-  # Round 1 (2026-07-17): verified hostnames on the traefik path (node:8443).
-  # git.ohmlab.fr and s3.ohmlab.fr were already dead on apisix (etcd down) —
-  # traefik serving them is a strict improvement.
-  # Held back: sso.core + teleport (round 2, highest stakes), vault.core
-  # (needs HTTPS-upstream BackendTLSPolicy), monitoring (sync pending),
-  # gitops UIs (ServersTransport cutover).
+  # 2026-07-18: every hostname below is verified on the traefik path
+  # (node:8443). APISIX's frozen data plane no longer sees pod restarts:
+  # git/s3 (dead), sso.core (502 since keycloak restarted), gitops.ohmlab.fr
+  # (502 since its pods restarted Jul 8) — traefik is the working path.
+  # Still on apisix: monitoring.ohmlab.fr only (route dual-attach syncing).
   ingressDefault: apisix         # port 80 + unmatched SNIs stay on apisix
   traefikHttpPort: 8080
   traefikHttpsPort: 8443
@@ -23,7 +22,19 @@ haproxy:
     - s3.ohmlab.fr
     # vault: BackendTLSPolicy-verified upstream, 307 on the traefik path.
     - vault.core.ohmlab.fr
-  traefikHostSuffixes: []
+    # sso: 302 via traefik; 502 via apisix (stale keycloak endpoint).
+    - sso.core.ohmlab.fr
+    # gitops UIs: BackendTLSPolicy-verified TLS upstream (LE cert, System
+    # CAs); the tenant UI was 502 via apisix.
+    - gitops.ohmlab.fr
+    - appset.gitops.ohmlab.fr
+    - gitops.core.ohmlab.fr
+    - gitops-appset.core.ohmlab.fr
+    # teleport TLS passthrough (apex + wildcard below): teleport's own cert
+    # verified end-to-end via traefik.
+    - teleport.core.ohmlab.fr
+  traefikHostSuffixes:
+    - .teleport.core.ohmlab.fr
 pihole:
   enabled: true
   version: 2026.04.1
