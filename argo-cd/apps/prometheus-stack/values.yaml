@@ -12,6 +12,12 @@ kube-prometheus-stack:
     upgradeJob:
       enabled: true
       forceConflicts: true
+      # The chart defaults the busybox init image to :latest, which the
+      # Enforce'd disallow-latest-tag policy rejects (it failed the whole
+      # app sync). Pin it.
+      image:
+        busybox:
+          tag: "1.37.0"
   prometheusOperator:
     resources:
       requests:
