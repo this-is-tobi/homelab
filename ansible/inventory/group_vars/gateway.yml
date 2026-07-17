@@ -16,11 +16,13 @@ haproxy:
   traefikHttpPort: 8080
   traefikHttpsPort: 8443
   traefikHosts:
-  - ohmlab.fr
-  - git.ohmlab.fr
-  - mattermost.ohmlab.fr
-  - console.s3.ohmlab.fr
-  - s3.ohmlab.fr
+    - ohmlab.fr
+    - git.ohmlab.fr
+    - mattermost.ohmlab.fr
+    - console.s3.ohmlab.fr
+    - s3.ohmlab.fr
+    # vault: BackendTLSPolicy-verified upstream, 307 on the traefik path.
+    - vault.core.ohmlab.fr
   traefikHostSuffixes: []
 pihole:
   enabled: true
