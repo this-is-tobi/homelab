@@ -2,6 +2,9 @@ gateway:
   enabled: true
   gatewayName: homelab-gateway
   gatewayNamespace: kube-system
+  # Traefik migration: dual-attach; HAProxy decides which controller serves.
+  extraParentRefs:
+  - name: homelab-gateway-traefik
   routes:
   - name: mattermost
     hostnames:
