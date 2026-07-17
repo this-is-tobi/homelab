@@ -102,3 +102,11 @@ apps:
     name: crowdsec-lapi-secrets
     jqPathExpressions:
     - .data
+  # The chart re-randomizes the secret on every render, so the deployment's
+  # checksum/lapi-secret pod-template annotation never converges (permanent
+  # OutOfSync noise even though every sync succeeds).
+  - group: apps
+    kind: Deployment
+    name: crowdsec-lapi
+    jqPathExpressions:
+    - .spec.template.metadata.annotations["checksum/lapi-secret"]
