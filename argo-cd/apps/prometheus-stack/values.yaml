@@ -56,13 +56,17 @@ kube-prometheus-stack:
           memory: 256Mi
   prometheus:
     prometheusSpec:
+      # 2Gi proved too small for this scrape load (9 nodes + kube-state +
+      # full operator stack): the head hit the limit after ~6h and the pod
+      # OOM-looped, paying a multi-minute WAL replay per restart. Keep the
+      # limit comfortably above steady-state head size.
       resources:
         requests:
           cpu: 500m
-          memory: 1Gi
+          memory: 1536Mi
         limits:
-          cpu: 1500m
-          memory: 2Gi
+          cpu: 2000m
+          memory: 3Gi
       scrapeConfigSelector:
         matchLabels: {}
       ruleSelector:
@@ -74,6 +78,9 @@ kube-prometheus-stack:
       podMonitorSelector:
         matchLabels: {}
       retention: 30d
+      # Disk guard: whichever of retention/retentionSize is hit first wins.
+      # Sized for the default 100Gi PVC — override alongside storage.
+      retentionSize: 90GB
       storageSpec:
         volumeClaimTemplate:
           spec:
