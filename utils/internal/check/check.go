@@ -114,12 +114,27 @@ func checkVaultStaticSecrets(c *k8s.Client) (string, []string, error) {
 	}
 	var problems []string
 	for _, s := range list.Items {
+		// VSO ≥1.4 reports health via the Ready condition and only touches
+		// the legacy SecretSynced condition on data changes — stale
+		// SecretSynced=False entries survive upgrades. Prefer Ready and
+		// fall back to SecretSynced only when Ready is absent (older VSO).
+		var ready, synced map[string]any
 		for _, cond := range conditions(s.Status) {
-			if cond["type"] == "SecretSynced" && cond["status"] != "True" {
-				msg, _ := cond["message"].(string)
-				problems = append(problems, fmt.Sprintf("%s/%s: %s",
-					s.Metadata.Namespace, s.Metadata.Name, errorLine(msg)))
+			switch cond["type"] {
+			case "Ready":
+				ready = cond
+			case "SecretSynced":
+				synced = cond
 			}
+		}
+		effective := ready
+		if effective == nil {
+			effective = synced
+		}
+		if effective != nil && effective["status"] != "True" {
+			msg, _ := effective["message"].(string)
+			problems = append(problems, fmt.Sprintf("%s/%s: %s",
+				s.Metadata.Namespace, s.Metadata.Name, errorLine(msg)))
 		}
 	}
 	return fmt.Sprintf("%d VaultStaticSecrets, %d failing to sync", len(list.Items), len(problems)), problems, nil
