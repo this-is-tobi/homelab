@@ -2,6 +2,10 @@ gateway:
   enabled: true
   gatewayName: homelab-gateway
   gatewayNamespace: kube-system
+  # Traefik migration: attach every route to both gateways; the gateway
+  # HAProxy decides which controller receives traffic (haproxy.traefikHosts).
+  extraParentRefs:
+  - name: homelab-gateway-traefik
   routes:
   - name: grafana
     hostnames:
@@ -15,6 +19,8 @@ kube-prometheus-stack:
     prometheusSpec:
       minReadySeconds: 1800
       maximumStartupDurationSeconds: 1800
+      # Matches the 200Gi PVC below (app default is 90GB for 100Gi).
+      retentionSize: 180GB
       storageSpec:
         volumeClaimTemplate:
           spec:
