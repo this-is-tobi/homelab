@@ -1,0 +1,7 @@
+---
+# The config is a read-only bind mount: writing haproxy.cfg on disk does
+# nothing until the master process reloads. SIGHUP triggers a seamless
+# reload (master-worker mode) without dropping existing connections.
+- name: Reload haproxy
+  ansible.builtin.command: docker kill --signal HUP haproxy
+  changed_when: true
