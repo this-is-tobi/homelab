@@ -52,7 +52,33 @@ kube-prometheus-stack:
         cpu: 200m
         memory: 128Mi
   alertmanager:
+    # Route alerts to Mattermost (Slack-compatible incoming webhook). The
+    # webhook URL comes from Vault via the alertmanagerMattermost VSS and is
+    # read per-notification, so it can be rotated without a restart.
+    config:
+      global:
+        resolve_timeout: 5m
+        slack_api_url_file: /etc/alertmanager/secrets/alertmanager-mattermost/webhookUrl
+      route:
+        group_by: ["namespace", "alertname"]
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 12h
+        receiver: mattermost
+        routes:
+        # Watchdog fires permanently by design (dead-man's switch) — drop it.
+        - receiver: "null"
+          matchers:
+          - alertname = "Watchdog"
+      receivers:
+      - name: "null"
+      - name: mattermost
+        slack_configs:
+        - channel: "alerts"
+          send_resolved: true
     alertmanagerSpec:
+      secrets:
+      - alertmanager-mattermost
       resources:
         requests:
           cpu: 25m
@@ -205,3 +231,20 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             OIDC_CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+    alertmanagerMattermost:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: prometheus-stack-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: alertmanager-mattermost
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            webhookUrl:
+              text: '{{ get .Secrets "alertmanager" | dig "mattermostWebhookUrl" "" }}'
