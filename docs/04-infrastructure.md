@@ -54,7 +54,7 @@ The cluster runs [k3s](https://k3s.io) (lightweight Kubernetes) with the followi
 - **3 master nodes** — control plane, fronted by HAProxy on port 6443 for HA.
 - **n worker nodes** — application workloads. Workers tagged `additional_disk: true` in [inventory/hosts.yml](../ansible/inventory-example/hosts.yml) are enrolled into Longhorn for distributed block storage.
 
-The integrated [klipper-lb](https://github.com/k3s-io/klipper-lb) load balancer is used; the bundled Traefik ingress controller is disabled at install time and the ingress controller is deployed via GitOps instead (currently APISIX, migrating to a GitOps-managed Traefik v3). klipper-lb binds each LoadBalancer Service's ports as host ports on every node, which is why only one controller can own 80/443 and the migration cuts hostnames over at the gateway HAProxy via SNI.
+The integrated [klipper-lb](https://github.com/k3s-io/klipper-lb) load balancer is used; the K3s-bundled Traefik is disabled at install time and a GitOps-managed [Traefik v3](https://doc.traefik.io/traefik/) is deployed instead as the ingress controller and Gateway API implementation. klipper-lb binds each LoadBalancer Service's ports as host ports on every node; the gateway HAProxy forwards public 80/443 onto them.
 
 [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed cluster-wide to perform automatic K3s upgrades through two plans (one for masters, one for workers).
 

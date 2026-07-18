@@ -13,12 +13,10 @@
 # providing the clientSecret either inline (replaced manually) or via a
 # VaultStaticSecret applied out-of-band into argocd-system.
 
-# UI is exposed via the argocd-server Ingress on the APISIX path.
-# Traefik migration: HTTPRoutes attach to the traefik gateway ONLY
-# (primary = homelab-gateway-traefik) — argocd-server serves TLS on 443,
-# which traefik validates via BackendTLSPolicy (argocd-server-tls is the
-# cert-manager LE cert); APISIX keeps the annotated Ingress. HAProxy
-# decides which controller receives gitops.core.ohmlab.fr traffic.
+# UI + appset webhook are exposed via HTTPRoutes on the traefik gateway.
+# argocd-server serves TLS on 443 (cert-manager LE cert, argocd-server-tls
+# via the chart's certificate integration) — traefik validates it with the
+# BackendTLSPolicy below.
 gateway:
   enabled: true
   gatewayName: homelab-gateway-traefik
@@ -112,30 +110,22 @@ argo-cd:
     pdb:
       enabled: true
       maxUnavailable: 1
-    # NOTE: the chart key is `applicationSet.ingress` (NOT `.webhook.ingress`) —
-    # the old nesting silently rendered nothing.
+    # Webhook exposed via HTTPRoute (gateway wildcard TLS) — no Ingress.
     ingress:
-      enabled: true
-      ingressClassName: apisix
-      hostname: gitops-appset.core.ohmlab.fr
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-      tls: true
-      extraTls: []
+      enabled: false
   server:
     pdb:
       enabled: true
       maxUnavailable: 1
     ingress:
+      enabled: false
+    certificate:
       enabled: true
-      ingressClassName: apisix
-      hostname: gitops.core.ohmlab.fr
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-        # argocd-server serves TLS (server.insecure: false) — connect upstream over https.
-        k8s.apisix.apache.org/upstream-scheme: https
-      tls: true
-      extraTls: []
+      domain: gitops.core.ohmlab.fr
+      issuer:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: letsencrypt-dns-prod
   crds:
     install: true
     keep: true

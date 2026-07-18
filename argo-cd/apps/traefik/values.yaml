@@ -1,10 +1,8 @@
 # Traefik v3 — hardened defaults for the ohmlab catalog.
 #
-# MIGRATION MODE (see .local/traefik-migration.md (local notes)): the Service exposes
-# 8080/8443 so klipper-lb can bind them on every node while APISIX still owns
-# host ports 80/443. The gateway HAProxy routes selected SNIs to node:8443.
-# At APISIX decommission, flip exposedPort to 80/443 (instance values) in the
-# same change as the HAProxy backend port swap.
+# klipper-lb binds the LoadBalancer Service ports as host ports on every
+# node; the gateway HAProxy forwards public traffic to them. Keep the
+# exposedPorts in sync with the HAProxy port vars (ansible gateway.yml).
 traefik:
   deployment:
     replicas: 2
@@ -43,8 +41,7 @@ traefik:
       experimentalChannel: true
 
   # The chart's own Gateway/GatewayClass are replaced by templates/gateway.yaml
-  # (multi-listener wildcard setup mirroring the APISIX gateway's listener
-  # names, so routes can attach to both gateways during the migration).
+  # (multi-listener wildcard setup with TLS-passthrough support).
   gateway:
     enabled: false
   gatewayClass:
@@ -102,8 +99,6 @@ traefik:
   # kyverno pod-security-baseline / require-non-root policies.
 
 # Gateway API resources rendered by templates/gateway.yaml.
-# Listener NAMES mirror the APISIX homelab-gateway so app routes can attach to
-# both gateways with the same sectionName during the per-hostname migration.
 gateway:
   enabled: false
   name: homelab-gateway-traefik
@@ -112,10 +107,8 @@ gateway:
   # Must match the traefik entryPoint container ports above.
   httpPort: 8000
   httpsPort: 8443
-  # TLS secret shared with the APISIX gateway (same namespace). The
-  # cert-manager Certificate stays owned by the apisix app while both
-  # gateways coexist — set manageCertificate=true only after the apisix app
-  # is decommissioned.
+  # Wildcard TLS secret used by the HTTPS listeners; manageCertificate
+  # controls whether this app renders the cert-manager Certificate for it.
   wildcardTlsSecret: gateway-wildcard-tls
   apexTlsSecret: gateway-wildcard-tls
   manageCertificate: false

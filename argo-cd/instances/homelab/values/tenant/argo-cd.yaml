@@ -4,13 +4,10 @@
 # Provided as a sandbox for ad-hoc deployments via the ArgoCD UI.
 # All credentials come from Vault via VSO (vso-utils subchart in this chart).
 
-# UI and appset webhook are exposed via Ingress on the APISIX path.
-# Traefik migration: HTTPRoutes attach to the traefik gateway ONLY
-# (primary = homelab-gateway-traefik, no extraParentRefs) — argocd-server
-# serves TLS on 443, which traefik validates via BackendTLSPolicy
-# (argocd-server-tls is the cert-manager LE cert), while APISIX cannot do
-# HTTPS upstreams over Gateway API and keeps using the annotated Ingress.
-# HAProxy decides which controller receives gitops.ohmlab.fr traffic.
+# UI + appset webhook are exposed via HTTPRoutes on the traefik gateway.
+# argocd-server serves TLS on 443 (cert-manager LE cert, argocd-server-tls
+# via the chart's certificate integration) — traefik validates it with the
+# BackendTLSPolicy below.
 gateway:
   enabled: true
   gatewayName: homelab-gateway-traefik
@@ -70,12 +67,9 @@ argo-cd:
       service.mattermost: |
         apiURL: "https://mattermost.ohmlab.fr"
         token: $mattermost-token
-  applicationSet:
-    ingress:
-      hostname: appset.gitops.ohmlab.fr
   server:
-    ingress:
-      hostname: gitops.ohmlab.fr
+    certificate:
+      domain: gitops.ohmlab.fr
   crds:
     install: false
     keep: true

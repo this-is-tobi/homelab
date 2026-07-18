@@ -60,15 +60,8 @@ crowdsec:
   # -- Agent: DaemonSet that parses container & host logs
   agent:
     acquisition:
-    # APISIX replaced ingress-nginx — watch apisix pods using the nginx parser.
-    # The APISIX access log format is set to nginx combined (with extra fields
-    # appended after "$http_user_agent") so crowdsecurity/nginx-logs can parse.
-    - namespace: apisix
-      podName: apisix-*
-      program: nginx
-    # Traefik (APISIX replacement in progress, .local/traefik-migration.md (local notes)) —
-    # JSON access logs parsed by the crowdsecurity/traefik collection. Inert
-    # until traefik pods exist and receive traffic.
+    # Ingress access logs: traefik writes JSON access logs, parsed by the
+    # crowdsecurity/traefik collection.
     - namespace: traefik
       podName: traefik-*
       program: traefik
@@ -76,7 +69,6 @@ crowdsec:
     - name: COLLECTIONS
       value: >-
         crowdsecurity/linux
-        crowdsecurity/nginx
         crowdsecurity/traefik
         crowdsecurity/base-http-scenarios
         crowdsecurity/http-cve

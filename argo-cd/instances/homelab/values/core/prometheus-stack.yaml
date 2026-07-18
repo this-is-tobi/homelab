@@ -1,11 +1,7 @@
 gateway:
   enabled: true
-  gatewayName: homelab-gateway
+  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
-  # Traefik migration: attach every route to both gateways; the gateway
-  # HAProxy decides which controller receives traffic (haproxy.traefikHosts).
-  extraParentRefs:
-  - name: homelab-gateway-traefik
   routes:
   - name: grafana
     hostnames:
@@ -41,13 +37,6 @@ kube-prometheus-stack:
         secretKeyRef:
           name: monitoring-sso
           key: OIDC_CLIENT_SECRET
-    ingress:
-      hosts:
-      - monitoring.ohmlab.fr
-      tls:
-      - hosts:
-        - monitoring.ohmlab.fr
-        secretName: monitoring.ohmlab.fr
     grafana.ini:
       server:
         root_url: "https://monitoring.ohmlab.fr"

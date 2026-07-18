@@ -116,17 +116,9 @@ kube-prometheus-stack:
         limits:
           cpu: 200m
           memory: 256Mi
+    # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
     ingress:
-      enabled: true
-      ingressClassName: apisix
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-      hosts:
-      - ""
-      tls:
-      - hosts:
-        - ""
-        secretName: ""
+      enabled: false
     defaultDashboardsTimezone: Europe/Paris
     grafana.ini:
       server:

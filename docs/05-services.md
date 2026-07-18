@@ -35,7 +35,7 @@ The gateway deployment runs the CrowdSec engine as a Docker container with the f
 - `crowdsecurity/base-http-scenarios` — generic HTTP attacks (scanners, exploits)
 - `crowdsecurity/http-cve` — known CVE exploit patterns
 
-A separate Kubernetes deployment (CrowdSec Helm chart) provides cluster-wide monitoring via a DaemonSet agent that parses container logs from ingress-nginx.
+A separate Kubernetes deployment (CrowdSec Helm chart) provides cluster-wide monitoring via a DaemonSet agent that parses the traefik JSON access logs.
 
 ### Access
 
@@ -67,7 +67,7 @@ The following services are deployed in the cluster :
 | [Homepage](https://gethomepage.dev/)                                              | Home dashboard                                  | [unknowniq/homepage](https://artifacthub.io/packages/helm/unknowniq/homepage)                                                                   |
 | [Gitea](https://about.gitea.com/)                                                 | Private, Fast, Reliable DevOps Platform         | [gitea/gitea](https://artifacthub.io/packages/helm/gitea/gitea)                                                                                 |
 | [Harbor](https://goharbor.io/)                                                    | Cloud native registry                           | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                                                           |
-| [Ingress-nginx](https://kubernetes.github.io/ingress-nginx/)                      | Kubernetes ingress controller                   | [ingress-nginx/ingress-nginx](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx)                                                 |
+| [Traefik](https://doc.traefik.io/traefik/)                                        | Ingress controller & Gateway API implementation | [traefik/traefik](https://artifacthub.io/packages/helm/traefik/traefik)                                                                         |
 | [Keycloak](https://keycloak.org)                                                  | Single Sign On service                          | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                                                       |
 | [Kubernetes-dashboard](https://github.com/kubernetes/dashboard)                   | Kubernetes dashboard                            | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard)                                   |
 | [Longhorn](https://longhorn.io/)                                                  | Cloud native distributed block storage          | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                                                     |
@@ -281,9 +281,10 @@ Four Kyverno ClusterPolicies guard admissions (see
 Actions are configurable per instance via `policies.<name>.failureAction` in
 the kyverno app values. In-cluster traffic is encrypted wherever the
 component supports it: CNPG PostgreSQL serves TLS and every client connects
-with `sslmode=require`; APISIX⇄etcd uses mutual TLS (etcd stores gateway TLS
-private keys); gitea⇄valkey uses password auth over TLS; Vault, ArgoCD and
-Teleport terminate TLS themselves behind the gateway.
+with `sslmode=require`; gitea⇄valkey uses password auth over TLS; Vault and
+argocd-server serve TLS that traefik verifies upstream via BackendTLSPolicy
+(Vault against its own CA, ArgoCD against its Let's Encrypt cert); Teleport
+terminates TLS itself behind a Gateway API TLSRoute passthrough.
 
 ### Monitoring
 

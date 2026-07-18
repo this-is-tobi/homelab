@@ -6,12 +6,11 @@ haproxy:
   allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
   # --- APISIX→Traefik migration routing (.local/traefik-migration.md (local notes)) ---
-  # 2026-07-18: every hostname below is verified on the traefik path
-  # (node:8443). APISIX's frozen data plane no longer sees pod restarts:
-  # git/s3 (dead), sso.core (502 since keycloak restarted), gitops.ohmlab.fr
-  # (502 since its pods restarted Jul 8) — traefik is the working path.
-  # Still on apisix: monitoring.ohmlab.fr only (route dual-attach syncing).
-  ingressDefault: apisix         # port 80 + unmatched SNIs stay on apisix
+  # 2026-07-18 phase 2: traefik is the default (port 80 incl. ACME http01
+  # + unmatched SNIs). APISIX is decommissioned. Once the apisix namespace
+  # is gone, traefik takes host ports 80/443 and this whole block reduces
+  # to traefikHttpPort/traefikHttpsPort 80/443 with empty host lists.
+  ingressDefault: traefik
   traefikHttpPort: 8080
   traefikHttpsPort: 8443
   traefikHosts:
@@ -33,6 +32,7 @@ haproxy:
     # teleport TLS passthrough (apex + wildcard below): teleport's own cert
     # verified end-to-end via traefik.
     - teleport.core.ohmlab.fr
+    - monitoring.ohmlab.fr
   traefikHostSuffixes:
     - .teleport.core.ohmlab.fr
 pihole:

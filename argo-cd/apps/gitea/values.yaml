@@ -22,21 +22,9 @@ gitea:
     capabilities:
       drop:
       - ALL
+  # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
   ingress:
-    enabled: true
-    apiVersion: networking.k8s.io/v1
-    className: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    hosts:
-    - host: ""
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: ""
-      hosts:
-      - ""
+    enabled: false
   resources:
     requests:
       cpu: 250m

@@ -1,10 +1,7 @@
 gateway:
   enabled: true
-  gatewayName: homelab-gateway
+  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
-  # Traefik migration: dual-attach; HAProxy decides which controller serves.
-  extraParentRefs:
-  - name: homelab-gateway-traefik
   routes:
   - name: mattermost
     hostnames:
@@ -22,13 +19,6 @@ mattermost:
       enabled: true
     plugins:
       enabled: true
-  ingress:
-    hosts:
-    - mattermost.ohmlab.fr
-    tls:
-    - hosts:
-      - mattermost.ohmlab.fr
-      secretName: mattermost.ohmlab.fr-tls
   config:
     MM_SERVICESETTINGS_SITEURL: "https://mattermost.ohmlab.fr"
     MM_FILESETTINGS_AMAZONS3BUCKET: mattermost

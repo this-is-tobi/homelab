@@ -1,11 +1,10 @@
 {{- if and .Values.gateway.enabled .Values.gateway.backendTLS }}
 ---
-# Gateway API HTTPS-upstream validation: vault serves TLS on 8200, so any
-# Gateway-API controller (traefik) must connect with TLS and verify against
-# vault's CA. The `vault-ca` ConfigMap is generated next to the Service by
-# the kyverno sync-vault-ca-configmap rule (BackendTLSPolicy only accepts
-# ConfigMap CA refs). APISIX ignores this resource — it reaches vault via
-# the Ingress upstream-scheme annotation instead.
+# Gateway API HTTPS-upstream validation: vault serves TLS on 8200, so
+# traefik connects with TLS and verifies against vault's CA. The `vault-ca`
+# ConfigMap is generated next to the Service by the kyverno
+# sync-vault-ca-configmap rule (BackendTLSPolicy only accepts ConfigMap CA
+# refs).
 apiVersion: gateway.networking.k8s.io/v1
 kind: BackendTLSPolicy
 metadata:

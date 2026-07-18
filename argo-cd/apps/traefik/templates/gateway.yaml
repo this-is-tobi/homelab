@@ -24,10 +24,10 @@ metadata:
 spec:
   gatewayClassName: traefik
   listeners:
-    # allowedRoutes `from: All` is the same deliberate single-tenant trade-off
-    # as on the APISIX gateway: every namespace is ArgoCD-managed from this
-    # repo. Listener NAMES mirror the APISIX gateway so app routes keep a
-    # single sectionName while attached to both gateways during migration.
+    # allowedRoutes `from: All` is a deliberate single-tenant trade-off:
+    # every namespace is ArgoCD-managed from this repo (admin-* AppProjects).
+    # Switch to Selector-based allowedRoutes if untrusted tenants ever get
+    # namespace access.
     - name: http
       protocol: HTTP
       port: {{ $httpPort }}
@@ -82,9 +82,7 @@ spec:
 {{- end }}
 {{- if .Values.gateway.manageCertificate }}
 ---
-# Wildcard certificate — only rendered once this app owns it (after the
-# apisix app, which manages the same Certificate today, is decommissioned).
-# cert-manager adopts the existing secret without re-issuing.
+# Wildcard certificate for the HTTPS listeners.
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -103,10 +101,8 @@ spec:
     {{- end }}
 {{- end }}
 ---
-# HTTP → HTTPS redirect (mirrors the APISIX gateway's redirect route; distinct
-# name to coexist in the same namespace). ACME HTTP-01 solver traffic is not
-# affected during migration: port 80 stays routed to APISIX until the final
-# cutover (see .local/traefik-migration.md (local notes)).
+# HTTP → HTTPS redirect. ACME HTTP-01 solver Ingresses bypass it: traefik
+# serves them via the kubernetesIngress provider on the web entryPoint.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:

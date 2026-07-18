@@ -366,16 +366,9 @@ vault:
   serviceAccount: vault
   caNamespaces:
   - "*"
+  # Exposed via Gateway API HTTPRoute + BackendTLSPolicy — no Ingress.
   ingress:
-    enabled: true
-    ingressClassName: apisix
-    host: vault.core.ohmlab.fr
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-      k8s.apisix.apache.org/upstream-scheme: https
-    tls:
-      enabled: true
-      secretName: vault-ingress-tls # Separate from vault-tls (used internally by operator)
+    enabled: false
   serviceMonitor:
     enabled: true
   statsd:

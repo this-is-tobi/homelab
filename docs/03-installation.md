@@ -376,7 +376,7 @@ A handful of apps don't naturally belong in a single tier — they're needed *wh
 | App                    | Where to enable                                                                     |
 | ---------------------- | ----------------------------------------------------------------------------------- |
 | `cert-manager`         | Wherever Ingress / TLS certificates are issued.                                     |
-| `ingress-nginx`        | Wherever an ingress controller is needed.                                           |
+| `traefik`              | Wherever an ingress controller is needed.                                           |
 | `keycloak`             | Wherever the SSO IdP runs (often tenant in SaaS, core in all-in-one).               |
 | `kubernetes-dashboard` | Wherever cluster admins want a UI; one per cluster.                                 |
 | `longhorn`             | Wherever block storage is needed (typically every cluster with stateful workloads). |
@@ -426,7 +426,7 @@ Apps are reconciled in `syncWave` order. Default ordering for the homelab instan
 | ---- | ------ | ----------------------------------------------------------------------------- |
 | -10  | core   | `ohmlab` (self)                                                         |
 | 0    | core   | `longhorn`                                                                    |
-| 10   | core   | `cert-manager`, `ingress-nginx`, `vault-operator`                             |
+| 10   | core   | `cert-manager`, `traefik`, `vault-operator`                             |
 | 20   | core   | `cloudnative-pg`, `sops`, `vault`                                             |
 | 30   | core   | `keycloak`                                                                    |
 | 50   | core   | `prometheus-stack`, `trivy-operator`                                          |

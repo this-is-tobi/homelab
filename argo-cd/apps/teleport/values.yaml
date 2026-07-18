@@ -43,11 +43,10 @@ server:
     podDisruptionBudget:
       enabled: false
       minAvailable: 1
+  # Exposed via Gateway API TLSRoute passthrough (gateway.tlsRoutes) —
+  # teleport terminates its own TLS; no Ingress.
   ingress:
-    enabled: true
-    suppressAutomaticWildcards: false
-    spec:
-      ingressClassName: apisix
+    enabled: false
   service:
     type: ClusterIP
   log:

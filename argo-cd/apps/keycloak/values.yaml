@@ -28,20 +28,9 @@ keycloak:
     password: ""
     # CNPG serves TLS by default — encrypt the JDBC connection.
     jdbcParams: "sslmode=require"
+  # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
   ingress:
-    enabled: true
-    className: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    hosts:
-    - host: ""
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: ""
-      hosts:
-      - ""
+    enabled: false
   postgres:
     enabled: false
   mariadb:

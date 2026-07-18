@@ -13,21 +13,10 @@ homepage:
     type: ClusterIP
     port: 3000
     annotations: {}
+  # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
   ingress:
     main:
-      enabled: true
-      className: apisix
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-      hosts:
-      - host: ""
-        paths:
-        - path: /
-          pathType: Prefix
-      tls: []
-      # - secretName: ""
-      #   hosts:
-      #   - ""
+      enabled: false
   env:
   - name: HOMEPAGE_ALLOWED_HOSTS
     value: "*"

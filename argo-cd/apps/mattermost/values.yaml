@@ -17,17 +17,9 @@ mattermost:
       enabled: false
       size: 5Gi
       accessMode: ReadWriteOnce
+  # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
   ingress:
-    enabled: true
-    className: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    hosts:
-    - ""
-    tls:
-    - hosts:
-      - ""
-      secretName: ""
+    enabled: false
   mysql:
     enabled: false
   externalDB:

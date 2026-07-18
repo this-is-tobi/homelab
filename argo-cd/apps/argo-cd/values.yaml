@@ -377,13 +377,9 @@ argo-cd:
     pdb:
       enabled: true
       maxUnavailable: 1
+    # Webhook is exposed via HTTPRoute (gateway wildcard TLS) — no Ingress.
     ingress:
-      enabled: true
-      ingressClassName: apisix
-      hostname: ""
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-      tls: true
+      enabled: false
     metrics:
       enabled: true
       serviceMonitor:
@@ -408,15 +404,18 @@ argo-cd:
       enabled: true
       serviceMonitor:
         enabled: true
+    # UI is exposed via HTTPRoute + BackendTLSPolicy — no Ingress. The
+    # server's own TLS cert (argocd-server-tls) comes from the chart-native
+    # cert-manager integration; set certificate.domain per instance.
     ingress:
+      enabled: false
+    certificate:
       enabled: true
-      ingressClassName: apisix
-      hostname: ""
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-        # argocd-server serves TLS (server.insecure: false) — connect upstream over https.
-        k8s.apisix.apache.org/upstream-scheme: https
-      tls: true
+      domain: ""
+      issuer:
+        group: cert-manager.io
+        kind: ClusterIssuer
+        name: letsencrypt-dns-prod
   repoServer:
     autoscaling:
       enabled: false

@@ -32,7 +32,12 @@ apps:
   namespace: traefik
   syncWave: 11
 - app: apisix
-  enabled: "true"
+  # Decommissioned 2026-07-18 — traefik is the ingress controller. The
+  # catalog app is kept as an escape hatch (like ingress-nginx): re-enabling
+  # deploys a fresh stack, but klipper-lb port ownership (80/443 vs
+  # traefik's) must be resolved first. Application deletion does not
+  # cascade — the namespace was cleaned up manually.
+  enabled: "false"
   namespace: apisix
   # After vault-operator (10): the admin credentials come from Vault via VSO.
   syncWave: 12

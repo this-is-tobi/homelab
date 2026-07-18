@@ -1,11 +1,7 @@
-# Traefik migration: HTTPRoutes dual-attached to both gateways (the legacy
-# apisix Ingresses below stay until decommission; both point at rustfs-svc).
 gateway:
   enabled: true
-  gatewayName: homelab-gateway
+  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
-  extraParentRefs:
-  - name: homelab-gateway-traefik
   routes:
   - name: rustfs
     listener: https-wildcard-s3
@@ -22,35 +18,12 @@ gateway:
       backendPort: 9000
 
 rustfs:
+  # Exposed via Gateway API HTTPRoutes (gateway.routes) — no Ingress.
   ingress:
-    enabled: true
-    className: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    hosts:
-    - host: console.s3.ohmlab.fr
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-      enabled: true
-      certManager:
-        enabled: true
+    enabled: false
 
 apiIngress:
-  enabled: true
-  className: apisix
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-  hosts:
-  - host: s3.ohmlab.fr
-    paths:
-    - path: /
-      pathType: Prefix
-  tls:
-    enabled: true
-  gatewayApi:
-    enabled: false
+  enabled: false
   storageclass:
     dataStorageSize: 500Gi
   config:

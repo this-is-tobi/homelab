@@ -39,13 +39,14 @@ frontend stats
 {% endif %}
 
 # --- Web traffic (HTTP/HTTPS) ---
-{# APISIX→Traefik migration (.local/traefik-migration.md (local notes)):
+{# Ingress backend selection (kept generic for future controller changes):
    - haproxy.traefikHosts / traefikHostSuffixes route selected SNIs to the
-     traefik backend (node:traefikHttpsPort) while everything else keeps
-     hitting the default ingress.
-   - haproxy.ingressDefault flips the default backends (port 80 + unmatched
-     SNIs) from apisix (node:80/443) to traefik.
-   With no migration vars set, this template renders the historical config. #}
+     traefik backend (node:traefikHttpsPort); everything else hits the
+     default ingress backend.
+   - haproxy.ingressDefault selects the default backend (port 80 +
+     unmatched SNIs): 'traefik' = node:traefikHttp(s)Port, anything else =
+     the legacy node:80/443.
+   With no vars set, this template renders plain node:80/443 routing. #}
 {% set traefik_sni_hosts = haproxy.traefikHosts | default([]) %}
 {% set traefik_sni_suffixes = haproxy.traefikHostSuffixes | default([]) %}
 {% set traefik_http_port = haproxy.traefikHttpPort | default(8080) %}
