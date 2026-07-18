@@ -16,6 +16,11 @@ gateway:
   - name: argocd-server
     serviceName: argo-cd-argocd-server
     hostname: gitops.ohmlab.fr
+  # The appset webhook also serves the argocd-server-tls certificate
+  # (SAN gitops.ohmlab.fr), so the same validation applies.
+  - name: argocd-appset-webhook
+    serviceName: argo-cd-argocd-applicationset-controller
+    hostname: gitops.ohmlab.fr
   routes:
   - name: argocd-server
     hostnames:
