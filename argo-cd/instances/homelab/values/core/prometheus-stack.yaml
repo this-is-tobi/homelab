@@ -53,3 +53,6 @@ vso:
     monitoringSso:
       mount: homelab
       path: platforms/production/core/prometheus-stack
+    alertmanagerMattermost:
+      mount: homelab
+      path: platforms/production/core/prometheus-stack
