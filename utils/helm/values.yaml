@@ -110,9 +110,11 @@ argo-cd:
         memory: 512Mi
       limits:
         # 2-core burst: at 1000m the controller CPU-throttles during sync
-        # storms and app refreshes queue for tens of minutes.
+        # storms and app refreshes queue for tens of minutes. 2Gi: startup
+        # cluster-cache rebuild peaks well above steady state — at 1Gi the
+        # controller OOM-crash-loops (exit 137 ~100s after start).
         cpu: 2000m
-        memory: 1Gi
+        memory: 2Gi
     metrics:
       enabled: true
       serviceMonitor:
