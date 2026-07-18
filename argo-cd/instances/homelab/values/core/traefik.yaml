@@ -20,11 +20,16 @@ gateway:
   extraDnsNames:
   - "*.core.ohmlab.fr"
   - "*.s3.ohmlab.fr"
+  # TLS cert wildcards match a single label: appset.gitops.ohmlab.fr needs
+  # its own SAN (*.ohmlab.fr does not cover it).
+  - "*.gitops.ohmlab.fr"
   extraWildcardListeners:
   - name: https-wildcard-core
     hostname: "*.core.ohmlab.fr"
   - name: https-wildcard-s3
     hostname: "*.s3.ohmlab.fr"
+  - name: https-wildcard-gitops
+    hostname: "*.gitops.ohmlab.fr"
   tlsPassthroughListeners:
   - name: tls-teleport
     hostname: "*.teleport.core.ohmlab.fr"
