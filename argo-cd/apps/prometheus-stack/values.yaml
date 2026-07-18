@@ -246,5 +246,8 @@ vso:
           excludes:
           - ".*"
           templates:
+            # Flat key (the pre-existing `alertmanager` key at this path is a
+            # plain string, so it cannot host nested fields). Missing key
+            # renders empty until the webhook URL is added to Vault.
             webhookUrl:
-              text: '{{ get .Secrets "alertmanager" | dig "mattermostWebhookUrl" "" }}'
+              text: '{{ get .Secrets "alertmanagerMattermostWebhookUrl" | default "" }}'
