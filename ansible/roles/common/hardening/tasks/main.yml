@@ -66,3 +66,37 @@
     name: rsyslog
     state: started
     enabled: true
+
+# Cap the persistent journal: unbounded journals grind SD cards and the
+# nodes also ship logs to rsyslog/CrowdSec now.
+- name: Create journald drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Cap persistent journal size (SD-card wear)
+  ansible.builtin.copy:
+    content: |
+      [Journal]
+      SystemMaxUse=100M
+      MaxRetentionSec=1month
+    dest: /etc/systemd/journald.conf.d/90-size-cap.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart journald
+
+# Headless servers: drop audio/camera firmware features (frees RAM, takes
+# effect at next reboot — no forced reboot here).
+- name: Disable unused Pi firmware features (headless)
+  ansible.builtin.lineinfile:
+    path: /boot/firmware/config.txt
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^dtparam=audio=', line: 'dtparam=audio=off' }
+    - { regexp: '^camera_auto_detect=', line: 'camera_auto_detect=0' }
+  when: ansible_architecture == "aarch64"
