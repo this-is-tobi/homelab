@@ -71,12 +71,19 @@
     - ./inventory/group_vars/k3s.yml
   roles:
     - role: common/hostname
+      tags: [hostname]
     - role: common/locales
+      tags: [locales]
     - role: common/ssh
+      tags: [ssh]
     - role: common/hardening
+      tags: [hardening]
     - role: k3s/prereq
+      tags: [k3s-prereq]
     - role: k3s/download
+      tags: [k3s-download]
     - role: k3s/storage
+      tags: [k3s-storage]
   tags:
     - k3s
     - k3s-deploy
