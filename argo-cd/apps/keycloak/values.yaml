@@ -406,6 +406,24 @@ keycloakConfigCli:
   enabled: true
   fullnameOverride: keycloak-config-cli
   backoffLimit: 3
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65534
+    runAsGroup: 65534
+    seccompProfile:
+      type: RuntimeDefault
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   image:
     # Pinned (multi-arch) — was latest-26; bump alongside Keycloak upgrades.
     tag: 6.5.1-26
