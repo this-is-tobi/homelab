@@ -1,0 +1,24 @@
+{{- if .Values.gateway.enabled }}
+---
+# The upstream chart's applicationset NetworkPolicy only admits the metrics
+# port, so the webhook (7000) is unreachable through the gateway. Admit it
+# from the ingress controller namespace only.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: argocd-applicationset-webhook
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-applicationset-controller
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: traefik
+    ports:
+    - port: webhook
+      protocol: TCP
+{{- end }}
