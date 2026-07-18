@@ -1,4 +1,10 @@
 kyverno:
+  # PolicyExceptions are only honoured from the kyverno namespace, so every
+  # exception is GitOps-managed here — workloads cannot self-exempt.
+  features:
+    policyExceptions:
+      enabled: true
+      namespace: kyverno
   admissionController:
     replicas: 1
     rbac:

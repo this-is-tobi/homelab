@@ -1,0 +1,26 @@
+---
+# The upstream crowdsec chart hardcodes the agent's wait-for-lapi init
+# container resources (memory limit only, no CPU limit) with no values knob.
+# The init container runs a short nc wait loop; exempt it from the limits
+# policy instead of excluding the whole crowdsec namespace.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: crowdsec-agent-init-limits
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames:
+    - require-limits
+    - autogen-require-limits
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - DaemonSet
+        namespaces:
+        - crowdsec
+        names:
+        - crowdsec-agent*
