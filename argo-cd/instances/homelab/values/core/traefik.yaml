@@ -1,10 +1,8 @@
 # Traefik instance overrides for `homelab`.
 #
-# Traefik is THE ingress controller. klipper-lb binds the Service ports as
-# host ports on every node; the gateway HAProxy forwards public 80/443 to
-# them (ansible/inventory/group_vars/gateway.yml). Service ports are still
-# 8080/8443 until the old ingress namespace releases host ports 80/443 —
-# then flip exposedPort here together with the HAProxy port vars.
+# Traefik is THE ingress controller. klipper-lb binds the Service ports
+# (80/443) as host ports on every node; the gateway HAProxy forwards
+# public 80/443 to them (ansible/inventory/group_vars/gateway.yml).
 
 traefik:
   deployment:
