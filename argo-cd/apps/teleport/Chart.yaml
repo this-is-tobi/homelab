@@ -1,10 +1,10 @@
 apiVersion: v2
 type: application
 name: teleport
-version: 18.7.6
-appVersion: "18.7.6"
+version: 18.10.0
+appVersion: "18.10.0"
 dependencies:
 - name: teleport-cluster
   alias: server
-  version: 18.7.6
+  version: 18.10.0
   repository: https://charts.releases.teleport.dev
