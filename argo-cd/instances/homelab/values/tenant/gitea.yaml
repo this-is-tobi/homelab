@@ -1,10 +1,7 @@
 gateway:
   enabled: true
-  gatewayName: homelab-gateway
+  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
-  # Traefik migration: dual-attach; HAProxy decides which controller serves.
-  extraParentRefs:
-  - name: homelab-gateway-traefik
   routes:
   - name: gitea
     hostnames:
@@ -14,16 +11,6 @@ gateway:
       backendPort: 3000
 
 gitea:
-  ingress:
-    hosts:
-    - host: git.ohmlab.fr
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: git.ohmlab.fr-tls
-      hosts:
-      - git.ohmlab.fr
   gitea:
     admin:
       username: admin

@@ -1,10 +1,7 @@
 gateway:
   enabled: true
-  gatewayName: homelab-gateway
+  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
-  # Traefik migration: dual-attach; HAProxy decides which controller serves.
-  extraParentRefs:
-  - name: homelab-gateway-traefik
   routes:
   - name: keycloak
     hostnames:
@@ -28,16 +25,6 @@ keycloak:
     secretKeys:
       usernameKey: username
       passwordKey: password
-  ingress:
-    hosts:
-    - host: sso.core.ohmlab.fr
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: sso.core.ohmlab.fr-tls
-      hosts:
-      - sso.core.ohmlab.fr
 
 cnpg:
   mode: primary

@@ -25,7 +25,7 @@ clusterIssuers:
       - http01:
           ingress:
             serviceType: ClusterIP
-            ingressClassName: apisix
+            ingressClassName: traefik
 - name: letsencrypt-http-prod
   spec:
     acme:
@@ -37,7 +37,7 @@ clusterIssuers:
       - http01:
           ingress:
             serviceType: ClusterIP
-            ingressClassName: apisix
+            ingressClassName: traefik
 - name: letsencrypt-dns-staging
   spec:
     acme:

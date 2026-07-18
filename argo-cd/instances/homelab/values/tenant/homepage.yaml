@@ -1,15 +1,4 @@
 homepage:
-  ingress:
-    main:
-      hosts:
-      - host: ohmlab.fr
-        paths:
-        - path: /
-          pathType: Prefix
-      tls:
-      - secretName: ohmlab.fr-tls
-        hosts:
-        - ohmlab.fr
   env:
   - name: HOMEPAGE_ALLOWED_HOSTS
     value: ohmlab.fr
@@ -108,11 +97,8 @@ homepage:
 
 gateway:
   enabled: true
-  gatewayName: homelab-gateway
+  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
-  # Traefik migration: dual-attach; HAProxy decides which controller serves.
-  extraParentRefs:
-  - name: homelab-gateway-traefik
   routes:
   - name: homepage
     listener: https-apex

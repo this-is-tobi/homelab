@@ -33,7 +33,7 @@ vso:
 longhorn:
   ingress:
     enabled: false
-    ingressClassName: apisix
+    ingressClassName: traefik
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     host: longhorn.core.ohmlab.fr
