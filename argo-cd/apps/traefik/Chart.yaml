@@ -1,15 +1,15 @@
 apiVersion: v2
 type: application
 name: traefik
-version: 41.0.1
-appVersion: "v3.7.5"
+version: 41.0.2
+appVersion: "v3.7.6"
 description: >-
-  Traefik v3 edge router — standing replacement for APISIX as the cluster
-  ingress + Gateway API implementation (see .local/traefik-migration.md (local notes)).
+  Traefik v3 edge router — the cluster ingress controller and Gateway API
+  implementation.
   Stateless: all config lives in the Kubernetes API, no external store,
   no admin API.
 dependencies:
 - name: traefik
   alias: traefik
-  version: 41.0.1
+  version: 41.0.2
   repository: https://traefik.github.io/charts

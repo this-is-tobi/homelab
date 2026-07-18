@@ -10,7 +10,7 @@ dependencies:
   repository: https://charts.jetstack.io
 - name: scaleway-certmanager-webhook
   alias: scaleway-certmanager-webhook
-  version: 0.4.0
+  version: 0.4.2
   repository: https://helm.scw.cloud
 - name: vso-utils
   alias: vso

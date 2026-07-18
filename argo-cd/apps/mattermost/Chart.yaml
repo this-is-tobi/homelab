@@ -1,12 +1,12 @@
 apiVersion: v2
 name: mattermost
 type: application
-version: 6.6.95
-appVersion: "11.6.0"
+version: 6.6.104
+appVersion: "11.9.0"
 dependencies:
 - name: mattermost-team-edition
   alias: mattermost
-  version: 6.6.95
+  version: 6.6.104
   repository: https://helm.mattermost.com
 - name: cnpg-cluster
   alias: cnpg
