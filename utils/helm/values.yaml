@@ -109,7 +109,9 @@ argo-cd:
         cpu: 250m
         memory: 512Mi
       limits:
-        cpu: 1000m
+        # 2-core burst: at 1000m the controller CPU-throttles during sync
+        # storms and app refreshes queue for tens of minutes.
+        cpu: 2000m
         memory: 1Gi
     metrics:
       enabled: true
