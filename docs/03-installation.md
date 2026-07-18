@@ -422,26 +422,29 @@ Per-app overrides also exist if a single app needs a different layout — `value
 
 Apps are reconciled in `syncWave` order. Default ordering for the homelab instance:
 
-| Wave | Tier   | Apps                                                                          |
-| ---- | ------ | ----------------------------------------------------------------------------- |
-| -10  | core   | `ohmlab` (self)                                                         |
-| 0    | core   | `longhorn`                                                                    |
-| 10   | core   | `cert-manager`, `traefik`, `vault-operator`                             |
-| 20   | core   | `cloudnative-pg`, `sops`, `vault`                                             |
-| 30   | core   | `keycloak`                                                                    |
-| 50   | core   | `prometheus-stack`, `trivy-operator`                                          |
-| 60   | core   | `system-upgrade`                                                              |
-| 100  | tenant | `argo-cd` (personal)                                                          |
-| 110  | tenant | `actions-runner-controller`, `gitea`, `mattermost`, `rustfs`, `teleport`, ... |
-| 200  | tenant | `homepage`                                                                    |
+| Wave | Tier   | Apps                                        |
+| ---- | ------ | ------------------------------------------- |
+| -10  | core   | `ohmlab` (self)                             |
+| 0    | core   | `longhorn`                                  |
+| 10   | core   | `cert-manager`, `vault-operator`            |
+| 11   | core   | `traefik`                                   |
+| 15   | core   | `kyverno`                                   |
+| 20   | core   | `cloudnative-pg`, `sops`                    |
+| 50   | core   | `prometheus-stack`                          |
+| 55   | core   | `keycloak`                                  |
+| 60   | core   | `crowdsec`, `system-upgrade`, `teleport`    |
+| 100  | tenant | `argo-cd` (personal)                        |
+| 110  | tenant | `gitea`, `mattermost`, `rustfs`             |
+| 200  | tenant | `homepage`                                  |
 
 ### Core Services
 
 Core services provide the foundation for the platform:
 - **Longhorn** *- storage management in the cluster.*
-- **Ingress-NGINX** *- ingress controller to expose services.*
+- **Traefik** *- ingress controller & Gateway API implementation to expose services.*
 - **Cert-Manager** *- certificate management for TLS.*
 - **Vault Operator** *- secret management for services deployments.*
+- **Kyverno** *- admission policy enforcement.*
 - **ArgoCD** *- deployment management following GitOps.*
 - **CloudNative-PG** *- PostgreSQL operator for databases.*
 
@@ -450,7 +453,6 @@ Core services provide the foundation for the platform:
 Platform services are deployed on top of core services:
 - **Keycloak** *- identity and access management (SSO).*
 - **Gitea** *- self-hosted Git service.*
-- **Harbor** *- container registry.*
 - **Mattermost** *- team communication.*
 - **And more...*
 

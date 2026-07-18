@@ -6,9 +6,9 @@
 
 [HAProxy](https://www.haproxy.org/) is a free and open source software that provides a high availability load balancer and reverse proxy for TCP and HTTP-based applications that spreads requests across multiple servers.
 
-Haproxy load-balances all incoming http and https traffic from the Internet (ports 80 and 443) via the master nodes, and also load-balances all Kubernetes api server traffic on the local network (port 6443). An ACL rule is defined to accept only local network IP address requests for the api server.
+Haproxy load-balances all incoming http and https traffic from the Internet (ports 80 and 443) onto the traefik host ports published by klipper-lb on every cluster node (workers preferred, masters as backup), in TCP/TLS-passthrough mode — TLS terminates at traefik inside the cluster. It also load-balances Kubernetes api server traffic on the local network (port 6443) onto the master nodes. An ACL rule is defined to accept only local network IP address requests for the api server.
 
-The web interface lets you view the health status of master nodes on both types of endpoints (server api and internet traffic).
+The web interface lets you view the health status of every backend node on both types of endpoints (server api and internet traffic).
 
 ### Pi-Hole
 
@@ -53,7 +53,7 @@ Gateway web interface services are deployed and accessible for admin purpose, th
 
 ### Services
 
-The following services are deployed in the cluster :
+The app catalog under [argo-cd/apps/](../argo-cd/apps/) provides the following charts; each instance enables its own subset via the `enabled` flag in its [core.yaml](../argo-cd/instances/homelab/core.yaml) / [tenant.yaml](../argo-cd/instances/homelab/tenant.yaml) catalogs :
 
 | Name                                                                              | Description                                     | Helm chart                                                                                                                                      |
 | --------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -68,8 +68,8 @@ The following services are deployed in the cluster :
 | [Gitea](https://about.gitea.com/)                                                 | Private, Fast, Reliable DevOps Platform         | [gitea/gitea](https://artifacthub.io/packages/helm/gitea/gitea)                                                                                 |
 | [Harbor](https://goharbor.io/)                                                    | Cloud native registry                           | [bitnami/harbor](https://artifacthub.io/packages/helm/bitnami/harbor)                                                                           |
 | [Traefik](https://doc.traefik.io/traefik/)                                        | Ingress controller & Gateway API implementation | [traefik/traefik](https://artifacthub.io/packages/helm/traefik/traefik)                                                                         |
-| [Keycloak](https://keycloak.org)                                                  | Single Sign On service                          | [bitnami/keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak)                                                                       |
-| [Kubernetes-dashboard](https://github.com/kubernetes/dashboard)                   | Kubernetes dashboard                            | [k8s-dashboard/kubernetes-dashboard](https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard)                                   |
+| [Keycloak](https://keycloak.org)                                                  | Single Sign On service                          | [cloudpirates/keycloak](https://artifacthub.io/packages/helm/cloudpirates/keycloak)                                                             |
+| [Kyverno](https://kyverno.io/)                                                    | Kubernetes policy engine (admission control)    | [kyverno/kyverno](https://artifacthub.io/packages/helm/kyverno/kyverno)                                                                         |
 | [Longhorn](https://longhorn.io/)                                                  | Cloud native distributed block storage          | [longhorn/longhorn](https://artifacthub.io/packages/helm/longhorn/longhorn)                                                                     |
 | [Mattermost](https://mattermost.com/)                                             | Chat service with file sharing and integrations | [mattermost/mattermost-team-edition](https://artifacthub.io/packages/helm/mattermost/mattermost-team-edition)                                   |
 | [MLflow](https://mlflow.org/)                                                     | ML experiment tracking and model registry       | [community-charts/mlflow](https://artifacthub.io/packages/helm/community-charts/mlflow)                                                         |
@@ -81,8 +81,8 @@ The following services are deployed in the cluster :
 | [System-upgrade-controller](https://github.com/rancher/system-upgrade-controller) | K3S upgrade controller                          | -                                                                                                                                               |
 | [Teleport](https://goteleport.com/)                                               | Secure access and identity for infrastructure   | [teleport/teleport-cluster](https://artifacthub.io/packages/helm/teleport/teleport-cluster)                                                     |
 | [Trivy-operator](https://aquasecurity.github.io/trivy-operator/latest/)           | Kubernetes-native security toolkit              | [aqua/trivy-operator](https://aquasecurity.github.io/helm-charts/)                                                                              |
-| [Vault](https://www.vaultproject.io/)                                             | Secret management service                       | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                                                         |
-| [Vault-operator](https://developer.hashicorp.com/vault/docs/platform/k8s/vso)     | Vault Secrets Operator for Kubernetes           | [hashicorp/vault-secrets-operator](https://artifacthub.io/packages/helm/hashicorp/vault-secrets-operator)                                       |
+| [Vault](https://www.vaultproject.io/)                                             | Secret management service (standalone chart)    | [hashicorp/vault](https://artifacthub.io/packages/helm/hashicorp/vault)                                                                         |
+| [Vault-operator](https://bank-vaults.dev/)                                        | Bank-Vaults operator (HA Vault cluster) + [VSO](https://developer.hashicorp.com/vault/docs/platform/k8s/vso) | [bank-vaults/vault-operator](https://artifacthub.io/packages/helm/bank-vaults/vault-operator) + [hashicorp/vault-secrets-operator](https://artifacthub.io/packages/helm/hashicorp/vault-secrets-operator) |
 | [Vaultwarden](https://github.com/dani-garcia/vaultwarden)                         | Password management service                     | [vaultwarden/vaultwarden](https://artifacthub.io/packages/helm/vaultwarden/vaultwarden)                                                         |
 
 ### Versions
@@ -161,37 +161,31 @@ flowchart LR
 
 ### Access
 
-Kubernetes services that are available through user interfaces are centralized on the [Homepage](https://gethomepage.dev/) dashboard, the full list is :
+Kubernetes services that are available through user interfaces are centralized on the [Homepage](https://gethomepage.dev/) dashboard. Platform (core) services live under the `core.` subdomain; tenant apps sit directly under the root domain :
 
-#### Admin
+#### Core (platform)
 
-| Name               | Url                                |
-| ------------------ | ---------------------------------- |
-| ArgoCD *(admin)*   | <https://gitops.admin.domain.com>  |
-| Longhorn *(admin)* | <http://longhorn.admin.domain.com> |
-| Vault *(admin)*    | <https://vault.admin.domain.com>   |
+| Name                    | Url                                     |
+| ----------------------- | --------------------------------------- |
+| ArgoCD *(core)*         | <https://gitops.core.domain.com>        |
+| Keycloak                | <https://sso.core.domain.com>           |
+| Longhorn                | <https://longhorn.core.domain.com>      |
+| Teleport                | <https://teleport.core.domain.com>      |
+| Vault                   | <https://vault.core.domain.com>         |
 
-#### Standard
+#### Tenant (apps)
 
-| Name                 | Url                              |
-| -------------------- | -------------------------------- |
-| ArgoCD               | <https://gitops.domain.com>      |
-| Coder                | <https://coder.domain.com>       |
-| Homepage             | <https://domain.com>             |
-| Gitea                | <https://git.domain.com>         |
-| Grafana              | <https://monitoring.domain.com>  |
-| Harbor               | <https://registry.domain.com>    |
-| Keycloak             | <https://sso.domain.com>         |
-| Kubernetes-dashboard | <https://kube.domain.com>        |
-| Mattermost           | <https://mattermost.domain.com>  |
-| RustFS *- api*       | <https://s3.domain.com>          |
-| RustFS *- console*   | <https://console.s3.domain.com>  |
-| Outline              | <https://outline.domain.com>     |
-| SonarQube            | <http://sonarqube.domain.com>    |
-| Vault                | <https://vault.domain.com>       |
-| Vaultwarden          | <https://vaultwarden.domain.com> |
+| Name               | Url                             |
+| ------------------ | ------------------------------- |
+| ArgoCD             | <https://gitops.domain.com>     |
+| Gitea              | <https://git.domain.com>        |
+| Grafana            | <https://monitoring.domain.com> |
+| Homepage           | <https://domain.com>            |
+| Mattermost         | <https://mattermost.domain.com> |
+| RustFS *- api*     | <https://s3.domain.com>         |
+| RustFS *- console* | <https://console.s3.domain.com> |
 
-> *__Notes:__ Replace `domain.com` by your own domain configured in your values files.*
+> *__Notes:__ Replace `domain.com` by your own domain configured in your values files. Optional catalog apps (Coder, Harbor, Outline, SonarQube, Vaultwarden, ...) follow the same pattern when enabled.*
 
 ### Single sign on
 
@@ -209,12 +203,10 @@ flowchart LR
     kc[Keycloak<br/>realm: homelab]
     subgraph apps[Connected services]
         argo[ArgoCD]
-        coder[Coder]
         gitea[Gitea]
-        harbor[Harbor]
         graf[Grafana]
-        outline[Outline]
-        sonar[Sonarqube]
+        lh[Longhorn]
+        rustfs[RustFS]
         vault[Vault]
     end
     user -->|login| apps
@@ -222,17 +214,15 @@ flowchart LR
     kc -->|id_token + groups| apps
 ```
 
-Services currently connected through SSO:
-- ArgoCD
-- Coder
-- Harbor
+Services currently connected through SSO (client secrets are stored in Vault and delivered by VSO):
+- ArgoCD (core + tenant instances)
 - Gitea
 - Grafana
-- Outline
-- Sonarqube
+- Longhorn
+- RustFS (console OIDC)
 - Vault
 
-> *RustFS does not support OIDC — admin credentials are managed via Vault and rotated through the Vault Secrets Operator.*
+Optional catalog apps (Coder, Harbor, Outline, SonarQube, ...) ship with the same Keycloak OIDC wiring and join the list when enabled.
 
 ### Secrets
 
@@ -279,7 +269,11 @@ Four Kyverno ClusterPolicies guard admissions (see
 | `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods mid-incident is worse than a report |
 
 Actions are configurable per instance via `policies.<name>.failureAction` in
-the kyverno app values. In-cluster traffic is encrypted wherever the
+the kyverno app values. Exceptions are GitOps-managed: the kyverno
+`PolicyException` feature is enabled but restricted to the `kyverno`
+namespace, so every exception lives in
+[policy-exceptions.yaml](../argo-cd/apps/kyverno/templates/policy-exceptions.yaml)
+and workloads cannot self-exempt. In-cluster traffic is encrypted wherever the
 component supports it: CNPG PostgreSQL serves TLS and every client connects
 with `sslmode=require`; gitea⇄valkey uses password auth over TLS; Vault and
 argocd-server serve TLS that traefik verifies upstream via BackendTLSPolicy
@@ -288,7 +282,7 @@ terminates TLS itself behind a Gateway API TLSRoute passthrough.
 
 ### Monitoring
 
-The cluster itself and some services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/), `ServiceMonitor` are enabled for Vault, Argocd and Trivy-operator to increase metrics coming from these applications.
+The cluster itself and the platform services are monitored using [Prometheus](https://prometheus.io/) and [Grafana](https://grafana.com/). Every component that exposes metrics ships a `ServiceMonitor`/`PodMonitor` (ArgoCD, Vault, Traefik, cert-manager, CrowdSec, Longhorn, Gitea, Keycloak, CNPG, sops, ...) — roughly 30 monitors across the cluster.
 
 Some dashboards are already delivered with the installation but more can be added in [argo-cd/apps/prometheus-stack/grafana-dashboards/](../argo-cd/apps/prometheus-stack/grafana-dashboards/), they will be automatically loaded on ArgoCD synchronization via the [dashboards.yaml](../argo-cd/apps/prometheus-stack/templates/dashboards.yaml) template. Already added dashboards are:
 
