@@ -65,6 +65,23 @@ crowdsec:
     - namespace: traefik
       podName: traefik-*
       program: traefik
+    # Node SSH/auth logs: /var/log/auth.log is written by rsyslog, which the
+    # ansible hardening role installs (bookworm is journald-only by default).
+    additionalAcquisition:
+    - source: file
+      filenames:
+      - /host/var/log/auth.log
+      labels:
+        type: syslog
+    extraVolumes:
+    - name: host-var-log
+      hostPath:
+        path: /var/log
+        type: Directory
+    extraVolumeMounts:
+    - name: host-var-log
+      mountPath: /host/var/log
+      readOnly: true
     env:
     - name: COLLECTIONS
       value: >-

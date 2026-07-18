@@ -38,3 +38,31 @@
     owner: root
     group: root
     mode: "0644"
+
+# rsyslog restores /var/log/auth.log (bookworm is journald-only by default),
+# which the in-cluster CrowdSec agents tail for SSH attack detection.
+- name: Install unattended-upgrades and rsyslog
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - rsyslog
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Enable periodic unattended security upgrades
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: /etc/apt/apt.conf.d/{{ item }}
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - 20auto-upgrades
+    - 52unattended-upgrades-security
+
+- name: Enable rsyslog
+  ansible.builtin.systemd:
+    name: rsyslog
+    state: started
+    enabled: true
