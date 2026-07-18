@@ -6,7 +6,7 @@ appVersion: "v1.7.8"
 dependencies:
   - name: crowdsec
     alias: crowdsec
-    version: 0.23.0
+    version: 0.24.0
     repository: https://crowdsecurity.github.io/helm-charts
   - name: cnpg-cluster
     alias: cnpg

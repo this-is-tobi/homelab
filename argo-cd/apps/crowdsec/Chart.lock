@@ -1,12 +1,12 @@
 dependencies:
 - name: crowdsec
   repository: https://crowdsecurity.github.io/helm-charts
-  version: 0.23.0
+  version: 0.24.0
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:0ab2361fca2ec7e6f7f96a49dc6b40a24dc4393dd01db211c23d1769abf6860a
-generated: "2026-05-02T02:30:48.758622+02:00"
+digest: sha256:a562a26f7fbd31b00e76b10cdad9721321cc0a8bd7a74c9eb3292a8fd971d3fb
+generated: "2026-07-18T23:22:49.544612+02:00"
