@@ -54,12 +54,12 @@ traefik:
       port: 8000
       expose:
         default: true
-      exposedPort: 8080
+      exposedPort: 80
     websecure:
       port: 8443
       expose:
         default: true
-      exposedPort: 8443
+      exposedPort: 443
 
   service:
     enabled: true

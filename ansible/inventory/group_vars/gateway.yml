@@ -5,36 +5,11 @@ haproxy:
   extraKubeAllowedIps: ""
   allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
-  # --- APISIX→Traefik migration routing (.local/traefik-migration.md (local notes)) ---
-  # 2026-07-18 phase 2: traefik is the default (port 80 incl. ACME http01
-  # + unmatched SNIs). APISIX is decommissioned. Once the apisix namespace
-  # is gone, traefik takes host ports 80/443 and this whole block reduces
-  # to traefikHttpPort/traefikHttpsPort 80/443 with empty host lists.
+  # Traefik is the sole ingress controller: all 80/443 traffic goes to the
+  # klipper-lb host ports (no SNI routing needed).
   ingressDefault: traefik
-  traefikHttpPort: 8080
-  traefikHttpsPort: 8443
-  traefikHosts:
-    - ohmlab.fr
-    - git.ohmlab.fr
-    - mattermost.ohmlab.fr
-    - console.s3.ohmlab.fr
-    - s3.ohmlab.fr
-    # vault: BackendTLSPolicy-verified upstream, 307 on the traefik path.
-    - vault.core.ohmlab.fr
-    # sso: 302 via traefik; 502 via apisix (stale keycloak endpoint).
-    - sso.core.ohmlab.fr
-    # gitops UIs: BackendTLSPolicy-verified TLS upstream (LE cert, System
-    # CAs); the tenant UI was 502 via apisix.
-    - gitops.ohmlab.fr
-    - appset.gitops.ohmlab.fr
-    - gitops.core.ohmlab.fr
-    - gitops-appset.core.ohmlab.fr
-    # teleport TLS passthrough (apex + wildcard below): teleport's own cert
-    # verified end-to-end via traefik.
-    - teleport.core.ohmlab.fr
-    - monitoring.ohmlab.fr
-  traefikHostSuffixes:
-    - .teleport.core.ohmlab.fr
+  traefikHttpPort: 80
+  traefikHttpsPort: 443
 pihole:
   enabled: true
   version: 2026.04.1
