@@ -99,4 +99,4 @@
   loop:
     - { regexp: '^dtparam=audio=', line: 'dtparam=audio=off' }
     - { regexp: '^camera_auto_detect=', line: 'camera_auto_detect=0' }
-  when: ansible_architecture == "aarch64"
+  when: ansible_facts["architecture"] == "aarch64"

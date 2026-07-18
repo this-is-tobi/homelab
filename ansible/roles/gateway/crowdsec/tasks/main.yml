@@ -189,14 +189,20 @@
         dest: /etc/apt/keyrings/crowdsec-archive-keyring.asc
         mode: "0644"
 
+    - name: Remove legacy CrowdSec repository list
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/crowdsec.list
+        state: absent
+
     - name: Add CrowdSec repository
-      ansible.builtin.apt_repository:
-        repo: >-
-          deb [signed-by=/etc/apt/keyrings/crowdsec-archive-keyring.asc]
-          https://packagecloud.io/crowdsec/crowdsec/debian/
-          {{ 'bookworm' if ansible_facts['distribution_release'] == 'trixie' else ansible_facts['distribution_release'] }} main
+      ansible.builtin.deb822_repository:
+        name: crowdsec
+        types: deb
+        uris: https://packagecloud.io/crowdsec/crowdsec/debian/
+        suites: "{{ 'bookworm' if ansible_facts['distribution_release'] == 'trixie' else ansible_facts['distribution_release'] }}"
+        components: main
+        signed_by: /etc/apt/keyrings/crowdsec-archive-keyring.asc
         state: present
-        filename: crowdsec
 
     - name: Install crowdsec-firewall-bouncer-nftables
       ansible.builtin.apt:

@@ -69,6 +69,10 @@
     - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
+  pre_tasks:
+    - name: Gather facts
+      ansible.builtin.setup:
+      tags: always
   roles:
     - role: common/hostname
       tags: [hostname]

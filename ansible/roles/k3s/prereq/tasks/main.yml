@@ -41,7 +41,7 @@
     value: "1"
     state: present
     reload: true
-  when: ansible_all_ipv6_addresses | default([]) | length > 0
+  when: ansible_facts["all_ipv6_addresses"] | default([]) | length > 0
 
 - name: Enable IPv6 router advertisements
   ansible.posix.sysctl:

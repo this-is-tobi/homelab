@@ -43,13 +43,20 @@
   ansible.builtin.set_fact:
     common_docker_arch: "{{ common_docker_arch_map.get(ansible_facts['architecture'], ansible_facts['architecture']) }}"
 
+- name: Remove legacy Docker repository list
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/docker.list
+    state: absent
+
 - name: Add Docker repository
-  ansible.builtin.apt_repository:
-    repo: >-
-      deb [arch={{ common_docker_arch }} signed-by=/etc/apt/keyrings/docker.asc]
-      https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
-      {{ ansible_facts['distribution_release'] }} stable
-    filename: docker
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
+    suites: "{{ ansible_facts['distribution_release'] }}"
+    components: stable
+    architectures: "{{ common_docker_arch }}"
+    signed_by: /etc/apt/keyrings/docker.asc
     state: present
 
 - name: Update apt cache
