@@ -97,7 +97,12 @@ backend homelab_entrypoint_http
   mode tcp
   balance leastconn
   option tcp-check
-  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
+  # PROXY protocol v2: without this every request reaches the ingress
+  # controller with the GATEWAY's IP as the source (HAProxy `mode tcp`
+  # proxies, it doesn't pass the original TCP connection through) — traefik
+  # must be configured to trust it from this gateway (proxyProtocol.trustedIPs).
+  # Applies to health checks too (no check-specific addr/port override here).
+  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512 send-proxy-v2
 {% for host in groups['workers'] %}
   server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ default_http_port }} check
 {% endfor %}
@@ -113,7 +118,8 @@ backend homelab_entrypoint_https
   mode tcp
   balance leastconn
   option tcp-check
-  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
+  # PROXY protocol v2 — see homelab_entrypoint_http.
+  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512 send-proxy-v2
 {% for host in groups['workers'] %}
   server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ default_https_port }} check
 {% endfor %}
@@ -127,7 +133,8 @@ backend traefik_entrypoint_https
   mode tcp
   balance leastconn
   option tcp-check
-  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512
+  # PROXY protocol v2 — see homelab_entrypoint_http.
+  default-server inter 5s downinter 2s rise 2 fall 3 slowstart 30s maxconn 512 send-proxy-v2
 {% for host in groups['workers'] %}
   server {{ host }} {{ hostvars[host]['ansible_host'] }}:{{ traefik_https_port }} check
 {% endfor %}
