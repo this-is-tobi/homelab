@@ -55,11 +55,30 @@ traefik:
       expose:
         default: true
       exposedPort: 80
+      http:
+        # Entrypoint-wide middleware — applies to every router on this
+        # entrypoint without touching each app's HTTPRoute. The Middleware
+        # object always exists (templates/middleware-crowdsec-bouncer.yaml);
+        # crowdsecBouncer.enabled gates whether the plugin actually does
+        # anything, so this reference never dangles.
+        middlewares:
+        - crowdsec-bouncer@kubernetescrd
     websecure:
       port: 8443
       expose:
         default: true
       exposedPort: 443
+      http:
+        middlewares:
+        - crowdsec-bouncer@kubernetescrd
+
+  # CrowdSec bouncer plugin registration — see crowdsecBouncer (below) for
+  # the actual enable/disable switch and LAPI wiring.
+  experimental:
+    plugins:
+      bouncer:
+        moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+        version: v1.6.0
 
   service:
     enabled: true
@@ -118,3 +137,32 @@ gateway:
   extraWildcardListeners: []
   # [{name, hostname}] — TLS Passthrough listeners (e.g. teleport).
   tlsPassthroughListeners: []
+
+# CrowdSec bouncer plugin (templates/middleware-crowdsec-bouncer.yaml) —
+# active IP blocking at the edge, on top of the crowdsec app's detect+alert.
+# Disabled by default: `lapiKey` is a real secret and Traefik Middleware CRDs
+# have no secretKeyRef support, so unlike every other secret in this repo it
+# can't flow through Vault/VSO. It's set out-of-band and carved out of
+# ArgoCD's diffing (see core.yaml ignoreDifferences) — same pattern already
+# used for crowdsec-lapi-secrets and argocd-secret.
+#
+# One-time setup, then flip enabled: true here:
+#   1. kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli bouncers add traefik-bouncer
+#   2. kubectl patch middleware crowdsec-bouncer -n traefik --type merge \
+#        -p '{"spec":{"plugin":{"bouncer":{"crowdsecLapiKey":"<key from step 1>"}}}}'
+crowdsecBouncer:
+  enabled: false
+  mode: stream
+  lapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
+  lapiKey: ""
+  # LAPI runs as a single replica (crowdsec app, lapi.replicas: 1) and this
+  # middleware sits on every request through the cluster's sole ingress —
+  # LAPI being briefly down (rollout, restart) must degrade to "no
+  # enforcement", never to "all ingress traffic blocked". -1 = never block
+  # on LAPI-unreachable (overrides the plugin's own fail-closed default).
+  updateMaxFailure: -1
+  # Bypass the bouncer entirely for LAN traffic — mirrors the existing
+  # crowdsec postoverflows local-network whitelist, so a false positive
+  # can't lock the admin out of their own homelab.
+  clientTrustedIPs:
+  - 192.168.1.0/24

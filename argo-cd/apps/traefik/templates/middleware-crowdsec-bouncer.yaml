@@ -1,0 +1,23 @@
+# Always rendered (see values.yaml crowdsecBouncer) so the entrypoint-level
+# `crowdsec-bouncer@kubernetescrd` reference in ports.web/websecure.http.middlewares
+# never dangles — crowdsecBouncer.enabled gates the plugin itself, not the
+# object's existence.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: crowdsec-bouncer
+  namespace: {{ .Release.Namespace }}
+spec:
+  plugin:
+    bouncer:
+      enabled: {{ .Values.crowdsecBouncer.enabled }}
+      crowdsecMode: {{ .Values.crowdsecBouncer.mode }}
+      crowdsecLapiScheme: http
+      crowdsecLapiHost: {{ .Values.crowdsecBouncer.lapiHost }}
+      crowdsecLapiKey: {{ .Values.crowdsecBouncer.lapiKey | quote }}
+      updateIntervalSeconds: 60
+      updateMaxFailure: {{ .Values.crowdsecBouncer.updateMaxFailure }}
+      {{- with .Values.crowdsecBouncer.clientTrustedIPs }}
+      clientTrustedIPs:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
