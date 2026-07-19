@@ -67,6 +67,17 @@ spec:
       runAsNonRoot: true
       runAsUser: 100
       runAsGroup: 1000
+      # The operator defaults to adding IPC_LOCK (for Vault's mlock), which
+      # Kyverno's pod-security-baseline Enforce policy now rejects (no
+      # non-default capabilities allowed). We already run with
+      # disable_mlock: true above specifically so IPC_LOCK isn't needed —
+      # explicitly declaring capabilities here (vaultContainerSpec is
+      # merged field-by-field into the operator's container spec) is the
+      # documented way to override that default instead of the operator
+      # silently re-adding it.
+      capabilities:
+        drop:
+        - ALL
     # vault-config (emptyDir) and vault-tls (Secret) are already mounted
     # automatically by the operator itself — see the TLS comment above.
     # Declaring them again here duplicates the operator's own auto-added
