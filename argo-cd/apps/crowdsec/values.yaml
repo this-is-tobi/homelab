@@ -151,6 +151,19 @@ crowdsec:
         host: crowdsec-pg-cluster-rw
         port: 5432
         sslmode: require
+        flush:
+          # Every agent pod (and every traefik-bouncer replica, as
+          # traefik@<podIP>) auto-registers on start and is orphaned on pod
+          # churn — the DaemonSet era left 70+ dead machines that the
+          # CrowdSec Console flagged as "Log Processor: no logs read"
+          # incidents. Live components heartbeat/pull every ~60s, so 24h
+          # without activity means a dead pod, not a quiet one.
+          agents_autodelete:
+            login_password: 24h
+            cert: 24h
+          bouncers_autodelete:
+            api_key: 24h
+            cert: 24h
       api:
         server:
           auto_registration:
