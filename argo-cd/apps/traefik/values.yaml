@@ -55,11 +55,17 @@ traefik:
       expose:
         default: true
       exposedPort: 80
+      http:
+        middlewares:
+        - traefik-crowdsec-bouncer@kubernetescrd
     websecure:
       port: 8443
       expose:
         default: true
       exposedPort: 443
+      http:
+        middlewares:
+        - traefik-crowdsec-bouncer@kubernetescrd
 
   # CrowdSec bouncer plugin registration — see crowdsecBouncer (below) for
   # the actual enable/disable switch and LAPI wiring.
@@ -137,15 +143,13 @@ gateway:
 # Middleware CRDs have no secretKeyRef support, so unlike every other secret
 # in this repo it can't flow through Vault/VSO. It's set out-of-band and
 # carved out of ArgoCD's diffing (see core.yaml ignoreDifferences, matched
-# by name only — covers both the traefik and kube-system copies) — same
-# pattern already used for crowdsec-lapi-secrets and argocd-secret.
+# by name only) — same pattern already used for crowdsec-lapi-secrets and
+# argocd-secret.
 #
 # One-time setup:
 #   1. kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli bouncers add traefik-bouncer
 #   2. kubectl patch middleware crowdsec-bouncer -n traefik --type merge \
 #        -p '{"spec":{"plugin":{"bouncer":{"crowdsecLapiKey":"<key from step 1>"}}}}'
-#      kubectl patch middleware crowdsec-bouncer -n kube-system --type merge \
-#        -p '{"spec":{"plugin":{"bouncer":{"crowdsecLapiKey":"<same key>"}}}}'
 #   3. Set crowdsecBouncer.enabled: true below and sync.
 crowdsecBouncer:
   enabled: false

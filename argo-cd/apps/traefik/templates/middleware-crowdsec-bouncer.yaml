@@ -1,73 +1,59 @@
 # NOT currently wired to anything — this object alone does nothing.
 #
-# TWO failed attempts to wire this up as an entrypoint-level static
-# reference (ports.*.http.middlewares), both reverted the same day
-# (2026-07-19):
+# TWO failed live attempts to wire this up (both reverted the same day,
+# 2026-07-19) before the actual root cause was found:
 #
-# Attempt 1 (e7ed9d9, reverted 02d4da1): a single Middleware object only
-# in the traefik namespace. Root cause: Traefik resolves an unqualified
-# `name@kubernetescrd` reference relative to each ROUTER's own namespace,
-# not the traefik namespace — every router elsewhere failed with
-# "middleware ... does not exist", full ingress outage.
+# Attempt 1 (e7ed9d9, reverted 02d4da1): a single Middleware object here in
+# the traefik namespace, referenced from ports.*.http.middlewares as
+# `crowdsec-bouncer@kubernetescrd`. Every router in every OTHER namespace
+# failed with "middleware crowdsec-bouncer@kubernetescrd does not exist" —
+# full ingress outage.
 #
-# Attempt 2 (e37e525, reverted aa116a7): fixed the above by mirroring
-# this object into every namespace with an HTTPRoute — a Kyverno generate
-# policy (argo-cd/apps/kyverno/templates/crowdsec-bouncer-sync.yaml,
-# mirroring sync-vault-ca) for every namespace except kube-system (which
-# Kyverno's own default resourceFilters globally exclude from all policy
-# processing), plus a second copy of this object templated directly here
-# for kube-system specifically (it hosts exactly one route, the
-# HTTP->HTTPS redirect from templates/gateway.yaml's gatewayNamespace).
-# Confirmed via `kubectl get middleware -A` that every target namespace
-# had a correctly-formed copy BEFORE the traefik rollout even started.
-# Still: 100% of routers, in every namespace including ones whose copy
-# had existed for 8+ minutes already, failed with the exact same "does
-# not exist" error, immediately on the new pods coming up — a full
-# repeat outage. Reverted within ~3 minutes of the sync landing
-# (confirmed via traefik access logs: every request got a 404 with
-# DownstreamContentSize 19 during that window; normal status codes
-# resumed immediately after the revert synced).
+# Attempt 2 (e37e525, reverted aa116a7): assumed attempt 1's cause was
+# Traefik resolving the bare name relative to each router's own namespace
+# (true for ROUTER-level middleware refs), so mirrored this object into
+# every namespace with a route via a Kyverno generate policy. Every copy
+# was confirmed present and well-formed before the rollout. Still: 100% of
+# routers failed with the exact same "does not exist" error — a second
+# full outage, reverted within ~3 minutes.
 #
-# The object existing and being well-formed rules out attempt 1's root
-# cause — this is something else, not yet understood. Candidates not yet
-# investigated (do this offline / non-live before a third attempt):
-#   - Traefik's kubernetesCRD/kubernetesgateway provider informer sync
-#     ordering vs. static-config middleware resolution at startup — does
-#     it resolve entrypoint-wide middleware refs against routers before
-#     the Middleware informer's initial List/Watch has completed, with no
-#     retry once the cache warms up?
-#   - Interaction specific to Gateway-API-derived routers (this cluster
-#     has zero IngressRoute-CRD-based routing — every router here is
-#     httproute-*-gw-kube-system-homelab-gateway-traefik-*@kubernetesgateway
-#     — attempt 1's root-cause writeup may not generalize cleanly to this
-#     provider).
-#   - Whether Kyverno-generated objects (vs. hand-authored ones) surface
-#     any different behavior to Traefik's watch (labels, ownership, etc.)
-#     — inspect a generated copy's diff against a hand-authored one.
-# Next attempt should reproduce this against a disposable/local Traefik
-# instance first, not live — this is the second live outage this repo's
-# git history has from this exact area.
-{{- range list .Release.Namespace "kube-system" }}
----
+# Root cause (found 2026-07-19, via docs.traefik.io/traefik/reference/
+# install-configuration/entrypoints/ and reproduced live in a disposable
+# kind cluster before touching this cluster again): ENTRYPOINT-level
+# middleware references are NOT resolved like router-level ones. Traefik's
+# own docs: "Middlewares must be referenced by their fully qualified name,
+# including the provider namespace suffix (<middleware-name>@<provider-
+# name>)" — and for kubernetesCRD specifically the format is
+# `<middleware-namespace>-<middleware-name>@kubernetescrd` (doc example:
+# `default-auth@kubernetescrd`), a single static reference to ONE object,
+# not a per-router-namespace lookup. `crowdsec-bouncer@kubernetescrd` was
+# parsed as namespace=`crowdsec`, name=`bouncer` — an object that never
+# existed anywhere, in either attempt, regardless of mirroring. The kind
+# repro confirmed the fix: a single object here (traefik namespace) plus
+# the entrypoint reference `traefik-crowdsec-bouncer@kubernetescrd` applies
+# correctly to routers in every other namespace, IngressRoute and Gateway-
+# API HTTPRoute alike, with zero mirroring required. The Kyverno sync
+# policy and its RBAC (previously argo-cd/apps/kyverno/templates/
+# crowdsec-bouncer-{sync,rbac}.yaml) were solving a problem entrypoint-
+# level middleware doesn't have — removed.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: crowdsec-bouncer
-  namespace: {{ . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: traefik
 spec:
   plugin:
     bouncer:
-      enabled: {{ $.Values.crowdsecBouncer.enabled }}
-      crowdsecMode: {{ $.Values.crowdsecBouncer.mode }}
+      enabled: {{ .Values.crowdsecBouncer.enabled }}
+      crowdsecMode: {{ .Values.crowdsecBouncer.mode }}
       crowdsecLapiScheme: http
-      crowdsecLapiHost: {{ $.Values.crowdsecBouncer.lapiHost }}
-      crowdsecLapiKey: {{ $.Values.crowdsecBouncer.lapiKey | quote }}
+      crowdsecLapiHost: {{ .Values.crowdsecBouncer.lapiHost }}
+      crowdsecLapiKey: {{ .Values.crowdsecBouncer.lapiKey | quote }}
       updateIntervalSeconds: 60
-      updateMaxFailure: {{ $.Values.crowdsecBouncer.updateMaxFailure }}
-      {{- with $.Values.crowdsecBouncer.clientTrustedIPs }}
+      updateMaxFailure: {{ .Values.crowdsecBouncer.updateMaxFailure }}
+      {{- with .Values.crowdsecBouncer.clientTrustedIPs }}
       clientTrustedIPs:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-{{- end }}
