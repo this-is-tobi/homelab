@@ -550,8 +550,15 @@ keycloakConfigCli:
         duplicateEmailsAllowed: false
         ssoSessionIdleTimeout: 1800
         ssoSessionMaxLifespan: 36000
-        offlineSessionIdleTimeout: 2592000
+        # Explicit rather than Keycloak's inherited 30-day default — no
+        # client currently requests offline_access (all list it only as an
+        # optional scope), so this mainly bounds future/accidental use.
+        offlineSessionIdleTimeout: 604800
         accessTokenLifespan: 300
+        # No minimum was configured at all before (Keycloak's default is
+        # zero complexity/length requirement). notUsername/notEmail block
+        # the most common weak-password pattern (password == identity).
+        passwordPolicy: "length(12) and notUsername and notEmail"
         bruteForceProtected: true
         permanentLockout: false
         maxFailureWaitSeconds: 900
@@ -627,7 +634,6 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:GITEA_CLIENT_SECRET)"
           redirectUris:
-          - "https://git.$(env:ROOT_DOMAIN)/*"
           - "https://git.$(env:ROOT_DOMAIN)/user/oauth2/keycloak/callback"
           webOrigins:
           - "https://git.$(env:ROOT_DOMAIN)"
@@ -635,7 +641,7 @@ keycloakConfigCli:
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
+          directAccessGrantsEnabled: false
           serviceAccountsEnabled: false
           defaultClientScopes:
           - web-origins
@@ -656,7 +662,6 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:GRAFANA_CORE_CLIENT_SECRET)"
           redirectUris:
-          - "https://monitoring.$(env:ROOT_DOMAIN)/*"
           - "https://monitoring.$(env:ROOT_DOMAIN)/login/generic_oauth"
           webOrigins:
           - "https://monitoring.$(env:ROOT_DOMAIN)"
@@ -664,7 +669,7 @@ keycloakConfigCli:
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
+          directAccessGrantsEnabled: false
           serviceAccountsEnabled: false
           defaultClientScopes:
           - web-origins
@@ -699,7 +704,6 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:ARGOCD_CLIENT_SECRET)"
           redirectUris:
-          - "https://gitops.$(env:ROOT_DOMAIN)/*"
           - "https://gitops.$(env:ROOT_DOMAIN)/auth/callback"
           webOrigins:
           - "https://gitops.$(env:ROOT_DOMAIN)"
@@ -707,7 +711,7 @@ keycloakConfigCli:
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
+          directAccessGrantsEnabled: false
           serviceAccountsEnabled: false
           defaultClientScopes:
           - web-origins
@@ -728,7 +732,6 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:ARGOCD_CORE_CLIENT_SECRET)"
           redirectUris:
-          - "https://gitops.core.$(env:ROOT_DOMAIN)/*"
           - "https://gitops.core.$(env:ROOT_DOMAIN)/auth/callback"
           webOrigins:
           - "https://gitops.core.$(env:ROOT_DOMAIN)"
@@ -736,7 +739,7 @@ keycloakConfigCli:
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
+          directAccessGrantsEnabled: false
           serviceAccountsEnabled: false
           defaultClientScopes:
           - web-origins
@@ -757,7 +760,6 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:VAULT_CORE_CLIENT_SECRET)"
           redirectUris:
-          - "https://vault.core.$(env:ROOT_DOMAIN)/*"
           - "https://vault.core.$(env:ROOT_DOMAIN)/ui/vault/auth/oidc/oidc/callback"
           - "https://vault.core.$(env:ROOT_DOMAIN)/oidc/callback"
           webOrigins:
@@ -766,7 +768,7 @@ keycloakConfigCli:
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
+          directAccessGrantsEnabled: false
           serviceAccountsEnabled: false
           defaultClientScopes:
           - web-origins
@@ -787,14 +789,14 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:LONGHORN_CORE_CLIENT_SECRET)"
           redirectUris:
-          - "https://longhorn.core.$(env:ROOT_DOMAIN)/*"
+          - "https://longhorn.core.$(env:ROOT_DOMAIN)/oauth2/callback"
           webOrigins:
           - "https://longhorn.core.$(env:ROOT_DOMAIN)"
           protocol: openid-connect
           publicClient: false
           standardFlowEnabled: true
           implicitFlowEnabled: false
-          directAccessGrantsEnabled: true
+          directAccessGrantsEnabled: false
           serviceAccountsEnabled: false
           # oauth2-proxy validates the ACCESS token's audience against its
           # configured client ID. The default 'roles' scope only adds a
