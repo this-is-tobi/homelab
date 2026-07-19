@@ -37,6 +37,10 @@ kube-prometheus-stack:
         secretKeyRef:
           name: monitoring-sso
           key: OIDC_CLIENT_SECRET
+      GF_DATABASE_PASSWORD:
+        secretKeyRef:
+          name: prometheus-stack-pg-cluster-app
+          key: password
     grafana.ini:
       server:
         root_url: "https://monitoring.ohmlab.fr"
@@ -54,5 +58,14 @@ vso:
       mount: homelab
       path: platforms/production/core/prometheus-stack
     alertmanagerMattermost:
+      mount: homelab
+      path: platforms/production/core/prometheus-stack
+    grafanaDbAdmin:
+      mount: homelab
+      path: platforms/production/core/prometheus-stack
+    grafanaDbApp:
+      mount: homelab
+      path: platforms/production/core/prometheus-stack
+    grafanaPgBackup:
       mount: homelab
       path: platforms/production/core/prometheus-stack
