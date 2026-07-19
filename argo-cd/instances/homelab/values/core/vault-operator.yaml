@@ -242,23 +242,6 @@ ohmlab:
         keycloak:
           clientId: grafana-core
           clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.grafana-core.clientSecret>"
-        postgres:
-          admin:
-            username: postgres
-            password: "<random:24>"
-          app:
-            username: grafana
-            password: "<random:24>"
-          database: grafana
-          host: prometheus-stack-pg-cluster-rw
-          port: "5432"
-          s3:
-            accessKey: ""
-            bucketName: ohmlab-backups
-            bucketPrefix: cnpg
-            endpoint: "https://s3.fr-par.scw.cloud"
-            region: fr-par
-            secretKey: ""
     - path: homelab/platforms/production/core/sops
       data:
         secret: "<age:secret>"
