@@ -172,33 +172,14 @@ crowdsec:
               - "192.168.1.0/24"
               - "10.42.0.0/16"
               - "10.43.0.0/16"
-    # Detect + alert is the first-class goal here (no in-cluster bouncer
-    # enforces these decisions today, besides the opt-in Traefik plugin) —
-    # every remediation-worthy alert is forwarded to Mattermost.
-    profiles.yaml: |
-      name: default_ip_remediation
-      filters:
-        - Alert.Remediation == true && Alert.GetScope() == "Ip"
-      decisions:
-        - type: ban
-          duration: 4h
-      notifications:
-        - mattermost_default
-      on_success: break
-    notifications:
-      mattermost.yaml: |
-        type: slack
-        name: mattermost_default
-        log_level: info
-        format: |
-          {{range . -}}
-          {{$alert := . -}}
-          {{range .Decisions -}}
-          :rotating_light: `{{.Value}}` will get **{{.Type}}** for {{.Duration}} for triggering `{{.Scenario}}` (machine `{{$alert.MachineID}}`).
-          {{end -}}
-          {{end -}}
-        # Mattermost's incoming webhooks are Slack-payload compatible.
-        webhook: ${MATTERMOST_WEBHOOK_URL}
+    # REVERTED 2026-07-19 (see traefik-migration-state / gitops-architecture
+    # memory): CrowdSec notification plugins run as forked subprocess
+    # binaries (/usr/local/lib/crowdsec/plugins/notification-slack) — the
+    # lapi securityContext below (capabilities: drop: [ALL]) blocks that
+    # fork/exec outright ("operation not permitted"), crash-looping LAPI
+    # entirely (not just disabling notifications). Needs the right minimal
+    # capability/securityContext relaxation figured out deliberately before
+    # re-adding profiles.yaml/notifications, not under live-outage pressure.
 
 # -- CNPG PostgreSQL cluster for LAPI persistence
 cnpg:
