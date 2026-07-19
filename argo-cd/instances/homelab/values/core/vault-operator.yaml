@@ -271,12 +271,25 @@ ohmlab:
         admin:
           adminKey: "<random:32>"
           viewerKey: "<random:32>"
+    - path: homelab/platforms/production/core/traefik
+      # Shared credential between traefik (bouncer plugin, reads it via VSO
+      # as a mounted key file) and crowdsec (LAPI pre-registers the bouncer
+      # from it, via the <ref:> below) — traefik's path is the source of
+      # truth, keeping each app's Vault policy scoped to its own path (same
+      # pattern as the keycloak client secrets).
+      data:
+        crowdsecBouncer:
+          lapiKey: "<random:32>"
     - path: homelab/platforms/production/core/crowdsec
       data:
         console:
           enrollKey: "" # Set manually in Vault (from https://app.crowdsec.net/security-engines)
           instanceName: homelab-k8s
           tags: k8s homelab production
+        bouncers:
+          # Mirrors traefik's bouncer key at seed time (refs resolve in
+          # entry order — the traefik path above is written first).
+          traefik: "<ref:homelab/platforms/production/core/traefik#crowdsecBouncer.lapiKey>"
         postgres:
           admin:
             username: postgres

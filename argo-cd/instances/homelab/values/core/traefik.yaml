@@ -50,3 +50,9 @@ gateway:
     hostname: "*.teleport.core.ohmlab.fr"
   - name: tls-teleport-apex
     hostname: teleport.core.ohmlab.fr
+
+vso:
+  vaultStaticSecrets:
+    traefikCrowdsecBouncerKey:
+      mount: homelab
+      path: platforms/production/core/traefik

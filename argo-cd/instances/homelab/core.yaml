@@ -31,16 +31,6 @@ apps:
   enabled: "true"
   namespace: traefik
   syncWave: 11
-  ignoreDifferences:
-  # The crowdsec bouncer plugin's LAPI key has no secretKeyRef path from a
-  # Middleware CRD (Traefik plugin config is opaque YAML, not Vault/VSO-
-  # sourced like every other secret) — set once out-of-band, see
-  # values.yaml crowdsecBouncer for the one-time setup steps.
-  - group: traefik.io
-    kind: Middleware
-    name: crowdsec-bouncer
-    jqPathExpressions:
-    - .spec.plugin.bouncer.crowdsecLapiKey
 - app: apisix
   # Decommissioned 2026-07-18 — traefik is the ingress controller. The
   # catalog app is kept as an escape hatch (like ingress-nginx): re-enabling
