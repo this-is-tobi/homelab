@@ -7,19 +7,18 @@ kind: ClusterRole
 metadata:
   name: kyverno:generate-crowdsec-bouncer
 rules:
+# No resourceNames scoping (unlike kyverno:generate-vault-ca): confirmed
+# live that both native RBAC's `list` AND Kyverno's own internal
+# validate-policy pre-flight check for `get` silently fail against a
+# resourceNames-scoped rule — `kubectl auth can-i get/list ... --as=...`
+# passed fine with resourceNames in place, yet the admission webhook kept
+# denying the ClusterPolicy regardless (and a kyverno-admission-controller
+# restart, to rule out a stale internal cache, didn't change the outcome
+# either). Kyverno's own check evidently doesn't account for resourceNames
+# at all here. Scoped to one resource type (traefik.io Middlewares) only.
 - apiGroups: ["traefik.io"]
   resources: ["middlewares"]
-  resourceNames: ["crowdsec-bouncer"]
-  verbs: ["get", "create", "update", "patch", "delete"]
-- apiGroups: ["traefik.io"]
-  resources: ["middlewares"]
-  # list/watch can't be scoped by resourceNames (Kubernetes RBAC only
-  # applies resourceNames to per-object verbs) — confirmed live via
-  # `kubectl auth can-i list ... --as=...`: the rule above alone left
-  # kyverno-admission-controller unable to list at all, failing its own
-  # policy-validation webhook even though the named get/create/etc all
-  # worked. Scoped to just this resource type, list-only.
-  verbs: ["list"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
