@@ -55,17 +55,11 @@ traefik:
       expose:
         default: true
       exposedPort: 80
-      http:
-        middlewares:
-        - traefik-crowdsec-bouncer@kubernetescrd
     websecure:
       port: 8443
       expose:
         default: true
       exposedPort: 443
-      http:
-        middlewares:
-        - traefik-crowdsec-bouncer@kubernetescrd
 
   # CrowdSec bouncer plugin registration — see crowdsecBouncer (below) for
   # the actual enable/disable switch and LAPI wiring.
