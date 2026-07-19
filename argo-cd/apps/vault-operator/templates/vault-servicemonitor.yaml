@@ -1,0 +1,38 @@
+{{- if .Values.vault.enabled }}
+---
+# Replaces the operator's own auto-generated ServiceMonitor (disabled via
+# vault.serviceMonitor.enabled: false in values.yaml — it unconditionally
+# required a bearer token file that was never provisioned, permanently
+# failing every scrape). Targets the same api-port endpoint the operator's
+# version did, but relies on config.telemetry.unauthenticated (values.yaml)
+# instead of a token — no secret to provision or rotate.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.vault.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: vault
+spec:
+  jobLabel: vault_cr
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+      vault_cr: {{ .Values.vault.name }}
+    matchExpressions:
+    - key: statefulset.kubernetes.io/pod-name
+      operator: Exists
+  endpoints:
+  - port: api-port
+    scheme: https
+    path: /v1/sys/metrics
+    params:
+      format:
+      - prometheus
+    interval: 30s
+    tlsConfig:
+      insecureSkipVerify: true
+{{- end }}

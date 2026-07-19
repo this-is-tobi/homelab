@@ -73,7 +73,12 @@ vault:
     tls:
       enabled: true
     telemetry:
-      unauthenticated: false
+      # /v1/sys/metrics exposes only operational telemetry (no secret
+      # values), reachable exclusively via the internal ClusterIP service —
+      # HashiCorp's own documented pattern for Prometheus scraping without
+      # provisioning and rotating a dedicated Vault token. See
+      # templates/vault-servicemonitor.yaml.
+      unauthenticated: true
       retention: 10m
       disableHostname: true
   externalConfig:
@@ -369,8 +374,15 @@ vault:
   # Exposed via Gateway API HTTPRoute + BackendTLSPolicy — no Ingress.
   ingress:
     enabled: false
+  # Operator auto-generates this ServiceMonitor unconditionally with a
+  # bearerTokenFile requirement (/etc/prometheus/config_out/.vault-token)
+  # that was never provisioned — every scrape failed with "unable to read
+  # authorization credentials", a local file-read error on Prometheus's
+  # side that unauthenticated_metrics_access (below) can't fix by itself.
+  # Disabled here; templates/vault-servicemonitor.yaml replaces it with a
+  # git-managed one that needs no token at all.
   serviceMonitor:
-    enabled: true
+    enabled: false
   statsd:
     enabled: true
     image: "prom/statsd-exporter:v0.29.0"
