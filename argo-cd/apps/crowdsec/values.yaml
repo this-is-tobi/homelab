@@ -371,7 +371,13 @@ vso:
           - ".*"
           templates:
             MATTERMOST_WEBHOOK_URL:
-              text: '{{ get .Secrets "notifications" | dig "mattermostWebhookUrl" "" }}'
+              # Flat key, not nested under a "notifications" map: this
+              # Vault path already has an unrelated "notifications" key
+              # holding a plain string, and dig errors converting a string
+              # into a map (same failure mode fixed for alertmanager's
+              # webhook earlier this session) — broke crowdsec-lapi
+              # (CreateContainerConfigError) until this fix.
+              text: '{{ get .Secrets "crowdsecMattermostWebhookUrl" "" }}'
 
 # -- Rendered by templates/prometheusrule.yaml (this wrapper chart, not the
 # crowdsec subchart).
