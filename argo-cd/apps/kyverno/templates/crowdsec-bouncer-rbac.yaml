@@ -10,7 +10,16 @@ rules:
 - apiGroups: ["traefik.io"]
   resources: ["middlewares"]
   resourceNames: ["crowdsec-bouncer"]
-  verbs: ["get", "list", "create", "update", "patch", "delete"]
+  verbs: ["get", "create", "update", "patch", "delete"]
+- apiGroups: ["traefik.io"]
+  resources: ["middlewares"]
+  # list/watch can't be scoped by resourceNames (Kubernetes RBAC only
+  # applies resourceNames to per-object verbs) — confirmed live via
+  # `kubectl auth can-i list ... --as=...`: the rule above alone left
+  # kyverno-admission-controller unable to list at all, failing its own
+  # policy-validation webhook even though the named get/create/etc all
+  # worked. Scoped to just this resource type, list-only.
+  verbs: ["list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
