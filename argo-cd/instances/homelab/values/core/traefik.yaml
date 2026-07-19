@@ -7,6 +7,21 @@
 traefik:
   deployment:
     replicas: 2
+  # Trust PROXY protocol v2 ONLY from the gateway (pi-gw, ansible inventory
+  # hosts.yml) — HAProxy's `mode tcp` backends proxy (new TCP connection,
+  # gateway's own source IP) rather than pass the original connection
+  # through, so without this every request looks like it comes from the
+  # gateway. Scoped to /32: trusting a wider range would let anyone on that
+  # range spoof PROXY protocol headers and forge their source IP.
+  ports:
+    web:
+      proxyProtocol:
+        trustedIPs:
+        - 192.168.1.99/32
+    websecure:
+      proxyProtocol:
+        trustedIPs:
+        - 192.168.1.99/32
 
 gateway:
   enabled: true
