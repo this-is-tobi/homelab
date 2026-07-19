@@ -6,6 +6,21 @@
 traefik:
   deployment:
     replicas: 2
+    # CrowdSec bouncer LAPI key, delivered by VSO (see vso: at the bottom)
+    # and read by the crowdsec-bouncer Middleware via crowdsecLapiKeyFile —
+    # the Middleware CRD has no secretKeyRef support, a mounted file is the
+    # only way to keep the key out of the CRD. A missing Secret blocks new
+    # pods at ContainerCreating (old pods keep serving) instead of building
+    # routers with a broken middleware.
+    additionalVolumes:
+    - name: crowdsec-bouncer-key
+      secret:
+        secretName: traefik-crowdsec-bouncer-key
+
+  additionalVolumeMounts:
+  - name: crowdsec-bouncer-key
+    mountPath: /etc/traefik/crowdsec-bouncer
+    readOnly: true
 
   podDisruptionBudget:
     enabled: true
@@ -129,27 +144,26 @@ gateway:
 
 # CrowdSec bouncer plugin (templates/middleware-crowdsec-bouncer.yaml) —
 # active IP blocking at the edge, on top of the crowdsec app's detect+alert.
-# Wired to every route via ports.web/websecure.http.middlewares above.
-# enabled: false below means the plugin itself is still a no-op regardless
-# — flip it once the one-time setup is done.
 #
-# Disabled by default regardless: `lapiKey` is a real secret and Traefik
-# Middleware CRDs have no secretKeyRef support, so unlike every other secret
-# in this repo it can't flow through Vault/VSO. It's set out-of-band and
-# carved out of ArgoCD's diffing (see core.yaml ignoreDifferences, matched
-# by name only) — same pattern already used for crowdsec-lapi-secrets and
-# argocd-secret.
+# The LAPI key never appears in git or in the Middleware CRD: it lives in
+# Vault (crowdsecBouncer.lapiKey on this app's Vault path, seeded by the
+# vault-operator instance config), VSO below delivers it as a Secret in
+# this namespace, the deployment mounts that Secret as a file, and the
+# middleware references it via crowdsecLapiKeyFile. The crowdsec app's
+# LAPI pre-registers the same key (BOUNCER_KEY_traefik env, mirrored on
+# its Vault path via <ref:>) — no cscli or kubectl one-time steps.
 #
-# One-time setup:
-#   1. kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli bouncers add traefik-bouncer
-#   2. kubectl patch middleware crowdsec-bouncer -n traefik --type merge \
-#        -p '{"spec":{"plugin":{"bouncer":{"crowdsecLapiKey":"<key from step 1>"}}}}'
-#   3. Set crowdsecBouncer.enabled: true below and sync.
+# IMPORTANT (learned from outage #3, commit 86ce841): the plugin's New()
+# validates the LAPI key at router build time REGARDLESS of enabled: false
+# — `enabled` only gates ServeHTTP. Never wire the entrypoint reference
+# unless the key file is present and non-empty in the pods.
 crowdsecBouncer:
   enabled: false
   mode: stream
   lapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
-  lapiKey: ""
+  # Path of the key file inside the traefik container — must match the
+  # additionalVolumeMounts entry above.
+  lapiKeyFile: /etc/traefik/crowdsec-bouncer/api-key
   # LAPI runs as a single replica (crowdsec app, lapi.replicas: 1) and this
   # middleware sits on every request through the cluster's sole ingress —
   # LAPI being briefly down (rollout, restart) must degrade to "no
@@ -161,3 +175,44 @@ crowdsecBouncer:
   # can't lock the admin out of their own homelab.
   clientTrustedIPs:
   - 192.168.1.0/24
+
+# -- VSO (Vault Secrets Operator) integration
+# Delivers the crowdsec bouncer LAPI key from Vault as a Secret in this
+# namespace (mounted into the traefik pods, see additionalVolumes above).
+# Set mount/path per-instance in argo-cd/instances/<name>/values/core/traefik.yaml
+vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: traefik
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultStaticSecrets:
+    traefikCrowdsecBouncerKey:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: traefik-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: traefik-crowdsec-bouncer-key
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            api-key:
+              text: '{{ get .Secrets "crowdsecBouncer" | dig "lapiKey" "" }}'

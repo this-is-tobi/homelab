@@ -33,6 +33,17 @@ crowdsec:
         secretKeyRef:
           name: crowdsec-mattermost-webhook
           key: MATTERMOST_WEBHOOK_URL
+    # Pre-registers the traefik bouncer at LAPI container start (the
+    # crowdsec image registers a bouncer for every BOUNCER_KEY_<name> env).
+    # Deliberately NOT optional: a missing secret must block the pod (old
+    # pod keeps serving) rather than silently start an LAPI the traefik
+    # bouncer can't authenticate to. Registration is start-time only — a
+    # key rotation needs `cscli bouncers delete traefik` + LAPI restart.
+    - name: BOUNCER_KEY_traefik
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-bouncer-key-traefik
+          key: key
     persistentVolume:
       data:
         enabled: true
@@ -352,6 +363,27 @@ vso:
               # webhook earlier this session) — broke crowdsec-lapi
               # (CreateContainerConfigError) until this fix.
               text: '{{ get .Secrets "crowdsecMattermostWebhookUrl" }}'
+    crowdsecTraefikBouncerKey:
+      # LAPI-side copy of the traefik bouncer key (consumed by the
+      # BOUNCER_KEY_traefik env above). Source of truth is the traefik
+      # Vault path — the crowdsec path's `bouncers.traefik` mirrors it at
+      # seed time (see instance vault-operator.yaml).
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: crowdsec-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: crowdsec-bouncer-key-traefik
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            key:
+              text: '{{ get .Secrets "bouncers" | dig "traefik" "" }}'
 
 # -- Rendered by templates/prometheusrule.yaml (this wrapper chart, not the
 # crowdsec subchart).

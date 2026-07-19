@@ -204,6 +204,11 @@ vault:
         path "homelab/data/platforms/+/+/apisix" {
           capabilities = ["read", "list"]
         }
+    - name: traefik
+      rules: |
+        path "homelab/data/platforms/+/+/traefik" {
+          capabilities = ["read", "list"]
+        }
     auth:
     - type: kubernetes
       roles:
@@ -294,6 +299,11 @@ vault:
         bound_service_account_names: [vso]
         bound_service_account_namespaces: [apisix]
         policies: [apisix]
+        ttl: 1h
+      - name: traefik
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [traefik]
+        policies: [traefik]
         ttl: 1h
       # VSO service account in vault-operator-system for vault-oidc-credentials.
       # Uses the 'vault' policy (read homelab/data/platforms/+/+/keycloak).

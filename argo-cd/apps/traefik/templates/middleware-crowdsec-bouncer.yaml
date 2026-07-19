@@ -1,41 +1,28 @@
-# NOT currently wired to anything — this object alone does nothing.
+# CrowdSec bouncer middleware — wired to every router via the entrypoint
+# references in values.yaml (ports.web/websecure.http.middlewares).
 #
-# TWO failed live attempts to wire this up (both reverted the same day,
-# 2026-07-19) before the actual root cause was found:
+# Hard-won wiring rules (three live outages on 2026-07-19 before this
+# design — see git history e7ce/02d4, e37e/aa11, 5a1c/86ce):
 #
-# Attempt 1 (e7ed9d9, reverted 02d4da1): a single Middleware object here in
-# the traefik namespace, referenced from ports.*.http.middlewares as
-# `crowdsec-bouncer@kubernetescrd`. Every router in every OTHER namespace
-# failed with "middleware crowdsec-bouncer@kubernetescrd does not exist" —
-# full ingress outage.
+#  1. ENTRYPOINT-level middleware references use a fully qualified,
+#     namespace-PREFIXED name: `traefik-crowdsec-bouncer@kubernetescrd`
+#     (<namespace>-<name>@kubernetescrd, per Traefik's entrypoints
+#     reference docs). This differs from ROUTER-level references, which
+#     resolve a bare `name@kubernetescrd` against the router's own
+#     namespace. The bare form parsed as namespace=crowdsec/name=bouncer —
+#     nonexistent — and 404'd every route (outages #1 and #2; the Kyverno
+#     cross-namespace mirroring built for #2 solved a problem entrypoint
+#     references don't have, and was removed). Confirmed in a disposable
+#     kind cluster against both IngressRoute and Gateway API HTTPRoute.
 #
-# Attempt 2 (e37e525, reverted aa116a7): assumed attempt 1's cause was
-# Traefik resolving the bare name relative to each router's own namespace
-# (true for ROUTER-level middleware refs), so mirrored this object into
-# every namespace with a route via a Kyverno generate policy. Every copy
-# was confirmed present and well-formed before the rollout. Still: 100% of
-# routers failed with the exact same "does not exist" error — a second
-# full outage, reverted within ~3 minutes.
-#
-# Root cause (found 2026-07-19, via docs.traefik.io/traefik/reference/
-# install-configuration/entrypoints/ and reproduced live in a disposable
-# kind cluster before touching this cluster again): ENTRYPOINT-level
-# middleware references are NOT resolved like router-level ones. Traefik's
-# own docs: "Middlewares must be referenced by their fully qualified name,
-# including the provider namespace suffix (<middleware-name>@<provider-
-# name>)" — and for kubernetesCRD specifically the format is
-# `<middleware-namespace>-<middleware-name>@kubernetescrd` (doc example:
-# `default-auth@kubernetescrd`), a single static reference to ONE object,
-# not a per-router-namespace lookup. `crowdsec-bouncer@kubernetescrd` was
-# parsed as namespace=`crowdsec`, name=`bouncer` — an object that never
-# existed anywhere, in either attempt, regardless of mirroring. The kind
-# repro confirmed the fix: a single object here (traefik namespace) plus
-# the entrypoint reference `traefik-crowdsec-bouncer@kubernetescrd` applies
-# correctly to routers in every other namespace, IngressRoute and Gateway-
-# API HTTPRoute alike, with zero mirroring required. The Kyverno sync
-# policy and its RBAC (previously argo-cd/apps/kyverno/templates/
-# crowdsec-bouncer-{sync,rbac}.yaml) were solving a problem entrypoint-
-# level middleware doesn't have — removed.
+#  2. The plugin's New() validates the LAPI key at ROUTER BUILD time,
+#     regardless of `enabled: false` (enabled only gates ServeHTTP, see
+#     pkg/configuration ValidateParams upstream). An empty key breaks
+#     every router on the entrypoint (outage #3). The key is therefore
+#     delivered before any wiring: Vault (this app's path, seeded by
+#     vault-operator) -> VSO -> Secret -> file mount -> crowdsecLapiKeyFile
+#     below. Missing Secret = new pods block at ContainerCreating while
+#     old pods keep serving — fail-safe by construction.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
@@ -50,7 +37,7 @@ spec:
       crowdsecMode: {{ .Values.crowdsecBouncer.mode }}
       crowdsecLapiScheme: http
       crowdsecLapiHost: {{ .Values.crowdsecBouncer.lapiHost }}
-      crowdsecLapiKey: {{ .Values.crowdsecBouncer.lapiKey | quote }}
+      crowdsecLapiKeyFile: {{ .Values.crowdsecBouncer.lapiKeyFile }}
       updateIntervalSeconds: 60
       updateMaxFailure: {{ .Values.crowdsecBouncer.updateMaxFailure }}
       {{- with .Values.crowdsecBouncer.clientTrustedIPs }}

@@ -38,3 +38,6 @@ vso:
     crowdsecMattermostWebhook:
       mount: homelab
       path: platforms/production/core/crowdsec
+    crowdsecTraefikBouncerKey:
+      mount: homelab
+      path: platforms/production/core/crowdsec

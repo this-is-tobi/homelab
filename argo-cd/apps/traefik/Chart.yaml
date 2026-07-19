@@ -13,3 +13,7 @@ dependencies:
   alias: traefik
   version: 41.0.2
   repository: https://traefik.github.io/charts
+- name: vso-utils
+  alias: vso
+  version: 2.0.0
+  repository: https://this-is-tobi.github.io/helm-charts
