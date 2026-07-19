@@ -15,7 +15,9 @@ apps:
   releaseName: longhorn-system
   syncWave: 0
 - app: cilium
-  enabled: "false" # Reverted to flannel — Cilium BPF lockout on RPi4 arm64
+  # Flannel today. Flipping to "true" deploys cilium DORMANT (no datapath
+  # change) — rolling runbook + gates: .local/cilium-migration-plan.md
+  enabled: "false"
   namespace: kube-system
   syncWave: 5
 - app: cert-manager

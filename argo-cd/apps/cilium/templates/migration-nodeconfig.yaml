@@ -1,0 +1,30 @@
+{{- if .Values.migration.enabled }}
+# Rolling flannel→cilium migration (official Cilium guide adapted to k3s —
+# runbook: .local/cilium-migration-plan.md F8). Nodes labeled
+# {{ .Values.migration.nodeLabel }}=true get the cilium CNI conf written and
+# become Cilium-managed after a reboot; unlabeled nodes stay on flannel.
+# Per-node rollback: remove the label, delete the conflist, reboot
+# (scripts/cilium-rollback-node.sh).
+#
+# NOTE: cni-chaining-mode is deliberately NOT set here — it inherits
+# `portmap` from the agent ConfigMap (cni.chainingMode) so svclb hostPorts
+# keep working on migrated nodes.
+apiVersion: cilium.io/v2
+kind: CiliumNodeConfig
+metadata:
+  name: cilium-migration
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    # The CiliumNodeConfig CRD is registered by cilium itself on first
+    # install — skip the dry-run so the same ArgoCD sync can create both.
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  nodeSelector:
+    matchLabels:
+      {{ .Values.migration.nodeLabel }}: "true"
+  defaults:
+    # CONTAINER-side path (agent mounts cni.confPath there) — see values.yaml.
+    write-cni-conf-when-ready: {{ .Values.migration.cniConfPath }}
+    custom-cni-conf: "false"
+    cni-exclusive: "true"
+{{- end }}
