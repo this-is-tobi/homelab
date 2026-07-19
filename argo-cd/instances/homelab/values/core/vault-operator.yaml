@@ -30,7 +30,16 @@ vault:
     oidcRedirectUris:
     - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     - "https://vault.core.ohmlab.fr/oidc/callback"
-  extraEnvsConfig:
+  # NOT extraEnvsConfig: that only reaches the Vault server container.
+  # vault-configurer is the one that evaluates ${ .Env.VAULT_OIDC_CLIENT_SECRET }
+  # in externalConfig.auth[].config.oidc_client_secret before pushing it to
+  # Vault's API, and only envsConfig (all bank-vaults pods) reaches it. Using
+  # extraEnvsConfig here silently pushed an empty client secret to Vault's
+  # oidc auth method every time (confirmed live: vault-configurer's pod env
+  # had no VAULT_OIDC_CLIENT_SECRET at all) — root cause of the persistent
+  # "unauthorized_client" / "Invalid client or Invalid client credentials"
+  # login failure.
+  envsConfig:
   - name: VAULT_OIDC_CLIENT_SECRET
     valueFrom:
       secretKeyRef:

@@ -378,6 +378,13 @@ vault:
   # POD_NAME / VAULT_API_ADDR / SKIP_CHOWN / SKIP_SETCAP entries).
   # Set per-instance — empty by default.
   extraEnvsConfig: []
+  # Env vars passed to ALL bank-vaults pods, including vault-configurer —
+  # unlike extraEnvsConfig/vaultEnvsConfig above, which only reaches the
+  # Vault server container. Anything referenced via ${ .Env.X } inside
+  # externalConfig (e.g. oidc_client_secret) is templated by vault-configurer
+  # itself when it pushes that config through Vault's API, so secrets needed
+  # there MUST go here, not extraEnvsConfig.
+  envsConfig: []
   agent:
     enabled: true
 
