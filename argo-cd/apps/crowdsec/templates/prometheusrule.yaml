@@ -1,0 +1,30 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+# Detect+alert is the first-class goal for crowdsec: the Mattermost
+# notification plugin (values.yaml crowdsec.config.notifications) covers
+# "an attack was detected"; this covers "the detector itself went blind".
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-liveness
+  namespace: {{ .Release.Namespace }}
+spec:
+  groups:
+  - name: crowdsec.liveness
+    rules:
+    - alert: CrowdsecLapiDown
+      expr: kube_deployment_status_replicas_available{namespace="{{ .Release.Namespace }}", deployment="{{ .Release.Name }}-lapi"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: CrowdSec LAPI has no available replicas
+        description: No decisions are being made or served — detection and enforcement are both blind.
+    - alert: CrowdsecAgentNotFullyReady
+      expr: kube_daemonset_status_number_ready{namespace="{{ .Release.Namespace }}", daemonset="{{ .Release.Name }}-agent"} < kube_daemonset_status_desired_number_scheduled{namespace="{{ .Release.Namespace }}", daemonset="{{ .Release.Name }}-agent"}
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: CrowdSec agent DaemonSet is not fully ready
+        description: One or more nodes are not being monitored for traefik/auth.log attack scenarios.
+{{- end }}

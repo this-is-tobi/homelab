@@ -28,6 +28,11 @@ crowdsec:
         secretKeyRef:
           name: crowdsec-pg-cluster-app
           key: password
+    - name: MATTERMOST_WEBHOOK_URL
+      valueFrom:
+        secretKeyRef:
+          name: crowdsec-mattermost-webhook
+          key: MATTERMOST_WEBHOOK_URL
     persistentVolume:
       data:
         enabled: true
@@ -167,6 +172,33 @@ crowdsec:
               - "192.168.1.0/24"
               - "10.42.0.0/16"
               - "10.43.0.0/16"
+    # Detect + alert is the first-class goal here (no in-cluster bouncer
+    # enforces these decisions today, besides the opt-in Traefik plugin) —
+    # every remediation-worthy alert is forwarded to Mattermost.
+    profiles.yaml: |
+      name: default_ip_remediation
+      filters:
+        - Alert.Remediation == true && Alert.GetScope() == "Ip"
+      decisions:
+        - type: ban
+          duration: 4h
+      notifications:
+        - mattermost_default
+      on_success: break
+    notifications:
+      mattermost.yaml: |
+        type: slack
+        name: mattermost_default
+        log_level: info
+        format: |
+          {{range . -}}
+          {{$alert := . -}}
+          {{range .Decisions -}}
+          :rotating_light: `{{.Value}}` will get **{{.Type}}** for {{.Duration}} for triggering `{{.Scenario}}` (machine `{{$alert.MachineID}}`).
+          {{end -}}
+          {{end -}}
+        # Mattermost's incoming webhooks are Slack-payload compatible.
+        webhook: ${MATTERMOST_WEBHOOK_URL}
 
 # -- CNPG PostgreSQL cluster for LAPI persistence
 cnpg:
@@ -323,3 +355,26 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
+    crowdsecMattermostWebhook:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: crowdsec-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: crowdsec-mattermost-webhook
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            MATTERMOST_WEBHOOK_URL:
+              text: '{{ get .Secrets "notifications" | dig "mattermostWebhookUrl" "" }}'
+
+# -- Rendered by templates/prometheusrule.yaml (this wrapper chart, not the
+# crowdsec subchart).
+monitoring:
+  prometheusRule:
+    enabled: true
