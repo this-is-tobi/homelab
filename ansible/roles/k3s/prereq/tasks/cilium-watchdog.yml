@@ -1,0 +1,31 @@
+---
+# Dead-man switch for Cilium work (details: templates/cilium-watchdog.sh.j2).
+# Split out of migrate-cilium.yml so the watchdog can be armed FLEET-WIDE
+# BEFORE the first canary node, without stopping k3s or touching CNI state:
+#   ansible-playbook install.yml --tags cilium-watchdog
+# migrate-cilium.yml includes this file, so the final-flip flow is unchanged.
+# Remove after the migration is validated:
+#   systemctl disable --now cilium-watchdog
+
+- name: Install cilium-watchdog script (dead-man switch)
+  ansible.builtin.template:
+    src: cilium-watchdog.sh.j2
+    dest: /usr/local/bin/cilium-watchdog.sh
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install cilium-watchdog systemd unit
+  ansible.builtin.template:
+    src: cilium-watchdog.service.j2
+    dest: /etc/systemd/system/cilium-watchdog.service
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Enable and start cilium-watchdog
+  ansible.builtin.systemd:
+    name: cilium-watchdog
+    state: started
+    enabled: true
+    daemon_reload: true

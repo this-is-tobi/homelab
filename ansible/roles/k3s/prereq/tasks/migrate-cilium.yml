@@ -1,40 +1,24 @@
 ---
-# Pre-migration cleanup: flannel → Cilium
-# Run BEFORE K3s restart with: --tags cilium-migrate
-# Removes flannel/Cilium residue so K3s starts clean with Cilium as sole CNI.
+# FINAL-FLIP cleanup: flannel → Cilium (rolling migration, step 6)
+# Runbook of record: .local/cilium-migration-plan.md (F8).
 #
-# K3s flags for Cilium PHASE 1 (see argo-cd/apps/cilium/values.yaml):
-#   --flannel-backend=none --disable-network-policy
+# In the ROLLING flow this runs only at the END, per node (serial: 1), AFTER
+# all 9 nodes are already Cilium-managed via the CiliumNodeConfig/label
+# mechanism — it removes the now-dead flannel/kube-router state so K3s can
+# restart with:  --flannel-backend=none --disable-network-policy
 # Do NOT pass --disable-kube-proxy: phase 1 keeps kube-proxy so Cilium never
 # attaches BPF to the physical uplink (the May 2026 SSH-lockout root cause).
 #
-# Safety net: installs the cilium-watchdog dead-man switch FIRST. It detaches
-# BPF from the uplink if the gateway becomes unreachable (~3 min) and reboots
-# the node as last resort (~5 min). Remove it once the migration is validated:
-#   systemctl disable --now cilium-watchdog
+# Run with: --tags cilium-migrate  (after updating group_vars/k3s.yml flags)
+# This play STOPS K3s and leaves it stopped — follow with the deploy plays to
+# re-template the systemd units with the new flags and start K3s again:
+#   ansible-playbook install.yml --tags cilium-migrate,k3s-masters --limit <master>
+#   ansible-playbook install.yml --tags cilium-migrate,k3s-workers --limit <worker>
+# Arm the watchdog fleet-wide BEFORE the first canary (does not touch k3s):
+#   --tags cilium-watchdog
 
-- name: Install cilium-watchdog script (dead-man switch)
-  ansible.builtin.template:
-    src: cilium-watchdog.sh.j2
-    dest: /usr/local/bin/cilium-watchdog.sh
-    owner: root
-    group: root
-    mode: "0755"
-
-- name: Install cilium-watchdog systemd unit
-  ansible.builtin.template:
-    src: cilium-watchdog.service.j2
-    dest: /etc/systemd/system/cilium-watchdog.service
-    owner: root
-    group: root
-    mode: "0644"
-
-- name: Enable and start cilium-watchdog
-  ansible.builtin.systemd:
-    name: cilium-watchdog
-    state: started
-    enabled: true
-    daemon_reload: true
+- name: Arm the cilium-watchdog dead-man switch
+  ansible.builtin.include_tasks: cilium-watchdog.yml
 
 - name: Stop K3s service
   ansible.builtin.systemd:
@@ -53,6 +37,9 @@
   changed_when: false
 
 - name: Clean up flannel interfaces and state
+  # NOTE (rolling flow): cilium_* interfaces and the k3s-dir 05-cilium.conflist
+  # belong to the LIVE cilium install at this point — they are recreated by the
+  # agent after the K3s restart; deleting them here still yields a clean start.
   ansible.builtin.shell: |
     ip link delete flannel.1 2>/dev/null || true
     ip link delete cni0 2>/dev/null || true
@@ -63,6 +50,10 @@
     rm -rf /var/lib/cni/ 2>/dev/null || true
     rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/10-flannel.conflist 2>/dev/null || true
     rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
+    rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/*.cilium_bak 2>/dev/null || true
+    # May 2026 residue: written to paths k3s containerd never reads (plan F3)
+    rm -f /etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
+    rm -f /opt/cni/bin/cilium-cni 2>/dev/null || true
   changed_when: false
   ignore_errors: true
 

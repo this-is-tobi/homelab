@@ -151,7 +151,25 @@
   tags:
     - k3s-destroy
 
-# K3S - Cilium Migration (run AFTER Cilium is deployed and healthy)
+# K3S - Cilium watchdog (arm the dead-man switch fleet-wide BEFORE the first
+# canary node — safe anytime, does not touch k3s or CNI state)
+- name: Arm the Cilium watchdog
+  hosts: k3s
+  become: true
+  vars_files:
+    - ./inventory/group_vars/vault.yml
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  tasks:
+    - name: Include Cilium watchdog tasks
+      ansible.builtin.include_tasks: roles/k3s/prereq/tasks/cilium-watchdog.yml
+  tags:
+    - cilium-watchdog
+    - never
+
+# K3S - Cilium FINAL FLIP (rolling migration step 6: run only after ALL nodes
+# are Cilium-managed and group_vars/k3s.yml flags were switched — see
+# .local/cilium-migration-plan.md)
 - name: Migrate K3S from Flannel to Cilium
   hosts: k3s
   become: true
