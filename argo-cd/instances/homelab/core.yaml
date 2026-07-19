@@ -15,9 +15,10 @@ apps:
   releaseName: longhorn-system
   syncWave: 0
 - app: cilium
-  # Flannel today. Flipping to "true" deploys cilium DORMANT (no datapath
-  # change) — rolling runbook + gates: .local/cilium-migration-plan.md
-  enabled: "false"
+  # ROLLING MIGRATION IN PROGRESS (since 2026-07-20): deployed DORMANT — no
+  # datapath change until a node carries the io.cilium.migration label.
+  # Runbook + gates: .local/cilium-migration-plan.md
+  enabled: "true"
   namespace: kube-system
   syncWave: 5
 - app: cert-manager
