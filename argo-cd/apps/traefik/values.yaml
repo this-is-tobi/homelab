@@ -55,25 +55,11 @@ traefik:
       expose:
         default: true
       exposedPort: 80
-      http:
-        # Entrypoint-wide middleware — applies to every router on this
-        # entrypoint without touching each app's HTTPRoute. Safe now that
-        # a local crowdsec-bouncer Middleware exists in every namespace
-        # with a route (Kyverno generate policy + a hand-templated copy
-        # for kube-system, see middleware-crowdsec-bouncer.yaml) — an
-        # unqualified name@kubernetescrd reference resolves relative to
-        # each ROUTER's own namespace, so without a copy everywhere this
-        # is a full ingress outage (see that template's header comment).
-        middlewares:
-        - crowdsec-bouncer@kubernetescrd
     websecure:
       port: 8443
       expose:
         default: true
       exposedPort: 443
-      http:
-        middlewares:
-        - crowdsec-bouncer@kubernetescrd
 
   # CrowdSec bouncer plugin registration — see crowdsecBouncer (below) for
   # the actual enable/disable switch and LAPI wiring.
