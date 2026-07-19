@@ -35,3 +35,6 @@ vso:
     crowdsecPgBackup:
       mount: homelab
       path: platforms/production/core/crowdsec
+    crowdsecMattermostWebhook:
+      mount: homelab
+      path: platforms/production/core/crowdsec
