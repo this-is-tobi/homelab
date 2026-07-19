@@ -60,12 +60,3 @@ vso:
     alertmanagerMattermost:
       mount: homelab
       path: platforms/production/core/prometheus-stack
-    grafanaDbAdmin:
-      mount: homelab
-      path: platforms/production/core/prometheus-stack
-    grafanaDbApp:
-      mount: homelab
-      path: platforms/production/core/prometheus-stack
-    grafanaPgBackup:
-      mount: homelab
-      path: platforms/production/core/prometheus-stack

@@ -211,8 +211,17 @@ cnpg:
       memory: 512Mi
   affinity:
     topologyKey: kubernetes.io/hostname
+  # Disabled: the S3 credentials at this Vault path are still empty
+  # placeholders (same as every other app's backup config in this repo).
+  # For an already-bootstrapped cluster that's harmless, but the
+  # barman-cloud plugin's pre-reconcile hook validates the ObjectStore
+  # BEFORE allowing initial bootstrap — with empty credentials it blocks
+  # the cluster from ever coming up at all (confirmed live: 6+ minutes,
+  # zero pods, "Pre-reconcile hook stopped the reconciliation loop"/
+  # barman-cloud.cloudnative-pg.io). Re-enable once real S3 credentials
+  # are added to Vault.
   backup:
-    enabled: true
+    enabled: false
     legacyMode: false
     endpointURL: ""
     destinationPath: "s3://"
@@ -309,68 +318,15 @@ vso:
             # renders empty until the webhook URL is added to Vault.
             webhookUrl:
               text: '{{ get .Secrets "alertmanagerMattermostWebhookUrl" | default "" }}'
-    grafanaDbAdmin:
-      mount: ""
-      path: ""
-      type: kv-v2
-      vaultAuthRef: prometheus-stack-vso-default
-      refreshAfter: 1h
-      hmacSecretData: true
-      destination:
-        name: prometheus-stack-pg-cluster-admin
-        create: true
-        type: kubernetes.io/basic-auth
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            username:
-              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
-            password:
-              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
-    grafanaDbApp:
-      mount: ""
-      path: ""
-      type: kv-v2
-      vaultAuthRef: prometheus-stack-vso-default
-      refreshAfter: 1h
-      hmacSecretData: true
-      destination:
-        name: prometheus-stack-pg-cluster-app
-        create: true
-        type: kubernetes.io/basic-auth
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            username:
-              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
-            password:
-              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
-    grafanaPgBackup:
-      mount: ""
-      path: ""
-      type: kv-v2
-      vaultAuthRef: prometheus-stack-vso-default
-      refreshAfter: 1h
-      hmacSecretData: true
-      destination:
-        name: prometheus-stack-pg-cluster-backup
-        create: true
-        type: Opaque
-        transformation:
-          excludes:
-          - ".*"
-          templates:
-            S3_ENDPOINT:
-              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
-            S3_BUCKET_NAME:
-              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
-            S3_BUCKET_PREFIX:
-              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
-            S3_ACCESS_KEY:
-              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
-            S3_SECRET_KEY:
-              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
-            S3_REGION:
-              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
+    # No VSO-managed DB credentials here (unlike other apps' cnpg clusters):
+    # CNPG's Cluster controller creates prometheus-stack-pg-cluster-app
+    # itself (credentials.password/postgresPassword empty -> "operator"
+    # mode) and sets an ownerReference on it. VSO refuses to overwrite a
+    # secret it doesn't already own — a race that depends entirely on
+    # which controller reconciles first. On this cluster's initial
+    # bootstrap CNPG won, and VSO spammed SecretSyncError trying to
+    # take it over. Since nothing outside this cluster needs Grafana's
+    # DB password, there's no reason to fight that race: GF_DATABASE_
+    # PASSWORD (instance values) already reads whichever controller
+    # owns the secret. Letting CNPG fully own its own credentials is
+    # simpler and avoids the race entirely.
