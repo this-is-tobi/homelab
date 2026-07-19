@@ -1,3 +1,15 @@
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway-traefik
+  gatewayNamespace: kube-system
+  routes:
+  - name: longhorn
+    hostnames:
+    - longhorn.core.ohmlab.fr
+    rules:
+    - backendService: longhorn-oauth2-proxy
+      backendPort: 80
+
 vso:
   vaultStaticSecrets:
     longhornSso:
@@ -8,21 +20,19 @@ vso:
       refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: longhorn-sso
+        name: longhorn-oauth2-proxy-creds
         create: true
         type: Opaque
         transformation:
           excludes:
           - ".*"
           templates:
-            OIDC_CLIENT_ID:
+            client-id:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            OIDC_CLIENT_SECRET:
+            client-secret:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-            client_id:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            client_secret:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+            cookie-secret:
+              text: '{{ get .Secrets "keycloak" | dig "cookieSecret" "" }}'
   extraObjects:
   - apiVersion: v1
     kind: ServiceAccount
@@ -30,12 +40,19 @@ vso:
       name: vso
       namespace: longhorn-system
 
+sso:
+  config:
+    configFile: |-
+      provider = "keycloak-oidc"
+      provider_display_name = "Keycloak"
+      email_domains = [ "*" ]
+      upstreams = [ "http://longhorn-frontend.longhorn-system.svc.cluster.local:80/" ]
+      redirect_url = "https://longhorn.core.ohmlab.fr/oauth2/callback"
+      oidc_issuer_url = "https://sso.core.ohmlab.fr/realms/homelab"
+      reverse_proxy = true
+      cookie_secure = true
+      cookie_domains = [ "longhorn.core.ohmlab.fr" ]
+
 longhorn:
   ingress:
     enabled: false
-    ingressClassName: traefik
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    host: longhorn.core.ohmlab.fr
-    tls: true
-    tlsSecret: longhorn-tls

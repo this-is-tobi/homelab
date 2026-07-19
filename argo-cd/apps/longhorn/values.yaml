@@ -7,12 +7,6 @@ gateway:
   extraParentRefs: []
   routes: []
 
-oidc:
-  enabled: false
-  hostname: ""
-  discoveryUrl: ""
-  tlsSecret: ""
-
 vso:
   extraObjects:
   - apiVersion: v1
@@ -32,6 +26,10 @@ vso:
       skipTLSVerify: false
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
+    # Keys match what the oauth2-proxy chart's `existingSecret` support
+    # expects verbatim (templates/_helpers.tpl "oauth2-proxy.secrets") —
+    # Longhorn's UI has no native OIDC support, so oauth2-proxy sits in
+    # front of it as a full reverse proxy (sso.config.configFile upstreams).
     longhornSso:
       mount: ""
       path: ""
@@ -40,34 +38,27 @@ vso:
       refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: longhorn-sso
+        name: longhorn-oauth2-proxy-creds
         create: true
         type: Opaque
         transformation:
           excludes:
           - ".*"
           templates:
-            OIDC_CLIENT_ID:
+            client-id:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            OIDC_CLIENT_SECRET:
+            client-secret:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-            client_id:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            client_secret:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+            cookie-secret:
+              text: '{{ get .Secrets "keycloak" | dig "cookieSecret" "" }}'
 
 longhorn:
   preUpgradeChecker:
     jobEnabled: false
+  # No Ingress objects in this repo — exposed via Gateway API HTTPRoute
+  # (gateway.routes), routed through the sso (oauth2-proxy) service below.
   ingress:
     enabled: false
-    ingressClassName: apisix
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-dns-prod
-    host: ""
-    tls: true
-    tlsSecret: longhorn-tls
-    pathType: Prefix
   persistence:
     defaultClass: true
     defaultFsType: ext4
@@ -83,3 +74,29 @@ longhorn:
   metrics:
     serviceMonitor:
       enabled: true
+
+# oauth2-proxy in front of the Longhorn UI, in full reverse-proxy mode (it
+# is the sole HTTPRoute backend for the longhorn hostname — see
+# gateway.routes in the per-instance values). Longhorn's UI has no native
+# auth, so unlike every other SSO-connected app here there's no in-app OIDC
+# config to set.
+sso:
+  fullnameOverride: longhorn-oauth2-proxy
+  config:
+    existingSecret: longhorn-oauth2-proxy-creds
+    configFile: |-
+      provider = "keycloak-oidc"
+      provider_display_name = "Keycloak"
+      email_domains = [ "*" ]
+      upstreams = [ "file:///dev/null" ]
+      redirect_url = ""
+      oidc_issuer_url = ""
+      reverse_proxy = true
+      cookie_secure = true
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
