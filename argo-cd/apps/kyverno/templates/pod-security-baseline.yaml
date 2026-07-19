@@ -32,6 +32,13 @@ spec:
           - ingress-nginx
           # Log-processing agent needs hostPath (/var/log, container runtime)
           - crowdsec
+          # bank-vaults operator unconditionally adds IPC_LOCK to the vault
+          # container (vaultContainerSpec capabilities overrides don't stop
+          # it — longstanding upstream behavior). The capability is inert on
+          # the default Vault image (no cap_ipc_lock file capability) and we
+          # already run disable_mlock: true, but baseline forbids any
+          # non-default added capability regardless of whether it's used.
+          - vault-operator-system
     validate:
       failureAction: {{ .Values.policies.podSecurityBaseline.failureAction | default "Audit" }}
       podSecurity:
