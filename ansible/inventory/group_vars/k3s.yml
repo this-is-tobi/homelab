@@ -2,7 +2,6 @@
 k3sVersion: "v1.35.3+k3s1"
 k3sToken: "{{ vault_k3s_token }}"
 k3sCaData: "{{ vault_k3s_ca_data }}"
-k3sDatastoreEndpoint: "https://{{ hostvars[groups['gateway'][0]]['ansible_host'] }}:2379"
 k3sSystemdDir: /etc/systemd/system
 k3sDataDir: /var/lib/rancher/k3s
 k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
@@ -11,11 +10,15 @@ k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 k3sFlanneliface: eth0
 # --- CNI selection ---
 # flannel (current): keep `--flannel-iface` below.
-# Cilium PHASE 1 (SSH-safe, see argo-cd/apps/cilium/values.yaml): replace the
+# Cilium (rolling migration — runbook: .local/cilium-migration-plan.md F8):
+# flags change ONLY at the FINAL FLIP (step 6), after all 9 nodes are already
+# Cilium-managed via the CiliumNodeConfig/label mechanism. Then replace the
 # flannel flag with:  --flannel-backend=none --disable-network-policy
+# (--disable-network-policy also retires the embedded kube-router netpol
+# controller — Cilium takes over enforcing the same NetworkPolicy objects).
 # Do NOT pass --disable-kube-proxy — phase 1 keeps kube-proxy so Cilium never
 # attaches BPF to eth0 (the May 2026 SSH-lockout root cause).
-# Migration entrypoint: ansible-playbook install.yml --tags cilium-migrate
+# Final-flip entrypoint: ansible-playbook install.yml --tags cilium-migrate
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
