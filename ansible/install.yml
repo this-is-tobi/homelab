@@ -161,8 +161,13 @@
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   tasks:
+    # include_role (NOT include_tasks): preserves role context so the
+    # templates/ lookup resolves — include_tasks from a play searches only
+    # playbook-relative dirs and fails on cilium-watchdog.sh.j2.
     - name: Include Cilium watchdog tasks
-      ansible.builtin.include_tasks: roles/k3s/prereq/tasks/cilium-watchdog.yml
+      ansible.builtin.include_role:
+        name: k3s/prereq
+        tasks_from: cilium-watchdog
   tags:
     - cilium-watchdog
     - never
@@ -179,8 +184,12 @@
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   tasks:
+    # include_role for the same template-resolution reason as the watchdog
+    # play above (this play carried the same latent bug since 2026-07-05).
     - name: Include Cilium migration tasks
-      ansible.builtin.include_tasks: roles/k3s/prereq/tasks/migrate-cilium.yml
+      ansible.builtin.include_role:
+        name: k3s/prereq
+        tasks_from: migrate-cilium
   tags:
     - cilium-migrate
     - never
