@@ -1,0 +1,26 @@
+---
+# Allow kyverno-background-controller to read the source Middleware (context
+# apiCall) and manage its generated copies cluster-wide (generate rule with
+# synchronize: true) — same pattern as kyverno:generate-vault-ca.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:generate-crowdsec-bouncer
+rules:
+- apiGroups: ["traefik.io"]
+  resources: ["middlewares"]
+  resourceNames: ["crowdsec-bouncer"]
+  verbs: ["get", "list", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kyverno:generate-crowdsec-bouncer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kyverno:generate-crowdsec-bouncer
+subjects:
+- kind: ServiceAccount
+  name: kyverno-background-controller
+  namespace: kyverno
