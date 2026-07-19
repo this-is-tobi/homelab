@@ -55,11 +55,25 @@ traefik:
       expose:
         default: true
       exposedPort: 80
+      http:
+        # Entrypoint-wide middleware — applies to every router on this
+        # entrypoint without touching each app's HTTPRoute. Safe now that
+        # a local crowdsec-bouncer Middleware exists in every namespace
+        # with a route (Kyverno generate policy + a hand-templated copy
+        # for kube-system, see middleware-crowdsec-bouncer.yaml) — an
+        # unqualified name@kubernetescrd reference resolves relative to
+        # each ROUTER's own namespace, so without a copy everywhere this
+        # is a full ingress outage (see that template's header comment).
+        middlewares:
+        - crowdsec-bouncer@kubernetescrd
     websecure:
       port: 8443
       expose:
         default: true
       exposedPort: 443
+      http:
+        middlewares:
+        - crowdsec-bouncer@kubernetescrd
 
   # CrowdSec bouncer plugin registration — see crowdsecBouncer (below) for
   # the actual enable/disable switch and LAPI wiring.
@@ -129,21 +143,24 @@ gateway:
 
 # CrowdSec bouncer plugin (templates/middleware-crowdsec-bouncer.yaml) —
 # active IP blocking at the edge, on top of the crowdsec app's detect+alert.
-# NOT WIRED TO ANY ROUTE YET (see the template's own header comment for why
-# the entrypoint-level approach broke ingress on 2026-07-19 and was
-# reverted) — enabled: true only controls the plugin's own behavior once
-# something actually references this Middleware; it has zero effect today.
+# Wired to every route via ports.web/websecure.http.middlewares above.
+# enabled: false below means the plugin itself is still a no-op regardless
+# — flip it once the one-time setup is done.
 #
 # Disabled by default regardless: `lapiKey` is a real secret and Traefik
 # Middleware CRDs have no secretKeyRef support, so unlike every other secret
 # in this repo it can't flow through Vault/VSO. It's set out-of-band and
-# carved out of ArgoCD's diffing (see core.yaml ignoreDifferences) — same
+# carved out of ArgoCD's diffing (see core.yaml ignoreDifferences, matched
+# by name only — covers both the traefik and kube-system copies) — same
 # pattern already used for crowdsec-lapi-secrets and argocd-secret.
 #
-# One-time setup, once it's wired to something:
+# One-time setup:
 #   1. kubectl exec -n crowdsec deploy/crowdsec-lapi -- cscli bouncers add traefik-bouncer
 #   2. kubectl patch middleware crowdsec-bouncer -n traefik --type merge \
 #        -p '{"spec":{"plugin":{"bouncer":{"crowdsecLapiKey":"<key from step 1>"}}}}'
+#      kubectl patch middleware crowdsec-bouncer -n kube-system --type merge \
+#        -p '{"spec":{"plugin":{"bouncer":{"crowdsecLapiKey":"<same key>"}}}}'
+#   3. Set crowdsecBouncer.enabled: true below and sync.
 crowdsecBouncer:
   enabled: false
   mode: stream

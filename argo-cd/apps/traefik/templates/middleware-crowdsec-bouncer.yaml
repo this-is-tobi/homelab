@@ -4,26 +4,36 @@
 # `name@kubernetescrd` reference relative to each ROUTER's own namespace,
 # not the traefik namespace, so a single object here broke every router in
 # every other namespace (gitea, vault, argocd, ...) with "middleware ...
-# does not exist" — a full ingress outage. Applying this cluster-wide
-# needs the object replicated into every app namespace (e.g. a Kyverno
-# generate policy, mirroring sync-vault-ca) before it can be referenced
-# from anywhere outside this namespace.
+# does not exist" — a full ingress outage. Fixed via a Kyverno generate
+# policy (argo-cd/apps/kyverno/templates/crowdsec-bouncer-sync.yaml,
+# mirroring sync-vault-ca) that mirrors this object into every namespace
+# with an HTTPRoute — EXCEPT kube-system, which Kyverno's own default
+# resourceFilters globally exclude from all policy processing (not
+# something to override safely just for this). kube-system hosts exactly
+# one route (the HTTP->HTTPS redirect, templates/gateway.yaml's
+# gatewayNamespace), so it gets a second copy rendered directly here
+# instead — same values, so it can never drift from the primary below.
+{{- range list .Release.Namespace "kube-system" }}
+---
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: crowdsec-bouncer
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ . }}
+  labels:
+    app.kubernetes.io/name: traefik
 spec:
   plugin:
     bouncer:
-      enabled: {{ .Values.crowdsecBouncer.enabled }}
-      crowdsecMode: {{ .Values.crowdsecBouncer.mode }}
+      enabled: {{ $.Values.crowdsecBouncer.enabled }}
+      crowdsecMode: {{ $.Values.crowdsecBouncer.mode }}
       crowdsecLapiScheme: http
-      crowdsecLapiHost: {{ .Values.crowdsecBouncer.lapiHost }}
-      crowdsecLapiKey: {{ .Values.crowdsecBouncer.lapiKey | quote }}
+      crowdsecLapiHost: {{ $.Values.crowdsecBouncer.lapiHost }}
+      crowdsecLapiKey: {{ $.Values.crowdsecBouncer.lapiKey | quote }}
       updateIntervalSeconds: 60
-      updateMaxFailure: {{ .Values.crowdsecBouncer.updateMaxFailure }}
-      {{- with .Values.crowdsecBouncer.clientTrustedIPs }}
+      updateMaxFailure: {{ $.Values.crowdsecBouncer.updateMaxFailure }}
+      {{- with $.Values.crowdsecBouncer.clientTrustedIPs }}
       clientTrustedIPs:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
