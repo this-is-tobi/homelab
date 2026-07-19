@@ -1,18 +1,52 @@
 # NOT currently wired to anything — this object alone does nothing.
-# An entrypoint-level static reference here (ports.*.http.middlewares) was
-# tried and reverted 2026-07-19: Traefik resolves an unqualified
+#
+# TWO failed attempts to wire this up as an entrypoint-level static
+# reference (ports.*.http.middlewares), both reverted the same day
+# (2026-07-19):
+#
+# Attempt 1 (e7ed9d9, reverted 02d4da1): a single Middleware object only
+# in the traefik namespace. Root cause: Traefik resolves an unqualified
 # `name@kubernetescrd` reference relative to each ROUTER's own namespace,
-# not the traefik namespace, so a single object here broke every router in
-# every other namespace (gitea, vault, argocd, ...) with "middleware ...
-# does not exist" — a full ingress outage. Fixed via a Kyverno generate
+# not the traefik namespace — every router elsewhere failed with
+# "middleware ... does not exist", full ingress outage.
+#
+# Attempt 2 (e37e525, reverted aa116a7): fixed the above by mirroring
+# this object into every namespace with an HTTPRoute — a Kyverno generate
 # policy (argo-cd/apps/kyverno/templates/crowdsec-bouncer-sync.yaml,
-# mirroring sync-vault-ca) that mirrors this object into every namespace
-# with an HTTPRoute — EXCEPT kube-system, which Kyverno's own default
-# resourceFilters globally exclude from all policy processing (not
-# something to override safely just for this). kube-system hosts exactly
-# one route (the HTTP->HTTPS redirect, templates/gateway.yaml's
-# gatewayNamespace), so it gets a second copy rendered directly here
-# instead — same values, so it can never drift from the primary below.
+# mirroring sync-vault-ca) for every namespace except kube-system (which
+# Kyverno's own default resourceFilters globally exclude from all policy
+# processing), plus a second copy of this object templated directly here
+# for kube-system specifically (it hosts exactly one route, the
+# HTTP->HTTPS redirect from templates/gateway.yaml's gatewayNamespace).
+# Confirmed via `kubectl get middleware -A` that every target namespace
+# had a correctly-formed copy BEFORE the traefik rollout even started.
+# Still: 100% of routers, in every namespace including ones whose copy
+# had existed for 8+ minutes already, failed with the exact same "does
+# not exist" error, immediately on the new pods coming up — a full
+# repeat outage. Reverted within ~3 minutes of the sync landing
+# (confirmed via traefik access logs: every request got a 404 with
+# DownstreamContentSize 19 during that window; normal status codes
+# resumed immediately after the revert synced).
+#
+# The object existing and being well-formed rules out attempt 1's root
+# cause — this is something else, not yet understood. Candidates not yet
+# investigated (do this offline / non-live before a third attempt):
+#   - Traefik's kubernetesCRD/kubernetesgateway provider informer sync
+#     ordering vs. static-config middleware resolution at startup — does
+#     it resolve entrypoint-wide middleware refs against routers before
+#     the Middleware informer's initial List/Watch has completed, with no
+#     retry once the cache warms up?
+#   - Interaction specific to Gateway-API-derived routers (this cluster
+#     has zero IngressRoute-CRD-based routing — every router here is
+#     httproute-*-gw-kube-system-homelab-gateway-traefik-*@kubernetesgateway
+#     — attempt 1's root-cause writeup may not generalize cleanly to this
+#     provider).
+#   - Whether Kyverno-generated objects (vs. hand-authored ones) surface
+#     any different behavior to Traefik's watch (labels, ownership, etc.)
+#     — inspect a generated copy's diff against a hand-authored one.
+# Next attempt should reproduce this against a disposable/local Traefik
+# instance first, not live — this is the second live outage this repo's
+# git history has from this exact area.
 {{- range list .Release.Namespace "kube-system" }}
 ---
 apiVersion: traefik.io/v1alpha1

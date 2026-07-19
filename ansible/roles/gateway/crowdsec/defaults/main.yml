@@ -4,14 +4,25 @@
 # Keys not set in inventory fall back to these defaults.
 
 # CrowdSec hub collections installed on the gateway engine.
+# haproxy/base-http-scenarios/http-cve were dropped: this haproxy runs in
+# `mode tcp` (pure L4 passthrough in front of Traefik — see haproxy role),
+# so its logs never carry HTTP fields and crowdsecurity/haproxy-logs (an
+# httplog-only parser) could never match a single line (confirmed live:
+# 100% unparsed, 0 local detections since deployment). Real HTTP-level
+# detection already happens in-cluster against Traefik's own access logs
+# (see argo-cd/apps/crowdsec agent.acquisition) — this gateway only needs
+# to watch its own host logs.
 gateway_crowdsec_default_collections:
   - crowdsecurity/linux
   - crowdsecurity/sshd
-  - crowdsecurity/haproxy
-  - crowdsecurity/base-http-scenarios
-  - crowdsecurity/http-cve
 
-# File-based log acquisition (paths inside the container).
+# File-based log acquisition (paths inside the container). force_inotify
+# ensures the directory is watched for file creation even if the glob
+# finds nothing at startup — without it, a literal filename that doesn't
+# exist at the exact instant of the initial scan is silently dropped for
+# the process lifetime, no retry (confirmed live: auth.log/syslog missed
+# on every container start despite both files existing continuously,
+# leaving local ssh/linux detection dead for the ~2 months since deploy).
 gateway_crowdsec_default_acquis_files:
   - filenames:
       - /var/log/host/auth.log
@@ -20,10 +31,10 @@ gateway_crowdsec_default_acquis_files:
       - /var/log/host/syslog
     type: syslog
 
-# Docker container log acquisition.
-gateway_crowdsec_default_acquis_docker:
-  - name: haproxy
-    type: haproxy
+# Docker container log acquisition — none by default (haproxy removed,
+# see collections comment above; keeping the datasource around with no
+# matching parser would just burn CPU/IO parsing lines nothing consumes).
+gateway_crowdsec_default_acquis_docker: []
 
 # Local CIDR ranges to whitelist (never ban).
 gateway_crowdsec_default_whitelists:
