@@ -796,6 +796,26 @@ keycloakConfigCli:
           implicitFlowEnabled: false
           directAccessGrantsEnabled: true
           serviceAccountsEnabled: false
+          # oauth2-proxy validates the ACCESS token's audience against its
+          # configured client ID. The default 'roles' scope only adds a
+          # client's own ID to that audience dynamically (oidc-audience-
+          # resolve-mapper, based on client-role assignments) — with no
+          # roles ever assigned on this client, it never showed up, leaving
+          # whatever OTHER client's role the user happened to hold instead
+          # (observed: "grafana-core"). Vault doesn't need this because its
+          # OIDC login validates the ID token, which Keycloak audiences to
+          # the requesting client by default — a different check than
+          # oauth2-proxy's. Any future oauth2-proxy-fronted app needs this
+          # same explicit mapper.
+          protocolMappers:
+          - name: audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: longhorn-core
+              id.token.claim: "false"
+              access.token.claim: "true"
           defaultClientScopes:
           - web-origins
           - acr
