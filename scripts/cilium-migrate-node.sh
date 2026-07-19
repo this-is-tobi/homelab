@@ -39,14 +39,33 @@ kubectl drain "${NODE}" --ignore-daemonsets --delete-emptydir-data --timeout=300
 say "Label ${NODE} for Cilium CNI ownership"
 kubectl label node "${NODE}" "${MIGRATION_LABEL}=true" --overwrite
 
+say "Waiting for the agent to write the Cilium CNI conf (pre-reboot gate)"
+# Rebooting before the conf lands on disk lets k3s's flannel win the early
+# boot and DS pods come up with flannel IPs (canary lesson, 2026-07-20).
+end=$((SECONDS + 120))
+CILIUM_POD="$(kubectl -n kube-system get pod -l k8s-app=cilium --field-selector "spec.nodeName=${NODE}" -o name | head -1)"
+until kubectl -n kube-system exec "${CILIUM_POD}" -c cilium-agent -- test -f /host/etc/cni/net.d/05-cilium.conflist 2>/dev/null; do
+  [ $SECONDS -ge $end ] && { echo "ERROR: conf not written 120s after labeling — check CiliumNodeConfig + agent logs"; exit 1; }
+  sleep 5
+done
+echo "OK: 05-cilium.conflist present on ${NODE}"
+
+BOOT_ID="$(ssh "${NODE}" cat /proc/sys/kernel/random/boot_id)"
 say "Rebooting ${NODE} (sudo will prompt for the password)"
 ssh -t "${NODE}" sudo systemctl reboot || true
 
-say "Waiting for ${NODE} to come back Ready (max ${READY_TIMEOUT}s)"
-sleep 20
+say "Waiting for ${NODE} to actually reboot (boot-id change), then Ready (max ${READY_TIMEOUT}s)"
+# The API keeps reporting stale Ready=True for ~1min after a node goes down —
+# waiting on Ready alone races the reboot (canary lesson, 2026-07-20).
 end=$((SECONDS + READY_TIMEOUT))
+until [ "$(ssh -o ConnectTimeout=4 -o BatchMode=yes "${NODE}" cat /proc/sys/kernel/random/boot_id 2>/dev/null)" != "${BOOT_ID}" ] \
+      && ssh -o ConnectTimeout=4 -o BatchMode=yes "${NODE}" true 2>/dev/null; do
+  [ $SECONDS -ge $end ] && { echo "ERROR: ${NODE} did not come back after ${READY_TIMEOUT}s — watchdog reboots at ~5min; check console"; exit 1; }
+  sleep 10
+done
+echo "OK: ${NODE} rebooted (new boot-id)"
 until kubectl get node "${NODE}" -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}' 2>/dev/null | grep -q True; do
-  [ $SECONDS -ge $end ] && { echo "ERROR: ${NODE} not Ready after ${READY_TIMEOUT}s — watchdog reboots at ~5min; check console/SSH"; exit 1; }
+  [ $SECONDS -ge $end ] && { echo "ERROR: ${NODE} not Ready after ${READY_TIMEOUT}s"; exit 1; }
   sleep 10
 done
 echo "OK: ${NODE} Ready"
@@ -55,10 +74,22 @@ say "Gate: cilium agent healthy on ${NODE}"
 CILIUM_POD="$(kubectl -n kube-system get pod -l k8s-app=cilium --field-selector "spec.nodeName=${NODE}" -o name | head -1)"
 kubectl -n kube-system wait --for=condition=Ready "${CILIUM_POD}" --timeout=180s
 
-say "Gate: ${NODE} allocated a Cilium pod CIDR (${CILIUM_POD_CIDR}x)"
-kubectl get ciliumnode "${NODE}" -o jsonpath='{.spec.ipam.podCIDRs}' | grep -q "${CILIUM_POD_CIDR}" \
-  || { echo "ERROR: ciliumnode ${NODE} has no ${CILIUM_POD_CIDR}x CIDR"; kubectl get ciliumnode "${NODE}" -o jsonpath='{.spec.ipam.podCIDRs}'; exit 1; }
-echo "OK: $(kubectl get ciliumnode "${NODE}" -o jsonpath='{.spec.ipam.podCIDRs}')"
+say "Gate: every pod on ${NODE} runs on a Cilium IP (${CILIUM_POD_CIDR}x)"
+# The ciliumnode CIDR exists from the dormant install already — the real
+# cutover proof is the PODS' IPs. Flannel-IP stragglers (sandboxes created
+# in the boot window before the agent was ready) are deleted so their DS
+# recreates them under Cilium.
+end=$((SECONDS + 180))
+while :; do
+  STRAGGLERS="$(kubectl get pods -A --field-selector "spec.nodeName=${NODE}" -o json \
+    | jq -r '.items[] | select(.spec.hostNetwork != true) | select(.status.podIP // "" | startswith("10.42.")) | "\(.metadata.namespace)/\(.metadata.name)"')"
+  [ -z "${STRAGGLERS}" ] && break
+  [ $SECONDS -ge $end ] && { echo "ERROR: flannel-IP pods persist on ${NODE}:"; echo "${STRAGGLERS}"; exit 1; }
+  echo "deleting flannel-IP stragglers:"; echo "${STRAGGLERS}"
+  echo "${STRAGGLERS}" | while IFS=/ read -r ns name; do kubectl delete pod -n "$ns" "$name" --wait=false; done
+  sleep 20
+done
+echo "OK: all podNet pods on ${NODE} are on ${CILIUM_POD_CIDR}x"
 
 say "Gate: hostPort 443 still answers on ${NODE_IP} (svclb/portmap — plan F4)"
 curl -sk -o /dev/null --connect-timeout 5 "https://${NODE_IP}:443/" \
