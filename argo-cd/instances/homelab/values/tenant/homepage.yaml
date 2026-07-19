@@ -35,11 +35,6 @@ homepage:
           siteMonitor: https://gitops.core.ohmlab.fr
           description: Admin services deployment manager
           icon: argo-cd.png
-      - APISIX:
-          href: https://apisix.core.ohmlab.fr/ui/
-          siteMonitor: https://apisix.core.ohmlab.fr/ui/
-          description: API Gateway dashboard
-          icon: apache.png
       - Longhorn:
           href: https://longhorn.core.ohmlab.fr
           siteMonitor: https://longhorn.core.ohmlab.fr
@@ -50,6 +45,11 @@ homepage:
           siteMonitor: https://vault.core.ohmlab.fr
           description: Admin secret manager
           icon: vault.png
+      - Teleport:
+          href: https://teleport.core.ohmlab.fr
+          siteMonitor: https://teleport.core.ohmlab.fr
+          description: Secure access to cluster & infrastructure
+          icon: teleport.png
     - Platform Services:
       - Argo-cd:
           href: https://gitops.ohmlab.fr
