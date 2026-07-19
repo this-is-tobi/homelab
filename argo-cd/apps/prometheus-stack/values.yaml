@@ -129,11 +129,17 @@ kube-prometheus-stack:
       limits:
         cpu: 500m
         memory: 512Mi
-    initChownData:
-      resources:
-        limits:
-          cpu: 100m
-          memory: 128Mi
+    # No persistence (below): Grafana keeps no state on local disk once the
+    # database is external Postgres, so there's nothing left to chown.
+    # Readiness tuned looser than the k8s default (1s timeout) — on this
+    # hardware a brief latency spike shouldn't flap the pod out of rotation.
+    readinessProbe:
+      httpGet:
+        path: /api/health
+        port: grafana
+      timeoutSeconds: 5
+      periodSeconds: 10
+      failureThreshold: 6
     sidecar:
       resources:
         requests:
@@ -165,14 +171,66 @@ kube-prometheus-stack:
         allow_assign_grafana_admin: true
         groups_attribute_path: groups
         role_attribute_path: contains(groups[*], '/admin') && 'GrafanaAdmin' || contains(resource_access.grafana-core.roles[*], 'grafanaadmin') && 'GrafanaAdmin' || contains(resource_access.grafana-core.roles[*], 'admin') && 'Admin' || contains(resource_access.grafana-core.roles[*], 'editor') && 'Editor' || 'Viewer'
-    persistence:
-      enabled: true
-      type: sts
-      accessModes:
-      - ReadWriteMany
-      size: 3Gi
-      finalizers:
-      - kubernetes.io/pvc-protection
+      # CNPG cluster below (cnpg.*), password via envValueFrom
+      # GF_DATABASE_PASSWORD (Grafana's native GF_<SECTION>_<KEY> env
+      # override — no ${} interpolation needed in this file).
+      database:
+        type: postgres
+        host: prometheus-stack-pg-cluster-rw:5432
+        name: grafana
+        user: grafana
+        ssl_mode: require
+
+# CNPG PostgreSQL cluster for Grafana (replaces the default embedded SQLite,
+# which serialized every request behind a single-writer lock and — combined
+# with the old RWX/Longhorn-NFS-backed PVC — caused multi-minute request
+# latency and permanent readiness failures under any real load). 2 instances
+# for automatic failover; same pattern as every other stateful app here.
+cnpg:
+  fullnameOverride: prometheus-stack-pg-cluster
+  imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
+  extraSpec:
+    enablePDB: false
+  mode: primary
+  dbName: grafana
+  credentials:
+    username: grafana
+    password: ""
+    postgresPassword: ""
+  instances: 2
+  enableSuperuserAccess: false
+  pvcSize:
+    data: 3Gi
+    wal: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+  affinity:
+    topologyKey: kubernetes.io/hostname
+  backup:
+    enabled: true
+    legacyMode: false
+    endpointURL: ""
+    destinationPath: "s3://"
+    cron: "0 0 0 * * *"
+    retentionPolicy: 30d
+    compression: gzip
+    s3Credentials:
+      create: true
+      secretName: prometheus-stack-pg-cluster-backup
+      accessKeyId:
+        key: accessKeyId
+        value: ""
+      secretAccessKey:
+        key: secretAccessKey
+        value: ""
+      region:
+        key: region
+        value: ""
 
 vso:
   extraObjects:
@@ -251,3 +309,68 @@ vso:
             # renders empty until the webhook URL is added to Vault.
             webhookUrl:
               text: '{{ get .Secrets "alertmanagerMattermostWebhookUrl" | default "" }}'
+    grafanaDbAdmin:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: prometheus-stack-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: prometheus-stack-pg-cluster-admin
+        create: true
+        type: kubernetes.io/basic-auth
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "admin" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "admin" "password" "" }}'
+    grafanaDbApp:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: prometheus-stack-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: prometheus-stack-pg-cluster-app
+        create: true
+        type: kubernetes.io/basic-auth
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            username:
+              text: '{{ get .Secrets "postgres" | dig "app" "username" "" }}'
+            password:
+              text: '{{ get .Secrets "postgres" | dig "app" "password" "" }}'
+    grafanaPgBackup:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: prometheus-stack-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: prometheus-stack-pg-cluster-backup
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            S3_ENDPOINT:
+              text: '{{ get .Secrets "postgres" | dig "s3" "endpoint" "" }}'
+            S3_BUCKET_NAME:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
+            S3_BUCKET_PREFIX:
+              text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
+            S3_ACCESS_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
+            S3_SECRET_KEY:
+              text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
+            S3_REGION:
+              text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
