@@ -52,7 +52,7 @@ vault:
   size: 3
   image:
     repository: hashicorp/vault
-    tag: 2.0.0
+    tag: 2.0.3
   bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:v1.32.1"
   service:
     type: ClusterIP
