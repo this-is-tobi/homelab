@@ -11,7 +11,7 @@ homepage:
       layout:
       - Core Services:
           style: row
-          columns: 4
+          columns: 3
       - Platform Services:
           style: row
           columns: 3
@@ -45,11 +45,6 @@ homepage:
           siteMonitor: https://vault.core.ohmlab.fr
           description: Admin secret manager
           icon: vault.png
-      - Teleport:
-          href: https://teleport.core.ohmlab.fr
-          siteMonitor: https://teleport.core.ohmlab.fr
-          description: Secure access to cluster & infrastructure
-          icon: teleport.png
     - Platform Services:
       - Argo-cd:
           href: https://gitops.ohmlab.fr
