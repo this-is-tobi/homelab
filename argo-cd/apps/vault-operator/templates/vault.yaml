@@ -67,15 +67,17 @@ spec:
       runAsNonRoot: true
       runAsUser: 100
       runAsGroup: 1000
+    # vault-config (emptyDir) and vault-tls (Secret) are already mounted
+    # automatically by the operator itself — see the TLS comment above.
+    # Declaring them again here duplicates the operator's own auto-added
+    # mounts (bank-vaults v1.24.0+) and makes the StatefulSet update fail
+    # validation ("must be unique"), which silently blocks EVERY future
+    # change to the Vault pod template. Only volumeClaimTemplate-backed
+    # volumes (vault-raft) need an explicit mount — the operator has no way
+    # to guess where those go.
     volumeMounts:
-    - name: vault-config
-      mountPath: /vault/config
     - name: vault-raft
       mountPath: /vault/data
-    {{- if .Values.vault.config.tls.enabled }}
-    - name: vault-tls
-      mountPath: /vault/tls
-    {{- end }}
   config:
     ui: {{ .Values.vault.config.ui }}
     # disable_mlock: in Kubernetes, memory is managed by cgroups/resource limits
