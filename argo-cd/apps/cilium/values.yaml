@@ -1,6 +1,8 @@
 # Cilium-implemented Gateway API Gateway (templates/gateway.yaml).
-# OFF in phase 1: APISIX owns the Gateway API on this cluster and
-# cilium.gatewayAPI is disabled below.
+# OFF permanently (not just phase 1): Traefik owns the Gateway API on this
+# cluster (see .local/ingress-controller-analysis.md). Cilium Gateway would
+# also hard-require kubeProxyReplacement=true and Cilium >=1.20 for
+# BackendTLSPolicy — see .local/cilium-migration-plan.md F5/F6/F7.
 gateway:
   enabled: false
   name: ""
@@ -12,12 +14,30 @@ gateway:
   extraListeners: []
   tlsPassthroughListeners: []
 
+# Rolling flannel→cilium migration support (official Cilium migration guide,
+# adapted to k3s — full runbook: .local/cilium-migration-plan.md F8).
+# Renders templates/migration-nodeconfig.yaml: a CiliumNodeConfig that flips
+# CNI ownership per node, gated on a node label. Enable ONLY for the
+# migration window (the homelab instance overlay does this), remove at the
+# final flip.
+migration:
+  enabled: false
+  # Nodes carrying this label (value "true") get their CNI conf written by
+  # cilium and become Cilium-managed after a reboot. Label nodes one at a
+  # time — see scripts/cilium-migrate-node.sh.
+  nodeLabel: io.cilium.migration/cilium-default
+  # CONTAINER-side path: the agent mounts cni.confPath (host) at
+  # /host/etc/cni/net.d (cni.hostConfDirMountPath) regardless of the host
+  # location — do NOT put the k3s host path here.
+  cniConfPath: /host/etc/cni/net.d/05-cilium.conflist
+
 cilium:
   # ==========================================================================
   # CILIUM — PHASE 1: SSH-safe configuration (no BPF on physical interfaces)
   # ==========================================================================
-  # Post-mortem of the May 2026 lockout (docs/cilium-migration-investigation):
-  # the previous config combined kubeProxyReplacement + devices=eth0 +
+  # Post-mortem of the May 2026 lockout + 2026-07-19 deep-dive:
+  # .local/cilium-migration-plan.md (plan of record — read it first).
+  # The May config combined kubeProxyReplacement + devices=eth0 +
   # bpf.masquerade. In that mode Cilium MUST attach TC programs to eth0 for
   # NodePort/masquerade — `bpf.hostLegacyRouting: true` does NOT prevent that
   # (it only routes host-originated egress through the kernel stack). During
@@ -43,17 +63,29 @@ cilium:
   #   ip link show dev eth0             → no "xdp" section
   #
   # PHASE 2 (optional, later): flip kubeProxyReplacement + native routing +
-  # bpf.masquerade node-by-node behind the cilium-watchdog dead-man switch
-  # (ansible k3s/prereq role) and a canary worker. Expect eth0 TC programs —
-  # that is the accepted trade-off of KPR.
+  # bpf.masquerade node-by-node (CiliumNodeConfig supports per-node KPR)
+  # behind the cilium-watchdog dead-man switch (ansible k3s/prereq role) and
+  # a canary worker. Expect eth0 TC programs — that is the accepted
+  # trade-off of KPR.
   # ==========================================================================
 
   # --- CNI paths ---
-  # containerd uses default Linux paths (/etc/cni/net.d, /opt/cni/bin)
-  # NOT the K3s agent paths — verified via `crictl info`.
+  # K3s-managed containerd paths, live-verified 2026-07-19 on the running
+  # fleet (k3s v1.35.3, containerd 2.2.2-k3s1 — see plan doc F3):
+  #   [plugins.'io.containerd.cri.v1.runtime'.cni]
+  #     bin_dirs = ["/var/lib/rancher/k3s/data/cni"]
+  #     conf_dir = "/var/lib/rancher/k3s/agent/etc/cni/net.d"
+  # The previous values (/opt/cni/bin, /etc/cni/net.d) pointed at dirs k3s
+  # containerd NEVER reads — the May 2026 residue still sitting there is the
+  # proof. Writing there again would leave every node with no CNI at all.
   cni:
-    binPath: /opt/cni/bin
-    confPath: /etc/cni/net.d
+    binPath: /var/lib/rancher/k3s/data/cni
+    confPath: /var/lib/rancher/k3s/agent/etc/cni/net.d
+    # svclb (klipper-lb) exposes traefik via hostPort 80/443 on every node.
+    # With kubeProxyReplacement=false Cilium does NOT handle hostPort — the
+    # portmap CNI plugin must be chained (plan doc F4) or ALL ingress dies.
+    # portmap ships in /var/lib/rancher/k3s/data/cni (verified).
+    chainingMode: portmap
     exclusive: true
 
   # --- Kube-proxy coexistence (PHASE 1) ---
@@ -67,12 +99,21 @@ cilium:
   # --- Routing: vxlan overlay (same model as flannel) ---
   routingMode: tunnel
   tunnelProtocol: vxlan
+  # 8473: flannel owns 8472 during the rolling migration window; keeping
+  # 8473 afterwards costs nothing and avoids any 8472 ghosts.
+  tunnelPort: 8473
 
   # --- IPAM ---
+  # MUST be distinct from flannel's 10.42.0.0/16: the rolling migration runs
+  # both CNIs side by side and bridges them via host routing (plan doc F8).
+  # The cluster keeps 10.45.0.0/16 permanently after the cutover. Before the
+  # final flip, update the 10.42.0.0/16 literals elsewhere in the repo
+  # (crowdsec allowed_ranges/whitelists, gateway crowdsec whitelists —
+  # `grep -rn '10\.42\.' ansible/ argo-cd/`).
   ipam:
     operator:
       clusterPoolIPv4PodCIDRList:
-      - 10.42.0.0/16
+      - 10.45.0.0/16
 
   # --- Policy enforcement ---
   policyEnforcementMode: default
@@ -101,8 +142,10 @@ cilium:
     enabled: false
 
   # --- Gateway API / L7 ---
-  # APISIX owns the Gateway API implementation on this cluster. Cilium's
-  # gateway/envoy/l7 stack stays off in phase 1 (fewer moving parts).
+  # Traefik owns the Gateway API implementation on this cluster — Cilium's
+  # gateway/envoy/l7 stack stays off PERMANENTLY (would require KPR=true,
+  # Cilium >=1.20 for BackendTLSPolicy, and would behead the in-cluster
+  # CrowdSec chain — plan doc F5/F6/F7).
   gatewayAPI:
     enabled: false
   envoy:
