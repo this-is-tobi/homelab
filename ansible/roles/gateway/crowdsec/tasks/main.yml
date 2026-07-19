@@ -194,6 +194,15 @@
         path: /etc/apt/sources.list.d/crowdsec.list
         state: absent
 
+    - name: Install python3-debian
+      ansible.builtin.apt:
+        name: python3-debian
+        state: present
+        update_cache: true
+      # deb822_repository (below) shells out to python3-debian on the
+      # target host to parse/write the sources file — not installed by
+      # default (same fix as common/docker).
+
     - name: Add CrowdSec repository
       ansible.builtin.deb822_repository:
         name: crowdsec
