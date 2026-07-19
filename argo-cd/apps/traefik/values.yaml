@@ -166,7 +166,7 @@ gateway:
 # — `enabled` only gates ServeHTTP. Never wire the entrypoint reference
 # unless the key file is present and non-empty in the pods.
 crowdsecBouncer:
-  enabled: false
+  enabled: true
   mode: stream
   lapiHost: crowdsec-service.crowdsec.svc.cluster.local:8080
   # Path of the key file inside the traefik container — must match the
