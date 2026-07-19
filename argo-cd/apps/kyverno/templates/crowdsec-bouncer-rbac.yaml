@@ -24,3 +24,12 @@ subjects:
 - kind: ServiceAccount
   name: kyverno-background-controller
   namespace: kyverno
+- kind: ServiceAccount
+  name: kyverno-admission-controller
+  namespace: kyverno
+  # The policy admission webhook (validate-policy.kyverno.svc) validates
+  # generate rules against this SA's own RBAC at ClusterPolicy-apply time,
+  # even though generateExisting routes actual execution through the
+  # background controller — unlike core Secret/ConfigMap (kyverno's base
+  # install grants those broadly by default), a CRD like Middleware has no
+  # default grant for either controller.
