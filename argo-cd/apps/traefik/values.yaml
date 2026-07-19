@@ -96,8 +96,15 @@ traefik:
     enabled: true
     type: LoadBalancer
     spec:
-      # Preserve source addresses on the node-local hop (klipper-lb).
-      externalTrafficPolicy: Local
+      # Cluster (not Local) since 2026-07-20: makes kube-proxy DNAT
+      # nodeIP:80/443 -> traefik on EVERY node (klipper publishes all node
+      # IPs), removing the svclb hostPort/portmap dependency — the CNI
+      # portmap plugin silently writes no rules under the cilium chain on
+      # this containerd (canary finding, .local/cilium-migration-plan.md).
+      # Source-IP cost is nil in practice: with Local, 7/9 node paths were
+      # already SNAT'd via svclb; real client IPs come with the phase-3
+      # PROXY protocol work, not from ETP.
+      externalTrafficPolicy: Cluster
 
   log:
     level: INFO
