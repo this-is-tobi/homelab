@@ -253,6 +253,11 @@ cnpg:
       region:
         key: region
         value: ""
+  # PodMonitor for the cnpg_* metrics (chart default is disabled) — the
+  # cloudnative-pg Grafana dashboard was showing no data for every cluster
+  # in the repo until this was turned on.
+  monitoring:
+    enabled: true
 
 vso:
   extraObjects:
