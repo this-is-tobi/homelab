@@ -103,10 +103,15 @@ while :; do
 done
 echo "OK: all podNet pods on ${NODE} are on ${CILIUM_POD_CIDR}x"
 
-say "Gate: hostPort 443 still answers on ${NODE_IP} (svclb/portmap — plan F4)"
-curl -sk -o /dev/null --connect-timeout 5 "https://${NODE_IP}:443/" \
-  && echo "OK: TLS answered on ${NODE_IP}:443" \
-  || { echo "ERROR: nothing listening on ${NODE_IP}:443 — portmap chaining broken, DO NOT continue"; exit 1; }
+say "Gate: ingress answers on ${NODE_IP}:443 (kube-proxy LB path, ETP Cluster)"
+# kube-proxy needs a little time after boot to program the LB-IP DNAT rules
+# — a one-shot curl right after Ready false-negatives (pi7 lesson).
+end=$((SECONDS + 120))
+until curl -sk -o /dev/null --connect-timeout 5 "https://${NODE_IP}:443/"; do
+  [ $SECONDS -ge $end ] && { echo "ERROR: still nothing on ${NODE_IP}:443 after 120s — kube-proxy LB rules missing, DO NOT continue"; exit 1; }
+  sleep 10
+done
+echo "OK: TLS answered on ${NODE_IP}:443"
 
 say "MANUAL gates before uncordon (second terminal):"
 cat <<EOF
