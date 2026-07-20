@@ -39,13 +39,25 @@ kubectl drain "${NODE}" --ignore-daemonsets --delete-emptydir-data --timeout=300
 say "Label ${NODE} for Cilium CNI ownership"
 kubectl label node "${NODE}" "${MIGRATION_LABEL}=true" --overwrite
 
+say "Restart the cilium agent on ${NODE} (CiliumNodeConfig is start-time only)"
+# A running agent never re-reads per-node config (pi7 lesson, 2026-07-20):
+# without this bounce the conf is only written mid-boot after the reboot —
+# too late, flannel wins the early sandboxes. Safe here: node is cordoned.
+CILIUM_POD="$(kubectl -n kube-system get pod -l k8s-app=cilium --field-selector "spec.nodeName=${NODE}" -o name | head -1)"
+kubectl -n kube-system delete "${CILIUM_POD}" --wait=true >/dev/null
+CILIUM_POD=""
+until [ -n "${CILIUM_POD}" ] && [ "$(kubectl -n kube-system get "${CILIUM_POD}" -o jsonpath='{.status.containerStatuses[0].ready}' 2>/dev/null)" = "true" ]; do
+  CILIUM_POD="$(kubectl -n kube-system get pod -l k8s-app=cilium --field-selector "spec.nodeName=${NODE}" -o name 2>/dev/null | head -1)"
+  sleep 5
+done
+echo "OK: agent restarted (${CILIUM_POD})"
+
 say "Waiting for the agent to write the Cilium CNI conf (pre-reboot gate)"
 # Rebooting before the conf lands on disk lets k3s's flannel win the early
 # boot and DS pods come up with flannel IPs (canary lesson, 2026-07-20).
 end=$((SECONDS + 120))
-CILIUM_POD="$(kubectl -n kube-system get pod -l k8s-app=cilium --field-selector "spec.nodeName=${NODE}" -o name | head -1)"
-until kubectl -n kube-system exec "${CILIUM_POD}" -c cilium-agent -- test -f /host/etc/cni/net.d/05-cilium.conflist 2>/dev/null; do
-  [ $SECONDS -ge $end ] && { echo "ERROR: conf not written 120s after labeling — check CiliumNodeConfig + agent logs"; exit 1; }
+until kubectl -n kube-system exec "${CILIUM_POD#pod/}" -c cilium-agent -- test -f /host/etc/cni/net.d/05-cilium.conflist 2>/dev/null; do
+  [ $SECONDS -ge $end ] && { echo "ERROR: conf not written 120s after agent restart — check CiliumNodeConfig + agent logs"; exit 1; }
   sleep 5
 done
 echo "OK: 05-cilium.conflist present on ${NODE}"
