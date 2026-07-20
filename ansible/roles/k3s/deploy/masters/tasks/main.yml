@@ -7,8 +7,12 @@
   no_log: true
 
 - name: Deploy k3s token file for joining masters
+  # k3s_token is a runtime fact set on the primary master later in this role,
+  # so it only exists when the primary is in the play — under a --limit run on
+  # a single secondary master, fall back to the vaulted k3sToken (the same
+  # token workers join with).
   ansible.builtin.copy:
-    content: "{{ hostvars[groups['masters'][0]]['k3s_token'] }}"
+    content: "{{ hostvars[groups['masters'][0]]['k3s_token'] | default(k3sToken) }}"
     dest: /etc/rancher/k3s/token
     owner: root
     group: root
