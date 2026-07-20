@@ -85,16 +85,21 @@
     echo "tc-egress:$($TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} egress 2>/dev/null | wc -l)"
     echo "flannel-ifaces:$(ip link show 2>/dev/null | grep -cE 'flannel\.1|cni0')"
     echo "kube-router-rules:$(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)"
-    # F19 regression guard: containerd must have loaded a CNI conf, otherwise
-    # kubelet goes NotReady with "cni plugin not initialized" (up to 60s grace
-    # for containerd to come up and scan the conf dir after k3s start).
+    # F19 regression guard: containerd must report NetworkReady, otherwise
+    # kubelet goes NotReady with "cni plugin not initialized" (60s grace for
+    # containerd to come up and rescan the conf dir after k3s start).
+    # crictl prints it inside a conditions array:
+    #   {"type": "NetworkReady", "status": true, ...}
     NR=unknown
     for i in $(seq 1 12); do
-      NR=$(k3s crictl info 2>/dev/null | grep -o '"networkReady": *[a-z]*' | head -1 | grep -o '[a-z]*$')
-      [ "$NR" = "true" ] && break
+      if k3s crictl info 2>/dev/null | tr -d ' \n\t' | grep -Eqi '"type":"NetworkReady","status":true|"networkready":true'; then
+        NR=true
+        break
+      fi
       sleep 5
     done
-    echo "cri-networkReady:${NR:-unknown}"
+    [ "$NR" = "true" ] || echo "crictl-diag:$(k3s crictl info 2>&1 | head -c 200 | tr '\n' ' ')"
+    echo "cri-networkReady:${NR}"
   register: flip_gate
   changed_when: false
   failed_when: "'cri-networkReady:true' not in flip_gate.stdout"
