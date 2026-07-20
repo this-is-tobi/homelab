@@ -39,7 +39,7 @@ gateway_crowdsec_default_acquis_docker: []
 # Local CIDR ranges to whitelist (never ban).
 gateway_crowdsec_default_whitelists:
   - 192.168.1.0/24
-  - 10.42.0.0/16
+  - 10.45.0.0/16 # cilium pod CIDR since 2026-07-20 (was flannel 10.42.0.0/16)
   - 10.43.0.0/16
 
 # Container memory limit.

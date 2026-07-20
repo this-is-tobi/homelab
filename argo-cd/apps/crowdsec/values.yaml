@@ -171,7 +171,10 @@ crowdsec:
             token: "${REGISTRATION_TOKEN}"
             allowed_ranges:
               - "127.0.0.1/32"
-              - "10.42.0.0/16"
+              # 10.45.0.0/16 = cilium pod CIDR (was flannel's 10.42.0.0/16
+              # until 2026-07-20 — a stale range here silently denies agent
+              # auto-registration on the next pod recreation)
+              - "10.45.0.0/16"
               - "10.43.0.0/16"
     postoverflows:
       s01-whitelist:
@@ -182,7 +185,7 @@ crowdsec:
             reason: "local network"
             cidr:
               - "192.168.1.0/24"
-              - "10.42.0.0/16"
+              - "10.45.0.0/16"
               - "10.43.0.0/16"
     # REVERTED 2026-07-19 (see traefik-migration-state / gitops-architecture
     # memory): CrowdSec notification plugins run as forked subprocess
