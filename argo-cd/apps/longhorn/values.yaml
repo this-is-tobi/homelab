@@ -71,6 +71,11 @@ longhorn:
     storageOverProvisioningPercentage: 200
     storageReservedPercentageForDefaultDisk: 10
     backupTargetCredentialSecret: longhorn-s3
+    # Rolling live-upgrade of volume engines to the default engine image
+    # (only healthy attached volumes are touched, max 2 per node at a time).
+    # 2026-07-21: 39 volumes still referenced v1.11.1/v1.11.2 engines after
+    # the chart moved to v1.12.0.
+    concurrentAutomaticEngineUpgradePerNodeLimit: 2
   metrics:
     serviceMonitor:
       enabled: true
