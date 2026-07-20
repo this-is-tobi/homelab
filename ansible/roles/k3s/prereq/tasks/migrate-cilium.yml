@@ -1,21 +1,22 @@
 ---
-# FINAL-FLIP cleanup: flannel → Cilium (rolling migration, step 6)
-# Runbook of record: .local/cilium-migration-plan.md (F8).
+# FINAL-FLIP cleanup: retire flannel + kube-router on a node where Cilium is
+# ALREADY the live CNI (rolling migration step 6 — .local/cilium-migration-plan.md).
 #
-# In the ROLLING flow this runs only at the END, per node (serial: 1), AFTER
-# all 9 nodes are already Cilium-managed via the CiliumNodeConfig/label
-# mechanism — it removes the now-dead flannel/kube-router state so K3s can
-# restart with:  --flannel-backend=none --disable-network-policy
-# Do NOT pass --disable-kube-proxy: phase 1 keeps kube-proxy so Cilium never
-# attaches BPF to the physical uplink (the May 2026 SSH-lockout root cause).
+# ⚠ Cilium is RUNNING on the node when this executes: the agent pod survives
+# k3s restarts and does NOT recreate its interfaces/conf/BPF state on its
+# own. This task therefore only removes flannel/kube-router/May-2026 residue
+# and MUST NOT touch: cilium_* interfaces, the k3s-dir 05-cilium.conflist,
+# /var/lib/cni (live libcni result cache), or /sys/fs/bpf (live BPF state).
+# The iptables cleanup is KUBE-ROUTER-targeted — a full flush would wipe
+# Cilium's masquerade chains and kube-proxy's service rules.
 #
-# Run with: --tags cilium-migrate  (after updating group_vars/k3s.yml flags)
-# This play STOPS K3s and leaves it stopped — follow with the deploy plays to
-# re-template the systemd units with the new flags and start K3s again:
-#   ansible-playbook install.yml --tags cilium-migrate,k3s-masters --limit <master>
-#   ansible-playbook install.yml --tags cilium-migrate,k3s-workers --limit <worker>
-# Arm the watchdog fleet-wide BEFORE the first canary (does not touch k3s):
-#   --tags cilium-watchdog
+# Run per node together with the deploy play (re-templates the unit with the
+# new flags — flannel-backend=none is a CRITICAL flag, flip pi3 first):
+#   ansible-playbook install.yml --tags k3s-masters,cilium-migrate --limit pi3
+#   ansible-playbook install.yml --tags k3s-workers,cilium-migrate --limit pi8
+# Play order runs the deploy play (unit + restart) BEFORE this cleanup; this
+# task stops K3s, cleans, and starts it again itself.
+# Watchdog-only arming (safe anytime): --tags cilium-watchdog
 
 - name: Arm the cilium-watchdog dead-man switch
   ansible.builtin.include_tasks: cilium-watchdog.yml
@@ -26,30 +27,12 @@
     state: stopped
   ignore_errors: true
 
-- name: Detach stale BPF programs from the uplink
-  # Full binary paths on purpose — bare `tc` silently failed on some nodes
-  # during the previous attempt (not in PATH for non-login contexts).
-  ansible.builtin.shell: |
-    IP=/usr/sbin/ip; [ -x "$IP" ] || IP=/sbin/ip
-    TC=/usr/sbin/tc; [ -x "$TC" ] || TC=/sbin/tc
-    $IP link set dev {{ cilium_watchdog_iface | default('eth0') }} xdp off 2>/dev/null || true
-    $TC qdisc del dev {{ cilium_watchdog_iface | default('eth0') }} clsact 2>/dev/null || true
-  changed_when: false
-
-- name: Clean up flannel interfaces and state
-  # NOTE (rolling flow): cilium_* interfaces and the k3s-dir 05-cilium.conflist
-  # belong to the LIVE cilium install at this point — they are recreated by the
-  # agent after the K3s restart; deleting them here still yields a clean start.
+- name: Remove flannel interfaces and residue (Cilium assets untouched)
   ansible.builtin.shell: |
     ip link delete flannel.1 2>/dev/null || true
     ip link delete cni0 2>/dev/null || true
-    ip link delete cilium_host 2>/dev/null || true
-    ip link delete cilium_net 2>/dev/null || true
-    ip link delete cilium_vxlan 2>/dev/null || true
     rm -rf /run/flannel 2>/dev/null || true
-    rm -rf /var/lib/cni/ 2>/dev/null || true
     rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/10-flannel.conflist 2>/dev/null || true
-    rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
     rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/*.cilium_bak 2>/dev/null || true
     # May 2026 residue: written to paths k3s containerd never reads (plan F3)
     rm -f /etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
@@ -57,36 +40,32 @@
   changed_when: false
   ignore_errors: true
 
-- name: Flush iptables rules left by kube-proxy and flannel
+- name: Remove kube-router netpol chains (targeted, never a full flush)
+  # k3s docs method — preserves Cilium masquerade + kube-proxy service rules.
   ansible.builtin.shell: |
-    # Use K3s bundled iptables-nft if available, fall back to system
-    IPT="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables"
-    [ -x "$IPT" ] || IPT="iptables"
-    $IPT -F 2>/dev/null || true
-    $IPT -t nat -F 2>/dev/null || true
-    $IPT -t mangle -F 2>/dev/null || true
-    $IPT -X 2>/dev/null || true
-    $IPT -t nat -X 2>/dev/null || true
-    $IPT -t mangle -X 2>/dev/null || true
+    IPT="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables-save"
+    IPTR="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables-restore"
+    [ -x "$IPT" ] || { IPT=iptables-save; IPTR=iptables-restore; }
+    $IPT 2>/dev/null | grep -v KUBE-ROUTER | $IPTR 2>/dev/null || true
+    ip6tables-save 2>/dev/null | grep -v KUBE-ROUTER | ip6tables-restore 2>/dev/null || true
   changed_when: false
   ignore_errors: true
 
-- name: Clean BPF filesystem
-  ansible.builtin.shell: |
-    # Remove Cilium BPF state from previous runs
-    rm -rf /sys/fs/bpf/tc 2>/dev/null || true
-    rm -rf /sys/fs/bpf/cilium 2>/dev/null || true
-  changed_when: false
-  ignore_errors: true
+- name: Start K3s service
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
 
-- name: Verify the uplink carries no BPF programs (phase-1 acceptance gate)
+- name: Acceptance gate — uplink clean, flannel gone, kube-router gone
   ansible.builtin.shell: |
     TC=/usr/sbin/tc; [ -x "$TC" ] || TC=/sbin/tc
-    $TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} ingress 2>/dev/null
-    $TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} egress 2>/dev/null
-  register: uplink_bpf_check
+    echo "tc-ingress:$($TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} ingress 2>/dev/null | wc -l)"
+    echo "tc-egress:$($TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} egress 2>/dev/null | wc -l)"
+    echo "flannel-ifaces:$(ip link show 2>/dev/null | grep -cE 'flannel\.1|cni0')"
+    echo "kube-router-rules:$(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)"
+  register: flip_gate
   changed_when: false
 
-- name: Report uplink BPF state (must be empty)
+- name: Report acceptance gate (want tc 0/0, flannel 0, kube-router 0)
   ansible.builtin.debug:
-    msg: "{{ inventory_hostname }} uplink BPF filters: {{ uplink_bpf_check.stdout | default('') | trim | ternary(uplink_bpf_check.stdout_lines, 'CLEAN') }}"
+    msg: "{{ inventory_hostname }}: {{ flip_gate.stdout_lines | join(' | ') }}"
