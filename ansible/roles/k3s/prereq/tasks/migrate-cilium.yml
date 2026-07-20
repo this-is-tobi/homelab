@@ -86,19 +86,20 @@
     echo "flannel-ifaces:$(ip link show 2>/dev/null | grep -cE 'flannel\.1|cni0')"
     echo "kube-router-rules:$(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)"
     # F19 regression guard: containerd must report NetworkReady, otherwise
-    # kubelet goes NotReady with "cni plugin not initialized" (60s grace for
+    # kubelet goes NotReady with "cni plugin not initialized" (120s grace for
     # containerd to come up and rescan the conf dir after k3s start).
-    # crictl prints it inside a conditions array:
-    #   {"type": "NetworkReady", "status": true, ...}
+    # crictl marshals condition keys ALPHABETICALLY (message, reason, status,
+    # type) — match both key orders, verified live on pi4:
+    #   {"message": "", "reason": "", "status": true, "type": "NetworkReady"}
     NR=unknown
-    for i in $(seq 1 12); do
-      if k3s crictl info 2>/dev/null | tr -d ' \n\t' | grep -Eqi '"type":"NetworkReady","status":true|"networkready":true'; then
+    for i in $(seq 1 24); do
+      if k3s crictl info 2>/dev/null | tr -d ' \n\t' | grep -Eqi '"status":true,"type":"NetworkReady"|"type":"NetworkReady","status":true'; then
         NR=true
         break
       fi
       sleep 5
     done
-    [ "$NR" = "true" ] || echo "crictl-diag:$(k3s crictl info 2>&1 | head -c 200 | tr '\n' ' ')"
+    [ "$NR" = "true" ] || echo "crictl-diag:$(k3s crictl info 2>&1 | tr -d ' \n\t' | grep -Eoi '"conditions":.{0,220}')"
     echo "cri-networkReady:${NR}"
   register: flip_gate
   changed_when: false
