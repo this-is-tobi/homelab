@@ -64,14 +64,28 @@
 
 - name: Remove kube-router netpol chains (targeted, never a full flush)
   # k3s docs method — preserves Cilium masquerade + kube-proxy service rules.
+  # F20: a lost xtables-lock race makes iptables-restore silently no-op (bit
+  # pi7: 124 stale rules survived, whose frozen ipsets could drop NEW pods'
+  # traffic) — so wait for the lock (-w), run both the k3s-bundled and the
+  # system binaries, then verify the count and retry.
   ansible.builtin.shell: |
     IPT="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables-save"
     IPTR="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables-restore"
-    [ -x "$IPT" ] || { IPT=iptables-save; IPTR=iptables-restore; }
-    $IPT 2>/dev/null | grep -v KUBE-ROUTER | $IPTR 2>/dev/null || true
-    ip6tables-save 2>/dev/null | grep -v KUBE-ROUTER | ip6tables-restore 2>/dev/null || true
+    left=unknown
+    for i in 1 2 3; do
+      if [ -x "$IPT" ]; then
+        $IPT 2>/dev/null | grep -v KUBE-ROUTER | $IPTR -w 10 2>/dev/null || true
+      fi
+      iptables-save 2>/dev/null | grep -v KUBE-ROUTER | iptables-restore -w 10 2>/dev/null || true
+      ip6tables-save 2>/dev/null | grep -v KUBE-ROUTER | ip6tables-restore -w 10 2>/dev/null || true
+      left=$(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)
+      [ "$left" = "0" ] && break
+      sleep 2
+    done
+    echo "kube-router-left:$left"
+  register: kr_clean
   changed_when: false
-  ignore_errors: true
+  failed_when: "'kube-router-left:0' not in kr_clean.stdout"
 
 - name: Start K3s service
   ansible.builtin.systemd:
@@ -103,7 +117,10 @@
     echo "cri-networkReady:${NR}"
   register: flip_gate
   changed_when: false
-  failed_when: "'cri-networkReady:true' not in flip_gate.stdout"
+  failed_when: >-
+    'cri-networkReady:true' not in flip_gate.stdout
+    or 'kube-router-rules:0' not in flip_gate.stdout
+    or 'flannel-ifaces:0' not in flip_gate.stdout
 
 - name: Report acceptance gate (want tc 0/0, flannel 0, kube-router 0, networkReady true)
   ansible.builtin.debug:
