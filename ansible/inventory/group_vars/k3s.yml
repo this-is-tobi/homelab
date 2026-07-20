@@ -18,6 +18,29 @@ k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 #   pi0, pi4, then workers. Per node:
 #   ansible-playbook install.yml --tags k3s-masters,cilium-migrate --limit pi3
 #   ansible-playbook install.yml --tags k3s-workers,cilium-migrate --limit pi8
+#
+# --- klipper (ServiceLB) removal (2026-07-21, .local/post-migration-hardening.md R3 /
+#     .local/cilium-migration-plan.md S4, finding F21) ---
+# --disable servicelb: retires k3s's built-in ServiceLB. Its per-node
+#   svclb-* DaemonSet pods publish every node IP into each LoadBalancer
+#   Service's status, which Cilium ingests as an LB VIP and — for that VIP —
+#   installs a wildcard nodeIP:0/ANY frontend with 0 backends. Any pod
+#   connecting to a node IP on a non-service port gets refused at the BPF
+#   service lookup (F21 — the root cause of the 52-target Prometheus
+#   outage). Traefik's Service now carries an explicit `externalIPs` list
+#   (argo-cd/instances/homelab/values/core/traefik.yaml, commit b78becf,
+#   Gate A passed 2026-07-20: clean per-port ExternalIPs frontends, no new
+#   wildcard) so kube-proxy keeps DNAT'ing nodeIP:80/443 -> traefik with
+#   klipper gone — the live traffic path does not change.
+# Not a k3s CRITICAL flag in the strict sense (no stored cluster-wide
+# config like flannel-backend), but roll it the same careful way: all 3
+# masters must agree, or the embedded deploy-controller manifest reconciles
+# inconsistently between masters (weird flip-flopping svclb state). Same
+# critical-flag flip order as the CNI migration — pi3 (cluster-init) FIRST,
+# then pi0, pi4. Per node:
+#   ansible-playbook install.yml --tags k3s-masters --limit pi3
+# Gate B after all 3: `cilium-dbg service list | grep ':0/ANY'` empty on
+# every node, svclb-* DaemonSet gone, the 52 Prometheus targets recover.
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
@@ -28,6 +51,7 @@ k3sExtraServerArgs: >-
   --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}
   --disable local-storage
   --disable traefik
+  --disable servicelb
   --write-kubeconfig-mode 600
   --node-label node-type=master
 # --etcd-arg heartbeat-interval=250  --etcd-arg election-timeout=2500
