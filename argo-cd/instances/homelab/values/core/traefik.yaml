@@ -7,6 +7,27 @@
 traefik:
   deployment:
     replicas: 2
+  service:
+    spec:
+      # Step 1 of klipper (ServiceLB) removal — .local/post-migration-
+      # hardening.md R3 / .local/cilium-migration-plan.md S4. Additive:
+      # kube-proxy already DNATs nodeIP:80/443 -> traefik identically for
+      # klipper's dynamic LB-status IPs and for an explicit externalIPs list
+      # (same 9 node IPs either way), so this changes nothing about the live
+      # traffic path while klipper still runs alongside it. Once verified
+      # (Gate A: no new wildcard LB frontend in `cilium-dbg bpf lb list`),
+      # `--disable servicelb` removes klipper and traefik keeps serving via
+      # this list instead of the (then-gone) LB status.
+      externalIPs:
+      - 192.168.1.100
+      - 192.168.1.101
+      - 192.168.1.102
+      - 192.168.1.103
+      - 192.168.1.104
+      - 192.168.1.105
+      - 192.168.1.106
+      - 192.168.1.107
+      - 192.168.1.108
   # Trust PROXY protocol v2 ONLY from the gateway (pi-gw, ansible inventory
   # hosts.yml) — HAProxy's `mode tcp` backends proxy (new TCP connection,
   # gateway's own source IP) rather than pass the original connection
