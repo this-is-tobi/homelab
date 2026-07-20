@@ -92,8 +92,12 @@ cnpg:
     # reboots left both standbys down long enough for the primary's
     # replication slots to retain ~3Gi of WAL — full disk killed the
     # primary too (SSO outage). 6Gi rides out multi-hour replica gaps;
-    # real prevention (max_slot_wal_keep_size) tracked separately.
+    # real prevention: max_slot_wal_keep_size below.
     wal: 6Gi
+  # Cap WAL retained by replication slots: a lagging/dead replica costs a
+  # re-clone, never the primary's disk (2026-07-20 keycloak outage, F18).
+  parameters:
+    max_slot_wal_keep_size: 2GB
   resources:
     requests:
       cpu: 250m

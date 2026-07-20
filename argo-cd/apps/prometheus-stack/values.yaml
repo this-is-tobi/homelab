@@ -215,6 +215,10 @@ cnpg:
   pvcSize:
     data: 3Gi
     wal: 1Gi
+  # Cap WAL retained by replication slots: a lagging/dead replica costs a
+  # re-clone, never the primary's disk (2026-07-20 keycloak outage, F18).
+  parameters:
+    max_slot_wal_keep_size: 512MB
   resources:
     requests:
       cpu: 100m
