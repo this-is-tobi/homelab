@@ -3,39 +3,8 @@
 gateway:
   enabled: false
 
-# ============================================================================
-# ROLLING MIGRATION OVERLAY — flannel → cilium (plan: .local/cilium-migration-plan.md)
-# ============================================================================
-# This file deliberately ships the DORMANT migration state so that flipping
-# `cilium.enabled: "true"` in core.yaml can never accidentally deploy the
-# final config: agents start on all nodes but write NO CNI conf and change
-# NO datapath until a node is labeled (scripts/cilium-migrate-node.sh).
-#
-# FINAL FLIP (only after ALL 9 nodes are migrated and stable — runbook step 6):
-# delete everything below this line down to the end of the file, so the
-# catalog defaults (customConf=false, exclusive=true, enforcement=default,
-# unmanagedPodWatcher.restart=true, migration.enabled=false) take over,
-# together with the k3s flag change (--flannel-backend=none
-# --disable-network-policy) applied per node via ansible.
-# ============================================================================
-migration:
-  enabled: true
-
-cilium:
-  cni:
-    # Dormant: do not write any CNI conf — the per-node CiliumNodeConfig
-    # (templates/migration-nodeconfig.yaml) flips this per labeled node.
-    customConf: true
-    # Never remove CNI state on agent shutdown during the window.
-    uninstall: false
-    # Do not touch flannel's conflist on unmigrated nodes; the per-node
-    # config sets cni-exclusive=true on migrated nodes only.
-    exclusive: false
-  # No policy enforcement while pods live on two CNIs. NOTE: migrated pods
-  # temporarily lose NetworkPolicy coverage (kube-router still covers
-  # flannel pods) — keep the window short, flip promptly.
-  policyEnforcementMode: never
-  operator:
-    unmanagedPodWatcher:
-      # Don't restart flannel-managed ("unmanaged") pods during coexistence.
-      restart: false
+# Migration overlay removed 2026-07-20 (rolling flannel→cilium migration
+# complete: all 9 nodes flipped, flannel + kube-router retired). Catalog
+# defaults now apply: customConf=false, exclusive=true, policy enforcement
+# default, unmanagedPodWatcher.restart=true, migration.enabled=false.
+# History: .local/cilium-migration-plan.md
