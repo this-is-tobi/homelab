@@ -88,7 +88,12 @@ cnpg:
   enableSuperuserAccess: false
   pvcSize:
     data: 7Gi
-    wal: 3Gi
+    # 3Gi -> 6Gi (2026-07-20): the cilium-migration night's repeated node
+    # reboots left both standbys down long enough for the primary's
+    # replication slots to retain ~3Gi of WAL — full disk killed the
+    # primary too (SSO outage). 6Gi rides out multi-hour replica gaps;
+    # real prevention (max_slot_wal_keep_size) tracked separately.
+    wal: 6Gi
   resources:
     requests:
       cpu: 250m
