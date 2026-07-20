@@ -21,6 +21,28 @@
 - name: Arm the cilium-watchdog dead-man switch
   ansible.builtin.include_tasks: cilium-watchdog.yml
 
+- name: Ensure containerd drop-in directory exists
+  ansible.builtin.file:
+    path: "{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/agent/etc/containerd/config-v3.toml.d"
+    state: directory
+    mode: "0755"
+
+- name: Pin containerd CNI dirs — k3s omits them with flannel-backend=none (F19)
+  # With --flannel-backend=none k3s no longer templates the CNI section into
+  # containerd's config.toml, so containerd 2.x falls back to its built-in
+  # defaults /etc/cni/net.d + /opt/cni/bin (empty here) → kubelet NotReady
+  # with "cni plugin not initialized". This drop-in is picked up by the
+  # default imports glob in config.toml and survives every k3s regeneration.
+  # Values are identical to what flannel-mode k3s writes, so it is inert on
+  # nodes that have not flipped yet.
+  ansible.builtin.copy:
+    dest: "{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/agent/etc/containerd/config-v3.toml.d/10-cni.toml"
+    content: |
+      [plugins.'io.containerd.cri.v1.runtime'.cni]
+        bin_dirs = ["{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/cni"]
+        conf_dir = "{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/agent/etc/cni/net.d"
+    mode: "0644"
+
 - name: Stop K3s service
   ansible.builtin.systemd:
     name: k3s
@@ -56,16 +78,27 @@
     name: k3s
     state: started
 
-- name: Acceptance gate — uplink clean, flannel gone, kube-router gone
+- name: Acceptance gate — uplink clean, flannel gone, kube-router gone, CRI net ready
   ansible.builtin.shell: |
     TC=/usr/sbin/tc; [ -x "$TC" ] || TC=/sbin/tc
     echo "tc-ingress:$($TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} ingress 2>/dev/null | wc -l)"
     echo "tc-egress:$($TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} egress 2>/dev/null | wc -l)"
     echo "flannel-ifaces:$(ip link show 2>/dev/null | grep -cE 'flannel\.1|cni0')"
     echo "kube-router-rules:$(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)"
+    # F19 regression guard: containerd must have loaded a CNI conf, otherwise
+    # kubelet goes NotReady with "cni plugin not initialized" (up to 60s grace
+    # for containerd to come up and scan the conf dir after k3s start).
+    NR=unknown
+    for i in $(seq 1 12); do
+      NR=$(k3s crictl info 2>/dev/null | grep -o '"networkReady": *[a-z]*' | head -1 | grep -o '[a-z]*$')
+      [ "$NR" = "true" ] && break
+      sleep 5
+    done
+    echo "cri-networkReady:${NR:-unknown}"
   register: flip_gate
   changed_when: false
+  failed_when: "'cri-networkReady:true' not in flip_gate.stdout"
 
-- name: Report acceptance gate (want tc 0/0, flannel 0, kube-router 0)
+- name: Report acceptance gate (want tc 0/0, flannel 0, kube-router 0, networkReady true)
   ansible.builtin.debug:
     msg: "{{ inventory_hostname }}: {{ flip_gate.stdout_lines | join(' | ') }}"
