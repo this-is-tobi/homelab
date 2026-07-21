@@ -4,11 +4,21 @@ gateway:
   gatewayNamespace: kube-system
   routes:
   - name: longhorn
+    listener: https-wildcard-int
     hostnames:
-    - longhorn.core.ohmlab.fr
+    - longhorn.int.ohmlab.fr
     rules:
     - backendService: longhorn-oauth2-proxy
       backendPort: 80
+      # LAN-only (post-migration-hardening.md L6), oauth2-proxy stays on
+      # as a second factor — this narrows WHERE the login page is even
+      # reachable from, it doesn't replace auth.
+      filters:
+      - type: ExtensionRef
+        extensionRef:
+          group: traefik.io
+          kind: Middleware
+          name: lan-only
 
 vso:
   vaultStaticSecrets:
@@ -47,11 +57,11 @@ sso:
       provider_display_name = "Keycloak"
       email_domains = [ "*" ]
       upstreams = [ "http://longhorn-frontend.longhorn-system.svc.cluster.local:80/" ]
-      redirect_url = "https://longhorn.core.ohmlab.fr/oauth2/callback"
+      redirect_url = "https://longhorn.int.ohmlab.fr/oauth2/callback"
       oidc_issuer_url = "https://sso.core.ohmlab.fr/realms/homelab"
       reverse_proxy = true
       cookie_secure = true
-      cookie_domains = [ "longhorn.core.ohmlab.fr" ]
+      cookie_domains = [ "longhorn.int.ohmlab.fr" ]
 
 longhorn:
   ingress:
