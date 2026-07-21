@@ -85,7 +85,7 @@ homepage:
           href: https://hubble.int.ohmlab.fr
           siteMonitor: https://hubble.int.ohmlab.fr
           description: Cilium network flow visibility (LAN only)
-          icon: hubble.png
+          icon: cilium.png
       - Traefik:
           href: https://traefik.int.ohmlab.fr
           siteMonitor: https://traefik.int.ohmlab.fr
