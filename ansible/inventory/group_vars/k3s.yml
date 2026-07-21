@@ -41,6 +41,20 @@ k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 #   ansible-playbook install.yml --tags k3s-masters --limit pi3
 # Gate B after all 3: `cilium-dbg service list | grep ':0/ANY'` empty on
 # every node, svclb-* DaemonSet gone, the 52 Prometheus targets recover.
+#
+# --- master workload discouragement (2026-07-21, .local/post-migration-
+#     hardening.md § node scheduling) ---
+# PreferNoSchedule (soft) on all 3 masters — etcd is latency-sensitive to
+# disk/CPU contention, sharper risk on Pi4/SD-USB-class storage than on
+# typical etcd hardware. Soft, not hard: DaemonSets (cilium, longhorn,
+# node-exporter, ...) need zero toleration changes since PreferNoSchedule
+# never blocks, only deprioritizes. Genuinely heavy/stateful workloads
+# (CNPG databases, Vault) get a HARD exclusion instead, via
+# `nodeSelector: {node-type: worker}` directly on each — see
+# argo-cd/apps/{crowdsec,gitea,keycloak,mattermost,prometheus-stack,
+# vault-operator}/values.yaml. Applied live via `kubectl taint` 2026-07-21
+# (zero disruption — PreferNoSchedule doesn't evict), mirrored here so a
+# node reprovision doesn't silently lose it.
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
@@ -54,6 +68,7 @@ k3sExtraServerArgs: >-
   --disable servicelb
   --write-kubeconfig-mode 600
   --node-label node-type=master
+  --node-taint node-role.kubernetes.io/control-plane=true:PreferNoSchedule
 # --etcd-arg heartbeat-interval=250  --etcd-arg election-timeout=2500
 k3sExtraAgentArgs: >-
   {{ k3sExtraArgs }}
