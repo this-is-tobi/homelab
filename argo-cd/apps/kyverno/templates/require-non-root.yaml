@@ -30,11 +30,8 @@ spec:
           - longhorn-system
           - prometheus-stack
           - system-upgrade
-          - ingress-nginx
           - cert-manager
           - teleport-system
-          # nginx master process requires root (drops privileges for workers)
-          - apisix
           # Log-processing agent reads host logs as root
           - crowdsec
     validate:

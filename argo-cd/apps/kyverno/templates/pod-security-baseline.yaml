@@ -29,7 +29,6 @@ spec:
           - longhorn-system
           - prometheus-stack
           - system-upgrade
-          - ingress-nginx
           # Log-processing agent needs hostPath (/var/log, container runtime)
           - crowdsec
           # bank-vaults operator unconditionally adds IPC_LOCK to the vault
