@@ -87,6 +87,9 @@ vso:
     clientLonghornCore:
       mount: homelab
       path: platforms/production/core/keycloak
+    clientHubbleCore:
+      mount: homelab
+      path: platforms/production/core/keycloak
     clientRustfs:
       mount: homelab
       path: platforms/production/core/keycloak
