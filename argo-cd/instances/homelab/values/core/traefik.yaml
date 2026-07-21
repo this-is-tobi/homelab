@@ -59,6 +59,11 @@ gateway:
   # TLS cert wildcards match a single label: appset.gitops.ohmlab.fr needs
   # its own SAN (*.ohmlab.fr does not cover it).
   - "*.gitops.ohmlab.fr"
+  # LAN-only UIs (hubble, traefik dashboard, longhorn — see the lan-only
+  # Middleware below). The Scaleway zone has a deep wildcard so these names
+  # DO resolve publicly too; the ipAllowList middleware is the real gate,
+  # not DNS. Real DNS-01 cert either way — no self-signed/mDNS involved.
+  - "*.int.ohmlab.fr"
   extraWildcardListeners:
   - name: https-wildcard-core
     hostname: "*.core.ohmlab.fr"
@@ -66,6 +71,8 @@ gateway:
     hostname: "*.s3.ohmlab.fr"
   - name: https-wildcard-gitops
     hostname: "*.gitops.ohmlab.fr"
+  - name: https-wildcard-int
+    hostname: "*.int.ohmlab.fr"
   tlsPassthroughListeners:
   - name: tls-teleport
     hostname: "*.teleport.core.ohmlab.fr"
