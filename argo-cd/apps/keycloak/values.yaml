@@ -77,14 +77,25 @@ cnpg:
   fullnameOverride: keycloak-pg-cluster
   imageName: ghcr.io/cloudnative-pg/postgresql:17.10
   extraSpec:
-    enablePDB: false
+    # PDB protects against voluntary disruption (drain/descheduler) now
+    # that instances is 2, not 3, and masters are excluded from scheduling
+    # too — accepted tradeoff: a plain `kubectl drain` on a node hosting
+    # one of these instances now needs --disable-eviction/--force until
+    # CNPG relocates it (2026-07-21, .local/post-migration-hardening.md).
+    enablePDB: true
   mode: primary
   dbName: keycloak
   credentials:
     username: keycloak
     password: ""
     postgresPassword: ""
-  instances: 3
+  # 3->2 (2026-07-21): masters excluded from CNPG scheduling narrows the
+  # placement pool to 6 workers. F18 (the 2026-07-20 SSO outage, below)
+  # was caused by BOTH standbys being down for hours during uncontrolled
+  # node reboots, not by running 2 vs 3 — the max_slot_wal_keep_size cap
+  # + 6Gi wal PVC already mitigate that class of incident regardless of
+  # replica count. 2 + PDB is sufficient HA here.
+  instances: 2
   enableSuperuserAccess: false
   pvcSize:
     data: 7Gi
@@ -107,6 +118,10 @@ cnpg:
       memory: 1Gi
   affinity:
     topologyKey: kubernetes.io/hostname
+    # Masters run etcd — keep this data-bearing workload off them
+    # entirely (2026-07-21, .local/post-migration-hardening.md).
+    nodeSelector:
+      node-type: worker
   backup:
     enabled: true
     legacyMode: false
