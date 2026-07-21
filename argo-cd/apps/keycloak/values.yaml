@@ -411,6 +411,25 @@ vso:
               text: '{{ get .Secrets "clients" | dig "longhorn-core" "clientId" "" }}'
             CLIENT_SECRET:
               text: '{{ get .Secrets "clients" | dig "longhorn-core" "clientSecret" "" }}'
+    clientHubbleCore:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: keycloak-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: keycloak-clients-hubble-core
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            CLIENT_ID:
+              text: '{{ get .Secrets "clients" | dig "hubble-core" "clientId" "" }}'
+            CLIENT_SECRET:
+              text: '{{ get .Secrets "clients" | dig "hubble-core" "clientSecret" "" }}'
     clientRustfs:
       mount: ""
       path: ""
@@ -511,6 +530,11 @@ keycloakConfigCli:
     valueFrom:
       secretKeyRef:
         name: keycloak-clients-longhorn-core
+        key: CLIENT_SECRET
+  - name: HUBBLE_CORE_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: keycloak-clients-hubble-core
         key: CLIENT_SECRET
   - name: RUSTFS_CLIENT_SECRET
     valueFrom:
@@ -845,6 +869,46 @@ keycloakConfigCli:
             consentRequired: false
             config:
               included.client.audience: longhorn-core
+              id.token.claim: "false"
+              access.token.claim: "true"
+          defaultClientScopes:
+          - web-origins
+          - acr
+          - profile
+          - roles
+          - email
+          - groups
+          optionalClientScopes:
+          - address
+          - phone
+          - offline_access
+          - microprofile-jwt
+        - clientId: hubble-core
+          name: Hubble Core
+          description: Cilium network flow visibility (core)
+          enabled: true
+          clientAuthenticatorType: client-secret
+          secret: "$(env:HUBBLE_CORE_CLIENT_SECRET)"
+          redirectUris:
+          - "https://hubble.int.$(env:ROOT_DOMAIN)/oauth2/callback"
+          webOrigins:
+          - "https://hubble.int.$(env:ROOT_DOMAIN)"
+          protocol: openid-connect
+          publicClient: false
+          standardFlowEnabled: true
+          implicitFlowEnabled: false
+          directAccessGrantsEnabled: false
+          serviceAccountsEnabled: false
+          # See longhorn-core above: oauth2-proxy-fronted clients need this
+          # explicit audience mapper or the access token audiences to
+          # whatever OTHER client's role the user happens to hold.
+          protocolMappers:
+          - name: audience
+            protocol: openid-connect
+            protocolMapper: oidc-audience-mapper
+            consentRequired: false
+            config:
+              included.client.audience: hubble-core
               id.token.claim: "false"
               access.token.claim: "true"
           defaultClientScopes:
