@@ -86,11 +86,6 @@ homepage:
           siteMonitor: https://hubble.int.ohmlab.fr
           description: Cilium network flow visibility (LAN only)
           icon: cilium.png
-      - Traefik:
-          href: https://traefik.int.ohmlab.fr
-          siteMonitor: https://traefik.int.ohmlab.fr
-          description: Ingress controller dashboard (LAN only)
-          icon: traefik.png
     widgets:
     - kubernetes:
         cluster:
