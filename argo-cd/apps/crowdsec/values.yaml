@@ -201,7 +201,12 @@ cnpg:
   fullnameOverride: crowdsec-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
   extraSpec:
-    enablePDB: false
+    # PDB protects against voluntary disruption (drain/descheduler) now
+    # that instances is 2, not 3 — accepted tradeoff: a plain `kubectl
+    # drain` on a node hosting one of these instances now needs
+    # --disable-eviction/--force until CNPG relocates it (2026-07-21,
+    # .local/post-migration-hardening.md).
+    enablePDB: true
   mode: primary
   dbName: crowdsec
   credentials:
@@ -226,6 +231,10 @@ cnpg:
       memory: 512Mi
   affinity:
     topologyKey: kubernetes.io/hostname
+    # Masters run etcd — keep this data-bearing workload off them
+    # entirely (2026-07-21, .local/post-migration-hardening.md).
+    nodeSelector:
+      node-type: worker
   backup:
     enabled: true
     legacyMode: false
