@@ -15,6 +15,10 @@ homepage:
       - Platform Services:
           style: row
           columns: 3
+      - Local Services:
+          style: row
+          columns: 2
+          initiallyCollapsed: true
       - Documentation:
           style: row
           columns: 2
@@ -35,16 +39,16 @@ homepage:
           siteMonitor: https://gitops.core.ohmlab.fr
           description: Admin services deployment manager
           icon: argo-cd.png
-      - Longhorn:
-          href: https://longhorn.core.ohmlab.fr
-          siteMonitor: https://longhorn.core.ohmlab.fr
-          description: Distributed block storage for Kubernetes
-          icon: longhorn.png
       - Vault:
           href: https://vault.core.ohmlab.fr
           siteMonitor: https://vault.core.ohmlab.fr
           description: Admin secret manager
           icon: vault.png
+      - Keycloak:
+          href: https://sso.core.ohmlab.fr
+          siteMonitor: https://sso.core.ohmlab.fr
+          description: Single Sign On management
+          icon: keycloak.png
     - Platform Services:
       - Argo-cd:
           href: https://gitops.ohmlab.fr
@@ -61,11 +65,6 @@ homepage:
           siteMonitor: https://monitoring.ohmlab.fr
           description: Watch cluster metrics & application logs
           icon: grafana.png
-      - Keycloak:
-          href: https://sso.core.ohmlab.fr
-          siteMonitor: https://sso.core.ohmlab.fr
-          description: Single Sign On management
-          icon: keycloak.png
       - Mattermost:
           href: https://mattermost.ohmlab.fr
           siteMonitor: https://mattermost.ohmlab.fr
@@ -76,6 +75,22 @@ homepage:
           siteMonitor: https://console.s3.ohmlab.fr
           description: Store data with s3 standard
           icon: rustfs.png
+    - Local Services:
+      - Longhorn:
+          href: https://longhorn.int.ohmlab.fr
+          siteMonitor: https://longhorn.int.ohmlab.fr
+          description: Distributed block storage for Kubernetes
+          icon: longhorn.png
+      - Hubble:
+          href: https://hubble.int.ohmlab.fr
+          siteMonitor: https://hubble.int.ohmlab.fr
+          description: Cilium network flow visibility (LAN only)
+          icon: hubble.png
+      - Traefik:
+          href: https://traefik.int.ohmlab.fr
+          siteMonitor: https://traefik.int.ohmlab.fr
+          description: Ingress controller dashboard (LAN only)
+          icon: traefik.png
     widgets:
     - kubernetes:
         cluster:
