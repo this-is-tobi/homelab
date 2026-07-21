@@ -20,7 +20,58 @@ spec:
         kinds:
         - Pod
         - DaemonSet
+        - Deployment
         namespaces:
         - crowdsec
         names:
         - crowdsec-agent*
+---
+# Same shape as above: the homepage chart hardcodes a config-init busybox
+# initContainer (copies the ConfigMap into a writable volume) with no
+# resources values knob at all.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: homepage-config-init-limits
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames:
+    - require-limits
+    - autogen-require-limits
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Deployment
+        namespaces:
+        - homepage
+        names:
+        - homepage*
+---
+# Same shape again: the rustfs chart hardcodes an init-step initContainer
+# (creates data/log dirs) with no resources values knob.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: rustfs-init-step-limits
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-resource-limits
+    ruleNames:
+    - require-limits
+    - autogen-require-limits
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Deployment
+        - StatefulSet
+        namespaces:
+        - rustfs
+        names:
+        - rustfs*
