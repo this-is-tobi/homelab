@@ -48,9 +48,14 @@ traefik:
   # the shared public/LAN entrypoint, so this MUST stay Host()-scoped: a
   # bare PathPrefix on a shared entrypoint would collide with every other
   # app's own /dashboard or /api path.
+  # TEMPORARILY DISABLED 2026-07-21: lan-only ipAllowList is being bypassed
+  # (verified reachable from a genuinely external IP, HTTP 302 straight to
+  # the dashboard, no auth in front at all) — root cause not yet confirmed.
+  # Re-enable only once the gate is proven to actually block external
+  # traffic.
   ingressRoute:
     dashboard:
-      enabled: true
+      enabled: false
       entryPoints: ["websecure"]
       matchRule: "Host(`traefik.int.ohmlab.fr`)"
       middlewares:
