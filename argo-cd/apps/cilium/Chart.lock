@@ -2,5 +2,11 @@ dependencies:
 - name: cilium
   repository: https://helm.cilium.io/
   version: 1.19.6
-digest: sha256:850ffebb09e1a3a204cd0ffb6a902b8646b3621fb3462bde10bdf647fb71c858
-generated: "2026-07-20T00:15:35.098493+02:00"
+- name: vso-utils
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 2.0.0
+- name: oauth2-proxy
+  repository: https://oauth2-proxy.github.io/manifests
+  version: 7.12.8
+digest: sha256:9a3b37f878f1493170e7b92f998a0b1cb166bfab3be9bf18291cb8270176bc06
+generated: "2026-07-21T04:46:03.21682+02:00"

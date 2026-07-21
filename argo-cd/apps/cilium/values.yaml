@@ -26,6 +26,75 @@ gateway:
   extraParentRefs: []
   routes: []
 
+# VSO integration — delivers the Hubble UI oauth2-proxy's Keycloak client
+# creds from Vault. First VSO usage in kube-system: role/policy scoped to
+# just this one secret path (argo-cd/apps/vault-operator/values.yaml
+# `cilium` role / `hubble` policy), not a general kube-system grant.
+vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: cilium
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-ca
+  vaultStaticSecrets:
+    # Keys match what the oauth2-proxy chart's `existingSecret` support
+    # expects verbatim (same pattern as longhorn's longhornSso).
+    hubbleSso:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: cilium-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: hubble-oauth2-proxy-creds
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            client-id:
+              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
+            client-secret:
+              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+            cookie-secret:
+              text: '{{ get .Secrets "keycloak" | dig "cookieSecret" "" }}'
+
+# oauth2-proxy in front of Hubble UI — Hubble has no native OIDC support.
+sso:
+  fullnameOverride: hubble-oauth2-proxy
+  config:
+    existingSecret: hubble-oauth2-proxy-creds
+    configFile: |-
+      provider = "keycloak-oidc"
+      provider_display_name = "Keycloak"
+      email_domains = [ "*" ]
+      upstreams = [ "file:///dev/null" ]
+      redirect_url = ""
+      oidc_issuer_url = ""
+      reverse_proxy = true
+      cookie_secure = true
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
 # Rolling flannel→cilium migration support (official Cilium migration guide,
 # adapted to k3s — full runbook: .local/cilium-migration-plan.md F8).
 # Renders templates/migration-nodeconfig.yaml: a CiliumNodeConfig that flips
