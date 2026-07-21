@@ -1,7 +1,36 @@
-# Cilium Gateway stays OFF permanently — Traefik owns the Gateway API on
-# this cluster (.local/ingress-controller-analysis.md; plan doc F5/F6/F7).
-gateway:
+# Cilium's OWN GatewayClass/Gateway stays OFF permanently — Traefik owns
+# the Gateway API on this cluster (.local/ingress-controller-analysis.md;
+# plan doc F5/F6/F7). Not to be confused with `gateway` below.
+ciliumGateway:
   enabled: false
+
+# Hubble UI HTTPRoute, attached to the traefik gateway — LAN-only via the
+# lan-only Middleware (post-migration-hardening.md L4).
+gateway:
+  enabled: true
+  gatewayName: homelab-gateway-traefik
+  gatewayNamespace: kube-system
+  routes:
+  - name: hubble-ui
+    listener: https-wildcard-int
+    hostnames:
+    - "hubble.int.ohmlab.fr"
+    rules:
+    - backendService: hubble-ui
+      backendPort: 80
+      filters:
+      - type: ExtensionRef
+        extensionRef:
+          group: traefik.io
+          kind: Middleware
+          name: lan-only
+
+# Turn on the Hubble UI backend for the route above (off by default in the
+# chart — nothing rendered it before this).
+cilium:
+  hubble:
+    ui:
+      enabled: true
 
 # Migration overlay removed 2026-07-20 (rolling flannel→cilium migration
 # complete: all 9 nodes flipped, flannel + kube-router retired). Catalog
