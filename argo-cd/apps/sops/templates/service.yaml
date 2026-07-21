@@ -1,0 +1,28 @@
+---
+# The vendored sops-secrets-operator chart ships a ServiceMonitor
+# (templates/monitor.yaml) but never a backing Service — its endpoints
+# selector matches nothing, so Prometheus never scrapes it (confirmed: zero
+# Services in this namespace despite metrics.enabled=true). The operator
+# itself does serve plain-HTTP metrics on :8080 (controller-runtime
+# default, verified live), just with nothing exposing it. Provide the
+# missing Service ourselves; see servicemonitor.yaml for the matching
+# ServiceMonitor (metrics.enabled is set to false in values.yaml so the
+# chart's own mismatched https/bearer-token ServiceMonitor doesn't also
+# render and produce a permanently-down target).
+apiVersion: v1
+kind: Service
+metadata:
+  name: sops-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: sops
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    app.kubernetes.io/name: sops
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+  - name: metrics
+    port: 8080
+    targetPort: 8080
+    protocol: TCP

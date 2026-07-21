@@ -19,7 +19,11 @@ sops:
     container:
       enabled: true
   metrics:
-    enabled: true
+    # The chart's own ServiceMonitor (scheme https + bearer token) has no
+    # matching Service and no TLS/RBAC-proxy wired to the container — see
+    # templates/service.yaml and templates/servicemonitor.yaml for the
+    # working replacement this app ships instead.
+    enabled: false
 
 vso:
   extraObjects:
