@@ -51,6 +51,21 @@ kube-prometheus-stack:
       limits:
         cpu: 200m
         memory: 128Mi
+  # k3s bundles the scheduler, controller-manager and (embedded) etcd inside
+  # the single k3s server process and doesn't expose them as separate
+  # Services the way kubeadm/RKE2 clusters do — kube-proxy metrics are also
+  # not reachable the chart's default way here. The chart's default
+  # ServiceMonitors for these select Services with zero endpoints, so they
+  # never scrape anything and their bundled Grafana dashboards are
+  # permanently blank. Disabling avoids phantom "no data" dashboards.
+  kubeControllerManager:
+    enabled: false
+  kubeEtcd:
+    enabled: false
+  kubeProxy:
+    enabled: false
+  kubeScheduler:
+    enabled: false
   alertmanager:
     # Route alerts to Mattermost (Slack-compatible incoming webhook). The
     # webhook URL comes from Vault via the alertmanagerMattermost VSS and is
