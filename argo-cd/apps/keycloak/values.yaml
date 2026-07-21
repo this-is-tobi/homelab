@@ -479,7 +479,15 @@ keycloakConfigCli:
     KEYCLOAK_URL: "http://keycloak:8080"
     KEYCLOAK_USER: admin
     IMPORT_FILES_LOCATIONS: "/config/*.json"
-    IMPORT_FORCE: "false"
+    # MUST be true: the skip-checksum is computed on the RAW realm file
+    # (before $(env:...) substitution), so a client secret delivered by VSO
+    # AFTER the first import never changes the checksum and is never
+    # re-applied under force=false — the client keeps whatever secret existed
+    # at first import (empty if the VSS hadn't populated yet). That silently
+    # broke hubble-core (oauth2-proxy token exchange → 500 "invalid client
+    # credentials", Keycloak held an empty secret). force=true reconciles the
+    # realm to the declared state on every sync, so secret drift self-heals.
+    IMPORT_FORCE: "true"
     IMPORT_VAR_SUBSTITUTION_ENABLED: "true"
     IMPORT_VAR_SUBSTITUTION_UNDEFINED_IS_ERROR: "true"
     LOGGING_LEVEL_ROOT: INFO
