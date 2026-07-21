@@ -76,14 +76,22 @@ cnpg:
   fullnameOverride: mattermost-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
   extraSpec:
-    enablePDB: false
+    # PDB protects against voluntary disruption (drain/descheduler) now
+    # that instances is 2, not 3, and masters are excluded from scheduling
+    # too — accepted tradeoff: a plain `kubectl drain` on a node hosting
+    # one of these instances now needs --disable-eviction/--force until
+    # CNPG relocates it (2026-07-21, .local/post-migration-hardening.md).
+    enablePDB: true
   mode: primary
   dbName: mattermost
   credentials:
     username: mattermost
     password: ""
     postgresPassword: ""
-  instances: 3
+  # 3->2 (2026-07-21): masters excluded from CNPG scheduling narrows the
+  # placement pool to 6 workers — 2 replicas + PDB is sufficient HA for
+  # this workload's criticality at homelab scale.
+  instances: 2
   enableSuperuserAccess: false
   pvcSize:
     data: 7Gi
@@ -101,6 +109,10 @@ cnpg:
       memory: 1Gi
   affinity:
     topologyKey: kubernetes.io/hostname
+    # Masters run etcd — keep this data-bearing workload off them
+    # entirely (2026-07-21, .local/post-migration-hardening.md).
+    nodeSelector:
+      node-type: worker
   backup:
     enabled: true
     legacyMode: false
