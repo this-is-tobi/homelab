@@ -10,7 +10,12 @@ scaleway-certmanager-webhook:
   secret:
     externalSecretName: scw-creds # SCW_ACCESS_KEY / SCW_SECRET_KEY
 
+# ingress-nginx is decommissioned (kept only as a disabled catalog escape
+# hatch, see instances/homelab/core.yaml) — this Certificate was the only
+# thing still populating its namespace. Disabled so the namespace can be
+# cleaned up like apisix's was.
 defaultWildcard:
+  enabled: false
   dnsZone: ohmlab.fr
 
 clusterIssuers:
