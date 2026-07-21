@@ -1,4 +1,4 @@
-{{- if .Values.gateway.enabled }}
+{{- if .Values.ciliumGateway.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
@@ -10,10 +10,10 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: {{ .Values.gateway.name | default "homelab-gateway" }}
+  name: {{ .Values.ciliumGateway.name | default "homelab-gateway" }}
   namespace: {{ .Release.Namespace }}
   annotations:
-    cert-manager.io/cluster-issuer: {{ .Values.gateway.clusterIssuer | default "letsencrypt-dns-prod" }}
+    cert-manager.io/cluster-issuer: {{ .Values.ciliumGateway.clusterIssuer | default "letsencrypt-dns-prod" }}
 spec:
   gatewayClassName: cilium
   listeners:
@@ -26,30 +26,30 @@ spec:
     - name: https-wildcard
       protocol: HTTPS
       port: 443
-      hostname: "*.{{ .Values.gateway.domain }}"
+      hostname: "*.{{ .Values.ciliumGateway.domain }}"
       tls:
         mode: Terminate
         certificateRefs:
-          - name: {{ .Values.gateway.wildcardTlsSecret | default "gateway-wildcard-tls" }}
+          - name: {{ .Values.ciliumGateway.wildcardTlsSecret | default "gateway-wildcard-tls" }}
       allowedRoutes:
         namespaces:
           from: All
     - name: https-apex
       protocol: HTTPS
       port: 443
-      hostname: "{{ .Values.gateway.domain }}"
+      hostname: "{{ .Values.ciliumGateway.domain }}"
       tls:
         mode: Terminate
         certificateRefs:
-          - name: {{ .Values.gateway.apexTlsSecret | default "gateway-apex-tls" }}
+          - name: {{ .Values.ciliumGateway.apexTlsSecret | default "gateway-apex-tls" }}
       allowedRoutes:
         namespaces:
           from: All
-{{- range .Values.gateway.extraListeners }}
+{{- range .Values.ciliumGateway.extraListeners }}
     - {{ toYaml . | nindent 6 }}
 {{- end }}
-{{- if .Values.gateway.tlsPassthroughListeners }}
-{{- range .Values.gateway.tlsPassthroughListeners }}
+{{- if .Values.ciliumGateway.tlsPassthroughListeners }}
+{{- range .Values.ciliumGateway.tlsPassthroughListeners }}
     - name: {{ .name }}
       protocol: TLS
       port: 443
@@ -69,13 +69,13 @@ metadata:
   name: gateway-wildcard-tls
   namespace: {{ .Release.Namespace }}
 spec:
-  secretName: {{ .Values.gateway.wildcardTlsSecret | default "gateway-wildcard-tls" }}
+  secretName: {{ .Values.ciliumGateway.wildcardTlsSecret | default "gateway-wildcard-tls" }}
   issuerRef:
-    name: {{ .Values.gateway.dnsClusterIssuer | default "letsencrypt-dns-prod" }}
+    name: {{ .Values.ciliumGateway.dnsClusterIssuer | default "letsencrypt-dns-prod" }}
     kind: ClusterIssuer
   dnsNames:
-    - "*.{{ .Values.gateway.domain }}"
-    - "{{ .Values.gateway.domain }}"
+    - "*.{{ .Values.ciliumGateway.domain }}"
+    - "{{ .Values.ciliumGateway.domain }}"
 ---
 # HTTP → HTTPS redirect (catches all HTTP traffic on port 80)
 apiVersion: gateway.networking.k8s.io/v1
@@ -85,7 +85,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   parentRefs:
-    - name: {{ .Values.gateway.name | default "homelab-gateway" }}
+    - name: {{ .Values.ciliumGateway.name | default "homelab-gateway" }}
       namespace: {{ .Release.Namespace }}
       sectionName: http
   rules:

@@ -1,9 +1,12 @@
-# Cilium-implemented Gateway API Gateway (templates/gateway.yaml).
+# Cilium-implemented Gateway API Gateway (templates/gateway.yaml) — this is
+# Cilium acting as its OWN GatewayClass/ingress controller, a different
+# thing from `gateway` below (this app's own HTTPRoutes attaching to the
+# already-live traefik Gateway). Renamed to avoid the two colliding.
 # OFF permanently (not just phase 1): Traefik owns the Gateway API on this
 # cluster (see .local/ingress-controller-analysis.md). Cilium Gateway would
 # also hard-require kubeProxyReplacement=true and Cilium >=1.20 for
 # BackendTLSPolicy — see .local/cilium-migration-plan.md F5/F6/F7.
-gateway:
+ciliumGateway:
   enabled: false
   name: ""
   domain: ""
@@ -13,6 +16,15 @@ gateway:
   apexTlsSecret: gateway-wildcard-tls
   extraListeners: []
   tlsPassthroughListeners: []
+
+# HTTPRoutes this app attaches to the traefik-owned Gateway (templates/
+# httproute.yaml, same convention as homepage/longhorn/vault-operator/etc).
+gateway:
+  enabled: false
+  gatewayName: ""
+  gatewayNamespace: ""
+  extraParentRefs: []
+  routes: []
 
 # Rolling flannel→cilium migration support (official Cilium migration guide,
 # adapted to k3s — full runbook: .local/cilium-migration-plan.md F8).

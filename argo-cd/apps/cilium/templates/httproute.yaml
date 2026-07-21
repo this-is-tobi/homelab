@@ -1,0 +1,40 @@
+{{- if .Values.gateway.enabled }}
+{{- $gatewayName := .Values.gateway.gatewayName | default "homelab-gateway" }}
+{{- $gatewayNamespace := .Values.gateway.gatewayNamespace | default "kube-system" }}
+{{- range .Values.gateway.routes }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .name }}
+spec:
+  {{- $listener := .listener | default "https-wildcard" }}
+  parentRefs:
+    - name: {{ $gatewayName }}
+      namespace: {{ $gatewayNamespace }}
+      sectionName: {{ $listener }}
+    {{- range $.Values.gateway.extraParentRefs }}
+    - name: {{ .name }}
+      namespace: {{ .namespace | default $gatewayNamespace }}
+      sectionName: {{ $listener }}
+    {{- end }}
+  hostnames:
+    {{- range .hostnames }}
+    - {{ . | quote }}
+    {{- end }}
+  rules:
+    {{- range .rules }}
+    - matches:
+        - path:
+            type: {{ .pathType | default "PathPrefix" }}
+            value: {{ .path | default "/" | quote }}
+      {{- if .filters }}
+      filters:
+        {{- toYaml .filters | nindent 8 }}
+      {{- end }}
+      backendRefs:
+        - name: {{ .backendService }}
+          port: {{ .backendPort }}
+    {{- end }}
+{{- end }}
+{{- end }}

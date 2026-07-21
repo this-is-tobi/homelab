@@ -1,0 +1,18 @@
+{{- if .Values.gateway.enabled }}
+---
+# Gateway API ExtensionRef Middleware refs are same-namespace only
+# (LocalObjectReference — no namespace field in the Gateway API type), so
+# this can't just reference the traefik app's own lan-only Middleware —
+# every namespace that needs it gets its own copy. Keep the sourceRange in
+# sync with argo-cd/apps/traefik/templates/middleware-lan-only.yaml.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: lan-only
+  namespace: {{ .Release.Namespace }}
+spec:
+  ipAllowList:
+    sourceRange:
+    - 192.168.1.0/24
+    - 10.45.0.0/16
+{{- end }}
