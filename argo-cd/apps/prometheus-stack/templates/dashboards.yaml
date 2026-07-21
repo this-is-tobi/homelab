@@ -1,11 +1,22 @@
+{{- /* Grafana folder per dashboard; anything unlisted falls to "Services".
+       Consumed via grafana.sidecar.dashboards.folderAnnotation (values.yaml). */}}
+{{- $folders := dict
+  "k3s" "Kubernetes"
+  "kube-global" "Kubernetes"
+  "kube-node" "Kubernetes"
+  "kube-ns" "Kubernetes"
+  "kube-pod" "Kubernetes" }}
 {{- range $path, $_ :=  .Files.Glob  "grafana-dashboards/*.json" }}
+{{- $name := $path | base | replace ".json" "" }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $path | base | replace ".json"  "" }}-dashboard
+  name: {{ $name }}-dashboard
   labels:
     grafana_dashboard: "1"
+  annotations:
+    grafana_folder: {{ index $folders $name | default "Services" | quote }}
 data:
   {{ $path | base }}: |
 {{ $.Files.Get $path | indent 4 }}

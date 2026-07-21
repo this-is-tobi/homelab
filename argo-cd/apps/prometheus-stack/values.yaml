@@ -163,6 +163,15 @@ kube-prometheus-stack:
         limits:
           cpu: 200m
           memory: 256Mi
+      # Organise our dashboards into Grafana folders via a per-ConfigMap
+      # `grafana_folder` annotation (set in templates/dashboards.yaml).
+      # foldersFromFilesStructure makes the provisioner mirror the sidecar's
+      # per-folder subdirectories into real Grafana folders. Dashboards without
+      # the annotation (the stack's own bundled ones) stay in General.
+      dashboards:
+        folderAnnotation: grafana_folder
+        provider:
+          foldersFromFilesStructure: true
     # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
     ingress:
       enabled: false
