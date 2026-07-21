@@ -43,23 +43,16 @@ traefik:
       proxyProtocol:
         trustedIPs:
         - 192.168.1.99/32
-  # LAN-only traefik dashboard (post-migration-hardening.md L5). The
-  # traefik entrypoint (chart default) isn't exposed at all — websecure is
-  # the shared public/LAN entrypoint, so this MUST stay Host()-scoped: a
-  # bare PathPrefix on a shared entrypoint would collide with every other
-  # app's own /dashboard or /api path.
-  # TEMPORARILY DISABLED 2026-07-21: lan-only ipAllowList is being bypassed
-  # (verified reachable from a genuinely external IP, HTTP 302 straight to
-  # the dashboard, no auth in front at all) — root cause not yet confirmed.
-  # Re-enable only once the gate is proven to actually block external
-  # traffic.
+  # Traefik dashboard UI is intentionally NOT exposed. It lives on the
+  # internal `traefik` entrypoint (api@internal) with no clean Service path
+  # for oauth2-proxy, and the lan-only ipAllowList can't gate it: with the
+  # service on externalTrafficPolicy: Cluster the real client IP is SNAT'd
+  # to a pod IP before Traefik sees it, so no source-based filter works.
+  # Traefik health/traffic is observed via the "Traefik" Grafana dashboard
+  # (prometheus-stack, Services folder) instead. Chart default stays off.
   ingressRoute:
     dashboard:
       enabled: false
-      entryPoints: ["websecure"]
-      matchRule: "Host(`traefik.int.ohmlab.fr`)"
-      middlewares:
-      - name: lan-only
 
 gateway:
   enabled: true
