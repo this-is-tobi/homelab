@@ -43,6 +43,18 @@ traefik:
       proxyProtocol:
         trustedIPs:
         - 192.168.1.99/32
+  # LAN-only traefik dashboard (post-migration-hardening.md L5). The
+  # traefik entrypoint (chart default) isn't exposed at all — websecure is
+  # the shared public/LAN entrypoint, so this MUST stay Host()-scoped: a
+  # bare PathPrefix on a shared entrypoint would collide with every other
+  # app's own /dashboard or /api path.
+  ingressRoute:
+    dashboard:
+      enabled: true
+      entryPoints: ["websecure"]
+      matchRule: "Host(`traefik.int.ohmlab.fr`)"
+      middlewares:
+      - name: lan-only
 
 gateway:
   enabled: true
