@@ -56,6 +56,23 @@
         group: root
         mode: "0640"
 
+    - name: Create dnsmasq.d dir
+      ansible.builtin.file:
+        path: /services/pihole/.pihole/etc-dnsmasq.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Copy local-domain dnsmasq config
+      ansible.builtin.template:
+        src: dnsmasq-local-domains.conf.j2
+        dest: /services/pihole/.pihole/etc-dnsmasq.d/05-int-domain.conf
+        owner: root
+        group: root
+        mode: "0640"
+      notify: Restart pihole
+
     - name: Launch pihole
       community.docker.docker_compose_v2:
         state: present

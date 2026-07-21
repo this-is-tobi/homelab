@@ -1,0 +1,8 @@
+# Managed by ansible (gateway/pihole role) — do not edit by hand.
+#
+# LAN-only UIs (hubble, traefik dashboard, longhorn) live under this
+# wildcard; access is gated by traefik's lan-only ipAllowList Middleware,
+# not by DNS — the public zone has a deep wildcard too, so this name
+# resolves off-LAN as well. Points at pi-gw, which HAProxy-terminates and
+# forwards into the cluster the same way it does for {{ rootDomain }}.
+address=/int.{{ rootDomain }}/{{ gatewayIp }}

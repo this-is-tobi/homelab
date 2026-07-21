@@ -1,0 +1,7 @@
+---
+- name: Restart pihole
+  community.docker.docker_compose_v2:
+    state: restarted
+    project_src: /services/pihole
+    files:
+      - docker-compose.yml
