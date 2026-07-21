@@ -6,8 +6,12 @@ ciliumGateway:
 
 # Hubble UI HTTPRoute, attached to the traefik gateway — LAN-only via the
 # lan-only Middleware (post-migration-hardening.md L4).
+# TEMPORARILY DISABLED 2026-07-21: lan-only ipAllowList is being bypassed
+# (verified reachable from a genuinely external IP, HTTP 200, no auth in
+# front at all) — root cause not yet confirmed. Re-enable only once the
+# gate is proven to actually block external traffic.
 gateway:
-  enabled: true
+  enabled: false
   gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
   routes:
