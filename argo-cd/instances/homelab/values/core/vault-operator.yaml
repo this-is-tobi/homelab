@@ -108,6 +108,12 @@ ohmlab:
           longhorn-core:
             clientId: longhorn-core
             clientSecret: "<random:32>"
+          hubble-core:
+            clientId: hubble-core
+            clientSecret: "<random:32>"
+          traefik-dashboard-core:
+            clientId: traefik-dashboard-core
+            clientSecret: "<random:32>"
           # Tenant services
           argo-cd:
             clientId: argo-cd
@@ -234,6 +240,18 @@ ohmlab:
         keycloak:
           clientId: longhorn-core
           clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.longhorn-core.clientSecret>"
+    - path: homelab/platforms/production/core/hubble
+      data:
+        keycloak:
+          clientId: hubble-core
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.hubble-core.clientSecret>"
+          cookieSecret: "<random:32>"
+    - path: homelab/platforms/production/core/traefik-dashboard
+      data:
+        keycloak:
+          clientId: traefik-dashboard-core
+          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.traefik-dashboard-core.clientSecret>"
+          cookieSecret: "<random:32>"
     - path: homelab/platforms/production/core/prometheus-stack
       data:
         admin:

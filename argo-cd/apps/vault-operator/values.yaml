@@ -217,6 +217,16 @@ vault:
         path "homelab/data/platforms/+/+/traefik" {
           capabilities = ["read", "list"]
         }
+    - name: traefik-dashboard
+      rules: |
+        path "homelab/data/platforms/+/+/traefik-dashboard" {
+          capabilities = ["read", "list"]
+        }
+    - name: hubble
+      rules: |
+        path "homelab/data/platforms/+/+/hubble" {
+          capabilities = ["read", "list"]
+        }
     auth:
     - type: kubernetes
       roles:
@@ -311,7 +321,14 @@ vault:
       - name: traefik
         bound_service_account_names: [vso]
         bound_service_account_namespaces: [traefik]
-        policies: [traefik]
+        policies: [traefik, traefik-dashboard]
+        ttl: 1h
+      - name: cilium
+        # VSO service account in kube-system, for the Hubble UI oauth2-proxy
+        # secret only (least-privilege: not a general kube-system grant).
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [kube-system]
+        policies: [hubble]
         ttl: 1h
       # VSO service account in vault-operator-system for vault-oidc-credentials.
       # Uses the 'vault' policy (read homelab/data/platforms/+/+/keycloak).
