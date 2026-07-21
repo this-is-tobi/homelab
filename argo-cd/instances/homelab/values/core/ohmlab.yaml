@@ -84,6 +84,30 @@ argo-cd:
             hs = {}
             hs.status = "Healthy"
             return hs
+        Service:
+          health.lua: |
+            hs = {}
+            if obj.spec.type ~= "LoadBalancer" then
+              hs.status = "Healthy"
+              return hs
+            end
+            if obj.status.loadBalancer ~= nil and obj.status.loadBalancer.ingress ~= nil and table.getn(obj.status.loadBalancer.ingress) > 0 then
+              hs.status = "Healthy"
+              return hs
+            end
+            -- klipper/ServiceLB was removed (F21/F24); nothing in this cluster
+            -- ever writes status.loadBalancer.ingress anymore. Services are
+            -- reached via static spec.externalIPs + kube-proxy DNAT instead,
+            -- so treat that as the success condition rather than waiting
+            -- forever on a status field with no writer.
+            if obj.spec.externalIPs ~= nil and table.getn(obj.spec.externalIPs) > 0 then
+              hs.status = "Healthy"
+              hs.message = "Reachable via static externalIPs (no LB controller in this cluster)"
+              return hs
+            end
+            hs.status = "Progressing"
+            hs.message = "Waiting for load balancer to configure external IP"
+            return hs
         gateway.networking.k8s.io/Gateway:
           health.lua: |
             hs = {}
