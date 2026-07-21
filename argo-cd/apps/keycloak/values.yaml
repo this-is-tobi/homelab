@@ -818,9 +818,9 @@ keycloakConfigCli:
           clientAuthenticatorType: client-secret
           secret: "$(env:LONGHORN_CORE_CLIENT_SECRET)"
           redirectUris:
-          - "https://longhorn.core.$(env:ROOT_DOMAIN)/oauth2/callback"
+          - "https://longhorn.int.$(env:ROOT_DOMAIN)/oauth2/callback"
           webOrigins:
-          - "https://longhorn.core.$(env:ROOT_DOMAIN)"
+          - "https://longhorn.int.$(env:ROOT_DOMAIN)"
           protocol: openid-connect
           publicClient: false
           standardFlowEnabled: true
