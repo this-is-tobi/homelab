@@ -49,7 +49,15 @@ vault-operator:
 vault:
   enabled: true
   name: vault
+  # size stays 3 (not reduced like CNPG) — raft consensus needs an odd
+  # number for quorum; 2 would be strictly worse than 3 (zero fault
+  # tolerance for writes, same failure surface). Masters run etcd,
+  # latency-sensitive to disk/CPU contention on this cluster's Pi4/
+  # SD-USB-class storage — keep this data-bearing workload off them
+  # entirely (2026-07-21, .local/post-migration-hardening.md).
   size: 3
+  nodeSelector:
+    node-type: worker
   image:
     repository: hashicorp/vault
     tag: 2.0.3

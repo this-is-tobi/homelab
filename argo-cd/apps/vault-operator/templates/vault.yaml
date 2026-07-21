@@ -9,6 +9,10 @@ metadata:
     argocd.argoproj.io/sync-wave: "0"
 spec:
   size: {{ .Values.vault.size }}
+  {{- if .Values.vault.nodeSelector }}
+  nodeSelector:
+    {{- toYaml .Values.vault.nodeSelector | nindent 4 }}
+  {{- end }}
   image: {{ .Values.vault.image.repository }}:{{ .Values.vault.image.tag }}
   bankVaultsImage: {{ .Values.vault.bankVaultsImage }}
   {{- if or .Values.vault.service.annotations .Values.vault.agent.enabled }}
