@@ -34,6 +34,14 @@ cilium:
   hubble:
     ui:
       enabled: true
+  # NetworkPolicy zero-trust prereq (.local/post-migration-hardening.md §2):
+  # let CIDR selectors match node-originated traffic, so an `ipBlock
+  # 192.168.1.0/24` rule matches the k3s apiserver/kubelet host + remote-node
+  # identities (needed for webhook/probe allow rules under default-deny).
+  # cilium-config key `policy-cidr-match-mode`; START-TIME only → requires a
+  # cilium agent rollout to take effect (no-op until netpols use CIDR selectors).
+  policyCIDRMatchMode:
+  - nodes
 
 vso:
   vaultStaticSecrets:
