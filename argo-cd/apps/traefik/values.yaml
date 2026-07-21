@@ -191,6 +191,15 @@ crowdsecBouncer:
   clientTrustedIPs:
   - 192.168.1.0/24
 
+# -- lan-only Middleware (templates/middleware-lan-only.yaml), gates
+# *.int.ohmlab.fr UIs. 10.45.0.0/16 is the cluster pod CIDR — kept in so
+# in-cluster callers (e.g. Prometheus, if it ever needs to reach one of
+# these UIs) aren't blocked.
+lanOnly:
+  sourceRange:
+  - 192.168.1.0/24
+  - 10.45.0.0/16
+
 # -- VSO (Vault Secrets Operator) integration
 # Delivers the crowdsec bouncer LAPI key from Vault as a Secret in this
 # namespace (mounted into the traefik pods, see additionalVolumes above).

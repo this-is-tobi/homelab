@@ -1,0 +1,22 @@
+---
+# Gate for *.int.ohmlab.fr UIs (hubble, traefik dashboard, longhorn — see
+# each app's HTTPRoute filters). The Scaleway DNS zone has a deep wildcard,
+# so these hostnames resolve publicly too — this middleware is the actual
+# access boundary, not DNS.
+#
+# Default remoteAddr strategy deliberately, NOT X-Forwarded-For: pi-gw's
+# HAProxy already speaks PROXY protocol v2 to traefik (same mechanism the
+# crowdsec bouncer relies on for real client IPs), so remoteAddr is already
+# correct and unspoofable from outside. Trusting XFF here would let anyone
+# on the internet set their own header and walk straight through the gate.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: lan-only
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: traefik
+spec:
+  ipAllowList:
+    sourceRange:
+    {{- toYaml .Values.lanOnly.sourceRange | nindent 4 }}
