@@ -73,3 +73,16 @@ argo-cd:
 # (run.sh forces --set vso.enabled=false during bootstrap anyway).
 vso:
   enabled: false
+
+# Optional, dormant CoreDNS replacement for your CNI/distro's bundled one
+# (templates/coredns.yaml in this chart). coredns.enabled defaults to false
+# in the base chart — leave it off unless you've deliberately decided to
+# take DNS ownership (see the homelab instance for a worked example and
+# .local/coredns-ownership-design.md for the reasoning). If/when you do,
+# supply your real node list here:
+# coredns:
+#   enabled: true
+#   replicas: 2
+#   nodeHosts:
+#   - { ip: 192.168.1.100, name: node0 }
+#   - { ip: 192.168.1.101, name: node1 }

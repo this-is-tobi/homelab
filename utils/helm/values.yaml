@@ -1,3 +1,26 @@
+# Optional, DORMANT-by-default CoreDNS (templates/coredns.yaml) — see the
+# comment there and .local/coredns-ownership-design.md. Disabled: k3s's own
+# bundled CoreDNS keeps serving 10.43.0.10. Do not flip `enabled: true`
+# without also setting the k3s server flag `--disable coredns` (ansible
+# inventory) first, or this will fight k3s's addon controller over the same
+# objects. `replicas: 1` on purpose for now — HA (replicas: 2) is a
+# deliberate later step, not bundled into turning this on.
+coredns:
+  enabled: false
+  replicas: 1
+  image: rancher/mirrored-coredns-coredns:1.14.2
+  clusterIP: 10.43.0.10
+  resources:
+    requests:
+      cpu: 100m
+      memory: 70Mi
+    limits:
+      memory: 170Mi
+  # Cluster-specific — leave empty in this generic chart default. Populate
+  # per-instance (e.g. instances/homelab/values/core/ohmlab.yaml) with your
+  # actual node IPs/hostnames: [{ip: 192.168.1.100, name: node0}, ...].
+  nodeHosts: []
+
 gateway:
   enabled: false
   gatewayName: ""
