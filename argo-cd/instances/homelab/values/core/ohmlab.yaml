@@ -48,6 +48,22 @@ rootManager:
     values: ""
   targetRevision: main
 
+# Dormant CoreDNS capability (templates/coredns.yaml) — coredns.enabled
+# stays false (chart default) until a deliberate activation decision.
+# This only supplies the node list so it's ready to go the moment it's
+# turned on, nothing renders until then.
+coredns:
+  nodeHosts:
+  - { ip: 192.168.1.100, name: pi0 }
+  - { ip: 192.168.1.101, name: pi1 }
+  - { ip: 192.168.1.102, name: pi2 }
+  - { ip: 192.168.1.103, name: pi3 }
+  - { ip: 192.168.1.104, name: pi4 }
+  - { ip: 192.168.1.105, name: pi5 }
+  - { ip: 192.168.1.106, name: pi6 }
+  - { ip: 192.168.1.107, name: pi7 }
+  - { ip: 192.168.1.108, name: pi8 }
+
 projects:
   core:
     enabled: true
