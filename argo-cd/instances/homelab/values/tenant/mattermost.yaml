@@ -93,7 +93,7 @@ vso:
 # ingress = pod-CIDR ipBlock, not node subnet; CNPG cross-namespace
 # included defensively). No SSO-hairpin rule here — mattermost has no OIDC.
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter only; app itself has no ServiceMonitor
