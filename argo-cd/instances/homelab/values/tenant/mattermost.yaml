@@ -85,3 +85,63 @@ vso:
     mattermostPgBackup:
       mount: homelab
       path: platforms/production/tenant/mattermost
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this whole design depends on (kubelet
+# probes unenforced; apiserver egress = ipBlock 192.168.1.0/24:6443 post-
+# DNAT; SSO hairpin = the gateway's public IP, not a node IP; webhook
+# ingress = pod-CIDR ipBlock, not node subnet; CNPG cross-namespace
+# included defensively). No SSO-hairpin rule here — mattermost has no OIDC.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter only; app itself has no ServiceMonitor
+  extraIngress:
+  - name: traefik
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: mattermost, app.kubernetes.io/instance: mattermost }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 8065 }
+  - name: cnpg-operator
+    podSelector:
+      matchLabels: { cnpg.io/cluster: mattermost-pg-cluster, cnpg.io/podRole: instance }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: cloudnative-pg
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: cloudnative-pg }
+      ports:
+      - { protocol: TCP, port: 8000 }
+      - { protocol: TCP, port: 5432 }
+  extraEgress:
+  - name: apiserver
+    podSelector:
+      matchLabels: { cnpg.io/cluster: mattermost-pg-cluster, cnpg.io/podRole: instance }
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  # Cannot pin a specific host — link-preview (arbitrary URLs, upstream
+  # default ON, not overridden) forces this broad shape regardless of how
+  # tightly the S3 leg alone could be pinned; also covers push notifications
+  # and the external S3 file store (s3.fr-par.scw.cloud).
+  - name: world
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: mattermost, app.kubernetes.io/instance: mattermost }
+    rules:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
+      ports:
+      - { protocol: TCP, port: 443 }
+      - { protocol: TCP, port: 80 }

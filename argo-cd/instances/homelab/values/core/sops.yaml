@@ -5,3 +5,23 @@ vso:
     sopsAgeKeyFile:
       mount: homelab
       path: platforms/production/core/sops
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. No webhook targets
+# this namespace (full cluster-wide scan confirmed). No network KMS (gcp/
+# gpg/azure all disabled, age key delivered as a local file by VSO — 100%
+# local decryption).
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 8080 }
+  extraIngress: []
+  extraEgress:
+  # -leader-elect + cluster-wide watch (namespaced: false, confirmed).
+  - name: apiserver
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }

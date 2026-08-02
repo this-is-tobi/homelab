@@ -69,3 +69,46 @@ vso:
     grafanaPgBackup:
       mount: homelab
       path: platforms/production/core/prometheus-stack
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. SPECIAL CASE:
+# egressDeny stays false in the base chart — this namespace legitimately
+# scrapes ~every other namespace + kubelet cluster-wide, so no egress
+# NetworkPolicy is ever rendered for it.
+networkPolicy:
+  enabled: false
+  extraIngress:
+  - name: traefik-grafana
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: grafana }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 3000 }
+  # prometheus-operator's own admission webhook (failurePolicy: Ignore,
+  # lower stakes than kyverno but still gets the corrected pod-CIDR
+  # ipBlock).
+  - name: apiserver-webhook-operator
+    podSelector:
+      matchLabels: { app: kube-prometheus-stack-operator, release: prometheus-stack }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 10250 }
+  - name: cnpg-operator
+    podSelector:
+      matchLabels: { cnpg.io/cluster: prometheus-stack-pg-cluster }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: cloudnative-pg
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: cloudnative-pg }
+      ports:
+      - { protocol: TCP, port: 8000 }
+      - { protocol: TCP, port: 5432 }

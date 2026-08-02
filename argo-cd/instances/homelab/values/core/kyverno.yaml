@@ -1,1 +1,40 @@
 kyverno: {}
+
+# HIGHEST-STAKES NAMESPACE IN THE ENTIRE ZERO-TRUST DESIGN. Webhook is
+# fail-closed (validate.kyverno.svc-fail, failurePolicy: Fail) — if this
+# Service loses all healthy endpoints, ALL POD ADMISSION CLUSTER-WIDE
+# STALLS. Confirmed SAFE rollback property (independently re-verified
+# twice by two separate investigation passes): no kyverno ClusterPolicy/
+# PolicyException targets kind NetworkPolicy at any level, so even a fully
+# broken kyverno webhook would NOT block deleting/reverting this policy.
+# Roll out LAST, after every other namespace, with `kubectl kyverno apply
+# <policy> --resource <this-networkpolicy.yaml>` dry-run validation first.
+# See .local/post-migration-hardening.md §2 for the 5 empirically-tested
+# facts this design depends on — the webhook-ingress ipBlock correction
+# (10.45.0.0/16, not 192.168.1.0/24) matters MOST here of anywhere in the
+# whole design: unpinned webhook pods mean the old pattern would only have
+# worked when a pod happened to land on the same node as the apiserver
+# instance handling a given call.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  extraIngress:
+  # background-controller and reports-controller are DELIBERATELY
+  # EXCLUDED — no webhook Service targets them and (live-confirmed) no
+  # probes defined on either pod at all.
+  - name: apiserver-webhook
+    podSelector:
+      matchExpressions:
+      - { key: app.kubernetes.io/component, operator: In, values: [admission-controller, cleanup-controller] }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 9443 }
+  extraEgress:
+  - name: apiserver
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }

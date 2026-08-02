@@ -112,3 +112,38 @@ gateway:
     rules:
     - backendService: homepage
       backendPort: 3000
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. Apiserver egress
+# is genuinely needed (not just show:false cosmetics — confirmed via
+# gethomepage v1.13.1 upstream source: the "kubernetes" widget's useSWR
+# fetch and backend listNode()/getNodeMetrics() calls fire unconditionally,
+# show:false only hides the UI card). siteMonitor pings (every *.ohmlab.fr
+# service URL in this file, HEAD/GET every 30s per open browser tab) use
+# the SSO-hairpin pattern too — a real finding the original flow sweep
+# missed entirely (infrequent, only fires while a dashboard tab is open).
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  extraIngress:
+  - name: traefik
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 3000 }
+  extraEgress:
+  - name: apiserver
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  - name: sso-hairpin
+    rules:
+    - to:
+      - ipBlock: { cidr: 82.66.77.140/32 }
+      ports:
+      - { protocol: TCP, port: 443 }

@@ -66,3 +66,65 @@ sso:
 longhorn:
   ingress:
     enabled: false
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. iSCSI/NFS rules
+# below use the same pod-CIDR ipBlock as the webhook fact by structural
+# analogy (remote node's host-namespace process -> pod), NOT independently
+# packet-tested for iSCSI/NFS specifically — recommend a live volume
+# attach/detach test during this namespace's rollout step.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 9500 }   # longhorn-manager, SM port "manager"
+  extraIngress:
+  - name: webhook
+    podSelector:
+      matchLabels: { app: longhorn-manager }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 9502 }
+  - name: iscsi
+    podSelector:
+      matchLabels: { longhorn.io/component: instance-manager }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 3260 }
+  - name: nfs
+    podSelector:
+      matchLabels: { longhorn.io/component: share-manager }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 2049 }
+  - name: sso
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: sso, app.kubernetes.io/instance: longhorn-system }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 4180 }
+  extraEgress:
+  - name: apiserver
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  - name: sso-hairpin
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: sso, app.kubernetes.io/instance: longhorn-system }
+    rules:
+    - to:
+      - ipBlock: { cidr: 82.66.77.140/32 }
+      ports:
+      - { protocol: TCP, port: 443 }
