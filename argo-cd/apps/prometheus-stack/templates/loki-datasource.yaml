@@ -13,6 +13,16 @@ metadata:
 data:
   loki-datasource.yaml: |
     apiVersion: 1
+    # Guards against exactly the drift this hit once already: a Loki
+    # datasource first provisioned without an explicit uid (Grafana
+    # auto-generates one), then a later change declares uid: loki here.
+    # Grafana's provisioning sync can't rewrite an existing datasource's
+    # uid in place (reload fails with "data source not found") — it has
+    # to be deleted and recreated. No-op on a fresh install (nothing
+    # named "Loki" exists yet to delete).
+    deleteDatasources:
+    - name: Loki
+      orgId: 1
     datasources:
     - name: Loki
       # Hardcoded, not auto-generated — matches kube-prometheus-stack's
