@@ -74,7 +74,7 @@ longhorn:
 # packet-tested for iSCSI/NFS specifically — recommend a live volume
 # attach/detach test during this namespace's rollout step.
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9500 }   # longhorn-manager, SM port "manager"
