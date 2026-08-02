@@ -86,11 +86,10 @@ vso:
       mount: homelab
       path: platforms/production/tenant/argo-cd
 
-# Zero-trust NetworkPolicy. EGRESS ONLY (ingress already chart-shipped —
-# verified live: 5 NetworkPolicies in this namespace covering application-
-# controller/applicationset-controller/redis/repo-server/server). See
-# .local/post-migration-hardening.md §2 for the 5 empirically-tested facts
-# this design depends on.
+# Zero-trust NetworkPolicy. EGRESS ONLY (ingress is already chart-shipped
+# — this namespace's application-controller/applicationset-controller/
+# redis/repo-server/server pods each ship their own ingress
+# NetworkPolicy).
 networkPolicy:
   enabled: true
   egressDeny: true

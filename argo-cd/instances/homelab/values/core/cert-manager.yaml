@@ -74,13 +74,14 @@ vso:
       mount: homelab
       path: platforms/production/core/cert-manager
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. Two webhook-
-# shaped ingress targets: cert-manager-webhook (failurePolicy: Fail) AND
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. Two webhook-shaped ingress
+# targets: cert-manager-webhook (failurePolicy: Fail) AND
 # cert-manager-scaleway-certmanager-webhook (an aggregated APIService,
 # v1alpha1.acme.scaleway.com — kube-apiserver itself proxies calls to it,
 # same traffic shape/risk as an admission webhook). Both use the
-# corrected pod-CIDR ipBlock.
+# pod-CIDR ipBlock: apiserver->webhook calls arrive from a synthetic
+# pod-CIDR identity, not the calling node's own IP.
 networkPolicy:
   enabled: true
   egressDeny: true
@@ -91,9 +92,7 @@ networkPolicy:
   # 443 — cert-manager's upstream chart deliberately numbers this
   # container port 10250, same "https"-named-port trap as Teleport's
   # proxy). NetworkPolicy matches the container port the traffic actually
-  # lands on, not the Service's front-facing port. Confirmed live via
-  # Hubble (2026-08-02): real apiserver->webhook calls on :10250 were
-  # being dropped after first enabling with port 443.
+  # lands on, not the Service's front-facing port.
   - name: webhook
     podSelector:
       matchLabels: { app.kubernetes.io/name: webhook }

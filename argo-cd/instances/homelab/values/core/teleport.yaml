@@ -30,9 +30,10 @@ users:
     roles:
     - admin
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. No SSO (local auth
-# only, no connector config). No prometheus scrape (no SM/PM exists).
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. No SSO (local auth only, no
+# connector config). No prometheus scrape (no ServiceMonitor/PodMonitor
+# exists for this app).
 networkPolicy:
   enabled: true
   egressDeny: true
@@ -57,7 +58,7 @@ networkPolicy:
   # auth: impersonates users/groups/serviceaccounts (Kubernetes Access) +
   # TokenReview (system:auth-delegator) for join-token validation.
   # operator: client-go reconcile loop against ~28 teleport.dev CRD kinds.
-  # proxy EXCLUDED — live-confirmed zero RBAC bindings for its SA.
+  # proxy EXCLUDED — it holds zero RBAC bindings for its ServiceAccount.
   - name: apiserver
     podSelector:
       matchExpressions:

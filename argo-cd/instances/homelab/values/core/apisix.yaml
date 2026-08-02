@@ -37,9 +37,9 @@ vso:
       mount: homelab
       path: platforms/production/core/apisix
 
-# DECOMMISSIONED 2026-07-18 (app disabled in core.yaml; kept as an escape
-# hatch). gateway.enabled MUST stay false on any re-enable: the traefik app
-# owns the homelab-gateway-traefik Gateway and the gateway-wildcard-tls
+# DECOMMISSIONED (app disabled in core.yaml; kept as an escape hatch).
+# gateway.enabled MUST stay false on any re-enable: the traefik app owns
+# the homelab-gateway-traefik Gateway and the gateway-wildcard-tls
 # Certificate now.
 gateway:
   enabled: false

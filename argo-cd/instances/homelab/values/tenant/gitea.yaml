@@ -42,7 +42,7 @@ gitea:
     # ⚠ This list REPLACES (not merges with) the catalog default in
     # argo-cd/apps/gitea/values.yaml — the valkey entries below must stay in
     # sync with it or the cache/session/queue config silently falls back to
-    # 127.0.0.1:6379 (this broke the 2026-07-05 valkey-TLS rollout).
+    # 127.0.0.1:6379.
     additionalConfigFromEnvs:
     # Valkey URIs carry the auth password → delivered via env from the
     # gitea-valkey-auth secret (VSO), never in the plain-text app.ini.
@@ -138,8 +138,8 @@ vso:
       mount: homelab
       path: platforms/production/tenant/gitea
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on.
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs.
 networkPolicy:
   enabled: true
   egressDeny: true
@@ -157,9 +157,9 @@ networkPolicy:
             kubernetes.io/metadata.name: traefik
       ports:
       - { protocol: TCP, port: 3000 }
-  # gitea-ssh:22 confirmed NOT externally routed (no TCPRoute/TLSRoute
-  # anywhere in the repo, ClusterIP: None) — intra-namespace already covers
-  # any in-cluster use.
+  # gitea-ssh:22 is not externally routed (no TCPRoute/TLSRoute exposes
+  # it, ClusterIP: None) — intra-namespace traffic already covers any
+  # in-cluster use.
   - name: cnpg-operator
     podSelector:
       matchLabels: { cnpg.io/cluster: gitea-pg-cluster }
