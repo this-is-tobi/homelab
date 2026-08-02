@@ -112,3 +112,156 @@ networkPolicy:
       ports:
       - { protocol: TCP, port: 8000 }
       - { protocol: TCP, port: 5432 }
+
+# Centralized log aggregation. Loki + Alloy are bundled as Helm
+# dependencies of this chart (Chart.yaml, condition: loki.enabled /
+# alloy.enabled) rather than separate apps — this namespace already runs
+# a hostPath-reading DaemonSet (prometheus-node-exporter) and already has
+# no egress NetworkPolicy at all (see above), so Alloy's own traffic
+# (apiserver calls + pushing to Loki) needs zero new netpol rules.
+loki:
+  enabled: true
+  # Dedicated 1-replica StorageClass instead of the cluster default's 3x
+  # replication — logs aren't precious like Postgres/Vault data, and this
+  # cuts write I/O meaningfully on Pi-class storage. Set to false to fall
+  # back to the "longhorn" default class instead (see singleBinary.
+  # persistence.storageClass below).
+  singleReplicaStorage:
+    enabled: true
+  deploymentMode: Monolithic
+  loki:
+    auth_enabled: false
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
+    limits_config:
+      retention_period: 168h # 7 days
+    compactor:
+      retention_enabled: true
+      delete_request_store: filesystem
+  singleBinary:
+    replicas: 1
+    # No dynamically-loaded alerting rules in this minimal setup — drop
+    # the rules sidecar container entirely rather than leave it running
+    # unused.
+    sidecar: false
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: longhorn-single-replica
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits: { cpu: 500m, memory: 512Mi }
+  # SimpleScalable-mode targets, unused in Monolithic mode. The chart's
+  # own validation refuses to render if these are left at their nonzero
+  # defaults alongside singleBinary — it reads that as an in-progress
+  # migration between modes rather than a deliberate Monolithic choice.
+  write:
+    replicas: 0
+  read:
+    replicas: 0
+  backend:
+    replicas: 0
+  # Minimal footprint: no gateway (Monolithic has one backend, nothing to
+  # route between), no minio (filesystem storage, not S3), no memcached
+  # read/result caches (unnecessary at homelab query volume), no
+  # canary/test hooks.
+  gateway:
+    enabled: false
+  minio:
+    enabled: false
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+  monitoring:
+    serviceMonitor:
+      enabled: true
+    dashboards:
+      enabled: true
+
+# Ships logs to Loki via loki.source.kubernetes — reads through the
+# apiserver's pods/log subresource (the same mechanism `kubectl logs`
+# uses), NOT hostPath file tailing. This is why it's a plain Deployment,
+# not a DaemonSet: no host filesystem access, no privileged/root
+# container, and no dependency on which node a pod happens to land on
+# (the exact failure mode that left crowdsec-agent blind to Traefik's
+# logs since day one — see crowdsec wiring below). Trade-off: this adds
+# API-server/kubelet-proxy load instead of node-local disk reads: fine at
+# this cluster's log volume, worth re-checking if that ever changes.
+alloy:
+  enabled: true
+  controller:
+    type: deployment
+    replicas: 1
+  alloy:
+    configMap:
+      content: |
+        discovery.kubernetes "pods" {
+          role = "pod"
+        }
+
+        discovery.relabel "pod_logs" {
+          targets = discovery.kubernetes.pods.targets
+
+          rule {
+            source_labels = ["__meta_kubernetes_namespace"]
+            target_label  = "namespace"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_pod_name"]
+            target_label  = "pod"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            target_label  = "container"
+          }
+          rule {
+            source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+            separator     = "/"
+            target_label  = "job"
+          }
+        }
+
+        loki.source.kubernetes "pods" {
+          targets    = discovery.relabel.pod_logs.output
+          forward_to = [loki.write.default.receiver]
+        }
+
+        loki.write "default" {
+          endpoint {
+            url = "http://prometheus-stack-loki.prometheus-stack.svc.cluster.local:3100/loki/api/v1/push"
+          }
+        }
+    resources:
+      requests: { cpu: 50m, memory: 128Mi }
+      limits: { cpu: 250m, memory: 256Mi }
+  configReloader:
+    resources:
+      requests: { cpu: 10m, memory: 50Mi }
+      limits: { cpu: 50m, memory: 64Mi }
+  # No hostPath needed (see above), so any non-root UID works — unlike
+  # the DaemonSet+hostPath path this avoided, there's no node-filesystem
+  # permission compatibility to verify. Nested under global: — that's
+  # where this chart actually reads it from (confirmed against the
+  # chart's own values.yaml; the top-level alloy.podSecurityContext key
+  # some docs reference doesn't exist and silently renders nothing).
+  global:
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+  serviceMonitor:
+    enabled: true
