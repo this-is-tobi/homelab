@@ -34,7 +34,7 @@ users:
 # the 5 empirically-tested facts this design depends on. No SSO (local auth
 # only, no connector config). No prometheus scrape (no SM/PM exists).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts: []
   extraIngress:
