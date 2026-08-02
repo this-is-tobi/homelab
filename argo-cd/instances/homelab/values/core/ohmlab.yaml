@@ -235,7 +235,7 @@ vso:
 # self-consistency (it would not have blocked argocd-system from ever
 # syncing this very netpol change in the first place).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   extraIngress: []
   extraEgress:
