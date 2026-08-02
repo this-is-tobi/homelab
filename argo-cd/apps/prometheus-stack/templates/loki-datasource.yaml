@@ -15,6 +15,11 @@ data:
     apiVersion: 1
     datasources:
     - name: Loki
+      # Hardcoded, not auto-generated — matches kube-prometheus-stack's
+      # own "prometheus" convention for its default datasource, so
+      # community dashboards that hardcode a "loki" datasource uid (a
+      # common convention) work without per-dashboard edits.
+      uid: loki
       type: loki
       access: proxy
       url: http://{{ .Release.Name }}-loki.{{ .Release.Namespace }}.svc.cluster.local:3100

@@ -5,7 +5,8 @@
   "kube-global" "Kubernetes"
   "kube-node" "Kubernetes"
   "kube-ns" "Kubernetes"
-  "kube-pod" "Kubernetes" }}
+  "kube-pod" "Kubernetes"
+  "kubernetes-logs" "Logs" }}
 {{- range $path, $_ :=  .Files.Glob  "grafana-dashboards/*.json" }}
 {{- $name := $path | base | replace ".json" "" }}
 ---
