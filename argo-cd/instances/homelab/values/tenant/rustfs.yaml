@@ -69,7 +69,7 @@ vso:
 # reads it — confirmed dead config, see the gitea/rustfs investigation
 # notes). Backups not wired yet (§4 backup gap).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts: []
   extraIngress:
