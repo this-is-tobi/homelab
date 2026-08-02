@@ -76,7 +76,7 @@ vso:
 # scrapes ~every other namespace + kubelet cluster-wide, so no egress
 # NetworkPolicy is ever rendered for it.
 networkPolicy:
-  enabled: false
+  enabled: true
   extraIngress:
   - name: traefik-grafana
     podSelector:
