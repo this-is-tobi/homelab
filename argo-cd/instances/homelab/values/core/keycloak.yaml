@@ -102,7 +102,7 @@ vso:
 # call). No federated external IdP, no SMTP, no backchannel-logout on any
 # client — all confirmed via repo grep, zero matches.
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9000 }   # keycloak itself, http-metrics
