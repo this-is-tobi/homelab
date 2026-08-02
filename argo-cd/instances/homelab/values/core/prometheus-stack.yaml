@@ -251,9 +251,13 @@ alloy:
             url = "http://prometheus-stack-loki.prometheus-stack.svc.cluster.local:3100/loki/api/v1/push"
           }
         }
+    # 256Mi OOM-killed within ~10 minutes at cluster-wide scope (153 pods,
+    # ~200+ containers, all held open concurrently by a single replica).
+    # Bumped once empirically; watch actual usage and adjust further if
+    # this ever creeps up again as the cluster grows.
     resources:
-      requests: { cpu: 50m, memory: 128Mi }
-      limits: { cpu: 250m, memory: 256Mi }
+      requests: { cpu: 50m, memory: 256Mi }
+      limits: { cpu: 250m, memory: 512Mi }
   configReloader:
     resources:
       requests: { cpu: 10m, memory: 50Mi }
