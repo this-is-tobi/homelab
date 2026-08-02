@@ -1,10 +1,10 @@
 {{- /*
 Optional, DORMANT-by-default CoreDNS replacement for k3s's bundled addon.
 Disabled (coredns.enabled: false) until a deliberate cutover decision is
-made — see .local/coredns-ownership-design.md. k3s's own CoreDNS keeps
-serving 10.43.0.10 as long as this stays off; there is no `--disable
-coredns` k3s flag set anywhere, so enabling this without that flag would
-fight k3s's addon controller over ownership of the same objects. Lives in
+made. k3s's own CoreDNS keeps serving 10.43.0.10 as long as this stays
+off; there is no `--disable coredns` k3s flag set anywhere, so enabling
+this without that flag would fight k3s's addon controller over ownership
+of the same objects. Lives in
 this bootstrap chart (not a separate ArgoCD app) because CoreDNS sits on
 core ArgoCD's own critical path (redis-ha needs cluster DNS to come up) —
 creating it in the same helm release as ArgoCD itself is what avoids that

@@ -54,7 +54,25 @@ The cluster runs [k3s](https://k3s.io) (lightweight Kubernetes) with the followi
 - **3 master nodes** — control plane, fronted by HAProxy on port 6443 for HA.
 - **n worker nodes** — application workloads. Workers tagged `additional_disk: true` in [inventory/hosts.yml](../ansible/inventory-example/hosts.yml) are enrolled into Longhorn for distributed block storage.
 
-The integrated [klipper-lb](https://github.com/k3s-io/klipper-lb) load balancer is used; the K3s-bundled Traefik is disabled at install time and a GitOps-managed [Traefik v3](https://doc.traefik.io/traefik/) is deployed instead as the ingress controller and Gateway API implementation. klipper-lb binds each LoadBalancer Service's ports as host ports on every node; the gateway HAProxy forwards public 80/443 onto them.
+The K3s-bundled Traefik is disabled at install time and a GitOps-managed [Traefik v3](https://doc.traefik.io/traefik/) is deployed instead as the ingress controller and Gateway API implementation.
+
+### Networking choices
+
+Two decisions are made at install time in `inventory/group_vars/k3s.yml`, and both combinations are supported:
+
+| Variable       | Options              | Default   | Notes                                                                                                                                                                                                                                                                                   |
+| -------------- | -------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `k3sCni`       | `flannel` / `cilium` | `flannel` | `flannel` is K3s's bundled CNI (pod CIDR `10.42.0.0/16`). `cilium` adds eBPF, richer NetworkPolicy and Hubble, and additionally requires the `cilium` app enabled in your instance's `core.yaml`.                                                                                       |
+| `k3sServiceLb` | `true` / `false`     | `true`    | `true` runs K3s's built-in ServiceLB ([klipper-lb](https://github.com/k3s-io/klipper-lb)), which binds each LoadBalancer Service's ports as host ports on every node. `false` means no LB controller — expose ingress via a static `spec.externalIPs` list, MetalLB, or Cilium LB-IPAM. |
+
+Neither choice is one-way, and both are covered on a fresh install:
+
+- **Starting on Cilium** — setting `k3sCni: cilium` makes the `k3s/cni` role apply Cilium immediately after the first master is up, before workers join and before the GitOps bootstrap. That ordering is mandatory rather than cosmetic: with no CNI every node stays `NotReady` and ordinary pods cannot schedule — ArgoCD's included — so the GitOps bootstrap can never be what installs the CNI. Cilium breaks the cycle because its agent and operator run on the host network and tolerate `NotReady` nodes. ArgoCD adopts the objects on its first sync; the role skips itself once a CNI is present. Set `k3sCniChartValues` to your instance's cilium values so the bootstrap render matches what ArgoCD reconciles afterwards.
+- **Starting on flannel, moving later** — the shortest path to a working cluster. `scripts/cilium-migrate-node.sh` then moves a *running* cluster onto Cilium one node at a time, with per-node rollback (`scripts/cilium-rollback-node.sh`) while the window is open. This is what this repo's own cluster did.
+
+See the comments in [inventory-example/group_vars/k3s.yml](../ansible/inventory-example/group_vars/k3s.yml) for the full trade-offs and the ordering constraints (`--flannel-backend` is a K3s *critical* flag — all servers must agree).
+
+This repo's own cluster runs `cilium` with ServiceLB disabled, exposing Traefik through a static `externalIPs` list; the gateway HAProxy forwards public 80/443 onto the node IPs.
 
 [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed cluster-wide to perform automatic K3s upgrades through two plans (one for masters, one for workers).
 
@@ -64,23 +82,24 @@ The integrated [klipper-lb](https://github.com/k3s-io/klipper-lb) load balancer 
 
 All Ansible roles live under `ansible/roles/` and follow a consistent structure (`tasks/`, `defaults/`, `meta/`, `templates/`, `handlers/`).
 
-| Scope   | Role             | Description                                                          |
-| ------- | ---------------- | -------------------------------------------------------------------- |
-| common  | `hostname`       | Set hostname and update `/etc/hosts`.                                |
-| common  | `locales`        | Configure system locales.                                            |
-| common  | `ssh`            | Harden SSH via drop-in config, deploy authorized keys.               |
-| common  | `hardening`      | Disable unnecessary services, kernel sysctl hardening, `/etc/hosts`. |
-| common  | `docker`         | Install Docker CE from the official apt repository.                  |
-| common  | `upgrade`        | Dist-upgrade all packages, reboot if required.                       |
-| gateway | `haproxy`        | Deploy HAProxy via Docker Compose.                                   |
-| gateway | `pihole`         | Deploy PiHole via Docker Compose (optional).                         |
-| gateway | `wireguard`      | Deploy WireGuard-Easy via Docker Compose (optional).                 |
-| gateway | `crowdsec`       | Deploy CrowdSec engine + firewall bouncer (optional).                |
-| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, utility packages.        |
-| k3s     | `download`       | Download the K3s binary matching the target architecture.            |
-| k3s     | `storage`        | Install iSCSI/NFS packages and mount additional storage disks.       |
-| k3s     | `deploy/masters` | Deploy K3s server (master) nodes with HA cluster-init.               |
-| k3s     | `deploy/workers` | Deploy K3s agent (worker) nodes.                                     |
-| k3s     | `destroy`        | Cleanly destroy a K3s installation and restore system state.         |
-| k3s     | `registry`       | Configure private container registry (Harbor) on K3s nodes.          |
-| k3s     | `users`          | Create Kubernetes users with x509 certificates and RBAC.             |
+| Scope   | Role             | Description                                                              |
+| ------- | ---------------- | ------------------------------------------------------------------------ |
+| common  | `hostname`       | Set hostname and update `/etc/hosts`.                                    |
+| common  | `locales`        | Configure system locales.                                                |
+| common  | `ssh`            | Harden SSH via drop-in config, deploy authorized keys.                   |
+| common  | `hardening`      | Disable unnecessary services, kernel sysctl hardening, `/etc/hosts`.     |
+| common  | `docker`         | Install Docker CE from the official apt repository.                      |
+| common  | `upgrade`        | Dist-upgrade all packages, reboot if required.                           |
+| gateway | `haproxy`        | Deploy HAProxy via Docker Compose.                                       |
+| gateway | `pihole`         | Deploy PiHole via Docker Compose (optional).                             |
+| gateway | `wireguard`      | Deploy WireGuard-Easy via Docker Compose (optional).                     |
+| gateway | `crowdsec`       | Deploy CrowdSec engine + firewall bouncer (optional).                    |
+| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, utility packages.            |
+| k3s     | `download`       | Download the K3s binary matching the target architecture.                |
+| k3s     | `storage`        | Install iSCSI/NFS packages and mount additional storage disks.           |
+| k3s     | `cni`            | Bootstrap Cilium when K3s is installed without a CNI (`k3sCni: cilium`). |
+| k3s     | `deploy/masters` | Deploy K3s server (master) nodes with HA cluster-init.                   |
+| k3s     | `deploy/workers` | Deploy K3s agent (worker) nodes.                                         |
+| k3s     | `destroy`        | Cleanly destroy a K3s installation and restore system state.             |
+| k3s     | `registry`       | Configure private container registry (Harbor) on K3s nodes.              |
+| k3s     | `users`          | Create Kubernetes users with x509 certificates and RBAC.                 |

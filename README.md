@@ -6,6 +6,8 @@ It provides a complete configuration with common web services using:
 - **Ansible** for infrastructure deployment (gateway and [k3s](https://k3s.io) cluster)
 - **GitOps** (ArgoCD) for Kubernetes applications deployment
 
+The two halves are independent: if you already have a cluster (managed Kubernetes or otherwise), skip Ansible and use the GitOps layer on its own — it only needs a kubeconfig. See [Using an existing cluster](./docs/03-installation.md#using-an-existing-cluster).
+
 It is a quick starting point for simple infrastructure needs or for testing various tools such as monitoring, alerting, automated deployment, security testing, etc...
 
 ## Documentation

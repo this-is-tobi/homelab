@@ -3,9 +3,8 @@
 # thing from `gateway` below (this app's own HTTPRoutes attaching to the
 # already-live traefik Gateway). Renamed to avoid the two colliding.
 # OFF permanently (not just phase 1): Traefik owns the Gateway API on this
-# cluster (see .local/ingress-controller-analysis.md). Cilium Gateway would
-# also hard-require kubeProxyReplacement=true and Cilium >=1.20 for
-# BackendTLSPolicy — see .local/cilium-migration-plan.md F5/F6/F7.
+# cluster. Cilium Gateway would also hard-require
+# kubeProxyReplacement=true and Cilium >=1.20 for BackendTLSPolicy.
 ciliumGateway:
   enabled: false
   name: ""
@@ -26,11 +25,29 @@ gateway:
   extraParentRefs: []
   routes: []
 
+# -- lan-only Middleware (templates/middleware-lan-only.yaml), for gating a
+# UI to trusted networks. Rendered only when gateway.enabled is true.
+# ⚠ These defaults are almost certainly wrong for your environment — set
+# them per-instance. Include your own LAN/VPN range, plus your cluster's
+# pod CIDR if in-cluster callers need to reach the gated UI (the pod CIDR
+# depends on your CNI: k3s+flannel defaults to 10.42.0.0/16, this repo's
+# Cilium config uses 10.45.0.0/16).
+# NOTE: an ipAllowList only works if Traefik actually sees the real client
+# IP. Behind a proxy/LB that SNATs (or a Service with
+# externalTrafficPolicy: Cluster), every request arrives with a cluster-
+# internal source and this matches everything — treat it as
+# defense-in-depth, not an auth boundary.
+lanOnly:
+  sourceRange:
+  - 192.168.1.0/24 # example — set this to your actual LAN subnet
+
 # VSO integration — delivers the Hubble UI oauth2-proxy's Keycloak client
 # creds from Vault. First VSO usage in kube-system: role/policy scoped to
 # just this one secret path (argo-cd/apps/vault-operator/values.yaml
 # `cilium` role / `hubble` policy), not a general kube-system grant.
 vso:
+  # Set false to render the chart without the Vault/VSO objects (bootstrap).
+  enabled: true
   extraObjects:
   - apiVersion: v1
     kind: ServiceAccount
@@ -75,6 +92,8 @@ vso:
 
 # oauth2-proxy in front of Hubble UI — Hubble has no native OIDC support.
 sso:
+  # Set false to render the chart without oauth2-proxy (bootstrap).
+  enabled: true
   fullnameOverride: hubble-oauth2-proxy
   config:
     existingSecret: hubble-oauth2-proxy-creds
@@ -95,12 +114,11 @@ sso:
       cpu: 200m
       memory: 128Mi
 
-# Rolling flannel→cilium migration support (official Cilium migration guide,
-# adapted to k3s — full runbook: .local/cilium-migration-plan.md F8).
-# Renders templates/migration-nodeconfig.yaml: a CiliumNodeConfig that flips
-# CNI ownership per node, gated on a node label. Enable ONLY for the
-# migration window (the homelab instance overlay does this), remove at the
-# final flip.
+# Rolling flannel→cilium migration support (official Cilium migration
+# guide, adapted to k3s). Renders templates/migration-nodeconfig.yaml: a
+# CiliumNodeConfig that flips CNI ownership per node, gated on a node
+# label. Enable ONLY for the migration window (the homelab instance
+# overlay does this), remove at the final flip.
 migration:
   enabled: false
   # Nodes carrying this label (value "true") get their CNI conf written by
@@ -116,13 +134,11 @@ cilium:
   # ==========================================================================
   # CILIUM — PHASE 1: SSH-safe configuration (no BPF on physical interfaces)
   # ==========================================================================
-  # Post-mortem of the May 2026 lockout + 2026-07-19 deep-dive:
-  # .local/cilium-migration-plan.md (plan of record — read it first).
-  # The May config combined kubeProxyReplacement + devices=eth0 +
-  # bpf.masquerade. In that mode Cilium MUST attach TC programs to eth0 for
-  # NodePort/masquerade — `bpf.hostLegacyRouting: true` does NOT prevent that
-  # (it only routes host-originated egress through the kernel stack). During
-  # agent restarts those eth0 programs go stale and drop inbound SSH — fatal
+  # kubeProxyReplacement + devices=eth0 + bpf.masquerade together force
+  # Cilium to attach TC programs to eth0 for NodePort/masquerade —
+  # `bpf.hostLegacyRouting: true` does NOT prevent that (it only routes
+  # host-originated egress through the kernel stack). During agent
+  # restarts those eth0 programs can go stale and drop inbound SSH — fatal
   # on RPis with no out-of-band access.
   #
   # Phase 1 therefore removes every eth0 attachment point:
@@ -151,21 +167,21 @@ cilium:
   # ==========================================================================
 
   # --- CNI paths ---
-  # K3s-managed containerd paths, live-verified 2026-07-19 on the running
-  # fleet (k3s v1.35.3, containerd 2.2.2-k3s1 — see plan doc F3):
+  # K3s-managed containerd paths (k3s v1.35.3, containerd 2.2.2-k3s1):
   #   [plugins.'io.containerd.cri.v1.runtime'.cni]
   #     bin_dirs = ["/var/lib/rancher/k3s/data/cni"]
   #     conf_dir = "/var/lib/rancher/k3s/agent/etc/cni/net.d"
-  # The previous values (/opt/cni/bin, /etc/cni/net.d) pointed at dirs k3s
-  # containerd NEVER reads — the May 2026 residue still sitting there is the
-  # proof. Writing there again would leave every node with no CNI at all.
+  # /opt/cni/bin and /etc/cni/net.d point at dirs k3s containerd NEVER
+  # reads — writing CNI config there leaves the node with no CNI at all.
   cni:
     binPath: /var/lib/rancher/k3s/data/cni
     confPath: /var/lib/rancher/k3s/agent/etc/cni/net.d
-    # svclb (klipper-lb) exposes traefik via hostPort 80/443 on every node.
-    # With kubeProxyReplacement=false Cilium does NOT handle hostPort — the
-    # portmap CNI plugin must be chained (plan doc F4) or ALL ingress dies.
-    # portmap ships in /var/lib/rancher/k3s/data/cni (verified).
+    # Not currently load-bearing: ingress reaches traefik via kube-proxy
+    # DNAT + the Service's externalIPs list (see traefik's own values),
+    # not hostPort, so nothing depends on portmap chaining today. Left in
+    # place as a harmless, future-proof default in case a hostPort-based
+    # exposure path is ever needed again — Cilium doesn't handle hostPort
+    # itself while kubeProxyReplacement is false.
     chainingMode: portmap
     exclusive: true
 
@@ -185,12 +201,14 @@ cilium:
   tunnelPort: 8473
 
   # --- IPAM ---
-  # MUST be distinct from flannel's 10.42.0.0/16: the rolling migration runs
-  # both CNIs side by side and bridges them via host routing (plan doc F8).
-  # The cluster keeps 10.45.0.0/16 permanently after the cutover. Before the
-  # final flip, update the 10.42.0.0/16 literals elsewhere in the repo
-  # (crowdsec allowed_ranges/whitelists, gateway crowdsec whitelists —
-  # `grep -rn '10\.42\.' ansible/ argo-cd/`).
+  # Deliberately NOT k3s+flannel's default 10.42.0.0/16: a rolling
+  # flannel→cilium migration runs both CNIs side by side (bridged via host
+  # routing), which requires distinct pod CIDRs. Kept permanently after
+  # cutover so the value never has to change again.
+  # ⚠ If you change this, it must stay in sync with every place that
+  # references the pod CIDR — NetworkPolicy ipBlock rules in the instance
+  # values, the lanOnly middlewares, and crowdsec's allowed_ranges /
+  # whitelist. `grep -rn '10\.45\.' argo-cd/ ansible/` finds them all.
   ipam:
     operator:
       clusterPoolIPv4PodCIDRList:
@@ -226,7 +244,7 @@ cilium:
   # Traefik owns the Gateway API implementation on this cluster — Cilium's
   # gateway/envoy/l7 stack stays off PERMANENTLY (would require KPR=true,
   # Cilium >=1.20 for BackendTLSPolicy, and would behead the in-cluster
-  # CrowdSec chain — plan doc F5/F6/F7).
+  # CrowdSec chain).
   gatewayAPI:
     enabled: false
   envoy:

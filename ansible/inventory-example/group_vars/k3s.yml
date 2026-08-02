@@ -8,19 +8,129 @@ k3sFlanneliface: eth0
 k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
-# --- CNI selection ---
-# flannel (default): keep `--flannel-iface` below.
-# Cilium phase 1 (SSH-safe): replace the flannel flag with
-#   --flannel-backend=none --disable-network-policy
-# (keep kube-proxy — do NOT pass --disable-kube-proxy; see
-# argo-cd/apps/cilium/values.yaml for the full rationale).
+
+# ==========================================================================
+# NETWORKING CHOICES — pick these before the first install
+# ==========================================================================
+# Both combinations below are supported end-to-end. Nothing here is
+# one-way: `flannel` + servicelb is the simplest starting point, and the
+# `cilium-migrate` playbook exists specifically to move a running cluster
+# from flannel to Cilium later, node by node, without a rebuild.
+#
+# --- k3sCni: flannel | cilium ---
+#
+# flannel (k3s default, simplest):
+#   k3s ships flannel + the kube-router NetworkPolicy controller. Pod CIDR
+#   is 10.42.0.0/16 by default. Nothing extra to deploy. Choose this if you
+#   want the shortest path to a working cluster, or if eBPF/Hubble aren't
+#   worth the extra moving parts to you.
+#
+# cilium:
+#   eBPF datapath, richer NetworkPolicy, Hubble observability. Requires the
+#   `cilium` app enabled in your instance's core.yaml too — this variable
+#   only stops k3s from installing its own CNI; it does not deploy Cilium.
+#   Fresh installs are handled: setting this to `cilium` makes the k3s/cni
+#   role apply Cilium straight after the first master comes up, before the
+#   workers join and before you bootstrap GitOps. That step is required,
+#   not cosmetic — with no CNI every node stays NotReady and ordinary pods
+#   cannot schedule, ArgoCD's included, so the GitOps bootstrap could never
+#   be what installs the CNI (it would deadlock waiting on its own pods).
+#   Cilium can break that cycle because its agent and operator run on the
+#   host network and tolerate NotReady nodes. ArgoCD adopts the objects on
+#   its first sync, and the role skips itself once a CNI is present.
+#   Point k3sCniChartValues at your instance's cilium values so the
+#   bootstrap render matches what ArgoCD will later reconcile.
+#   The alternative, if you would rather not do this on day one: install
+#   with `flannel`, bootstrap GitOps normally, then move to Cilium
+#   node-by-node with the migration path below. That is what this repo's
+#   own cluster did.
+#   ⚠ ALSO: `--flannel-backend` is a k3s CRITICAL flag — every server must
+#   agree on it. Flip the cluster-init master FIRST (it updates the stored
+#   reference config), then the other masters, then workers.
+#   Do NOT add --disable-kube-proxy: keeping kube-proxy stops Cilium from
+#   attaching BPF programs to the physical uplink, which is what makes an
+#   agent restart unable to drop your SSH session. See
+#   argo-cd/apps/cilium/values.yaml for the full rationale.
+#
+# Migrating flannel -> cilium on a running cluster (per node, in order):
+#   ansible-playbook install.yml --tags cilium-watchdog        # arm first
+#   scripts/cilium-migrate-node.sh <node>                      # one node
+#   ansible-playbook install.yml --tags k3s-masters,cilium-migrate --limit <master>
+#   ansible-playbook install.yml --tags k3s-workers,cilium-migrate --limit <worker>
+# Per-node rollback while the window is open: scripts/cilium-rollback-node.sh
+k3sCni: flannel
+# Only read when k3sCni is 'cilium'. Values applied to the bootstrap render
+# — point this at the same cilium values your instance uses, so what gets
+# applied matches what ArgoCD reconciles afterwards. Repo-root relative;
+# leave empty to bootstrap with chart defaults.
+# e.g. argo-cd/instances/<your-instance>/values/core/cilium.yaml
+k3sCniChartValues: ""
+
+# --- k3sServiceLb: true | false ---
+#
+# true (k3s default): k3s runs ServiceLB ("klipper"), which gives every
+#   LoadBalancer Service an external IP by binding its ports as host ports
+#   on every node via svclb-* DaemonSet pods. Simplest option for bare
+#   metal — you get working LoadBalancer Services with zero extra config.
+#
+# false: no LoadBalancer controller at all. Expose ingress another way —
+#   e.g. a static `spec.externalIPs` list on the ingress Service (see
+#   argo-cd/instances/homelab/values/core/traefik.yaml for a worked
+#   example), MetalLB, or Cilium's own LB-IPAM.
+#   Worth knowing if you run Cilium: ServiceLB publishes every node IP into
+#   each LoadBalancer Service's status, and Cilium ingests those as LB VIPs,
+#   installing a wildcard nodeIP:0/ANY frontend with no backends. Pods
+#   connecting to a node IP on a non-service port then get refused at the
+#   BPF service lookup. Disabling ServiceLB avoids that interaction
+#   entirely; if you keep both, verify with
+#   `cilium-dbg service list | grep ':0/ANY'`.
+#
+# Not a k3s CRITICAL flag, but still roll it uniformly: if masters disagree,
+# the embedded deploy controller reconciles svclb state inconsistently
+# between them.
+k3sServiceLb: true
+
+# --- master scheduling ---
+# true  : soft PreferNoSchedule taint on masters, discouraging (never
+#         blocking) workloads there. Sensible when masters run etcd on
+#         modest disks — etcd is latency-sensitive to IO/CPU contention.
+#         DaemonSets are unaffected: PreferNoSchedule never blocks.
+#         For a hard exclusion of specific heavy workloads, use
+#         `nodeSelector: {node-type: worker}` on those apps instead (see
+#         the CNPG/Vault app values for examples).
+# false : masters schedule workloads like any other node — reasonable on a
+#         small cluster where you need the capacity.
+k3sTaintMasters: false
+# ==========================================================================
+
+# Composed from the choices above — normally no need to edit these directly.
+# --flannel-backend / --disable-network-policy are SERVER-only flags;
+# --flannel-iface applies to both servers and agents.
+k3sCniServerArgs: >-
+  {% if k3sCni == 'cilium' %}--flannel-backend=none --disable-network-policy{% else %}--flannel-iface {{ k3sFlanneliface }}{% endif %}
+k3sCniAgentArgs: >-
+  {% if k3sCni == 'cilium' %}{% else %}--flannel-iface {{ k3sFlanneliface }}{% endif %}
+k3sServiceLbArgs: "{{ '' if k3sServiceLb | bool else '--disable servicelb' }}"
+k3sMasterTaintArgs: >-
+  {{ '--node-taint node-role.kubernetes.io/control-plane=true:PreferNoSchedule' if k3sTaintMasters | bool else '' }}
+
 k3sExtraArgs: >-
-  --node-name {{ inventory_hostname }}  --node-ip={{ k3sNodeIP }}  --flannel-iface {{ k3sFlanneliface }}
+  --node-name {{ inventory_hostname }}
+  --node-ip={{ k3sNodeIP }}
 k3sExtraServerArgs: >-
-  {{ k3sExtraArgs }}  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}  --disable local-storage  --disable traefik  --write-kubeconfig-mode 600  --node-label
-  node-type=master
+  {{ k3sExtraArgs }}
+  {{ k3sCniServerArgs }}
+  {{ k3sServiceLbArgs }}
+  {{ k3sMasterTaintArgs }}
+  --tls-san {{ hostvars[groups['gateway'][0]]['ansible_host'] }}
+  --disable local-storage
+  --disable traefik
+  --write-kubeconfig-mode 600
+  --node-label node-type=master
 k3sExtraAgentArgs: >-
-  {{ k3sExtraArgs }}  --node-label node-type=worker
+  {{ k3sExtraArgs }}
+  {{ k3sCniAgentArgs }}
+  --node-label node-type=worker
 
 # Private registry (optional — set to true and define harbor.* vars to enable)
 # k3s_registry_enabled: true

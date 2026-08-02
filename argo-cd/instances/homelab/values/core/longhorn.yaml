@@ -10,15 +10,22 @@ gateway:
     rules:
     - backendService: longhorn-oauth2-proxy
       backendPort: 80
-      # LAN-only (post-migration-hardening.md L6), oauth2-proxy stays on
-      # as a second factor — this narrows WHERE the login page is even
-      # reachable from, it doesn't replace auth.
+      # LAN-only; oauth2-proxy stays on as a second factor — this narrows
+      # WHERE the login page is even reachable from, it doesn't replace
+      # auth.
       filters:
       - type: ExtensionRef
         extensionRef:
           group: traefik.io
           kind: Middleware
           name: lan-only
+
+# Must stay in sync with the traefik and cilium apps' own lanOnly values
+# (each namespace renders its own copy of this Middleware).
+lanOnly:
+  sourceRange:
+  - 192.168.1.0/24
+  - 10.45.0.0/16 # cilium pod CIDR
 
 vso:
   vaultStaticSecrets:
@@ -67,12 +74,12 @@ longhorn:
   ingress:
     enabled: false
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. iSCSI/NFS rules
-# below use the same pod-CIDR ipBlock as the webhook fact by structural
-# analogy (remote node's host-namespace process -> pod), NOT independently
-# packet-tested for iSCSI/NFS specifically — recommend a live volume
-# attach/detach test during this namespace's rollout step.
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. iSCSI/NFS rules below use the
+# same pod-CIDR ipBlock as the webhook rule, by structural analogy (a
+# remote node's host-namespace process reaching a pod) — verify with a
+# live volume attach/detach test if this namespace's traffic pattern
+# ever changes.
 networkPolicy:
   enabled: true
   egressDeny: true

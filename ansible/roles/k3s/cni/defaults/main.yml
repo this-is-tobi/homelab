@@ -1,0 +1,18 @@
+---
+# Bootstrap CNI install — only used when k3s was installed WITHOUT a CNI
+# (k3sCni: cilium). See tasks/main.yml for why this can't be left to GitOps.
+
+# Chart rendered to bootstrap the CNI. Path is relative to the repo root.
+k3sCniChartPath: argo-cd/apps/cilium
+
+# Instance values applied on top of the chart defaults. Leave empty to use
+# chart defaults only. Relative to the repo root.
+k3sCniChartValues: ""
+
+# Namespace the CNI is installed into. Must match the `namespace` set for
+# the cilium app in your instance's core.yaml, so ArgoCD adopts these exact
+# objects instead of creating a second copy elsewhere.
+k3sCniNamespace: kube-system
+
+# How long to wait for nodes to become Ready once the CNI is applied.
+k3sCniReadyTimeout: 300

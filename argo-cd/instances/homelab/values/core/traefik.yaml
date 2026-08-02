@@ -1,23 +1,19 @@
 # Traefik instance overrides for `homelab`.
 #
-# Traefik is THE ingress controller. klipper-lb binds the Service ports
-# (80/443) as host ports on every node; the gateway HAProxy forwards
-# public 80/443 to them (ansible/inventory/group_vars/gateway.yml).
+# Traefik is THE ingress controller. kube-proxy DNATs each node's IP on
+# 80/443 to the traefik Service via the externalIPs list below; the
+# gateway HAProxy forwards public 80/443 to the node IPs (ansible/
+# inventory/group_vars/gateway.yml).
 
 traefik:
   deployment:
     replicas: 2
   service:
     spec:
-      # Step 1 of klipper (ServiceLB) removal — .local/post-migration-
-      # hardening.md R3 / .local/cilium-migration-plan.md S4. Additive:
-      # kube-proxy already DNATs nodeIP:80/443 -> traefik identically for
-      # klipper's dynamic LB-status IPs and for an explicit externalIPs list
-      # (same 9 node IPs either way), so this changes nothing about the live
-      # traffic path while klipper still runs alongside it. Once verified
-      # (Gate A: no new wildcard LB frontend in `cilium-dbg bpf lb list`),
-      # `--disable servicelb` removes klipper and traefik keeps serving via
-      # this list instead of the (then-gone) LB status.
+      # One entry per node. There is no LoadBalancer controller in this
+      # cluster (k3s's built-in ServiceLB is disabled) — kube-proxy DNATs
+      # nodeIP:80/443 -> traefik through this static list regardless of
+      # which node a given traefik pod lands on.
       externalIPs:
       - 192.168.1.100
       - 192.168.1.101
@@ -34,6 +30,13 @@ traefik:
   # through, so without this every request looks like it comes from the
   # gateway. Scoped to /32: trusting a wider range would let anyone on that
   # range spoof PROXY protocol headers and forge their source IP.
+  # KNOWN LIMITATION: with the Service on externalTrafficPolicy: Cluster
+  # (see traefik's own values.yaml), every connection is SNAT'd to a pod IP
+  # before Traefik sees it, so the gateway's real IP never appears as the
+  # L4 peer and this trust check does not actually match in practice —
+  # Traefik currently logs the SNAT'd pod IP as the client address rather
+  # than the real client IP. Left configured for when that ETP trade-off
+  # is revisited.
   ports:
     web:
       proxyProtocol:
@@ -53,6 +56,19 @@ traefik:
   ingressRoute:
     dashboard:
       enabled: false
+
+# Gates the *.int.ohmlab.fr UIs. Must stay in sync with the cilium and
+# longhorn apps' own lanOnly values (each namespace renders its own copy
+# of this Middleware). See the catalog values for why this is currently
+# defense-in-depth only, not a working source-IP gate.
+lanOnly:
+  sourceRange:
+  - 192.168.1.0/24
+  - 10.45.0.0/16 # cilium pod CIDR
+
+crowdsecBouncer:
+  clientTrustedIPs:
+  - 192.168.1.0/24
 
 gateway:
   enabled: true

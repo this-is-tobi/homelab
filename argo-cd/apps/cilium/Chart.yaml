@@ -7,11 +7,17 @@ dependencies:
   - name: cilium
     version: 1.19.6
     repository: https://helm.cilium.io/
+  # Both are conditional so the chart can be rendered with ONLY the upstream
+  # cilium subchart — needed when bootstrapping Cilium as the CNI on a fresh
+  # cluster, where Vault/VSO CRDs don't exist yet and ordinary pods (like
+  # oauth2-proxy) can't schedule until a CNI is running.
   - name: vso-utils
     alias: vso
     version: 2.0.0
     repository: https://this-is-tobi.github.io/helm-charts
+    condition: vso.enabled
   - name: oauth2-proxy
     alias: sso
     version: 7.12.8
     repository: https://oauth2-proxy.github.io/manifests
+    condition: sso.enabled

@@ -108,6 +108,25 @@
     - k3s-deploy
     - k3s-masters
 
+# K3S - CNI bootstrap. Only does anything when k3s was installed without a
+# CNI (k3sCni: cilium) and none is present yet. Must run BEFORE workers so
+# they get a CNI as they join, and before the GitOps bootstrap — ArgoCD's
+# own pods cannot schedule until a CNI exists. See the role for detail.
+- name: Bootstrap the CNI
+  hosts: masters[0]
+  become: true
+  vars_files:
+    - ./inventory/group_vars/vault.yml
+    - ./inventory/group_vars/all.yml
+    - ./inventory/group_vars/k3s.yml
+  roles:
+    - role: k3s/cni
+      when: k3sCni | default('flannel') == 'cilium'
+  tags:
+    - k3s
+    - k3s-deploy
+    - k3s-cni
+
 - name: Deploy K3S Workers
   hosts: workers
   become: true
@@ -173,8 +192,7 @@
     - never
 
 # K3S - Cilium FINAL FLIP (rolling migration step 6: run only after ALL nodes
-# are Cilium-managed and group_vars/k3s.yml flags were switched — see
-# .local/cilium-migration-plan.md)
+# are Cilium-managed and group_vars/k3s.yml flags were switched)
 - name: Migrate K3S from Flannel to Cilium
   hosts: k3s
   become: true
@@ -184,8 +202,8 @@
     - ./inventory/group_vars/all.yml
     - ./inventory/group_vars/k3s.yml
   tasks:
-    # include_role for the same template-resolution reason as the watchdog
-    # play above (this play carried the same latent bug since 2026-07-05).
+    # include_role (NOT include_tasks): same template-resolution reason
+    # as the watchdog play above.
     - name: Include Cilium migration tasks
       ansible.builtin.include_role:
         name: k3s/prereq

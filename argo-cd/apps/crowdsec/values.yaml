@@ -85,11 +85,9 @@ crowdsec:
     # the k8s pod-log API but actually translates to a hostPath file glob
     # under the hood (same as this chart's DaemonSet mode) — broken for a
     # single-replica Deployment with no guarantee of landing on the same
-    # node as Traefik. Confirmed live: zero lines ever parsed since this
-    # was deployed (see [[traefik-migration-state]] / netpol rollout
-    # notes). Replaced with additionalAcquisition's raw `loki` datasource,
-    # which queries the log-aggregation pipeline over the network instead
-    # — no node-colocation dependency at all.
+    # node as Traefik. Replaced with additionalAcquisition's raw `loki`
+    # datasource, which queries the log-aggregation pipeline over the
+    # network instead — no node-colocation dependency at all.
     additionalAcquisition:
     - source: loki
       url: http://prometheus-stack-loki.prometheus-stack.svc.cluster.local:3100/
@@ -180,43 +178,51 @@ crowdsec:
           auto_registration:
             enabled: true
             token: "${REGISTRATION_TOKEN}"
+            # In-cluster ranges agents may auto-register from. Both common
+            # pod CIDRs are listed so this works under either CNI without
+            # editing — an unused range simply never matches. If your
+            # cluster uses a different pod/service CIDR, add it here or
+            # agents will be silently denied registration on pod churn.
             allowed_ranges:
               - "127.0.0.1/32"
-              # 10.45.0.0/16 = cilium pod CIDR (was flannel's 10.42.0.0/16
-              # until 2026-07-20 — a stale range here silently denies agent
-              # auto-registration on the next pod recreation)
-              - "10.45.0.0/16"
-              - "10.43.0.0/16"
+              - "10.42.0.0/16" # k3s + flannel default pod CIDR
+              - "10.45.0.0/16" # pod CIDR used by this repo's cilium config
+              - "10.43.0.0/16" # k3s default service CIDR
     postoverflows:
       s01-whitelist:
         whitelist-local.yaml: |
           name: local/k8s-whitelist
           description: "Whitelist local and cluster networks"
+          # Never ban these. Both common pod CIDRs are listed so this works
+          # under either CNI without editing (an unused range just never
+          # matches). ⚠ The LAN entry is an example — set it to your own
+          # subnet. Deliberately kept narrow (/24, not the whole
+          # 192.168.0.0/16) so a wrong value under-matches rather than
+          # silently exempting a wide range from all bans.
           whitelist:
             reason: "local network"
             cidr:
-              - "192.168.1.0/24"
-              - "10.45.0.0/16"
-              - "10.43.0.0/16"
-    # REVERTED 2026-07-19 (see traefik-migration-state / gitops-architecture
-    # memory): CrowdSec notification plugins run as forked subprocess
+              - "192.168.1.0/24" # LAN — set this to your actual subnet
+              - "10.42.0.0/16" # k3s + flannel default pod CIDR
+              - "10.45.0.0/16" # pod CIDR used by this repo's cilium config
+              - "10.43.0.0/16" # k3s default service CIDR
+    # REVERTED: CrowdSec notification plugins run as forked subprocess
     # binaries (/usr/local/lib/crowdsec/plugins/notification-slack) — the
     # lapi securityContext below (capabilities: drop: [ALL]) blocks that
     # fork/exec outright ("operation not permitted"), crash-looping LAPI
     # entirely (not just disabling notifications). Needs the right minimal
-    # capability/securityContext relaxation figured out deliberately before
-    # re-adding profiles.yaml/notifications, not under live-outage pressure.
+    # capability/securityContext relaxation figured out deliberately
+    # before re-adding profiles.yaml/notifications.
 
 # -- CNPG PostgreSQL cluster for LAPI persistence
 cnpg:
   fullnameOverride: crowdsec-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
   extraSpec:
-    # PDB protects against voluntary disruption (drain/descheduler) now
-    # that instances is 2, not 3 — accepted tradeoff: a plain `kubectl
-    # drain` on a node hosting one of these instances now needs
-    # --disable-eviction/--force until CNPG relocates it (2026-07-21,
-    # .local/post-migration-hardening.md).
+    # Protects against voluntary disruption (drain/descheduler): with
+    # only 2 instances, losing one to an eviction would leave a single
+    # replica. A drain on the node hosting a PDB-protected instance needs
+    # --disable-eviction/--force until CNPG relocates it first.
     enablePDB: true
   mode: primary
   dbName: crowdsec
@@ -229,8 +235,8 @@ cnpg:
   pvcSize:
     data: 3Gi
     wal: 1Gi
-  # Cap WAL retained by replication slots: a lagging/dead replica costs a
-  # re-clone, never the primary's disk (2026-07-20 keycloak outage, F18).
+  # Caps WAL retained by replication slots: a lagging/dead replica costs
+  # a re-clone, not disk pressure on the primary.
   parameters:
     max_slot_wal_keep_size: 512MB
   resources:
@@ -242,8 +248,7 @@ cnpg:
       memory: 512Mi
   affinity:
     topologyKey: kubernetes.io/hostname
-    # Masters run etcd — keep this data-bearing workload off them
-    # entirely (2026-07-21, .local/post-migration-hardening.md).
+    # Masters run etcd — keep data-bearing workloads off them.
     nodeSelector:
       node-type: worker
   backup:
@@ -399,9 +404,8 @@ vso:
               # Flat key, not nested under a "notifications" map: this
               # Vault path already has an unrelated "notifications" key
               # holding a plain string, and dig errors converting a string
-              # into a map (same failure mode fixed for alertmanager's
-              # webhook earlier this session) — broke crowdsec-lapi
-              # (CreateContainerConfigError) until this fix.
+              # into a map — nesting this under "notifications" breaks
+              # crowdsec-lapi with CreateContainerConfigError.
               text: '{{ get .Secrets "crowdsecMattermostWebhookUrl" }}'
     crowdsecTraefikBouncerKey:
       # LAPI-side copy of the traefik bouncer key (consumed by the
@@ -432,9 +436,7 @@ monitoring:
     enabled: true
 
 # Zero-trust NetworkPolicy for this namespace (templates/networkpolicy.yaml).
-# Disabled by default — real rules live in the instance override, flipped
-# on one namespace at a time during the staged rollout
-# (.local/post-migration-hardening.md §2).
+# Disabled by default — real rules live in the instance override.
 networkPolicy:
   enabled: false
   egressDeny: true

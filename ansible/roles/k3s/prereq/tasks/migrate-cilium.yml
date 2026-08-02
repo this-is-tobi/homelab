@@ -1,11 +1,11 @@
 ---
 # FINAL-FLIP cleanup: retire flannel + kube-router on a node where Cilium is
-# ALREADY the live CNI (rolling migration step 6 — .local/cilium-migration-plan.md).
+# ALREADY the live CNI (rolling migration step 6).
 #
 # ⚠ Cilium is RUNNING on the node when this executes: the agent pod survives
 # k3s restarts and does NOT recreate its interfaces/conf/BPF state on its
-# own. This task therefore only removes flannel/kube-router/May-2026 residue
-# and MUST NOT touch: cilium_* interfaces, the k3s-dir 05-cilium.conflist,
+# own. This task therefore only removes flannel/kube-router/stale-CNI-config
+# residue and MUST NOT touch: cilium_* interfaces, the k3s-dir 05-cilium.conflist,
 # /var/lib/cni (live libcni result cache), or /sys/fs/bpf (live BPF state).
 # The iptables cleanup is KUBE-ROUTER-targeted — a full flush would wipe
 # Cilium's masquerade chains and kube-proxy's service rules.
@@ -27,7 +27,7 @@
     state: directory
     mode: "0755"
 
-- name: Pin containerd CNI dirs — k3s omits them with flannel-backend=none (F19)
+- name: Pin containerd CNI dirs — k3s omits them with flannel-backend=none
   # With --flannel-backend=none k3s no longer templates the CNI section into
   # containerd's config.toml, so containerd 2.x falls back to its built-in
   # defaults /etc/cni/net.d + /opt/cni/bin (empty here) → kubelet NotReady
@@ -56,7 +56,7 @@
     rm -rf /run/flannel 2>/dev/null || true
     rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/10-flannel.conflist 2>/dev/null || true
     rm -f /var/lib/rancher/k3s/agent/etc/cni/net.d/*.cilium_bak 2>/dev/null || true
-    # May 2026 residue: written to paths k3s containerd never reads (plan F3)
+    # Written to paths k3s containerd never reads.
     rm -f /etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
     rm -f /opt/cni/bin/cilium-cni 2>/dev/null || true
   changed_when: false
@@ -64,10 +64,11 @@
 
 - name: Remove kube-router netpol chains (targeted, never a full flush)
   # k3s docs method — preserves Cilium masquerade + kube-proxy service rules.
-  # F20: a lost xtables-lock race makes iptables-restore silently no-op (bit
-  # pi7: 124 stale rules survived, whose frozen ipsets could drop NEW pods'
-  # traffic) — so wait for the lock (-w), run both the k3s-bundled and the
-  # system binaries, then verify the count and retry.
+  # A lost xtables-lock race can make iptables-restore silently no-op,
+  # leaving stale KUBE-ROUTER rules (and their frozen ipsets) in place,
+  # which can drop traffic to newly-created pods — so wait for the lock
+  # (-w), run both the k3s-bundled and the system binaries, then verify
+  # the count and retry.
   ansible.builtin.shell: |
     IPT="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables-save"
     IPTR="{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/data/current/bin/aux/iptables-restore"
@@ -99,11 +100,11 @@
     echo "tc-egress:$($TC filter show dev {{ cilium_watchdog_iface | default('eth0') }} egress 2>/dev/null | wc -l)"
     echo "flannel-ifaces:$(ip link show 2>/dev/null | grep -cE 'flannel\.1|cni0')"
     echo "kube-router-rules:$(iptables-save 2>/dev/null | grep -c KUBE-ROUTER)"
-    # F19 regression guard: containerd must report NetworkReady, otherwise
-    # kubelet goes NotReady with "cni plugin not initialized" (120s grace for
-    # containerd to come up and rescan the conf dir after k3s start).
+    # containerd must report NetworkReady, otherwise kubelet goes NotReady
+    # with "cni plugin not initialized" (120s grace for containerd to come
+    # up and rescan the conf dir after k3s start).
     # crictl marshals condition keys ALPHABETICALLY (message, reason, status,
-    # type) — match both key orders, verified live on pi4:
+    # type) — match both key orders:
     #   {"message": "", "reason": "", "status": true, "type": "NetworkReady"}
     NR=unknown
     for i in $(seq 1 24); do

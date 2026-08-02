@@ -4,6 +4,9 @@ The installation is performed in two phases:
 1. **Infrastructure** deployment with [Ansible](https://www.ansible.com/) for gateway and K3s cluster setup
 2. **Applications** deployment with [ArgoCD](https://argo-cd.readthedocs.io/) following a GitOps approach
 
+> [!TIP]
+> **Already have a cluster?** Phase 1 is optional. If you run managed Kubernetes (EKS/GKE/AKS/DOKS/...) or any existing cluster, skip straight to [Applications (GitOps)](#applications-gitops) — the `argo-cd/` tree only needs a working kubeconfig and does not depend on Ansible, K3s, or the gateway host. See [Using an existing cluster](#using-an-existing-cluster) for what to adjust.
+
 ## Prerequisites
 
 Following tools need to be installed on the computer running the deployment:
@@ -81,31 +84,31 @@ Applications are managed by a **two-level** ApplicationSet hierarchy:
 
 Configuration is split per instance and per scope:
 
-| Path                                                                                                                         | Purpose                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [./argo-cd/instances/\<instance\>/instance.yaml](../argo-cd/instances/homelab/instance.yaml)                                 | Per-instance metadata: cluster destination, env, repos, AppProject bindings.                                  |
-| [./argo-cd/instances/\<instance\>/core.yaml](../argo-cd/instances/homelab/core.yaml)                                         | Core tier app catalog (platform/infra/identity/observability/security).                                       |
-| [./argo-cd/instances/\<instance\>/tenant.yaml](../argo-cd/instances/homelab/tenant.yaml)                                     | Tenant tier app catalog (user-facing services).                                                               |
-| [./argo-cd/instances/\<instance\>/values/core/\<app\>.yaml](../argo-cd/instances/homelab/values/core/)                       | Per-instance Helm values for each core app.                                                                   |
-| [./argo-cd/instances/\<instance\>/values/tenant/\<app\>.yaml](../argo-cd/instances/homelab/values/tenant/)                   | Per-instance Helm values for each tenant app.                                                                 |
+| Path                                                                                                             | Purpose                                                                                                       |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| [./argo-cd/instances/\<instance\>/instance.yaml](../argo-cd/instances/homelab/instance.yaml)                     | Per-instance metadata: cluster destination, env, repos, AppProject bindings.                                  |
+| [./argo-cd/instances/\<instance\>/core.yaml](../argo-cd/instances/homelab/core.yaml)                             | Core tier app catalog (platform/infra/identity/observability/security).                                       |
+| [./argo-cd/instances/\<instance\>/tenant.yaml](../argo-cd/instances/homelab/tenant.yaml)                         | Tenant tier app catalog (user-facing services).                                                               |
+| [./argo-cd/instances/\<instance\>/values/core/\<app\>.yaml](../argo-cd/instances/homelab/values/core/)           | Per-instance Helm values for each core app.                                                                   |
+| [./argo-cd/instances/\<instance\>/values/tenant/\<app\>.yaml](../argo-cd/instances/homelab/values/tenant/)       | Per-instance Helm values for each tenant app.                                                                 |
 | [./argo-cd/instances/\<instance\>/values/core/ohmlab.yaml](../argo-cd/instances/homelab/values/core/ohmlab.yaml) | Bootstrap values for core ArgoCD + the root `manager` AppSet + the `admin-core` / `admin-tenant` AppProjects. |
-| [./argo-cd/apps/\<app\>/](../argo-cd/apps/)                                                                                  | Helm chart catalog (chart sources only — values live in the trees above).                                     |
+| [./argo-cd/apps/\<app\>/](../argo-cd/apps/)                                                                      | Helm chart catalog (chart sources only — values live in the trees above).                                     |
 
 To enable or disable a service for an instance, edit the matching `core.yaml` or `tenant.yaml` and flip the `"enabled"` field on the relevant entry.
 
 Per-app overrides supported in the JSON catalogues (all optional):
 
-| Field                | Default                                                  | Use case                                                                         |
-| -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `chart`              | same as `app`                                            | Use a different chart directory under `argo-cd/apps/`.                           |
+| Field                | Default                                                  | Use case                                                                   |
+| -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `chart`              | same as `app`                                            | Use a different chart directory under `argo-cd/apps/`.                     |
 | `chartPath`          | `argo-cd/apps/<chart>`                                   | Point at a chart **outside** `argo-cd/apps/` (e.g. self-managed `ohmlab`). |
-| `releaseName`        | same as `app`                                            | Adopt an existing helm release for self-management.                              |
-| `namespace`          | `<prefix><app><suffix>`                                  | Pin to an explicit namespace (e.g. `argocd-system`).                             |
-| `destination.server` | `instance.yaml.destination.server`                       | Target a different cluster (multi-cluster).                                      |
-| `valuesPath`         | `argo-cd/instances/<instance>/values/<scope>/<app>.yaml` | Point to a non-conventional values file.                                         |
-| `targetRevision`     | `instance.yaml.targetRevision`                           | Pin app to a specific git revision.                                              |
-| `hook`               | `Sync`                                                   | Use as `PreSync` / `PostSync` hook.                                              |
-| `syncWave`           | required                                                 | ArgoCD sync ordering.                                                            |
+| `releaseName`        | same as `app`                                            | Adopt an existing helm release for self-management.                        |
+| `namespace`          | `<prefix><app><suffix>`                                  | Pin to an explicit namespace (e.g. `argocd-system`).                       |
+| `destination.server` | `instance.yaml.destination.server`                       | Target a different cluster (multi-cluster).                                |
+| `valuesPath`         | `argo-cd/instances/<instance>/values/<scope>/<app>.yaml` | Point to a non-conventional values file.                                   |
+| `targetRevision`     | `instance.yaml.targetRevision`                           | Pin app to a specific git revision.                                        |
+| `hook`               | `Sync`                                                   | Use as `PreSync` / `PostSync` hook.                                        |
+| `syncWave`           | required                                                 | ArgoCD sync ordering.                                                      |
 
 ### Secrets Management
 
@@ -187,6 +190,19 @@ sequenceDiagram
 > *Bootstrap admin password: pass `ARGOCD_ADMIN_PASSWORD=mypass ./run.sh -b homelab` to set it explicitly. Without this var, the ArgoCD chart auto-generates a password and stores it in `argocd-initial-admin-secret`; the script prints it at the end of the run.*
 >
 > *OIDC for the core ArgoCD is intentionally disabled at bootstrap. Enable it in [argo-cd/instances/homelab/values/core/ohmlab.yaml](../argo-cd/instances/homelab/values/core/ohmlab.yaml) once Keycloak is ready (uncomment the `oidc.config` block and provide the client secret out-of-band).*
+
+### Using an existing cluster
+
+The GitOps layer (`argo-cd/`) is independent of how the cluster was created — it only needs a kubeconfig with cluster-admin. On managed Kubernetes (EKS/GKE/AKS/...) or any pre-existing cluster, skip the Ansible phase entirely and run `./run.sh -b <instance>` against your context.
+
+Create your own instance folder rather than reusing `homelab` (which is this repo's own cluster, full of environment-specific values) — copy [argo-cd/instances/_example](../argo-cd/instances/_example) and see [Adding a new instance](#topologies). Points worth checking for a non-K3s cluster:
+
+- **Storage** — `longhorn` assumes bare-metal disks. On a cloud provider, disable it and use the provider's own `StorageClass` (set it as default, or set `storageClass` explicitly on the apps that request one).
+- **Ingress exposure** — the `traefik` app's Service is type `LoadBalancer`. A cloud provider assigns a real external IP automatically, so drop the `spec.externalIPs` list this repo uses (that exists only because it runs bare metal without an LB controller).
+- **CNI** — managed clusters ship their own; leave the `cilium` app disabled. Read the CNI caveat at the top of any `templates/networkpolicy.yaml` before enabling `networkPolicy` — the rules were verified against Cilium and rely on three CNI-specific behaviours.
+- **Pod/service CIDRs** — anything referencing `10.42.0.0/16` / `10.45.0.0/16` / `10.43.0.0/16` (NetworkPolicy `ipBlock` rules, `lanOnly.sourceRange`, crowdsec's `allowed_ranges`) must match your cluster's actual ranges.
+- **Node labels** — apps pinning workloads with `nodeSelector: {node-type: worker}` (CNPG databases, Vault) need that label to exist, or the selector removed.
+- **Gateway-host services** — HAProxy, PiHole, WireGuard and the gateway CrowdSec engine are Ansible-managed Docker services on a separate host. They have no in-cluster equivalent; ignore them unless you replicate that setup.
 
 ## Destroy
 
@@ -422,20 +438,20 @@ Per-app overrides also exist if a single app needs a different layout — `value
 
 Apps are reconciled in `syncWave` order. Default ordering for the homelab instance:
 
-| Wave | Tier   | Apps                                        |
-| ---- | ------ | ------------------------------------------- |
-| -10  | core   | `ohmlab` (self)                             |
-| 0    | core   | `longhorn`                                  |
-| 10   | core   | `cert-manager`, `vault-operator`            |
-| 11   | core   | `traefik`                                   |
-| 15   | core   | `kyverno`                                   |
-| 20   | core   | `cloudnative-pg`, `sops`                    |
-| 50   | core   | `prometheus-stack`                          |
-| 55   | core   | `keycloak`                                  |
-| 60   | core   | `crowdsec`, `system-upgrade`, `teleport`    |
-| 100  | tenant | `argo-cd` (personal)                        |
-| 110  | tenant | `gitea`, `mattermost`, `rustfs`             |
-| 200  | tenant | `homepage`                                  |
+| Wave | Tier   | Apps                                     |
+| ---- | ------ | ---------------------------------------- |
+| -10  | core   | `ohmlab` (self)                          |
+| 0    | core   | `longhorn`                               |
+| 10   | core   | `cert-manager`, `vault-operator`         |
+| 11   | core   | `traefik`                                |
+| 15   | core   | `kyverno`                                |
+| 20   | core   | `cloudnative-pg`, `sops`                 |
+| 50   | core   | `prometheus-stack`                       |
+| 55   | core   | `keycloak`                               |
+| 60   | core   | `crowdsec`, `system-upgrade`, `teleport` |
+| 100  | tenant | `argo-cd` (personal)                     |
+| 110  | tenant | `gitea`, `mattermost`, `rustfs`          |
+| 200  | tenant | `homepage`                               |
 
 ### Core Services
 

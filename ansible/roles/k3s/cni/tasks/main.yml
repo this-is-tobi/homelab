@@ -1,0 +1,89 @@
+---
+# Bootstrap Cilium as the CNI on a cluster that k3s installed WITHOUT one.
+#
+# Why this exists (and why GitOps can't do it): with
+# --flannel-backend=none there is no CNI, so every node stays NotReady and
+# carries node.kubernetes.io/not-ready:NoSchedule. Ordinary pods cannot be
+# scheduled — including ArgoCD's own. So the GitOps bootstrap can never be
+# what brings the CNI up: it would sit waiting for pods that can never
+# start. Cilium itself is exempt (hostNetwork DaemonSet, tolerates
+# everything), which is exactly why it can be applied here first.
+#
+# Rendered with helm on the control machine and applied with `k3s kubectl`
+# on a server node — the same "render the chart, apply the manifests" model
+# ArgoCD uses, so when ArgoCD later syncs the cilium app it adopts these
+# objects rather than fighting a helm release. VSO/oauth2-proxy subcharts
+# are disabled here: their CRDs don't exist yet, and oauth2-proxy is an
+# ordinary pod that couldn't schedule anyway. ServiceMonitors are dropped
+# for the same reason — the prometheus-operator CRDs they need are only
+# installed much later in the sync order. ArgoCD adds all of it on sync.
+#
+# Skipped entirely unless k3sCni is 'cilium', and skipped again if a CNI is
+# already present — so re-running the playbook never re-applies a stale
+# render over what ArgoCD now manages.
+
+- name: Check whether a CNI is already installed
+  ansible.builtin.command: >-
+    k3s kubectl get daemonset cilium
+    -n {{ k3sCniNamespace }}
+    --ignore-not-found
+    -o name
+  register: k3s_cni_existing
+  changed_when: false
+  failed_when: false
+
+- name: Bootstrap the CNI
+  when: k3s_cni_existing.stdout | trim | length == 0
+  block:
+    - name: Build chart dependencies
+      delegate_to: localhost
+      run_once: true
+      become: false
+      ansible.builtin.command: helm dependency build {{ k3sCniChartPath }}
+      args:
+        chdir: "{{ playbook_dir }}/.."
+      changed_when: false
+
+    - name: Render the CNI manifests
+      delegate_to: localhost
+      run_once: true
+      become: false
+      ansible.builtin.command: >-
+        helm template cilium {{ k3sCniChartPath }}
+        --namespace {{ k3sCniNamespace }}
+        {{ '--values ' ~ k3sCniChartValues if k3sCniChartValues | length > 0 else '' }}
+        --set vso.enabled=false
+        --set sso.enabled=false
+        --set gateway.enabled=false
+        --set cilium.prometheus.serviceMonitor.enabled=false
+        --set cilium.operator.prometheus.serviceMonitor.enabled=false
+        --set cilium.hubble.metrics.serviceMonitor.enabled=false
+      args:
+        chdir: "{{ playbook_dir }}/.."
+      register: k3s_cni_manifests
+      changed_when: false
+
+    - name: Copy the rendered manifests to the node
+      ansible.builtin.copy:
+        content: "{{ k3s_cni_manifests.stdout }}"
+        dest: /tmp/cni-bootstrap.yaml
+        mode: "0600"
+
+    - name: Apply the CNI manifests
+      ansible.builtin.command: k3s kubectl apply -f /tmp/cni-bootstrap.yaml
+      register: k3s_cni_apply
+      changed_when: "'created' in k3s_cni_apply.stdout or 'configured' in k3s_cni_apply.stdout"
+
+    - name: Remove the rendered manifests from the node
+      ansible.builtin.file:
+        path: /tmp/cni-bootstrap.yaml
+        state: absent
+
+    # Nodes only leave NotReady once the agent has written its CNI conf, so
+    # this is the real gate on the cluster being usable — not the DaemonSet
+    # merely existing.
+    - name: Wait for this node to become Ready
+      ansible.builtin.command: >-
+        k3s kubectl wait --for=condition=Ready node/{{ inventory_hostname }}
+        --timeout={{ k3sCniReadyTimeout }}s
+      changed_when: false
