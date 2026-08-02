@@ -82,7 +82,7 @@ vso:
 # same traffic shape/risk as an admission webhook). Both use the
 # corrected pod-CIDR ipBlock.
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9402 }   # namespace-wide: cainjector has no metrics port, harmless no-op
