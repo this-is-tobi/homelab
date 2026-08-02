@@ -112,6 +112,22 @@ networkPolicy:
       ports:
       - { protocol: TCP, port: 8000 }
       - { protocol: TCP, port: 5432 }
+  # crowdsec-agent queries Traefik's access logs from here instead of a
+  # broken hostPath glob — see argo-cd/apps/crowdsec/values.yaml
+  # (agent.additionalAcquisition) and the matching loki-query egress rule
+  # in crowdsec's own instance values.
+  - name: crowdsec-loki-query
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: loki, app.kubernetes.io/component: single-binary }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: crowdsec
+        podSelector:
+          matchLabels: { k8s-app: crowdsec, type: agent }
+      ports:
+      - { protocol: TCP, port: 3100 }
 
 # Centralized log aggregation. Loki + Alloy are bundled as Helm
 # dependencies of this chart (Chart.yaml, condition: loki.enabled /
