@@ -123,7 +123,7 @@ gateway:
 # the SSO-hairpin pattern too — a real finding the original flow sweep
 # missed entirely (infrequent, only fires while a dashboard tab is open).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   extraIngress:
   - name: traefik
