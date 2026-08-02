@@ -88,6 +88,22 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
+  # Agent queries Traefik's access logs from Loki (prometheus-stack ns)
+  # instead of tailing hostPath files — see agent.additionalAcquisition
+  # in argo-cd/apps/crowdsec/values.yaml for why. Same label convention
+  # as the lapi ingress rule above (k8s-app/type, not app.kubernetes.io/*).
+  - name: loki-query
+    podSelector:
+      matchLabels: { k8s-app: crowdsec, type: agent }
+    rules:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: prometheus-stack
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: loki, app.kubernetes.io/component: single-binary }
+      ports:
+      - { protocol: TCP, port: 3100 }
   # CrowdSec's core function: CAPI decision-sync, PAPI push, Console
   # enroll, Hub collection-catalog updates. Cannot pin a specific host
   # (CrowdSec's own SaaS endpoints, no FQDN support in standard NetworkPolicy).

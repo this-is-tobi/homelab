@@ -81,12 +81,23 @@ crowdsec:
   # 9 pods -> 1 (~30-60m CPU / ~350-650Mi memory reclaimed cluster-wide).
   agent:
     isDeployment: true
-    acquisition:
-    # Ingress access logs: traefik writes JSON access logs, parsed by the
-    # crowdsecurity/traefik collection.
-    - namespace: traefik
-      podName: traefik-*
-      program: traefik
+    # `acquisition` (namespace/podName/program) looks like it reads via
+    # the k8s pod-log API but actually translates to a hostPath file glob
+    # under the hood (same as this chart's DaemonSet mode) — broken for a
+    # single-replica Deployment with no guarantee of landing on the same
+    # node as Traefik. Confirmed live: zero lines ever parsed since this
+    # was deployed (see [[traefik-migration-state]] / netpol rollout
+    # notes). Replaced with additionalAcquisition's raw `loki` datasource,
+    # which queries the log-aggregation pipeline over the network instead
+    # — no node-colocation dependency at all.
+    additionalAcquisition:
+    - source: loki
+      url: http://prometheus-stack-loki.prometheus-stack.svc.cluster.local:3100/
+      query: |
+        {namespace="traefik", container="traefik"}
+      labels:
+        type: traefik
+        program: traefik
     env:
     - name: COLLECTIONS
       value: >-
