@@ -87,6 +87,13 @@ networkPolicy:
   prometheusScrapePorts:
   - { protocol: TCP, port: 9402 }   # namespace-wide: cainjector has no metrics port, harmless no-op
   extraIngress:
+  # Service port 443 -> targetPort "https" -> containerPort 10250 (NOT
+  # 443 — cert-manager's upstream chart deliberately numbers this
+  # container port 10250, same "https"-named-port trap as Teleport's
+  # proxy). NetworkPolicy matches the container port the traffic actually
+  # lands on, not the Service's front-facing port. Confirmed live via
+  # Hubble (2026-08-02): real apiserver->webhook calls on :10250 were
+  # being dropped after first enabling with port 443.
   - name: webhook
     podSelector:
       matchLabels: { app.kubernetes.io/name: webhook }
@@ -94,7 +101,7 @@ networkPolicy:
     - from:
       - ipBlock: { cidr: 10.45.0.0/16 }
       ports:
-      - { protocol: TCP, port: 443 }
+      - { protocol: TCP, port: 10250 }
   - name: scaleway-aggregated-apiservice
     podSelector:
       matchLabels: { app: scaleway-certmanager-webhook, release: cert-manager }
