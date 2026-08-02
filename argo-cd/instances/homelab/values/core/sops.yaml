@@ -12,7 +12,7 @@ vso:
 # gpg/azure all disabled, age key delivered as a local file by VSO — 100%
 # local decryption).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 8080 }
