@@ -1,17 +1,13 @@
 cloudnative-pg: {}
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. The "cnpg-
-# instance-pods" egress rule is CONFLICTING-EVIDENCE territory: CNPG's own
-# docs + a security advisory (GHSA-7qwx-x8ff-3px9, fixed exactly at the
-# 1.30.0 this cluster runs) + CNPG's published sample NetworkPolicy all
-# require it, but a direct 45s live-streamed capture of 100% of the
-# operator's egress showed ZERO such traffic (only apiserver calls every
-# ~6s + inbound webhook responses) — same result independently found via a
-# 6-hour Hubble capture during the crowdsec investigation. Included
-# defensively per CNPG's own guidance; likely only exercised on failover/
-# switchover or once Database/DatabaseRole CRs are used (neither active
-# today).
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. The "cnpg-instance-pods" egress
+# rule is included defensively per CNPG's own docs, a security advisory
+# (GHSA-7qwx-x8ff-3px9, fixed exactly at the 1.30.0 this cluster runs),
+# and CNPG's published sample NetworkPolicy — even though it's rarely
+# exercised in steady state (operator->instance traffic is mostly
+# apiserver calls + inbound webhook responses; this rule mainly matters
+# on failover/switchover, or once Database/DatabaseRole CRs are used).
 networkPolicy:
   enabled: true
   egressDeny: true

@@ -1,10 +1,9 @@
 {{- if .Values.migration.enabled }}
-# Rolling flannel→cilium migration (official Cilium guide adapted to k3s —
-# runbook: .local/cilium-migration-plan.md F8). Nodes labeled
-# {{ .Values.migration.nodeLabel }}=true get the cilium CNI conf written and
-# become Cilium-managed after a reboot; unlabeled nodes stay on flannel.
-# Per-node rollback: remove the label, delete the conflist, reboot
-# (scripts/cilium-rollback-node.sh).
+# Rolling flannel→cilium migration (official Cilium guide adapted to k3s).
+# Nodes labeled {{ .Values.migration.nodeLabel }}=true get the cilium CNI
+# conf written and become Cilium-managed after a reboot; unlabeled nodes
+# stay on flannel. Per-node rollback: remove the label, delete the
+# conflist, reboot (scripts/cilium-rollback-node.sh).
 #
 # NOTE: cni-chaining-mode is deliberately NOT set here — it inherits
 # `portmap` from the agent ConfigMap (cni.chainingMode) so svclb hostPorts

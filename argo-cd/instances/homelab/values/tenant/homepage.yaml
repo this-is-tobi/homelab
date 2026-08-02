@@ -113,15 +113,15 @@ gateway:
     - backendService: homepage
       backendPort: 3000
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. Apiserver egress
-# is genuinely needed (not just show:false cosmetics — confirmed via
-# gethomepage v1.13.1 upstream source: the "kubernetes" widget's useSWR
-# fetch and backend listNode()/getNodeMetrics() calls fire unconditionally,
-# show:false only hides the UI card). siteMonitor pings (every *.ohmlab.fr
-# service URL in this file, HEAD/GET every 30s per open browser tab) use
-# the SSO-hairpin pattern too — a real finding the original flow sweep
-# missed entirely (infrequent, only fires while a dashboard tab is open).
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. Apiserver egress is genuinely
+# needed, not just show:false cosmetics: gethomepage's "kubernetes"
+# widget fires its useSWR fetch and backend listNode()/getNodeMetrics()
+# calls unconditionally — show:false only hides the UI card, it doesn't
+# stop the calls. siteMonitor pings (every *.ohmlab.fr service URL in
+# this file, HEAD/GET every 30s per open browser tab) need the
+# SSO-hairpin egress path too, but only fire while a dashboard tab is
+# open.
 networkPolicy:
   enabled: true
   egressDeny: true

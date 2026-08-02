@@ -15,16 +15,13 @@ gateway:
 
 vault:
   externalConfig:
-    # Re-enabled 2026-07-19. Was disabled 2026-07-05 - 2026-07-19: reaching
-    # Keycloak's public hostname from inside the cluster (the NAT hairpin)
-    # was hard-failing discovery, which was blocking every newly-added Vault
-    # policy (vault-configurer applies auth methods before policies in one
-    # pass). Verified live from vault-0 itself before re-enabling (curl/wget/
-    # nslookup all resolve sso.core.ohmlab.fr and complete the discovery
-    # fetch with a matching issuer) - whatever caused the original failure
-    # (ISP/router NAT hairpin support, most likely) no longer reproduces.
-    # If policy application starts silently failing again, this is the
-    # first thing to flip back to false.
+    # Requires the NAT hairpin from inside the cluster to Keycloak's
+    # public hostname (sso.core.ohmlab.fr) to work: vault-configurer
+    # applies auth methods before policies in one pass, so a failed OIDC
+    # discovery fetch here blocks every policy application, not just
+    # OIDC login. If policy application starts silently failing, this is
+    # the first thing to check (and the first thing to flip back to
+    # false to unblock policy application while debugging).
     oidcEnabled: true
     oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
     oidcRedirectUris:
@@ -33,12 +30,10 @@ vault:
   # NOT extraEnvsConfig: that only reaches the Vault server container.
   # vault-configurer is the one that evaluates ${ .Env.VAULT_OIDC_CLIENT_SECRET }
   # in externalConfig.auth[].config.oidc_client_secret before pushing it to
-  # Vault's API, and only envsConfig (all bank-vaults pods) reaches it. Using
-  # extraEnvsConfig here silently pushed an empty client secret to Vault's
-  # oidc auth method every time (confirmed live: vault-configurer's pod env
-  # had no VAULT_OIDC_CLIENT_SECRET at all) — root cause of the persistent
-  # "unauthorized_client" / "Invalid client or Invalid client credentials"
-  # login failure.
+  # Vault's API, and only envsConfig (all bank-vaults pods) reaches it.
+  # Using extraEnvsConfig here silently pushes an empty client secret to
+  # Vault's oidc auth method, causing a persistent "unauthorized_client" /
+  # "Invalid client or Invalid client credentials" login failure.
   envsConfig:
   - name: VAULT_OIDC_CLIENT_SECRET
     valueFrom:
@@ -539,12 +534,11 @@ vso:
 backup-utils:
   enabled: false  # S3 keys not configured yet — re-enable when available
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. No probe-only
-# ingress rule (dropped — full cluster-wide webhook scan confirmed zero
-# webhook configs target this namespace). Covers BOTH Vault's own raft/API
-# needs AND the centralized VSO controller's apiserver-watch (both live
-# here).
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. No probe-only ingress rule
+# (dropped — no webhook config in this cluster targets this namespace).
+# Covers BOTH Vault's own raft/API needs AND the centralized VSO
+# controller's apiserver-watch (both run here).
 networkPolicy:
   enabled: true
   egressDeny: true
@@ -566,10 +560,9 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
-  # Vault's OIDC auth (oidcEnabled: true above, live+active per the comment
-  # at the top of this file — the NAT hairpin to sso.core.ohmlab.fr is
-  # confirmed real and previously caused an outage when it didn't work).
-  # Hairpin goes to the gateway's public IP, not a node IP; https only.
+  # Vault's OIDC auth (oidcEnabled: true above) dials sso.core.ohmlab.fr
+  # directly — a real NAT hairpin, not just a theoretical path. Hairpin
+  # goes to the gateway's public IP, not a node IP; https only.
   - name: sso-hairpin
     rules:
     - to:

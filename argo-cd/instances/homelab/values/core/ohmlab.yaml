@@ -111,8 +111,8 @@ argo-cd:
               hs.status = "Healthy"
               return hs
             end
-            -- klipper/ServiceLB was removed (F21/F24); nothing in this cluster
-            -- ever writes status.loadBalancer.ingress anymore. Services are
+            -- klipper/ServiceLB was removed; nothing in this cluster ever
+            -- writes status.loadBalancer.ingress anymore. Services are
             -- reached via static spec.externalIPs + kube-proxy DNAT instead,
             -- so treat that as the success condition rather than waiting
             -- forever on a status field with no writer.
@@ -227,13 +227,11 @@ vso:
             OIDC_CLIENT_SECRET:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
 
-# Zero-trust NetworkPolicy for argocd-system. EGRESS ONLY (ingress already
-# chart-shipped — 5 policies confirmed live). See .local/post-migration-
-# hardening.md §2 for the 5 empirically-tested facts this design depends
-# on. This is the CORE ArgoCD instance that syncs every other app in this
-# rollout, including itself — the egress design was reasoned through for
-# self-consistency (it would not have blocked argocd-system from ever
-# syncing this very netpol change in the first place).
+# Zero-trust NetworkPolicy for argocd-system. EGRESS ONLY (ingress is
+# already chart-shipped). This is the CORE ArgoCD instance that syncs
+# every other app in this rollout, including itself — the egress design
+# was reasoned through for self-consistency (it must not block
+# argocd-system from being able to sync this very NetworkPolicy change).
 networkPolicy:
   enabled: true
   egressDeny: true

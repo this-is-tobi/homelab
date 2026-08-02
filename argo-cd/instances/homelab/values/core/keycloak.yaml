@@ -94,13 +94,13 @@ vso:
       mount: homelab
       path: platforms/production/core/keycloak
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. Deliberately NO
-# SSO-hairpin egress rule here: keycloak's --hostname flags only construct
-# URLs RETURNED to browsers (issuer, redirects) — it never dials its own
-# public hostname (hostname-strict=false confirmed, no self-validation
-# call). No federated external IdP, no SMTP, no backchannel-logout on any
-# client — all confirmed via repo grep, zero matches.
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. Deliberately NO SSO-hairpin
+# egress rule here: keycloak's --hostname flags only construct URLs
+# RETURNED to browsers (issuer, redirects) — it never dials its own
+# public hostname. No federated external IdP, no SMTP, and no
+# backchannel-logout configured on any client, so none of those need an
+# egress rule either.
 networkPolicy:
   enabled: true
   egressDeny: true

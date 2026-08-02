@@ -42,8 +42,8 @@ vso:
       mount: homelab
       path: platforms/production/core/crowdsec
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on.
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs.
 networkPolicy:
   enabled: true
   egressDeny: true
@@ -51,10 +51,8 @@ networkPolicy:
   - { protocol: TCP, port: 6060 }   # lapi + agent, both expose "metrics" on this port
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter
   # This chart does NOT use app.kubernetes.io/* labels — it labels pods
-  # k8s-app=crowdsec + type={lapi,agent}. Confirmed live via `kubectl get
-  # pod --show-labels` (2026-08-02) after the app.kubernetes.io/component
-  # selector below matched zero pods and silently dropped all Traefik
-  # bouncer→LAPI traffic on first rollout.
+  # k8s-app=crowdsec + type={lapi,agent}. An app.kubernetes.io/* selector
+  # here would silently match zero pods and drop this traffic.
   extraIngress:
   - name: traefik-bouncer
     podSelector:

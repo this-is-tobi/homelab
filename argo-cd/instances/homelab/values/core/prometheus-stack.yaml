@@ -70,11 +70,11 @@ vso:
       mount: homelab
       path: platforms/production/core/prometheus-stack
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. SPECIAL CASE:
-# egressDeny stays false in the base chart — this namespace legitimately
-# scrapes ~every other namespace + kubelet cluster-wide, so no egress
-# NetworkPolicy is ever rendered for it.
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. SPECIAL CASE: egressDeny stays
+# false in the base chart — this namespace legitimately scrapes ~every
+# other namespace + kubelet cluster-wide, so no egress NetworkPolicy is
+# ever rendered for it.
 networkPolicy:
   enabled: true
   extraIngress:
@@ -218,11 +218,10 @@ loki:
 # apiserver's pods/log subresource (the same mechanism `kubectl logs`
 # uses), NOT hostPath file tailing. This is why it's a plain Deployment,
 # not a DaemonSet: no host filesystem access, no privileged/root
-# container, and no dependency on which node a pod happens to land on
-# (the exact failure mode that left crowdsec-agent blind to Traefik's
-# logs since day one — see crowdsec wiring below). Trade-off: this adds
-# API-server/kubelet-proxy load instead of node-local disk reads: fine at
-# this cluster's log volume, worth re-checking if that ever changes.
+# container, and no dependency on which node a pod happens to land on.
+# Trade-off: this adds apiserver/kubelet-proxy load instead of node-local
+# disk reads — fine at this cluster's log volume, worth re-checking if
+# that ever changes.
 alloy:
   enabled: true
   controller:
@@ -267,13 +266,11 @@ alloy:
             url = "http://prometheus-stack-loki.prometheus-stack.svc.cluster.local:3100/loki/api/v1/push"
           }
         }
-    # 256Mi OOM-killed within ~10 minutes at cluster-wide scope (153 pods,
-    # ~200+ containers, all held open concurrently by a single replica).
-    # Steady-state took longer to settle than the first re-check caught:
-    # ~440Mi at 2min, climbed further and replateaued at ~680Mi by ~17min
-    # (still discovering/opening streams for infrequently-logging pods).
-    # Sized with real margin above that second plateau, not right at it.
-    # Watch and adjust further as the cluster grows.
+    # Memory scales with the number of concurrently-open log streams
+    # across the cluster, and takes several minutes after a restart to
+    # reach steady state — re-check actual usage well after startup, not
+    # right after, before trusting a plateau. Re-size as the cluster
+    # grows.
     resources:
       requests: { cpu: 50m, memory: 640Mi }
       limits: { cpu: 250m, memory: 1Gi }
@@ -281,12 +278,10 @@ alloy:
     resources:
       requests: { cpu: 10m, memory: 50Mi }
       limits: { cpu: 50m, memory: 64Mi }
-  # No hostPath needed (see above), so any non-root UID works — unlike
-  # the DaemonSet+hostPath path this avoided, there's no node-filesystem
-  # permission compatibility to verify. Nested under global: — that's
-  # where this chart actually reads it from (confirmed against the
-  # chart's own values.yaml; the top-level alloy.podSecurityContext key
-  # some docs reference doesn't exist and silently renders nothing).
+  # No hostPath needed (see above), so any non-root UID works. Nested
+  # under global: — that's the key this chart actually reads; a
+  # top-level alloy.podSecurityContext (as some docs suggest) doesn't
+  # exist and silently renders nothing.
   global:
     podSecurityContext:
       runAsNonRoot: true

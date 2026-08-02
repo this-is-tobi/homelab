@@ -61,13 +61,11 @@ vso:
       mount: homelab
       path: platforms/production/tenant/rustfs
 
-# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
-# the 5 empirically-tested facts this design depends on. No apiserver/SSO/
-# CNPG egress — standalone S3 storage, no database, no auth integration of
-# its own (the RUSTFS_IDENTITY_OPENID_* config is app-internal, not a
-# reason for pod egress since apiIngress.enabled is false and nothing else
-# reads it — confirmed dead config, see the gitea/rustfs investigation
-# notes). Backups not wired yet (§4 backup gap).
+# Zero-trust NetworkPolicy: default-deny with explicit allow rules for
+# only the traffic this namespace needs. No apiserver/SSO/CNPG egress:
+# standalone S3 storage, no database, no auth integration of its own —
+# the RUSTFS_IDENTITY_OPENID_* config is unused (apiIngress.enabled is
+# false and nothing else reads it).
 networkPolicy:
   enabled: true
   egressDeny: true

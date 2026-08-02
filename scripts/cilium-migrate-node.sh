@@ -4,10 +4,9 @@ set -e
 set -o pipefail
 
 # Migrate ONE node from flannel to Cilium (rolling migration, per-node step).
-# Runbook of record: .local/cilium-migration-plan.md (F8) — run this only
-# during the migration window (cilium app deployed DORMANT + CiliumNodeConfig
-# present), with the watchdog armed (--tags cilium-watchdog) and a second SSH
-# session open to the node.
+# Run this only during a migration window (cilium app deployed DORMANT +
+# CiliumNodeConfig present), with the watchdog armed (--tags
+# cilium-watchdog) and a second SSH session open to the node.
 #
 # Usage: scripts/cilium-migrate-node.sh <node>   (e.g. pi8)
 # SSH:   uses the <node> alias from ~/.ssh/config; sudo prompts for the
@@ -40,9 +39,9 @@ say "Label ${NODE} for Cilium CNI ownership"
 kubectl label node "${NODE}" "${MIGRATION_LABEL}=true" --overwrite
 
 say "Restart the cilium agent on ${NODE} (CiliumNodeConfig is start-time only)"
-# A running agent never re-reads per-node config (pi7 lesson, 2026-07-20):
-# without this bounce the conf is only written mid-boot after the reboot —
-# too late, flannel wins the early sandboxes. Safe here: node is cordoned.
+# A running agent never re-reads per-node config: without this bounce the
+# conf is only written mid-boot after the reboot — too late, flannel wins
+# the early sandboxes. Safe here: node is cordoned.
 CILIUM_POD="$(kubectl -n kube-system get pod -l k8s-app=cilium --field-selector "spec.nodeName=${NODE}" -o name | head -1)"
 kubectl -n kube-system delete "${CILIUM_POD}" --wait=true >/dev/null
 CILIUM_POD=""
@@ -53,8 +52,8 @@ done
 echo "OK: agent restarted (${CILIUM_POD})"
 
 say "Waiting for the agent to write the Cilium CNI conf (pre-reboot gate)"
-# Rebooting before the conf lands on disk lets k3s's flannel win the early
-# boot and DS pods come up with flannel IPs (canary lesson, 2026-07-20).
+# Rebooting before the conf lands on disk lets k3s's flannel win the
+# early boot and DS pods come up with flannel IPs.
 end=$((SECONDS + 120))
 until kubectl -n kube-system exec "${CILIUM_POD#pod/}" -c cilium-agent -- test -f /host/etc/cni/net.d/05-cilium.conflist 2>/dev/null; do
   [ $SECONDS -ge $end ] && { echo "ERROR: conf not written 120s after agent restart — check CiliumNodeConfig + agent logs"; exit 1; }
@@ -67,8 +66,8 @@ say "Rebooting ${NODE} (sudo will prompt for the password)"
 ssh -t "${NODE}" sudo systemctl reboot || true
 
 say "Waiting for ${NODE} to actually reboot (boot-id change), then Ready (max ${READY_TIMEOUT}s)"
-# The API keeps reporting stale Ready=True for ~1min after a node goes down —
-# waiting on Ready alone races the reboot (canary lesson, 2026-07-20).
+# The API keeps reporting stale Ready=True for ~1min after a node goes
+# down — waiting on Ready alone races the reboot.
 end=$((SECONDS + READY_TIMEOUT))
 until [ "$(ssh -o ConnectTimeout=4 -o BatchMode=yes "${NODE}" cat /proc/sys/kernel/random/boot_id 2>/dev/null)" != "${BOOT_ID}" ] \
       && ssh -o ConnectTimeout=4 -o BatchMode=yes "${NODE}" true 2>/dev/null; do
@@ -104,8 +103,8 @@ done
 echo "OK: all podNet pods on ${NODE} are on ${CILIUM_POD_CIDR}x"
 
 say "Gate: ingress answers on ${NODE_IP}:443 (kube-proxy LB path, ETP Cluster)"
-# kube-proxy needs a little time after boot to program the LB-IP DNAT rules
-# — a one-shot curl right after Ready false-negatives (pi7 lesson).
+# kube-proxy needs a little time after boot to program the LB-IP DNAT
+# rules — a one-shot curl right after Ready false-negatives.
 end=$((SECONDS + 120))
 until curl -sk -o /dev/null --connect-timeout 5 "https://${NODE_IP}:443/"; do
   [ $SECONDS -ge $end ] && { echo "ERROR: still nothing on ${NODE_IP}:443 after 120s — kube-proxy LB rules missing, DO NOT continue"; exit 1; }

@@ -75,11 +75,11 @@ vso:
   enabled: false
 
 # Optional, dormant CoreDNS replacement for your CNI/distro's bundled one
-# (templates/coredns.yaml in this chart). coredns.enabled defaults to false
-# in the base chart — leave it off unless you've deliberately decided to
-# take DNS ownership (see the homelab instance for a worked example and
-# .local/coredns-ownership-design.md for the reasoning). If/when you do,
-# supply your real node list here:
+# (templates/coredns.yaml in this chart, which explains the full
+# reasoning). coredns.enabled defaults to false in the base chart — leave
+# it off unless you've deliberately decided to take DNS ownership (see the
+# homelab instance for a worked example). If/when you do, supply your real
+# node list here:
 # coredns:
 #   enabled: true
 #   replicas: 2

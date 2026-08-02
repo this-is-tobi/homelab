@@ -46,10 +46,12 @@ spec:
         ohmlab.fr/app-name: '{{ `{{ .app }}` }}'
       # NO resources-finalizer here, deliberately: with it, deleting an
       # Application (UI click, kubectl, generator hiccup) cascades into
-      # deleting the app's live resources — on 2026-07-04 this nearly took
-      # down the production ingress (homelab-apisix stuck terminating,
-      # auto-sync frozen for 19h). Disabling an app in core.yaml now orphans
-      # its resources; clean them up explicitly if that is what you want.
+      # deleting the app's live resources — for an ingress controller or
+      # other shared infra app, that risks taking down production traffic
+      # and leaving the Application itself stuck Terminating, which
+      # freezes auto-sync cluster-wide. Disabling an app in core.yaml now
+      # orphans its resources; clean them up explicitly if that is what
+      # you want.
     spec:
       project: {{ $project | quote }}
       revisionHistoryLimit: 3

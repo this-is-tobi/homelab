@@ -11,7 +11,7 @@ gateway:
 # networkpolicy.yaml) is ingress-only by design — egressDeny stays false so
 # no egress-restricting NetworkPolicy is ever rendered (prometheus
 # legitimately scrapes ~every other namespace). Disabled by default — real
-# rules live in the instance override (.local/post-migration-hardening.md §2).
+# rules live in the instance override.
 networkPolicy:
   enabled: false
   egressDeny: false
@@ -230,11 +230,11 @@ cnpg:
   fullnameOverride: prometheus-stack-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
   extraSpec:
-    # PDB protects against voluntary disruption (drain/descheduler) now
-    # that masters are excluded from scheduling too — accepted tradeoff:
-    # a plain `kubectl drain` on a node hosting one of these instances
-    # now needs --disable-eviction/--force until CNPG relocates it
-    # (2026-07-21, .local/post-migration-hardening.md).
+    # Protects against voluntary disruption (drain/descheduler): with
+    # masters excluded from CNPG scheduling and only 2 instances, losing
+    # one to an eviction would leave a single replica. A drain on the
+    # node hosting a PDB-protected instance needs --disable-eviction/
+    # --force until CNPG relocates it first.
     enablePDB: true
   mode: primary
   dbName: grafana
@@ -244,11 +244,12 @@ cnpg:
     # other cnpg cluster in this repo uses): with empty passwords, CNPG's
     # own Cluster controller races VSO to create prometheus-stack-pg-
     # cluster-app/-admin, and VSO refuses to overwrite a secret it didn't
-    # create (confirmed live: CNPG won, VSO spammed SecretSyncError
-    # forever). existingSecrets tells CNPG to wait for and use the VSO-
-    # created secret instead of racing to generate its own — no chart-
-    # mode `lookup` either, which is documented as unreliable under
-    # ArgoCD's non-live template rendering.
+    # create — whichever one wins, the other errors forever trying to
+    # reconcile a secret it doesn't own. existingSecrets tells CNPG to
+    # wait for and use the VSO-created secret instead of racing to
+    # generate its own — no chart-mode `lookup` either, which is
+    # documented as unreliable under ArgoCD's non-live template
+    # rendering.
     existingSecrets:
       enabled: true
       app:
@@ -260,8 +261,8 @@ cnpg:
   pvcSize:
     data: 3Gi
     wal: 1Gi
-  # Cap WAL retained by replication slots: a lagging/dead replica costs a
-  # re-clone, never the primary's disk (2026-07-20 keycloak outage, F18).
+  # Caps WAL retained by replication slots: a lagging/dead replica costs
+  # a re-clone, not disk pressure on the primary.
   parameters:
     max_slot_wal_keep_size: 512MB
   resources:
@@ -273,8 +274,7 @@ cnpg:
       memory: 512Mi
   affinity:
     topologyKey: kubernetes.io/hostname
-    # Masters run etcd — keep this data-bearing workload off them
-    # entirely (2026-07-21, .local/post-migration-hardening.md).
+    # Masters run etcd — keep data-bearing workloads off them.
     nodeSelector:
       node-type: worker
   # Disabled: the S3 credentials at this Vault path are still empty
@@ -282,10 +282,10 @@ cnpg:
   # For an already-bootstrapped cluster that's harmless, but the
   # barman-cloud plugin's pre-reconcile hook validates the ObjectStore
   # BEFORE allowing initial bootstrap — with empty credentials it blocks
-  # the cluster from ever coming up at all (confirmed live: 6+ minutes,
-  # zero pods, "Pre-reconcile hook stopped the reconciliation loop"/
-  # barman-cloud.cloudnative-pg.io). Re-enable once real S3 credentials
-  # are added to Vault.
+  # the cluster from ever coming up at all ("Pre-reconcile hook stopped
+  # the reconciliation loop" / barman-cloud.cloudnative-pg.io, zero pods
+  # created until fixed). Re-enable once real S3 credentials are added to
+  # Vault.
   backup:
     enabled: false
     legacyMode: false

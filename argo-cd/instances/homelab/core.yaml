@@ -15,9 +15,6 @@ apps:
   releaseName: longhorn-system
   syncWave: 0
 - app: cilium
-  # ROLLING MIGRATION IN PROGRESS (since 2026-07-20): deployed DORMANT — no
-  # datapath change until a node carries the io.cilium.migration label.
-  # Runbook + gates: .local/cilium-migration-plan.md
   enabled: "true"
   namespace: kube-system
   syncWave: 5
@@ -27,19 +24,18 @@ apps:
 - app: ingress-nginx
   enabled: "false"
   syncWave: 10
-# Standing ingress replacement for APISIX — runs alongside it during the
-# per-hostname migration (.local/traefik-migration.md (local notes)). Serves no public
-# traffic until the gateway HAProxy routes SNIs to node:8443.
+# THE ingress controller — Gateway API only, zero Ingress objects in this
+# cluster. apisix below is kept disabled as an escape hatch.
 - app: traefik
   enabled: "true"
   namespace: traefik
   syncWave: 11
 - app: apisix
-  # Decommissioned 2026-07-18 — traefik is the ingress controller. The
-  # catalog app is kept as an escape hatch (like ingress-nginx): re-enabling
-  # deploys a fresh stack, but klipper-lb port ownership (80/443 vs
-  # traefik's) must be resolved first. Application deletion does not
-  # cascade — the namespace was cleaned up manually.
+  # Decommissioned — traefik is the ingress controller. The catalog app is
+  # kept as an escape hatch (like ingress-nginx): re-enabling deploys a
+  # fresh stack, but port 80/443 ownership (traefik's externalIPs Service
+  # currently owns both) must be resolved first. Application deletion
+  # does not cascade — the namespace was cleaned up manually.
   enabled: "false"
   namespace: apisix
   # After vault-operator (10): the admin credentials come from Vault via VSO.

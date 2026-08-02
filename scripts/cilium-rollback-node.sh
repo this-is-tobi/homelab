@@ -5,7 +5,6 @@ set -o pipefail
 
 # Roll ONE node back from Cilium to flannel (rolling migration window ONLY —
 # before the final k3s flag flip; after that, flannel no longer exists).
-# Runbook: .local/cilium-migration-plan.md (F8).
 #
 # Usage: scripts/cilium-rollback-node.sh <node>   (e.g. pi8)
 # SSH:   uses the <node> alias from ~/.ssh/config; sudo prompts for the

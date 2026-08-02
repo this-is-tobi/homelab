@@ -8,9 +8,7 @@ gateway:
   routes: []
 
 # Zero-trust NetworkPolicy for this namespace (templates/networkpolicy.yaml).
-# Disabled by default — real rules live in the instance override, flipped
-# on one namespace at a time during the staged rollout
-# (.local/post-migration-hardening.md §2).
+# Disabled by default — real rules live in the instance override.
 networkPolicy:
   enabled: false
   egressDeny: true
@@ -87,11 +85,11 @@ cnpg:
   fullnameOverride: mattermost-pg-cluster
   imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
   extraSpec:
-    # PDB protects against voluntary disruption (drain/descheduler) now
-    # that instances is 2, not 3, and masters are excluded from scheduling
-    # too — accepted tradeoff: a plain `kubectl drain` on a node hosting
-    # one of these instances now needs --disable-eviction/--force until
-    # CNPG relocates it (2026-07-21, .local/post-migration-hardening.md).
+    # Protects against voluntary disruption (drain/descheduler): with
+    # masters excluded from CNPG scheduling and only 2 instances, losing
+    # one to an eviction would leave a single replica. A drain on the
+    # node hosting a PDB-protected instance needs --disable-eviction/
+    # --force until CNPG relocates it first.
     enablePDB: true
   mode: primary
   dbName: mattermost
@@ -99,16 +97,16 @@ cnpg:
     username: mattermost
     password: ""
     postgresPassword: ""
-  # 3->2 (2026-07-21): masters excluded from CNPG scheduling narrows the
-  # placement pool to 6 workers — 2 replicas + PDB is sufficient HA for
+  # Masters are excluded from CNPG scheduling (they run etcd), narrowing
+  # placement to worker nodes. 2 instances + PDB is sufficient HA for
   # this workload's criticality at homelab scale.
   instances: 2
   enableSuperuserAccess: false
   pvcSize:
     data: 7Gi
     wal: 3Gi
-  # Cap WAL retained by replication slots: a lagging/dead replica costs a
-  # re-clone, never the primary's disk (2026-07-20 keycloak outage, F18).
+  # Caps WAL retained by replication slots: a lagging/dead replica costs
+  # a re-clone, not disk pressure on the primary.
   parameters:
     max_slot_wal_keep_size: 1GB
   resources:
@@ -120,8 +118,7 @@ cnpg:
       memory: 1Gi
   affinity:
     topologyKey: kubernetes.io/hostname
-    # Masters run etcd — keep this data-bearing workload off them
-    # entirely (2026-07-21, .local/post-migration-hardening.md).
+    # Masters run etcd — keep data-bearing workloads off them.
     nodeSelector:
       node-type: worker
   backup:

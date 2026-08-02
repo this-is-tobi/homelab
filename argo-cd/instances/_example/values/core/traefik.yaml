@@ -1,6 +1,5 @@
 # Traefik instance overrides — see argo-cd/apps/traefik/values.yaml for the
-# hardened catalog defaults and .local/traefik-migration.md (local notes) for the
-# APISIX→Traefik migration sequence.
+# hardened catalog defaults.
 #
 # While coexisting with another ingress controller, the Service exposes
 # 8080/8443 (klipper-lb host-port constraint); after decommissioning the old

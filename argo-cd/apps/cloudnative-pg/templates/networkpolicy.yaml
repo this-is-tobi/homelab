@@ -1,5 +1,17 @@
 {{- if .Values.networkPolicy.enabled }}
 ---
+# ⚠ CNI CAVEAT: these are standard NetworkPolicy objects and any compliant
+# CNI enforces them, but the specific rules were designed and verified
+# against Cilium. Three behaviours differ between CNIs and were relied on
+# here: whether kubelet probes are subject to policy at all (they are not,
+# under this setup — so no rule allows them); that egress to the apiserver
+# is matched post-DNAT against the real node IP rather than the Service
+# ClusterIP; and that apiserver->webhook ingress arrives with a pod-CIDR
+# identity rather than the calling node's IP. If you run a different CNI,
+# re-verify those three before trusting this to be neither over-permissive
+# nor accidentally blocking (start with one namespace, watch for dropped
+# flows and failing webhooks/probes).
+#
 # Deny-all baseline. Ingress always denied; egress only when egressDeny is
 # true (prometheus-stack is the one exception in this rollout — it
 # legitimately needs to reach ~every namespace to scrape it, so it sets

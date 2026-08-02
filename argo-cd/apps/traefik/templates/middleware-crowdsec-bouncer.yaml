@@ -1,28 +1,24 @@
 # CrowdSec bouncer middleware — wired to every router via the entrypoint
 # references in values.yaml (ports.web/websecure.http.middlewares).
 #
-# Hard-won wiring rules (three live outages on 2026-07-19 before this
-# design — see git history e7ce/02d4, e37e/aa11, 5a1c/86ce):
+# Two non-obvious wiring rules this design depends on:
 #
 #  1. ENTRYPOINT-level middleware references use a fully qualified,
 #     namespace-PREFIXED name: `traefik-crowdsec-bouncer@kubernetescrd`
 #     (<namespace>-<name>@kubernetescrd, per Traefik's entrypoints
 #     reference docs). This differs from ROUTER-level references, which
 #     resolve a bare `name@kubernetescrd` against the router's own
-#     namespace. The bare form parsed as namespace=crowdsec/name=bouncer —
-#     nonexistent — and 404'd every route (outages #1 and #2; the Kyverno
-#     cross-namespace mirroring built for #2 solved a problem entrypoint
-#     references don't have, and was removed). Confirmed in a disposable
-#     kind cluster against both IngressRoute and Gateway API HTTPRoute.
+#     namespace. The bare form parses as namespace=crowdsec/name=bouncer
+#     — nonexistent — and 404s every route on the entrypoint.
 #
 #  2. The plugin's New() validates the LAPI key at ROUTER BUILD time,
 #     regardless of `enabled: false` (enabled only gates ServeHTTP, see
 #     pkg/configuration ValidateParams upstream). An empty key breaks
-#     every router on the entrypoint (outage #3). The key is therefore
-#     delivered before any wiring: Vault (this app's path, seeded by
-#     vault-operator) -> VSO -> Secret -> file mount -> crowdsecLapiKeyFile
-#     below. Missing Secret = new pods block at ContainerCreating while
-#     old pods keep serving — fail-safe by construction.
+#     every router on the entrypoint. The key is therefore delivered
+#     before any wiring: Vault (this app's path, seeded by vault-operator)
+#     -> VSO -> Secret -> file mount -> crowdsecLapiKeyFile below. Missing
+#     Secret = new pods block at ContainerCreating while old pods keep
+#     serving — fail-safe by construction.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
