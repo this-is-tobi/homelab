@@ -131,6 +131,12 @@ loki:
   deploymentMode: Monolithic
   loki:
     auth_enabled: false
+    # Chart default is 3 (assumes a multi-instance SimpleScalable/
+    # Distributed deployment). With a single Monolithic replica, writes
+    # fail outright ("at least 2 live replicas required, could only find
+    # 1") unless this matches the actual replica count.
+    commonConfig:
+      replication_factor: 1
     storage:
       type: filesystem
     schemaConfig:
