@@ -8,5 +8,11 @@ dependencies:
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:e73547037f6965fde59cd24f0c5c57f1986caabab8f76ef0c4f5b2ee0dd60e0b
-generated: "2026-07-19T15:39:14.335713+02:00"
+- name: loki
+  repository: https://grafana-community.github.io/helm-charts
+  version: 18.7.1
+- name: alloy
+  repository: https://grafana.github.io/helm-charts
+  version: 1.11.0
+digest: sha256:e934c96371f37eae6b3270784f90a04f4b1c9370d5587922b1397ea9f79728e2
+generated: "2026-08-02T14:37:48.732589+02:00"

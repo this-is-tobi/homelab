@@ -1,0 +1,32 @@
+{{- if and (index .Values "loki" "enabled") (index .Values "loki" "singleReplicaStorage" "enabled") }}
+---
+# Dedicated low-replica StorageClass for Loki's chunk/index PVC. Logs are
+# not precious like Postgres/Vault data — skipping the cluster default's
+# 3x replication cuts write I/O significantly on Pi-class storage, at the
+# cost of losing recent (unflushed-to-retention) logs if this one node's
+# volume is lost. Loki's own compactor/retention handles data lifecycle
+# independently of replica count.
+#
+# Independent toggle from loki.enabled: set loki.singleReplicaStorage.enabled
+# to false (and point loki.singleBinary.persistence.storageClass at the
+# cluster default "longhorn" class instead) to trade this perf/IO win for
+# the cluster default's 3x replication resilience.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-single-replica
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+parameters:
+  numberOfReplicas: "1"
+  staleReplicaTimeout: "30"
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "disabled"
+  unmapMarkSnapChainRemoved: "ignored"
+  disableRevisionCounter: "true"
+  dataEngine: "v1"
+  backupTargetName: "default"
+{{- end }}

@@ -1,0 +1,23 @@
+{{- if index .Values "loki" "enabled" }}
+---
+# Auto-discovered by the same grafana sidecar mechanism as
+# grafana-dashboards/ (see templates/dashboards.yaml) — no manual
+# datasource wiring needed in kube-prometheus-stack's own values. Cleanly
+# absent when loki.enabled is false.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-datasource
+  labels:
+    grafana_datasource: "1"
+data:
+  loki-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://{{ .Release.Name }}-loki.{{ .Release.Namespace }}.svc.cluster.local:3100
+      isDefault: false
+      editable: false
+{{- end }}

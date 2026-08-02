@@ -184,6 +184,10 @@ kube-prometheus-stack:
         folderAnnotation: grafana_folder
         provider:
           foldersFromFilesStructure: true
+      # Auto-discovers grafana_datasource: "1"-labeled ConfigMaps (e.g.
+      # templates/loki-datasource.yaml). Harmless when none exist.
+      datasources:
+        enabled: true
     # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
     ingress:
       enabled: false
@@ -450,3 +454,24 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'
+
+# Centralized log aggregation, off by default — enable per-instance.
+# `enabled` gates the Helm dependency itself (condition: loki.enabled in
+# Chart.yaml); real config lives in the instance override.
+loki:
+  enabled: false
+  # Independent toggle: whether to create + use the dedicated
+  # longhorn-single-replica StorageClass (see templates/loki-storageclass.yaml)
+  # instead of the cluster default (3x replicated). Off by default so
+  # enabling loki alone doesn't silently create a new StorageClass.
+  singleReplicaStorage:
+    enabled: false
+
+# Ships logs to Loki via loki.source.kubernetes (apiserver pods/log
+# subresource — same mechanism `kubectl logs` uses), NOT hostPath file
+# tailing. No DaemonSet, no privileged/root access, no dependency on
+# which node a pod lands on. `enabled` gates the Helm dependency itself
+# (condition: alloy.enabled in Chart.yaml); real config lives in the
+# instance override.
+alloy:
+  enabled: false
