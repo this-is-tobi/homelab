@@ -253,13 +253,14 @@ alloy:
         }
     # 256Mi OOM-killed within ~10 minutes at cluster-wide scope (153 pods,
     # ~200+ containers, all held open concurrently by a single replica).
-    # Empirically observed steady-state after the first fix: ~440Mi,
-    # plateaued (not still climbing) — request raised to match reality,
-    # limit given real headroom above the observed plateau rather than
-    # sitting right at it. Watch and adjust further as the cluster grows.
+    # Steady-state took longer to settle than the first re-check caught:
+    # ~440Mi at 2min, climbed further and replateaued at ~680Mi by ~17min
+    # (still discovering/opening streams for infrequently-logging pods).
+    # Sized with real margin above that second plateau, not right at it.
+    # Watch and adjust further as the cluster grows.
     resources:
-      requests: { cpu: 50m, memory: 448Mi }
-      limits: { cpu: 250m, memory: 768Mi }
+      requests: { cpu: 50m, memory: 640Mi }
+      limits: { cpu: 250m, memory: 1Gi }
   configReloader:
     resources:
       requests: { cpu: 10m, memory: 50Mi }
