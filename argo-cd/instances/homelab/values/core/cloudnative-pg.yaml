@@ -13,7 +13,7 @@ cloudnative-pg: {}
 # switchover or once Database/DatabaseRole CRs are used (neither active
 # today).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   extraIngress:
   # 5 validating + 4 mutating webhooks, ALL failurePolicy: Fail. The
