@@ -546,7 +546,7 @@ backup-utils:
 # needs AND the centralized VSO controller's apiserver-watch (both live
 # here).
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 8200 }
