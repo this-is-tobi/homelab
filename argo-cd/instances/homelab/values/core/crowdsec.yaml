@@ -45,7 +45,7 @@ vso:
 # Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
 # the 5 empirically-tested facts this design depends on.
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 6060 }   # lapi + agent, both expose "metrics" on this port
