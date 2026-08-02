@@ -93,3 +93,53 @@ vso:
     clientRustfs:
       mount: homelab
       path: platforms/production/core/keycloak
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. Deliberately NO
+# SSO-hairpin egress rule here: keycloak's --hostname flags only construct
+# URLs RETURNED to browsers (issuer, redirects) — it never dials its own
+# public hostname (hostname-strict=false confirmed, no self-validation
+# call). No federated external IdP, no SMTP, no backchannel-logout on any
+# client — all confirmed via repo grep, zero matches.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 9000 }   # keycloak itself, http-metrics
+  - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter
+  extraIngress:
+  - name: traefik
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: keycloak }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 8080 }
+  - name: cnpg-operator
+    podSelector:
+      matchLabels: { cnpg.io/cluster: keycloak-pg-cluster }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: cloudnative-pg
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: cloudnative-pg }
+      ports:
+      - { protocol: TCP, port: 8000 }
+      - { protocol: TCP, port: 5432 }
+  extraEgress:
+  # CNPG instance pods ONLY — the keycloak app pod itself has
+  # automountServiceAccountToken: false + SA "default" (no RoleBinding),
+  # architecturally incapable of apiserver access even if it wanted to.
+  - name: apiserver
+    podSelector:
+      matchLabels: { cnpg.io/cluster: keycloak-pg-cluster }
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }

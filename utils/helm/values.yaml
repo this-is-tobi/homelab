@@ -34,6 +34,19 @@ gateway:
   # wellKnownCACertificates?}]. Requires Gateway API ≥v1.6 CRDs.
   backendTLSPolicies: []
 
+# Zero-trust NetworkPolicy for the argocd-system namespace (templates/
+# networkpolicy.yaml). EGRESS ONLY — the upstream argo-cd chart already
+# ships ingress NetworkPolicies for every component. Disabled by default —
+# real rules live in the instance override
+# (.local/post-migration-hardening.md §2). This is the CORE ArgoCD instance
+# that syncs every other app in this rollout, including itself.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts: []
+  extraIngress: []
+  extraEgress: []
+
 argo-cd:
   # -- Enable ArgoCD core deployment
   enabled: true

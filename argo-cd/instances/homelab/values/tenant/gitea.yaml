@@ -137,3 +137,58 @@ vso:
     giteaSso:
       mount: homelab
       path: platforms/production/tenant/gitea
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 3000 }   # gitea app /metrics, same port as the UI
+  - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter
+  extraIngress:
+  - name: traefik
+    podSelector:
+      matchLabels: { app.kubernetes.io/instance: gitea, app.kubernetes.io/name: gitea }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 3000 }
+  # gitea-ssh:22 confirmed NOT externally routed (no TCPRoute/TLSRoute
+  # anywhere in the repo, ClusterIP: None) — intra-namespace already covers
+  # any in-cluster use.
+  - name: cnpg-operator
+    podSelector:
+      matchLabels: { cnpg.io/cluster: gitea-pg-cluster }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: cloudnative-pg
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: cloudnative-pg }
+      ports:
+      - { protocol: TCP, port: 8000 }
+      - { protocol: TCP, port: 5432 }
+  extraEgress:
+  - name: apiserver
+    podSelector:
+      matchLabels: { cnpg.io/cluster: gitea-pg-cluster }
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  # OIDC against sso.core.ohmlab.fr — the hairpin goes to the gateway's
+  # public IP (82.66.77.140), NOT a node IP; see the 5-facts note above.
+  - name: sso-hairpin
+    podSelector:
+      matchLabels: { app.kubernetes.io/instance: gitea, app.kubernetes.io/name: gitea }
+    rules:
+    - to:
+      - ipBlock: { cidr: 82.66.77.140/32 }
+      ports:
+      - { protocol: TCP, port: 443 }

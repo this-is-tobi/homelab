@@ -73,3 +73,75 @@ vso:
     scwCreds:
       mount: homelab
       path: platforms/production/core/cert-manager
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. Two webhook-
+# shaped ingress targets: cert-manager-webhook (failurePolicy: Fail) AND
+# cert-manager-scaleway-certmanager-webhook (an aggregated APIService,
+# v1alpha1.acme.scaleway.com — kube-apiserver itself proxies calls to it,
+# same traffic shape/risk as an admission webhook). Both use the
+# corrected pod-CIDR ipBlock.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 9402 }   # namespace-wide: cainjector has no metrics port, harmless no-op
+  extraIngress:
+  - name: webhook
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: webhook }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 443 }
+  - name: scaleway-aggregated-apiservice
+    podSelector:
+      matchLabels: { app: scaleway-certmanager-webhook, release: cert-manager }
+    rules:
+    - from:
+      - ipBlock: { cidr: 10.45.0.0/16 }
+      ports:
+      - { protocol: TCP, port: 443 }
+  extraEgress:
+  - name: apiserver
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  - name: acme
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: cert-manager }
+    rules:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
+      ports:
+      - { protocol: TCP, port: 443 }
+  - name: scaleway-dns-api
+    podSelector:
+      matchLabels: { app: scaleway-certmanager-webhook, release: cert-manager }
+    rules:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
+      ports:
+      - { protocol: TCP, port: 443 }
+  # DNS-01 self-check hostnames (--dns01-recursive-nameservers above)
+  # still resolve via normal CoreDNS first (ClusterFirst dnsPolicy) — this
+  # is IN ADDITION to the standard DNS-egress rule, not a replacement.
+  # Pinned to Scaleway's own product-critical anycast nameserver IPs
+  # rather than a broad world:53 allow.
+  - name: dns01-selfcheck
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: cert-manager }
+    rules:
+    - to:
+      - ipBlock: { cidr: 195.154.228.249/32 }  # ns0.dom.scw.cloud
+      - ipBlock: { cidr: 51.158.229.3/32 }     # ns1.dom.scw.cloud
+      ports:
+      - { protocol: UDP, port: 53 }
+      - { protocol: TCP, port: 53 }

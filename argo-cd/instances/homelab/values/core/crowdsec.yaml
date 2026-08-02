@@ -41,3 +41,56 @@ vso:
     crowdsecTraefikBouncerKey:
       mount: homelab
       path: platforms/production/core/crowdsec
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 6060 }   # lapi + agent, both expose "metrics" on this port
+  - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter
+  extraIngress:
+  - name: traefik-bouncer
+    podSelector:
+      matchLabels: { app.kubernetes.io/component: lapi }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 8080 }
+  - name: cnpg-operator
+    podSelector:
+      matchLabels: { cnpg.io/cluster: crowdsec-pg-cluster }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: cloudnative-pg
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: cloudnative-pg }
+      ports:
+      - { protocol: TCP, port: 8000 }
+      - { protocol: TCP, port: 5432 }
+  extraEgress:
+  - name: apiserver
+    podSelector:
+      matchLabels: { cnpg.io/cluster: crowdsec-pg-cluster }
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  # CrowdSec's core function: CAPI decision-sync, PAPI push, Console
+  # enroll, Hub collection-catalog updates. Cannot pin a specific host
+  # (CrowdSec's own SaaS endpoints, no FQDN support in standard NetworkPolicy).
+  - name: world
+    rules:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
+      ports:
+      - { protocol: TCP, port: 443 }

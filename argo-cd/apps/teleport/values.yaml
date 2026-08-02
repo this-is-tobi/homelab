@@ -7,6 +7,17 @@ gateway:
   extraParentRefs: []
   tlsRoutes: []
 
+# Zero-trust NetworkPolicy for this namespace (templates/networkpolicy.yaml).
+# Disabled by default — real rules live in the instance override, flipped
+# on one namespace at a time during the staged rollout
+# (.local/post-migration-hardening.md §2).
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts: []
+  extraIngress: []
+  extraEgress: []
+
 server:
   enabled: true
   # Applied to both auth and proxy pods (and their init containers).

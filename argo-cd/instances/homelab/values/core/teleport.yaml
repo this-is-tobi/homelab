@@ -29,3 +29,45 @@ users:
   qit:
     roles:
     - admin
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. No SSO (local auth
+# only, no connector config). No prometheus scrape (no SM/PM exists).
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts: []
+  extraIngress:
+  # TLS PASSTHROUGH (traefik terminates nothing) — genuine pod-to-pod flow
+  # from traefik's own pod identity, not a node hairpin. Port is the
+  # CONTAINER port (3080, "tls"), not the Service's front-facing 443 — the
+  # Service targetPort maps 443->3080 and NetworkPolicy matches the pod-
+  # level connection, not the Service port.
+  - name: traefik
+    podSelector:
+      matchLabels: { app.kubernetes.io/component: proxy, app.kubernetes.io/instance: teleport, app.kubernetes.io/name: server }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 3080 }
+  extraEgress:
+  # auth: impersonates users/groups/serviceaccounts (Kubernetes Access) +
+  # TokenReview (system:auth-delegator) for join-token validation.
+  # operator: client-go reconcile loop against ~28 teleport.dev CRD kinds.
+  # proxy EXCLUDED — live-confirmed zero RBAC bindings for its SA.
+  - name: apiserver
+    podSelector:
+      matchExpressions:
+      - { key: app.kubernetes.io/component, operator: In, values: [auth, operator] }
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  # Deliberately NOT included: Teleport's own best-effort Cloud usage-
+  # reporting beacon — no repo toggle exists to disable it; blocking by
+  # default matches a reasonable homelab privacy posture, self-hosted auth
+  # is documented as not degrading if this specific call fails.

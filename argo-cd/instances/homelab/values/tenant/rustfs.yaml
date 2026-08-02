@@ -60,3 +60,26 @@ vso:
     rustfsOidc:
       mount: homelab
       path: platforms/production/tenant/rustfs
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. No apiserver/SSO/
+# CNPG egress — standalone S3 storage, no database, no auth integration of
+# its own (the RUSTFS_IDENTITY_OPENID_* config is app-internal, not a
+# reason for pod egress since apiIngress.enabled is false and nothing else
+# reads it — confirmed dead config, see the gitea/rustfs investigation
+# notes). Backups not wired yet (§4 backup gap).
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts: []
+  extraIngress:
+  - name: traefik
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 9000 }
+      - { protocol: TCP, port: 9001 }
+  extraEgress: []

@@ -538,3 +538,41 @@ vso:
 
 backup-utils:
   enabled: false  # S3 keys not configured yet — re-enable when available
+
+# Zero-trust NetworkPolicy. See .local/post-migration-hardening.md §2 for
+# the 5 empirically-tested facts this design depends on. No probe-only
+# ingress rule (dropped — full cluster-wide webhook scan confirmed zero
+# webhook configs target this namespace). Covers BOTH Vault's own raft/API
+# needs AND the centralized VSO controller's apiserver-watch (both live
+# here).
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 8200 }
+  extraIngress:
+  - name: traefik
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: traefik
+      ports:
+      - { protocol: TCP, port: 8200 }
+  extraEgress:
+  - name: apiserver
+    rules:
+    - to:
+      - ipBlock: { cidr: 192.168.1.0/24 }
+      ports:
+      - { protocol: TCP, port: 6443 }
+  # Vault's OIDC auth (oidcEnabled: true above, live+active per the comment
+  # at the top of this file — the NAT hairpin to sso.core.ohmlab.fr is
+  # confirmed real and previously caused an outage when it didn't work).
+  # Hairpin goes to the gateway's public IP, not a node IP; https only.
+  - name: sso-hairpin
+    rules:
+    - to:
+      - ipBlock: { cidr: 82.66.77.140/32 }
+      ports:
+      - { protocol: TCP, port: 443 }
