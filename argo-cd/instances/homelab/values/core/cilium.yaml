@@ -1,14 +1,15 @@
 # Cilium's OWN GatewayClass/Gateway stays OFF permanently — Traefik owns
-# the Gateway API on this cluster (.local/ingress-controller-analysis.md;
-# plan doc F5/F6/F7). Not to be confused with `gateway` below.
+# the Gateway API on this cluster. Not to be confused with `gateway`
+# below.
 ciliumGateway:
   enabled: false
 
 # Hubble UI HTTPRoute, attached to the traefik gateway. oauth2-proxy is
-# the real gate now (2026-07-21) — the lan-only ipAllowList Middleware was
-# found bypassed (verified reachable from a genuinely external IP, HTTP
-# 200, no auth at all) and stays attached only as defense-in-depth until
-# that's root-caused; do not rely on it alone.
+# the real gate — the lan-only ipAllowList Middleware is currently
+# bypassed: traefik's Service runs externalTrafficPolicy: Cluster, which
+# SNATs every connection to a pod IP before the source-IP check ever sees
+# a real client address, so the allowlist matches everything. It stays
+# attached only as defense-in-depth; do not rely on it alone.
 gateway:
   enabled: true
   gatewayName: homelab-gateway-traefik
@@ -28,14 +29,21 @@ gateway:
           kind: Middleware
           name: lan-only
 
+# Must stay in sync with the traefik and longhorn apps' own lanOnly values
+# (each namespace renders its own copy of this Middleware).
+lanOnly:
+  sourceRange:
+  - 192.168.1.0/24
+  - 10.45.0.0/16 # cilium pod CIDR
+
 # Turn on the Hubble UI backend for the oauth2-proxy upstream below (off by
 # default in the chart — nothing rendered it before this).
 cilium:
   hubble:
     ui:
       enabled: true
-  # NetworkPolicy zero-trust prereq (.local/post-migration-hardening.md §2):
-  # let CIDR selectors match node-originated traffic, so an `ipBlock
+  # NetworkPolicy zero-trust prereq: lets CIDR selectors match
+  # node-originated traffic, so an `ipBlock
   # 192.168.1.0/24` rule matches the k3s apiserver/kubelet host + remote-node
   # identities (needed for webhook/probe allow rules under default-deny).
   # cilium-config key `policy-cidr-match-mode`; START-TIME only → requires a
@@ -62,8 +70,6 @@ sso:
       cookie_secure = true
       cookie_domains = [ "hubble.int.ohmlab.fr" ]
 
-# Migration overlay removed 2026-07-20 (rolling flannel→cilium migration
-# complete: all 9 nodes flipped, flannel + kube-router retired). Catalog
-# defaults now apply: customConf=false, exclusive=true, policy enforcement
+# No migration overlay: Cilium is the sole, fully-rolled-out CNI. Catalog
+# defaults apply: customConf=false, exclusive=true, policy enforcement
 # default, unmanagedPodWatcher.restart=true, migration.enabled=false.
-# History: .local/cilium-migration-plan.md
