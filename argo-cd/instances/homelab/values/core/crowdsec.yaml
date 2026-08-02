@@ -50,10 +50,15 @@ networkPolicy:
   prometheusScrapePorts:
   - { protocol: TCP, port: 6060 }   # lapi + agent, both expose "metrics" on this port
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter
+  # This chart does NOT use app.kubernetes.io/* labels — it labels pods
+  # k8s-app=crowdsec + type={lapi,agent}. Confirmed live via `kubectl get
+  # pod --show-labels` (2026-08-02) after the app.kubernetes.io/component
+  # selector below matched zero pods and silently dropped all Traefik
+  # bouncer→LAPI traffic on first rollout.
   extraIngress:
   - name: traefik-bouncer
     podSelector:
-      matchLabels: { app.kubernetes.io/component: lapi }
+      matchLabels: { k8s-app: crowdsec, type: lapi }
     rules:
     - from:
       - namespaceSelector:
