@@ -16,7 +16,7 @@ kyverno: {}
 # worked when a pod happened to land on the same node as the apiserver
 # instance handling a given call.
 networkPolicy:
-  enabled: false
+  enabled: true
   egressDeny: true
   extraIngress:
   # background-controller and reports-controller are DELIBERATELY
