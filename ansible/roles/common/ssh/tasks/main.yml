@@ -96,5 +96,5 @@
   loop_control:
     label: "{{ item.username }}"
   when: >-
-    (item.sshPubKey | trim | regex_replace('^\\S+\\s+(\\S+).*$', '\\1'))
-    != (lookup('file', common_ssh_resolved_pub_key) | trim | regex_replace('^\\S+\\s+(\\S+).*$', '\\1'))
+    (item.sshPubKey | trim | regex_replace('^\S+\s+(\S+).*$', '\1'))
+    != (lookup('file', common_ssh_resolved_pub_key) | trim | regex_replace('^\S+\s+(\S+).*$', '\1'))
