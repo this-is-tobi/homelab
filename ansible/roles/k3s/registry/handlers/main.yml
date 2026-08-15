@@ -1,0 +1,18 @@
+---
+# registries.yaml is only read at k3s startup. On a fresh install the unit
+# does not exist yet (this role runs in the prereq play, before deploy) —
+# k3s will pick the file up on first start, so the restart is skipped.
+- name: Check for k3s unit
+  listen: Restart k3s for registry change
+  ansible.builtin.stat:
+    path: "{{ k3sSystemdDir | default('/etc/systemd/system') }}/k3s.service"
+  register: registry_k3s_unit
+
+- name: Restart k3s to apply registry configuration
+  listen: Restart k3s for registry change
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+  when: registry_k3s_unit.stat.exists
+  # The prereq play is not serial — never bounce every node at once.
+  throttle: 1

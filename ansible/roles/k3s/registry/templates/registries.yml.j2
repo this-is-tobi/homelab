@@ -3,10 +3,11 @@ mirrors:
     endpoint:
       - "https://{{ harbor.domain }}"
 configs:
-  "https://{{ harbor.domain }}":
+  # k3s keys `configs` by registry host[:port] — NOT by URL.
+  "{{ harbor.domain }}":
     auth:
-      username: {{ harbor.username }}
-      password: {{ harbor.password }}
+      username: {{ harbor.username | to_json }}
+      password: {{ harbor.password | to_json }}
 #    tls:
 #      cert_file: # path to the cert file used in the registry
 #      key_file:  # path to the key file used in the registry
