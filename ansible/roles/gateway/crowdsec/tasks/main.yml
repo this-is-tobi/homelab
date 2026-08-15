@@ -8,14 +8,21 @@
         project_src: /services/crowdsec
         files:
           - docker-compose.yml
-      ignore_errors: true
+      # Expected to fail when the service was never deployed (no compose
+      # project / docker absent) — teardown must stay idempotent.
+      failed_when: false
 
+    # Tolerate ONLY "service not found" (bouncer never installed) — any
+    # other failure must surface.
     - name: Stop firewall bouncer service
       ansible.builtin.systemd:
         name: crowdsec-firewall-bouncer
         state: stopped
         enabled: false
-      ignore_errors: true
+      register: gateway_crowdsec_bouncer_stop
+      failed_when:
+        - gateway_crowdsec_bouncer_stop.failed | default(false)
+        - "'Could not find the requested service' not in (gateway_crowdsec_bouncer_stop.msg | default(''))"
 
     - name: Remove crowdsec service dir
       ansible.builtin.file:

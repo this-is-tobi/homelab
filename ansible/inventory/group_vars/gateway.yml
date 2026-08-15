@@ -2,7 +2,13 @@
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
   version: alpine3.22
-  extraKubeAllowedIps: ""
+  # LAN CIDR allowed to reach the kube-apiserver (:6443) and the HAProxy
+  # stats page. Defaults to the gateway's /24 when empty.
+  lanCidr: ""
+  # The LAN allowlist used to be derived as a /16 (every 192.168.* subnet);
+  # it is now the gateway's /24. Keep kube-API access for the operator subnet
+  # that was already trusted for the stats page below.
+  extraKubeAllowedIps: 192.168.27.64/27
   allowedIps: 192.168.27.64/27
   statsPassword: "{{ vault_haproxy_stats_password | default('') }}"
   # Traefik is the sole ingress controller: all 80/443 traffic goes to the
