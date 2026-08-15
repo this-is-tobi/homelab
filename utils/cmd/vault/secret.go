@@ -45,18 +45,18 @@ Config format (JSON array):
 }
 
 var (
-	vaultAddr        string
-	vaultCACert      string
-	vaultSkipTLS     bool
-	vaultAuthMethod  string
-	vaultAuthMount   string
-	vaultRole        string
-	vaultToken       string
-	vaultRoleID      string
-	vaultSecretID    string
-	initConfigFile   string
-	initDryRun       bool
-	initForceRotate  bool
+	vaultAddr       string
+	vaultCACert     string
+	vaultSkipTLS    bool
+	vaultAuthMethod string
+	vaultAuthMount  string
+	vaultRole       string
+	vaultToken      string
+	vaultRoleID     string
+	vaultSecretID   string
+	initConfigFile  string
+	initDryRun      bool
+	initForceRotate bool
 )
 
 func init() {

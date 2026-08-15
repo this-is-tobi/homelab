@@ -89,8 +89,8 @@ func runIdentity(cmd *cobra.Command, args []string) error {
 	slog.Debug("identity config file read", "size_bytes", len(configData))
 
 	var config struct {
-		Groups       []Group       `json:"groups"`
-		GroupAliases []GroupAlias  `json:"groupAliases"`
+		Groups       []Group      `json:"groups"`
+		GroupAliases []GroupAlias `json:"groupAliases"`
 	}
 	if err := json.Unmarshal(configData, &config); err != nil {
 		slog.Error("failed to parse identity config", "error", err)
@@ -149,10 +149,10 @@ func runIdentity(cmd *cobra.Command, args []string) error {
 	// Authenticate
 	slog.Debug("authenticating to vault", "method", vaultAuthMethod, "mount", vaultAuthMount, "role", vaultRole)
 	authParams := map[string]string{
-		"role":       vaultRole,
-		"token":      vaultToken,
-		"role_id":    vaultRoleID,
-		"secret_id":  vaultSecretID,
+		"role":      vaultRole,
+		"token":     vaultToken,
+		"role_id":   vaultRoleID,
+		"secret_id": vaultSecretID,
 	}
 	if err := client.Authenticate(vaultclient.AuthMethod(vaultAuthMethod), vaultAuthMount, authParams); err != nil {
 		slog.Error("authentication failed", "method", vaultAuthMethod, "mount", vaultAuthMount, "error", err)
@@ -228,14 +228,14 @@ func runIdentity(cmd *cobra.Command, args []string) error {
 // Group represents an identity group configuration.
 type Group struct {
 	Name     string   `json:"name"`
-	Type     string   `json:"type"`     // "internal" (default) or "external" (required for group-aliases)
+	Type     string   `json:"type"` // "internal" (default) or "external" (required for group-aliases)
 	Policies []string `json:"policies"`
 }
 
 // GroupAlias represents a group-alias configuration that maps external identities
 // (e.g., OIDC group claims) to internal Vault groups.
 type GroupAlias struct {
-	Name           string `json:"name"`
-	Group          string `json:"group"`
-	MountAccessor  string `json:"mountAccessor"`
+	Name          string `json:"name"`
+	Group         string `json:"group"`
+	MountAccessor string `json:"mountAccessor"`
 }
