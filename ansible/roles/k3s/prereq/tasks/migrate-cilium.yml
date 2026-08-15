@@ -43,11 +43,12 @@
         conf_dir = "{{ k3sDataDir | default('/var/lib/rancher/k3s') }}/agent/etc/cni/net.d"
     mode: "0644"
 
+# No error tolerance: a k3s that cannot be stopped mid-migration is a
+# hard stop condition, not something to plough through.
 - name: Stop K3s service
   ansible.builtin.systemd:
     name: k3s
     state: stopped
-  ignore_errors: true
 
 - name: Remove flannel interfaces and residue (Cilium assets untouched)
   ansible.builtin.shell: |
@@ -60,7 +61,6 @@
     rm -f /etc/cni/net.d/05-cilium.conflist 2>/dev/null || true
     rm -f /opt/cni/bin/cilium-cni 2>/dev/null || true
   changed_when: false
-  ignore_errors: true
 
 - name: Remove kube-router netpol chains (targeted, never a full flush)
   # k3s docs method — preserves Cilium masquerade + kube-proxy service rules.

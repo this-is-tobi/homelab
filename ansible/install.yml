@@ -86,6 +86,8 @@
       tags: [k3s-prereq]
     - role: k3s/download
       tags: [k3s-download]
+    - role: k3s/registry
+      tags: [k3s-registry]
     - role: k3s/storage
       tags: [k3s-storage]
   tags:
@@ -150,6 +152,9 @@
   vars_files:
     - ./inventory/group_vars/vault.yml
     - ./inventory/group_vars/all.yml
+    # localhost is not in the k3s group: load its group_vars explicitly for
+    # k3sApiServerEndpoint / k3sCaData used by the kubeconfig template.
+    - ./inventory/group_vars/k3s.yml
   roles:
     - role: k3s/users
   tags:
@@ -158,6 +163,9 @@
     - k3s-users
 
 # K3S - Destroy
+# `never` is load-bearing: without it, `--tags all` (run.sh's default) would
+# run this play right after the deploy plays and wipe the cluster it just
+# built. Destroy must always be requested explicitly with `-t k3s-destroy`.
 - name: Destroy K3S Cluster
   hosts: k3s
   become: true
@@ -169,6 +177,7 @@
     - role: k3s/destroy
   tags:
     - k3s-destroy
+    - never
 
 # K3S - Cilium watchdog (arm the dead-man switch fleet-wide BEFORE the first
 # canary node — safe anytime, does not touch k3s or CNI state)
