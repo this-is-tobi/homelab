@@ -22,11 +22,11 @@ var AdminPermissions = []string{
 
 // Config holds SonarQube configuration parameters.
 type Config struct {
-	Domain     string
-	Username   string
-	Password   string
-	MaxRetries int
-	RetryDelay time.Duration
+	Domain      string
+	Username    string
+	Password    string
+	MaxRetries  int
+	RetryDelay  time.Duration
 	HTTPTimeout time.Duration
 }
 

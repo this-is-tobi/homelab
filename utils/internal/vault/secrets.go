@@ -21,18 +21,18 @@ type InitConfig struct {
 
 // InitOptions controls the behavior of the init process.
 type InitOptions struct {
-	DryRun       bool // Print what would be written without writing
-	ForceRotate  bool // Overwrite existing values instead of preserving them
-	ConfigFile   string
-	VaultMount   string // KV mount extracted from path (first segment)
+	DryRun      bool // Print what would be written without writing
+	ForceRotate bool // Overwrite existing values instead of preserving them
+	ConfigFile  string
+	VaultMount  string // KV mount extracted from path (first segment)
 }
 
 // InitResult holds the result of processing a single secret entry.
 type InitResult struct {
-	Path    string
-	Action  string // "created", "updated", "unchanged", "skipped" (dry-run)
-	Added   int    // number of new keys added
-	Error   error
+	Path   string
+	Action string // "created", "updated", "unchanged", "skipped" (dry-run)
+	Added  int    // number of new keys added
+	Error  error
 }
 
 // RunInit processes all secret entries: generate values, merge, write.

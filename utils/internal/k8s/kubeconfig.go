@@ -142,7 +142,7 @@ func NewKubeconfigClient(path string) (*Client, error) {
 		host:  server,
 		token: token,
 		client: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout:   30 * time.Second,
 			Transport: &http.Transport{TLSClientConfig: tlsCfg},
 		},
 	}, nil
