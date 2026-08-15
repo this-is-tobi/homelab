@@ -8,7 +8,14 @@ ansible_python_interpreter: /usr/bin/python3
 rootDomain: example.domain.com
 localRootDomain: example.domain.local
 # Admin users
+# role defaults to namespace-admin (a personal namespace with full rights
+# inside it, nothing cluster-wide). Grant cluster-admin EXPLICITLY — it is
+# never implied. `state: absent` removes SSH access and all RBAC; the issued
+# client certificate still authenticates until it expires (no CRL in
+# Kubernetes), the bindings are what actually revoke authorization.
 adminUsers: []
 # - username: ""
 #   sshPubKey: ""
 #   state: present # absent
+#   role: namespace-admin # cluster-admin | namespace-admin | view
+#   sudo: false # passwordless sudo on the hosts (default: false)

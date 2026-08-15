@@ -20,9 +20,81 @@
     state: present
     key: "{{ lookup('file', common_ssh_resolved_pub_key) }}"
 
-- name: Add admin users ssh keys in authorized_keys
+# ---------------------------------------------------------------------------
+# Admin users get their OWN account (attributable logins, real offboarding)
+# instead of sharing the ansible_user account. Optional per-user fields:
+#   state: present | absent   (absent deletes the account, home is kept)
+#   sudo: true                (passwordless sudo via /etc/sudoers.d)
+# ---------------------------------------------------------------------------
+- name: Assert admin usernames do not collide with the ansible user
+  ansible.builtin.assert:
+    that:
+      - item.username != ansible_user
+    fail_msg: "adminUsers[].username must not be the ansible_user account ('{{ ansible_user }}')"
+    quiet: true
+  loop: "{{ adminUsers }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Manage admin user accounts
+  ansible.builtin.user:
+    name: "{{ item.username }}"
+    state: "{{ item.state | default('present') }}"
+    shell: /bin/bash
+    create_home: true
+  loop: "{{ adminUsers }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Add admin users ssh keys in their own authorized_keys
   ansible.posix.authorized_key:
-    user: "{{ ansible_user }}"
-    state: "{{ item.state }}"
+    user: "{{ item.username }}"
+    state: present
     key: "{{ item.sshPubKey }}"
   loop: "{{ adminUsers }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: item.state | default('present') == 'present'
+
+# sudo silently ignores sudoers.d files whose name contains a "." or "~" —
+# sanitise the username in the file name (j.doe -> j_doe).
+- name: Manage admin sudo access
+  ansible.builtin.copy:
+    content: "{{ item.username }} ALL=(ALL) NOPASSWD:ALL\n"
+    dest: /etc/sudoers.d/90-{{ item.username | regex_replace('[^A-Za-z0-9_-]', '_') }}
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s
+  loop: "{{ adminUsers }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: (item.state | default('present') == 'present') and (item.sudo | default(false))
+
+- name: Remove admin sudo access
+  ansible.builtin.file:
+    path: /etc/sudoers.d/90-{{ item.username | regex_replace('[^A-Za-z0-9_-]', '_') }}
+    state: absent
+  loop: "{{ adminUsers }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: (item.state | default('present') == 'absent') or (not (item.sudo | default(false)))
+
+# Migration from the previous model, where admin keys were appended to the
+# shared ansible_user account: make sure they are gone from there.
+# GUARD: never touch the super admin key itself — if an adminUser entry
+# carries the same public key as the operator (self-listing), removing it
+# here would strip the key installed above and lock Ansible out. Compared on
+# the key BLOB (2nd field): authorized_key matches on the blob, so a
+# different comment would otherwise bypass the guard.
+- name: Remove admin user keys from the shared account
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user }}"
+    state: absent
+    key: "{{ item.sshPubKey }}"
+  loop: "{{ adminUsers }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: >-
+    (item.sshPubKey | trim | regex_replace('^\\S+\\s+(\\S+).*$', '\\1'))
+    != (lookup('file', common_ssh_resolved_pub_key) | trim | regex_replace('^\\S+\\s+(\\S+).*$', '\\1'))

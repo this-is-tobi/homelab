@@ -1,3 +1,15 @@
 ---
 # k3s/users defaults
+#
+# adminUsers entries (see tasks/users.yml for full semantics):
+#   - username: alice
+#     sshPubKey: "ssh-ed25519 ..."   # consumed by common/ssh
+#     state: present                 # present | absent (absent removes RBAC
+#                                    # + CSR; the issued cert still
+#                                    # authenticates until expiry — bindings
+#                                    # are the revocation)
+#     role: namespace-admin          # cluster-admin | namespace-admin | view
 adminUsers: []
+
+# Name used for the cluster/context in the generated kubeconfigs.
+users_cluster_name: homelab

@@ -1,70 +1,249 @@
 ---
-- name: Create cert directory
-  delegate_to: localhost
-  ansible.builtin.file:
-    path: /tmp/homelab/{{ item.username }}/.crt
-    state: directory
-    mode: "0755"
+# Per-user management. Supported fields on each adminUsers entry:
+#   username  (required)
+#   sshPubKey (used by common/ssh, not here)
+#   state     present | absent           (default: present)
+#   role      cluster-admin | namespace-admin | view   (default: namespace-admin)
+#
+# Tiers:
+#   cluster-admin   — ClusterRoleBinding to the built-in cluster-admin role.
+#   namespace-admin — a personal namespace `<username>` with full rights
+#                     inside it, nothing cluster-wide (rbac.yml.j2).
+#   view            — read-only, cluster-wide (built-in `view` ClusterRole).
+#
+# `state: absent` deletes the CSR, all bindings and the local credential
+# files. Kubernetes client certificates CANNOT be revoked (no CRL), so the
+# issued certificate keeps AUTHENTICATING until it expires — removing the
+# bindings is what actually removes AUTHORIZATION. The personal namespace is
+# deliberately left in place (it may hold workloads/data); delete it
+# manually if that is what you want.
 
-- name: Generate an OpenSSL private key
-  delegate_to: localhost
-  community.crypto.openssl_privatekey:
-    path: /tmp/homelab/{{ item.username }}/.crt/kube.key
-    size: 2048
+- name: Set user facts
+  ansible.builtin.set_fact:
+    users_state: "{{ item.state | default('present') }}"
+    users_role: "{{ item.role | default('namespace-admin') }}"
+    users_home: "/tmp/homelab/{{ item.username }}"
 
-- name: Generate an OpenSSL Certificate Signing Request
-  delegate_to: localhost
-  community.crypto.openssl_csr:
-    path: /tmp/homelab/{{ item.username }}/.crt/kube.csr
-    privatekey_path: /tmp/homelab/{{ item.username }}/.crt/kube.key
-    common_name: "{{ item.username }}"
+- name: Assert user role is valid
+  ansible.builtin.assert:
+    that:
+      - users_role in ['cluster-admin', 'namespace-admin', 'view']
+    fail_msg: "adminUsers[].role must be cluster-admin, namespace-admin or view (got '{{ users_role }}')"
+    quiet: true
 
-- name: Create k8s CertificateRequest
+# =============================================================================
+# Offboarding
+# =============================================================================
+- name: Revoke user access
+  when: users_state == 'absent'
   delegate_to: localhost
-  kubernetes.core.k8s:
-    state: present
-    template: certificate-signing-request.yml.j2
+  block:
+    - name: Delete user CertificateSigningRequest
+      kubernetes.core.k8s:
+        state: absent
+        api_version: certificates.k8s.io/v1
+        kind: CertificateSigningRequest
+        name: user-request-{{ item.username }}
 
-- name: Approve k8s CertificateRequest
-  delegate_to: localhost
-  ansible.builtin.command: kubectl certificate approve user-request-{{ item.username }}
-  changed_when: true
+    - name: Delete user ClusterRoleBindings
+      kubernetes.core.k8s:
+        state: absent
+        api_version: rbac.authorization.k8s.io/v1
+        kind: ClusterRoleBinding
+        name: "{{ users_crb_name }}"
+      loop:
+        - "{{ item.username }}"
+        - "{{ item.username }}-view"
+      loop_control:
+        loop_var: users_crb_name
 
-- name: Deploy rbac
-  delegate_to: localhost
-  kubernetes.core.k8s:
-    state: present
-    template: rbac-admin.yml.j2
+    - name: Delete user namespaced RBAC
+      kubernetes.core.k8s:
+        state: absent
+        api_version: rbac.authorization.k8s.io/v1
+        kind: "{{ users_rbac_kind }}"
+        name: "{{ item.username }}"
+        namespace: "{{ item.username }}"
+      loop:
+        - RoleBinding
+        - Role
+      loop_control:
+        loop_var: users_rbac_kind
 
-- name: Find user certificate
-  delegate_to: localhost
-  kubernetes.core.k8s_info:
-    kind: CertificateSigningRequest
-    name: user-request-{{ item.username }}
-  register: k3s_admin_user_certificate
+    - name: Remove local credential files
+      become: true
+      ansible.builtin.file:
+        path: "{{ users_home }}"
+        state: absent
 
-- name: Fetch user certificate
-  delegate_to: localhost
-  ansible.builtin.copy:
-    content: "{{ k3s_admin_user_certificate.resources[0].status.certificate | b64decode }}"
-    dest: /tmp/homelab/{{ item.username }}/.crt/kube.crt
-    mode: "0644"
+# =============================================================================
+# Onboarding / renewal
+# =============================================================================
+- name: Provision user access
+  when: users_state != 'absent'
+  block:
+    # --- Certificate lifecycle -------------------------------------------
+    # The CSR object is immutable once created, so "re-running the role"
+    # cannot rotate an expiring certificate through `state: present` alone.
+    # Instead: inspect the locally fetched certificate and only when it is
+    # missing or inside the renewal window, delete + recreate the CSR.
+    - name: Check for existing user certificate
+      delegate_to: localhost
+      ansible.builtin.stat:
+        path: "{{ users_home }}/.crt/kube.crt"
+      register: users_cert_stat
 
-- name: Create kube directory
-  delegate_to: localhost
-  ansible.builtin.file:
-    path: /tmp/homelab/{{ item.username }}/.kube
-    state: directory
-    owner: "{{ item.username }}"
-    group: "{{ item.username }}"
-    mode: "0755"
-  become: true
+    # The key is checked too: a cert without its key (partial state) would
+    # otherwise skip renewal and render a broken — or worse, mismatched —
+    # kubeconfig below.
+    - name: Check for existing user private key
+      delegate_to: localhost
+      ansible.builtin.stat:
+        path: "{{ users_home }}/.crt/kube.key"
+      register: users_key_stat
 
-- name: Create kubeconfig
-  delegate_to: localhost
-  ansible.builtin.template:
-    src: kubeconfig.yml.j2
-    dest: /tmp/homelab/{{ item.username }}/.kube/config
-    owner: "{{ item.username }}"
-    group: "{{ item.username }}"
-    mode: "0644"
+    - name: Inspect existing user certificate
+      delegate_to: localhost
+      community.crypto.x509_certificate_info:
+        path: "{{ users_home }}/.crt/kube.crt"
+        valid_at:
+          renewal_window: "+30d"
+      register: users_cert_info
+      when: users_cert_stat.stat.exists
+
+    - name: Decide whether the certificate must be (re)issued
+      ansible.builtin.set_fact:
+        users_cert_renew: >-
+          {{ (not users_cert_stat.stat.exists)
+             or (not users_key_stat.stat.exists)
+             or (not (users_cert_info.valid_at.renewal_window | default(false))) }}
+
+    - name: Issue user certificate
+      when: users_cert_renew
+      block:
+        - name: Create cert directory
+          delegate_to: localhost
+          ansible.builtin.file:
+            path: "{{ users_home }}/.crt"
+            state: directory
+            mode: "0700"
+
+        - name: Generate an OpenSSL private key
+          delegate_to: localhost
+          community.crypto.openssl_privatekey:
+            path: "{{ users_home }}/.crt/kube.key"
+            size: 4096
+            mode: "0600"
+
+        - name: Generate an OpenSSL Certificate Signing Request
+          delegate_to: localhost
+          community.crypto.openssl_csr:
+            path: "{{ users_home }}/.crt/kube.csr"
+            privatekey_path: "{{ users_home }}/.crt/kube.key"
+            common_name: "{{ item.username }}"
+
+        - name: Delete previous k8s CertificateSigningRequest
+          delegate_to: localhost
+          kubernetes.core.k8s:
+            state: absent
+            api_version: certificates.k8s.io/v1
+            kind: CertificateSigningRequest
+            name: user-request-{{ item.username }}
+            wait: true
+
+        - name: Create k8s CertificateSigningRequest
+          delegate_to: localhost
+          kubernetes.core.k8s:
+            state: present
+            template: certificate-signing-request.yml.j2
+
+        - name: Approve k8s CertificateSigningRequest
+          delegate_to: localhost
+          ansible.builtin.command: kubectl certificate approve user-request-{{ item.username }}
+          # kubectl reads KUBECONFIG, not the kubernetes.core K8S_AUTH_* env —
+          # target the same cluster the k8s modules above talk to.
+          environment:
+            KUBECONFIG: "{{ K8S_AUTH_KUBECONFIG }}"
+          changed_when: true
+
+        - name: Wait for the certificate to be issued
+          delegate_to: localhost
+          kubernetes.core.k8s_info:
+            api_version: certificates.k8s.io/v1
+            kind: CertificateSigningRequest
+            name: user-request-{{ item.username }}
+          register: users_csr
+          until: users_csr.resources[0].status.certificate | default('') | length > 0
+          retries: 10
+          delay: 3
+
+        - name: Fetch user certificate
+          delegate_to: localhost
+          ansible.builtin.copy:
+            content: "{{ users_csr.resources[0].status.certificate | b64decode }}"
+            dest: "{{ users_home }}/.crt/kube.crt"
+            mode: "0600"
+
+    # --- RBAC ------------------------------------------------------------
+    # Bindings are reconciled on every run (not just on renewal) so that a
+    # `role:` change in the inventory takes effect immediately. Stale
+    # bindings from a previous tier are removed: roleRef is immutable, so
+    # each tier owns a distinctly named binding.
+    - name: Grant cluster-admin (role == cluster-admin)
+      delegate_to: localhost
+      kubernetes.core.k8s:
+        state: "{{ 'present' if users_role == 'cluster-admin' else 'absent' }}"
+        template: rbac-admin.yml.j2
+
+    - name: Grant cluster-wide read-only (role == view)
+      delegate_to: localhost
+      kubernetes.core.k8s:
+        state: "{{ 'present' if users_role == 'view' else 'absent' }}"
+        template: rbac-view.yml.j2
+
+    - name: Grant personal namespace admin (role == namespace-admin)
+      delegate_to: localhost
+      kubernetes.core.k8s:
+        state: present
+        template: rbac.yml.j2
+      when: users_role == 'namespace-admin'
+
+    # Tier change away from namespace-admin: drop the namespaced bindings
+    # (the personal namespace itself is kept — it may hold data).
+    - name: Revoke personal namespace admin (role != namespace-admin)
+      delegate_to: localhost
+      kubernetes.core.k8s:
+        state: absent
+        api_version: rbac.authorization.k8s.io/v1
+        kind: "{{ users_rbac_kind }}"
+        name: "{{ item.username }}"
+        namespace: "{{ item.username }}"
+      loop:
+        - RoleBinding
+        - Role
+      loop_control:
+        loop_var: users_rbac_kind
+      when: users_role != 'namespace-admin'
+
+    # --- Kubeconfig --------------------------------------------------------
+    - name: Create kube directory
+      delegate_to: localhost
+      ansible.builtin.file:
+        path: "{{ users_home }}/.kube"
+        state: directory
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        mode: "0700"
+      become: true
+
+    # The kubeconfig embeds the client PRIVATE KEY — it must never be
+    # group/world readable.
+    - name: Create kubeconfig
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: kubeconfig.yml.j2
+        dest: "{{ users_home }}/.kube/config"
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        mode: "0600"
+      become: true
