@@ -6,18 +6,27 @@
     mode: "0700"
   when: k3s_registry_enabled
 
+# k3s ONLY reads /etc/rancher/k3s/registries.yaml — `.yml` is silently
+# ignored. Keep the legacy `.yml` path cleaned up on hosts that got one.
 - name: Copy registries yaml file
   ansible.builtin.template:
     src: registries.yml.j2
-    dest: /etc/rancher/k3s/registries.yml
+    dest: /etc/rancher/k3s/registries.yaml
     owner: root
     group: root
     mode: "0600"
   no_log: true
   when: k3s_registry_enabled
+  notify: Restart k3s for registry change
 
 - name: Remove registries config when registry is disabled
   ansible.builtin.file:
-    path: /etc/rancher/k3s/registries.yml
+    path: /etc/rancher/k3s/registries.yaml
     state: absent
   when: not k3s_registry_enabled
+  notify: Restart k3s for registry change
+
+- name: Remove legacy registries.yml (never read by k3s)
+  ansible.builtin.file:
+    path: /etc/rancher/k3s/registries.yml
+    state: absent
