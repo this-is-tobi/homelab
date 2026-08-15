@@ -1,4 +1,31 @@
 ---
-- name: Create kubernetes users
+# Cluster CA for the generated kubeconfigs: prefer the vaulted k3sCaData,
+# fall back to the file fetched by the masters role on the last deploy run
+# (inventory/group_vars/.k3sCaData) — on a fresh install the vault value is
+# still empty, so the fallback is the only source that exists.
+- name: Resolve cluster CA data
+  ansible.builtin.set_fact:
+    users_ca_data: >-
+      {{ (k3sCaData | default(''))
+         or lookup('ansible.builtin.file',
+                   playbook_dir + '/inventory/group_vars/.k3sCaData',
+                   errors='ignore')
+         or '' }}
+  no_log: true
+
+- name: Assert cluster CA data is available
+  ansible.builtin.assert:
+    that:
+      - users_ca_data | trim | length > 0
+    fail_msg: >-
+      No cluster CA data available: run the masters play first (it fetches
+      inventory/group_vars/.k3sCaData) or set vault_k3s_ca_data in
+      inventory/group_vars/vault.yml.
+    quiet: true
+  # map(default=) rather than rejectattr: `state` is optional (default present)
+  # and rejectattr on a missing key raises instead of skipping the entry.
+  when: adminUsers | map(attribute='state', default='present') | reject('equalto', 'absent') | list | length > 0
+
+- name: Manage kubernetes users
   ansible.builtin.include_tasks: users.yml
   loop: "{{ adminUsers }}"
