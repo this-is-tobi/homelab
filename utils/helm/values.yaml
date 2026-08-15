@@ -42,6 +42,10 @@ gateway:
 networkPolicy:
   enabled: false
   egressDeny: true
+  # Namespace the Prometheus scraper runs in (source of the
+  # allow-prometheus-scrape ingress rule). Same knob exists in every app
+  # chart's networkpolicy template.
+  prometheusNamespace: prometheus-stack
   prometheusScrapePorts: []
   extraIngress: []
   extraEgress: []
@@ -62,13 +66,20 @@ argo-cd:
       # is enabled). Instance ingress must set the APISIX upstream-scheme
       # annotation — see instances/homelab/values/core/ohmlab.yaml.
       server.insecure: false
+      # Feature gate for ApplicationSet RollingSync. Inert until an
+      # instance-manager release opts in via `progressiveSync.enabled: true`
+      # (see argo-cd/apps/instance-manager/values.yaml).
+      applicationsetcontroller.enable.progressive.syncs: true
+    # NOTE: `policy.default` and `scopes` must live INSIDE `configs.rbac` —
+    # as siblings of it they are silently ignored by the chart and the
+    # intended default-deny never applies.
     rbac:
       policy.csv: |
         p, role:none, *, *, */*, deny
         p, role:admin, *, *, */*, allow
         g, /admin, role:admin
-    policy.default: role:none
-    scopes: "[groups]"
+      policy.default: role:none
+      scopes: "[groups]"
     cm:
       url: "" # Add your ArgoCD URL here
       resource.customizations: |
@@ -315,6 +326,17 @@ projects:
     enabled: true
     # -- Project name (referenced by `argo-cd/instances/<inst>/instance.yaml.projects.tenant`).
     name: admin-tenant
+    # ⚠ TRUST BOUNDARY: with the defaults below the tenant tier is NOT a
+    # security boundary — ClusterRole/ClusterRoleBinding/CRD stay
+    # whitelisted because real tenant apps need them (actions-runner-
+    # controller and the personal argo-cd ship CRDs, homepage needs a
+    # ClusterRole for discovery), and a tenant app could therefore bind
+    # itself cluster-admin. Both tiers are admin-managed in this repo. If
+    # your tenants are NOT trusted admins, override this project per
+    # instance: drop ClusterRole/ClusterRoleBinding/CustomResourceDefinition
+    # from clusterResourceWhitelist, constrain `destinations` to the tenant
+    # namespace pattern, and blacklist ResourceQuota/LimitRange in
+    # namespaceResourceBlacklist so tenants cannot lift their own limits.
     description: Homelab tenant/apps tier (user-facing services)
     sourceRepos:
     - "https://github.com/this-is-tobi/homelab.git"
