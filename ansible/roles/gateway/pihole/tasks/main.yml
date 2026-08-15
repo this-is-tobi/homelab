@@ -8,7 +8,9 @@
         project_src: /services/pihole
         files:
           - docker-compose.yml
-      ignore_errors: true
+      # Expected to fail when the service was never deployed (no compose
+      # project / docker absent) — teardown must stay idempotent.
+      failed_when: false
 
     - name: Remove pihole service dir
       ansible.builtin.file:
@@ -18,18 +20,27 @@
 - name: Deploy pihole when enabled
   when: pihole.enabled
   block:
-    - name: Set pihole password
+    # Effective admin password: the vaulted value when provided, otherwise a
+    # random one generated ONCE on the controller and persisted at
+    # inventory/group_vars/.pihole_password (gitignored). The password lookup
+    # re-reads that file on later runs, so re-running the play never silently
+    # rotates the password.
+    - name: Resolve pihole admin password
       ansible.builtin.set_fact:
-        gateway_pihole_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+        gateway_pihole_password: >-
+          {{ pihole.password
+             if (pihole.password | default('') | length > 0)
+             else lookup('ansible.builtin.password',
+                         playbook_dir + '/inventory/group_vars/.pihole_password',
+                         length=24, chars=['ascii_letters', 'digits']) }}
+      no_log: true
 
-    - name: Fetch pihole password
-      delegate_to: localhost
-      become: false
-      ansible.builtin.copy:
-        content: "{{ gateway_pihole_password }}"
-        dest: "{{ playbook_dir }}/inventory/group_vars/.pihole_password"
-        mode: "0600"
-      when: pihole.password == ''
+    - name: Assert pihole admin password is set
+      ansible.builtin.assert:
+        that:
+          - gateway_pihole_password | length > 0
+        fail_msg: "pihole admin password resolved empty — refusing to deploy an unauthenticated admin UI"
+        quiet: true
 
     - name: Create pihole service dir
       ansible.builtin.file:

@@ -2,6 +2,10 @@
 gatewayIp: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 haproxy:
   version: alpine3.22
+  # LAN CIDR allowed to reach the kube-apiserver (:6443) and the HAProxy
+  # stats page. Defaults to the gateway's /24 when empty — set it explicitly
+  # if your LAN uses a different mask.
+  lanCidr: ""
   extraKubeAllowedIps: ""
   allowedIps: ""
   # --- Dual ingress-controller routing (for migrating between ingress

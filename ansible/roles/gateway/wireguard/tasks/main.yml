@@ -8,7 +8,9 @@
         project_src: /services/wireguard
         files:
           - docker-compose.yml
-      ignore_errors: true
+      # Expected to fail when the service was never deployed (no compose
+      # project / docker absent) — teardown must stay idempotent.
+      failed_when: false
 
     - name: Remove wireguard service dir
       ansible.builtin.file:
@@ -18,18 +20,27 @@
 - name: Deploy wireguard when enabled
   when: wireguard.enabled
   block:
-    - name: Set wireguard password
+    # Effective admin password: the vaulted value when provided, otherwise a
+    # random one generated ONCE on the controller and persisted at
+    # inventory/group_vars/.wireguard_password (gitignored). The password
+    # lookup re-reads that file on later runs, so re-running the play never
+    # silently rotates the password.
+    - name: Resolve wireguard admin password
       ansible.builtin.set_fact:
-        gateway_wireguard_password: "{{ lookup('ansible.builtin.password', '/dev/null', length=24, chars=['ascii_letters', 'digits']) }}"
+        gateway_wireguard_password: >-
+          {{ wireguard.password
+             if (wireguard.password | default('') | length > 0)
+             else lookup('ansible.builtin.password',
+                         playbook_dir + '/inventory/group_vars/.wireguard_password',
+                         length=24, chars=['ascii_letters', 'digits']) }}
+      no_log: true
 
-    - name: Fetch wireguard password
-      delegate_to: localhost
-      become: false
-      ansible.builtin.copy:
-        content: "{{ gateway_wireguard_password }}"
-        dest: "{{ playbook_dir }}/inventory/group_vars/.wireguard_password"
-        mode: "0600"
-      when: wireguard.password == ''
+    - name: Assert wireguard admin password is set
+      ansible.builtin.assert:
+        that:
+          - gateway_wireguard_password | length > 0
+        fail_msg: "wireguard admin password resolved empty — refusing to deploy an unauthenticated admin UI"
+        quiet: true
 
     - name: Create wireguard service dir
       ansible.builtin.file:
@@ -63,6 +74,9 @@
         files:
           - docker-compose.yml
 
+    # Offboarded users (state: absent) never get a VPN peer. Existing peers
+    # are not deleted here — remove them in the wg-easy UI.
     - name: Create wireguard users
       ansible.builtin.include_tasks: users.yml
-      loop: "{{ adminUsers }}"
+      loop: "{{ adminUsers | selectattr('state', 'undefined') | list
+                + adminUsers | selectattr('state', 'defined') | rejectattr('state', 'equalto', 'absent') | list }}"

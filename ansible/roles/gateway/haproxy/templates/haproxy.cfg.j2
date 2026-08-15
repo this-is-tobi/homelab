@@ -27,7 +27,11 @@ defaults
 frontend stats
   mode http
   bind *:8404
-  acl allowed_stats src 127.0.0.0/8 {{ (gatewayIp + '/255.255.0.0') | ansible.utils.ipaddr('network/prefix') }} {{ haproxy.allowedIps }}
+{# LAN allowlist: haproxy.lanCidr when set, else the gateway's /24. Never
+   derive anything wider — a /16 would admit every 192.168.* subnet
+   reachable through VPNs/guest VLANs, not just the lab LAN. #}
+{% set lan_cidr = (haproxy.lanCidr | default('', true)) or ((gatewayIp + '/24') | ansible.utils.ipaddr('network/prefix')) %}
+  acl allowed_stats src 127.0.0.0/8 {{ lan_cidr }} {{ haproxy.allowedIps }}
   http-request deny if !allowed_stats
   stats enable
   stats uri /
@@ -85,7 +89,7 @@ frontend homelab_entrypoint_lb
 # --- Kubernetes API (restricted access) ---
 frontend k3s_api_server_lb
   bind *:6443
-  acl white_list src {{ (gatewayIp + '/255.255.0.0') | ansible.utils.ipaddr('network/prefix') }} {{ haproxy.extraKubeAllowedIps }}
+  acl white_list src {{ lan_cidr }} {{ haproxy.extraKubeAllowedIps }}
   tcp-request connection reject if !white_list
   default_backend k3s_api_server
 
