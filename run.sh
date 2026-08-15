@@ -29,6 +29,12 @@ NC='\033[0m' # No Color
 
 SCRIPT_PATH="$(cd -- "$(dirname "$0")" >/dev/null 2>&1; pwd -P)"
 
+# Gateway API CRDs applied at bootstrap when missing. Experimental channel:
+# TLSRoute (teleport passthrough) + traefik's kubernetesGateway
+# experimentalChannel require it. Keep in sync with what the live cluster
+# runs (bundle-version annotation).
+GATEWAY_API_VERSION="v1.6.1"
+
 # Defaults
 export ANSIBLE_CONFIG="$SCRIPT_PATH/ansible/ansible.cfg"
 FETCH_KUBECONFIG="false"
@@ -164,17 +170,53 @@ EOF
 # Sops Functions
 # =============================================================================
 
+# Fail-safe sops wrapper: write to a temp file and only move it over the
+# target on success. The naive `sops -d "$f" > target` truncates the target
+# BEFORE sops runs — a missing key then leaves a 0-byte file behind, and a
+# later encrypt pass would happily encrypt that emptiness over the good copy.
+_sops_convert() {
+  local mode="$1" src="$2" dst="$3"
+  local tmp
+  tmp="$(mktemp "$dst.XXXXXX")"
+  if sops "$mode" "$src" > "$tmp"; then
+    mv "$tmp" "$dst"
+    log "  $src -> $dst"
+    return 0
+  fi
+  rm -f "$tmp"
+  error "  FAILED: $src"
+  return 1
+}
+
 decrypt_secrets() {
   log "Decrypting secrets with Sops..."
-  find ./argo-cd -name '*.enc.yaml' -exec bash -c \
-    'sops -d "$1" > "$(dirname "$1")/$(basename "$1" .enc.yaml).dec.yaml"' _ {} \;
+  local failures=0 f
+  while IFS= read -r -d '' f; do
+    _sops_convert -d "$f" "${f%.enc.yaml}.dec.yaml" || failures=$((failures + 1))
+  done < <(find ./argo-cd -name '*.enc.yaml' -print0)
+  if [[ "$failures" -gt 0 ]]; then
+    error "$failures file(s) failed to decrypt"
+    exit 1
+  fi
   success "Secrets decrypted successfully"
 }
 
 encrypt_secrets() {
   log "Encrypting secrets with Sops..."
-  find ./argo-cd -name '*.dec.yaml' -exec bash -c \
-    'sops -e "$1" > "$(dirname "$1")/$(basename "$1" .dec.yaml).enc.yaml"' _ {} \;
+  local failures=0 f
+  while IFS= read -r -d '' f; do
+    # Never encrypt an empty file over an existing good .enc.yaml.
+    if [[ ! -s "$f" ]]; then
+      error "  SKIPPED (empty file): $f"
+      failures=$((failures + 1))
+      continue
+    fi
+    _sops_convert -e "$f" "${f%.dec.yaml}.enc.yaml" || failures=$((failures + 1))
+  done < <(find ./argo-cd -name '*.dec.yaml' -print0)
+  if [[ "$failures" -gt 0 ]]; then
+    error "$failures file(s) failed to encrypt"
+    exit 1
+  fi
   success "Secrets encrypted successfully"
 }
 
@@ -195,7 +237,22 @@ run_playbook() {
   local tags="$2"
 
   playbook="$(readlink -f "$playbook")"
-  export ANSIBLE_CONFIG="$(dirname "$playbook")/ansible.cfg"
+  ANSIBLE_CONFIG="$(dirname "$playbook")/ansible.cfg"
+  export ANSIBLE_CONFIG
+
+  # Destructive tags need an explicit confirmation (a single mistyped -t must
+  # never wipe the cluster without a prompt). -y skips this, like everywhere else.
+  # Not confirm(): that helper treats a bare Enter as yes, which is the wrong
+  # default for wiping a cluster — require a literal "yes".
+  if [[ ",$tags," == *",k3s-destroy,"* && "$YES" != "true" ]]; then
+    warn "Tag 'k3s-destroy' will REMOVE k3s (binaries, data, /var/lib/rancher) from every node."
+    echo -e "${YELLOW}[homelab]${NC} Type 'yes' to destroy the cluster: "
+    read -r ANSWER
+    if [[ "$ANSWER" != "yes" ]]; then
+      error "Aborted."
+      exit 1
+    fi
+  fi
 
   log "Running Ansible playbook: $playbook"
   log "Tags: $tags"
@@ -211,6 +268,11 @@ run_playbook() {
 fetch_kubeconfig() {
   log "Fetching kubeconfig from cluster..."
 
+  if ! command -v kubectl &> /dev/null; then
+    error "kubectl is not installed"
+    exit 1
+  fi
+
   local gateway_ip
   local master_ip
   local user
@@ -221,27 +283,36 @@ fetch_kubeconfig() {
 
   mkdir -p "$HOME/.kube/config.d"
   scp "$user@$master_ip:/etc/rancher/k3s/k3s.yaml" "$HOME/.kube/config.d/homelab"
+  chmod 600 "$HOME/.kube/config.d/homelab"
 
-  # Update server address to gateway
-  local cluster_kubeconfig
-  cluster_kubeconfig="$(sed "s/127.0.0.1/$gateway_ip/g" "$HOME/.kube/config.d/homelab")"
-  echo "$cluster_kubeconfig" > "$HOME/.kube/config.d/homelab"
+  # Point the API server at the gateway (HAProxy fronts :6443) and rename
+  # the default k3s identifiers so several clusters can coexist locally.
+  local tmp_cfg="$HOME/.kube/config.d/homelab"
+  yq -i '.clusters[0].cluster.server = "https://'"$gateway_ip"':6443"' "$tmp_cfg"
+  yq -i '.clusters[0].name = "homelab"
+         | .users[0].name = "homelab"
+         | .contexts[0].name = "homelab"
+         | .contexts[0].context.cluster = "homelab"
+         | .contexts[0].context.user = "homelab"
+         | .current-context = "homelab"' "$tmp_cfg"
 
-  # Update main kubeconfig
-  export CLUSTER_CERTIFICATE_AUTHORITY_DATA
-  export CLUSTER_SERVER
-  export USER_CLIENT_CERTIFICATE_DATA
-  export USER_CLIENT_KEY_DATA
-
-  CLUSTER_CERTIFICATE_AUTHORITY_DATA="$(yq '.clusters[0].cluster.certificate-authority-data' "$HOME/.kube/config.d/homelab")"
-  CLUSTER_SERVER="$(yq '.clusters[0].cluster.server' "$HOME/.kube/config.d/homelab")"
-  USER_CLIENT_CERTIFICATE_DATA="$(yq '.users[0].user.client-certificate-data' "$HOME/.kube/config.d/homelab")"
-  USER_CLIENT_KEY_DATA="$(yq '.users[0].user.client-key-data' "$HOME/.kube/config.d/homelab")"
-
-  yq -i '(.clusters[] | select(.name == "homelab") | .cluster.certificate-authority-data) = env(CLUSTER_CERTIFICATE_AUTHORITY_DATA)' ~/.kube/config
-  yq -i '(.clusters[] | select(.name == "homelab") | .cluster.server) = env(CLUSTER_SERVER)' ~/.kube/config
-  yq -i '(.users[] | select(.name == "homelab") | .user.client-certificate-data) = env(USER_CLIENT_CERTIFICATE_DATA)' ~/.kube/config
-  yq -i '(.users[] | select(.name == "homelab") | .user.client-key-data) = env(USER_CLIENT_KEY_DATA)' ~/.kube/config
+  # Merge into the main kubeconfig with kubectl itself: set-cluster /
+  # set-credentials / set-context are create-or-update, so this works on a
+  # brand-new machine too (the previous yq `select(.name == "homelab")`
+  # edits silently did NOTHING when the entries didn't exist yet).
+  if [[ -f "$HOME/.kube/config" ]]; then
+    cp "$HOME/.kube/config" "$HOME/.kube/config.bak"
+    log "Backed up ~/.kube/config to ~/.kube/config.bak"
+  fi
+  kubectl config set-cluster homelab \
+    --server="https://$gateway_ip:6443" \
+    --certificate-authority=<(yq '.clusters[0].cluster.certificate-authority-data' "$tmp_cfg" | base64 -d) \
+    --embed-certs=true >/dev/null
+  kubectl config set-credentials homelab \
+    --client-certificate=<(yq '.users[0].user.client-certificate-data' "$tmp_cfg" | base64 -d) \
+    --client-key=<(yq '.users[0].user.client-key-data' "$tmp_cfg" | base64 -d) \
+    --embed-certs=true >/dev/null
+  kubectl config set-context homelab --cluster=homelab --user=homelab >/dev/null
 
   success "Kubeconfig fetched and configured"
   log "Context 'homelab' is available. Use: kubectl config use-context homelab"
@@ -273,6 +344,18 @@ check_helm() {
   if ! command -v helm &> /dev/null; then
     error "helm is not installed"
     exit 1
+  fi
+}
+
+# Install the Gateway API CRDs (experimental channel) when missing. No
+# stderr swallowing — a failed apply here must be visible, not discovered
+# later as a cryptic HTTPRoute sync error.
+ensure_gateway_api_crds() {
+  if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
+    log "Gateway API CRDs (experimental channel, $GATEWAY_API_VERSION) not found — installing..."
+    kubectl apply --server-side -f \
+      "https://github.com/kubernetes-sigs/gateway-api/releases/download/$GATEWAY_API_VERSION/experimental-install.yaml"
+    kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
   fi
 }
 
@@ -353,16 +436,8 @@ bootstrap_instance() {
   if ! kubectl get crd applications.argoproj.io &>/dev/null; then
     log "ArgoCD CRDs not present — phase 1: installing ArgoCD components only..."
 
-    # Install Gateway API CRDs first if the chart uses HTTPRoutes.
-    # Experimental channel: TLSRoute (teleport passthrough) + traefik's
-    # kubernetesGateway experimentalChannel require it. Keep the version in
-    # sync with what the live cluster runs (bundle-version annotation).
-    if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
-      log "Gateway API CRDs (experimental channel) not found — installing..."
-      kubectl apply --server-side -f \
-        https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml 2>/dev/null
-      kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
-    fi
+    # Gateway API CRDs first — the chart ships HTTPRoutes.
+    ensure_gateway_api_crds
 
     helm upgrade --install ohmlab "$SCRIPT_PATH/utils/helm" \
       --namespace argocd-system \
@@ -379,21 +454,30 @@ bootstrap_instance() {
     log "Phase 1 complete — ArgoCD CRDs and components installed."
   fi
 
-  # Install Gateway API CRDs if still missing (upgrade path where ArgoCD was
-  # already present but Gateway API was not). Experimental channel — see phase 1.
-  if ! kubectl get crd tlsroutes.gateway.networking.k8s.io &>/dev/null; then
-    log "Gateway API CRDs (experimental channel) not found — installing..."
-    kubectl apply --server-side -f \
-      https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/experimental-install.yaml 2>/dev/null
-    kubectl wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io --timeout=60s
-  fi
+  # Upgrade path where ArgoCD was already present but Gateway API was not.
+  ensure_gateway_api_crds
 
   local extra_args=()
+  local admin_pw_values=""
   if [[ -n "${ARGOCD_ADMIN_PASSWORD:-}" ]]; then
     log "Bcrypt-hashing admin password from \$ARGOCD_ADMIN_PASSWORD..."
     local bcrypt
     bcrypt=$(bcrypt_hash "$ARGOCD_ADMIN_PASSWORD") || exit 1
-    extra_args+=(--set-string "argo-cd.configs.secret.argocdServerAdminPassword=$bcrypt")
+    # A --set-string value is visible in `ps` output for the whole helm run —
+    # pass the hash through a 0600 temp values file instead.
+    admin_pw_values="$(mktemp)"
+    # Path expanded NOW: the trap fires after this function has returned,
+    # when the local variable no longer exists.
+    # shellcheck disable=SC2064
+    trap "rm -f '$admin_pw_values'" EXIT
+    chmod 600 "$admin_pw_values"
+    cat > "$admin_pw_values" << EOF
+argo-cd:
+  configs:
+    secret:
+      argocdServerAdminPassword: "$bcrypt"
+EOF
+    extra_args+=(--values "$admin_pw_values")
   fi
 
   # Phase 2: Full install/upgrade with all resources (AppProjects, root
