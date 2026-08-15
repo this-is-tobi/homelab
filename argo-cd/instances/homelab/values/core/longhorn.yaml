@@ -70,9 +70,35 @@ sso:
       cookie_secure = true
       cookie_domains = [ "longhorn.int.ohmlab.fr" ]
 
+# Volume data protection. Snapshots are LOCAL (copy-on-write on the same
+# disks) and need no S3 — they protect against app-level mistakes, not disk
+# loss. Off-cluster backups additionally need defaultSettings.backupTarget +
+# the longhorn-s3 credential secret (see below), same S3 bucket as CNPG.
+backups:
+  recurringJobs:
+  # Applies to every volume without an explicit recurring-job group.
+  - name: snapshot-daily
+    task: snapshot
+    cron: "0 3 * * *"
+    retain: 7
+  # Uncomment together with backupTarget + the longhorn-s3 secret:
+  # - name: backup-weekly
+  #   task: backup
+  #   cron: "0 4 * * 0"
+  #   retain: 4
+
 longhorn:
   ingress:
     enabled: false
+  # Off-cluster backup destination — uncomment when the S3 keys exist (same
+  # blocker as the CNPG `backup.enabled` flags): create the `longhorn-s3`
+  # secret in longhorn-system with AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
+  # / AWS_ENDPOINTS=https://s3.fr-par.scw.cloud (via a VSO vaultStaticSecret
+  # like longhornSso above), then:
+  # defaultSettings:
+  #   backupTarget: "s3://ohmlab-backups@fr-par/longhorn"
+  # ⚠ networkPolicy below is egress-deny: also uncomment the s3-backup
+  # extraEgress rule so instance-managers can reach the S3 endpoint.
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. iSCSI/NFS rules below use the
@@ -127,6 +153,13 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
+  # Uncomment together with defaultSettings.backupTarget (S3 backups).
+  # - name: s3-backup
+  #   rules:
+  #   - to:
+  #     - ipBlock: { cidr: 0.0.0.0/0, except: [10.45.0.0/16, 192.168.1.0/24] }
+  #     ports:
+  #     - { protocol: TCP, port: 443 }
   - name: sso-hairpin
     podSelector:
       matchLabels: { app.kubernetes.io/name: sso, app.kubernetes.io/instance: longhorn-system }
