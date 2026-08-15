@@ -36,7 +36,11 @@ ARG TARGETARCH
 ARG USERNAME=ohmlab
 ARG USER_UID=1000
 ARG USER_GID=${USER_UID}
+# Third-party tool versions — pinned, checksum-verified below. Bump
+# deliberately (kubectl tracks the cluster's k3s minor).
 ARG VAULT_VERSION=1.21.0
+ARG KUBECTL_VERSION=v1.35.3
+ARG HELM_VERSION=v3.19.0
 
 ENV HOME=/home/${USERNAME}
 
@@ -55,19 +59,30 @@ RUN apk add --no-cache \
     yq \
     && rm -rf /var/cache/apk/*
 
-# Install Vault CLI (still useful for manual operations)
-RUN curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${TARGETARCH}.zip" -o vault.zip \
-    && unzip vault.zip -d /usr/bin/ \
+# Install Vault CLI (still useful for manual operations) — verified against
+# the published SHA256SUMS so the build is reproducible and tamper-evident.
+RUN curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${TARGETARCH}.zip" -o "vault_${VAULT_VERSION}_linux_${TARGETARCH}.zip" \
+    && curl -fsSL "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS" -o vault_SHA256SUMS \
+    && grep "vault_${VAULT_VERSION}_linux_${TARGETARCH}.zip" vault_SHA256SUMS | sha256sum -c - \
+    && unzip -o "vault_${VAULT_VERSION}_linux_${TARGETARCH}.zip" vault -d /usr/bin/ \
     && chmod +x /usr/bin/vault \
-    && rm vault.zip
+    && rm "vault_${VAULT_VERSION}_linux_${TARGETARCH}.zip" vault_SHA256SUMS
 
-# Install kubectl
-RUN KUBECTL_VERSION=$(curl -fsSL https://dl.k8s.io/release/stable.txt) \
-    && curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" -o /usr/local/bin/kubectl \
-    && chmod +x /usr/local/bin/kubectl
+# Install kubectl — pinned (tracks the cluster's k3s minor) + checksum-verified.
+RUN curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" -o /usr/local/bin/kubectl \
+    && curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl.sha256" -o kubectl.sha256 \
+    && echo "$(cat kubectl.sha256)  /usr/local/bin/kubectl" | sha256sum -c - \
+    && chmod +x /usr/local/bin/kubectl \
+    && rm kubectl.sha256
 
-# Install helm
-RUN curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+# Install helm — pinned release tarball + checksum, instead of piping an
+# unpinned script from the `main` branch into a shell.
+RUN curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" -o "helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" \
+    && curl -fsSL "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz.sha256sum" -o helm.sha256sum \
+    && sha256sum -c helm.sha256sum \
+    && tar -xzf "helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" -C /usr/local/bin --strip-components=1 "linux-${TARGETARCH}/helm" \
+    && chmod +x /usr/local/bin/helm \
+    && rm "helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" helm.sha256sum
 
 # Create non-root user
 RUN addgroup -g ${USER_GID} ${USERNAME} \
@@ -82,7 +97,11 @@ COPY --from=builder --chown=${USER_UID}:${USER_GID} /ohmlab /usr/local/bin/ohmla
 # Ensure binary is executable
 RUN chmod +x /usr/local/bin/ohmlab
 
-USER ${USERNAME}
+# Numeric UID, not the account name: Kubernetes cannot resolve a named user
+# at admission, so `runAsNonRoot: true` without an explicit runAsUser rejects
+# pods running this image ("container has runAsNonRoot and image has
+# non-numeric user"). The require-non-root policy in this repo enforces that.
+USER ${USER_UID}
 
 ENTRYPOINT ["ohmlab"]
 CMD ["--help"]
