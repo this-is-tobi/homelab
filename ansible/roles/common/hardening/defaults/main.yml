@@ -68,3 +68,7 @@ common_hardening_remove_packages:
 
 # Old kernel headers to clean up
 common_hardening_autoremove: true
+
+# Disable unprivileged user namespaces (kernel.unprivileged_userns_clone=0).
+# Set to false on hosts that need rootless containers (CI runners, Coder).
+common_hardening_disable_userns: true

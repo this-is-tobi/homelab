@@ -3,6 +3,25 @@
 // `upgrade` role so reboots remain operator-controlled.
 Unattended-Upgrade::Origins-Pattern {
     "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+{% if ansible_facts['lsb']['id'] | default('') == 'Raspbian' or ansible_facts['architecture'] == 'aarch64' %}
+    // Raspberry Pi OS ships its own packages through the RPi archive with no
+    // -security split — without this origin those packages never receive
+    // unattended updates at all (partial coverage that reads as complete).
+    // Kernel/bootloader packages from that archive are blacklisted below so
+    // reboot-relevant updates stay operator-controlled.
+    "origin=Raspberry Pi Foundation,codename=${distro_codename}";
+    "origin=Raspbian,codename=${distro_codename}";
+{% endif %}
+};
+Unattended-Upgrade::Package-Blacklist {
+    // Reboot/boot-chain sensitive packages — handled by the manual `upgrade`
+    // and `kernel-upgrade` roles instead.
+    "linux-image-";
+    "linux-headers-";
+    "raspberrypi-kernel";
+    "raspberrypi-bootloader";
+    "raspi-firmware";
+    "rpi-eeprom";
 };
 Unattended-Upgrade::Automatic-Reboot "false";
 Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
