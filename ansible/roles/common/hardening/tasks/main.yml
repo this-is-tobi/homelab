@@ -1,4 +1,6 @@
 ---
+# Tolerate ONLY "service not found" (units differ per OS image) — any other
+# failure (dbus down, unit wedged) must surface.
 - name: Disable unnecessary services
   ansible.builtin.systemd:
     name: "{{ item }}"
@@ -6,21 +8,42 @@
     enabled: false
     masked: true
   loop: "{{ common_hardening_disable_services }}"
-  ignore_errors: true
+  register: common_hardening_svc_result
+  failed_when:
+    - common_hardening_svc_result.failed | default(false)
+    - "'Could not find the requested service' not in (common_hardening_svc_result.msg | default(''))"
 
+# No ignore_errors here on purpose: a failed removal (held package, dependency
+# cascade into linux-image/dkms) is exactly the kind of thing that must fail
+# loudly instead of being discovered later.
 - name: Remove unnecessary packages
   ansible.builtin.apt:
     name: "{{ common_hardening_remove_packages }}"
     state: absent
     purge: true
   register: common_hardening_pkg_result
-  ignore_errors: true
 
 - name: Autoremove unused dependencies
   ansible.builtin.apt:
     autoremove: true
     purge: true
   when: common_hardening_autoremove and common_hardening_pkg_result is succeeded
+
+# nf_conntrack must be loaded for the nf_conntrack_max sysctl below to
+# apply — without the module, `sysctl --system` skips the key with an error
+# that nothing surfaces.
+- name: Load nf_conntrack kernel module
+  community.general.modprobe:
+    name: nf_conntrack
+    state: present
+
+- name: Ensure nf_conntrack loads at boot
+  ansible.builtin.copy:
+    content: nf_conntrack
+    dest: /etc/modules-load.d/nf_conntrack.conf
+    owner: root
+    group: root
+    mode: "0644"
 
 - name: Deploy kernel hardening sysctl
   ansible.builtin.template:

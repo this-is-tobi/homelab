@@ -1,0 +1,13 @@
+---
+galaxy_info:
+  author: this-is-tobi
+  license: MIT
+  role_name: kernel_upgrade
+  namespace: common
+  description: Upgrade Raspberry Pi to the Debian arm64 kernel (52-bit VA) via tryboot.
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions: [bookworm, trixie]
+  galaxy_tags: [debian, kernel, raspberrypi]
+dependencies: []

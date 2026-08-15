@@ -257,13 +257,16 @@
         path: /usr/local/bin/k3s
       register: common_kup_k3s_binary
 
-    - name: Check if K3s service is enabled
-      ansible.builtin.command:
-        cmd: systemctl is-enabled k3s.service
-      register: common_kup_k3s_enabled
-      changed_when: false
-      failed_when: false
-      when: common_kup_k3s_binary.stat.exists
+    # Status-only query via service_facts — reads unit state without
+    # touching it (no systemctl shell-out).
+    - name: Gather service facts
+      ansible.builtin.service_facts:
+
+    - name: Set K3s enabled fact
+      ansible.builtin.set_fact:
+        common_kup_k3s_is_enabled: >-
+          {{ common_kup_k3s_binary.stat.exists
+             and (ansible_facts.services['k3s.service'].status | default('')) == 'enabled' }}
 
     - name: Verify K3s is running
       ansible.builtin.service_facts:
@@ -271,9 +274,7 @@
       retries: 6
       delay: 10
       until: (common_kup_service_facts.ansible_facts.services['k3s.service'].state | default('')) == 'running'
-      when:
-        - common_kup_k3s_binary.stat.exists
-        - common_kup_k3s_enabled.rc == 0
+      when: common_kup_k3s_is_enabled
 
     - name: Display upgrade results
       ansible.builtin.debug:
@@ -281,7 +282,7 @@
           SUCCESS — {{ inventory_hostname }}:
           kernel={{ common_kup_new_kernel.stdout }},
           {{ common_kup_va_bits.stdout }}{{ ',
-          k3s=running' if (common_kup_k3s_binary.stat.exists and (common_kup_k3s_enabled.rc | default(1)) == 0) else ',
+          k3s=running' if common_kup_k3s_is_enabled else ',
           k3s=not-running (expected for fresh deploy)' }}
 
     # ============================================================

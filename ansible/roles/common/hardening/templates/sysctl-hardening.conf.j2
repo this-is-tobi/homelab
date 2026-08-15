@@ -35,9 +35,16 @@ net.ipv4.icmp_echo_ignore_broadcasts = 1
 # Ignore bogus ICMP errors
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 
+{% if (k3sCni | default('flannel')) != 'cilium' %}
 # Enable reverse path filtering (anti-spoofing)
+# OMITTED on Cilium nodes: the agent requires rp_filter=0 on its interfaces
+# and sets that itself at startup. A later `sysctl --system` reload (this
+# role's own handler included) re-applying all.rp_filter=1 would silently
+# break pod-to-pod / service traffic. Host-side anti-spoofing on those nodes
+# is enforced by Cilium's own datapath instead.
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
+{% endif %}
 
 # --- Kernel: harden memory and process ---
 # Full ASLR (Address Space Layout Randomization)
@@ -58,8 +65,13 @@ kernel.unprivileged_bpf_disabled = 1
 # Restrict ptrace to parent process only
 kernel.yama.ptrace_scope = 1
 
-# Restrict userns (if supported)
+{% if common_hardening_disable_userns | default(true) %}
+# Restrict unprivileged user namespaces (if supported).
+# NOTE: breaks rootless containers (relevant for CI runners / Coder
+# workspaces on k3s nodes) — set common_hardening_disable_userns: false on
+# hosts that need them.
 kernel.unprivileged_userns_clone = 0
+{% endif %}
 
 # --- Network: performance tuning for Pi ---
 # Increase connection tracking (for K3s + HAProxy)
