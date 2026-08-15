@@ -80,7 +80,7 @@ spec:
   - from:
     - namespaceSelector:
         matchLabels:
-          kubernetes.io/metadata.name: prometheus-stack
+          kubernetes.io/metadata.name: {{ .Values.networkPolicy.prometheusNamespace | default "prometheus-stack" }}
     ports:
       {{- toYaml .Values.networkPolicy.prometheusScrapePorts | nindent 6 }}
 {{- end }}
