@@ -58,6 +58,8 @@ cd ansible && ansible-vault encrypt inventory/group_vars/vault.yml
 >
 > *To edit secrets later: `ansible-vault edit inventory/group_vars/vault.yml`*
 >
+> *Auto-generated values are created once and persisted in gitignored files next to the inventory — `inventory/group_vars/.pihole_password`, `.wireguard_password` (by the gateway roles) and `.pi_password` (by `scripts/setup-pi.sh`) — and reused on later runs. Copy them into the vault when you want them under version control.*
+>
 > *The vault password file path is configured in `ansible.cfg` (`vault_password_file = .vault_password`).*
 
 > __*Notes*__:
@@ -72,8 +74,11 @@ Update the [hosts file](../ansible/inventory-example/hosts.yml) and [group_vars 
 
 All sensitive values are indirected through `vault_*` variables in `group_vars/vault.yml` (see [Ansible Vault](#ansible-vault) above). Non-secret settings are in `all.yml`, `gateway.yml` and `k3s.yml`.
 
-To create admin access to the machines, provide admin user information in `group_vars/all.yml`:
-- Put user ssh public keys in the inventory file — this will grant admin access to the infrastructure by adding `authorized_keys`.
+To create admin access to the machines, provide admin user information in `group_vars/all.yml` (`adminUsers`). Each entry creates:
+- a **dedicated OS account** on every host with the given `sshPubKey` in its own `authorized_keys` (attributable logins — keys are never appended to the shared `ansible_user` account), plus optional passwordless sudo with `sudo: true`;
+- a **Kubernetes user** (x509 client certificate + kubeconfig) with the RBAC tier set by `role`: `namespace-admin` (default — a personal namespace with full rights inside it), `cluster-admin`, or `view`.
+
+`state: absent` removes the OS account, the SSH key and all Kubernetes RBAC. Note that the issued client certificate keeps *authenticating* until it expires (Kubernetes has no CRL) — deleting the bindings is what revokes *authorization*. Certificates are valid one year and re-issued automatically when a run finds them within 30 days of expiry.
 
 ### Applications (GitOps)
 
@@ -107,8 +112,9 @@ Per-app overrides supported in the JSON catalogues (all optional):
 | `destination.server` | `instance.yaml.destination.server`                       | Target a different cluster (multi-cluster).                                |
 | `valuesPath`         | `argo-cd/instances/<instance>/values/<scope>/<app>.yaml` | Point to a non-conventional values file.                                   |
 | `targetRevision`     | `instance.yaml.targetRevision`                           | Pin app to a specific git revision.                                        |
-| `hook`               | `Sync`                                                   | Use as `PreSync` / `PostSync` hook.                                        |
 | `syncWave`           | required                                                 | ArgoCD sync ordering.                                                      |
+
+> **`syncWave` semantics**: on an AppSet-generated Application, the sync-wave annotation alone orders **nothing** — apps sync in parallel and converge by retry. To actually enforce the ordering, enable progressive sync (`progressiveSync.enabled: true` in the `instance-manager` chart values); it maps waves onto ApplicationSet `RollingSync` steps. Requires the alpha `ApplicationSetProgressiveSyncs` feature gate, which the `ohmlab` chart enables on the core ArgoCD.
 
 ### Secrets Management
 
@@ -116,7 +122,7 @@ Per-app overrides supported in the JSON catalogues (all optional):
 
 > *__Notes:__*
 >
-> *__Update Sops keys with your own__ but __leave the first age key blank__ as it is used by the cluster's automated key management system.*
+> *__Update the Sops keys in `.sops.yaml` with your own__: the first `age` entry must be the public key of the age keypair used by the in-cluster sops-secrets-operator (so the cluster can decrypt), and the PGP entry (or additional age entries) should be your own operator keys for local editing. The keys committed in this repo belong to this repo's own cluster — replace both.*
 >
 > *Decrypt secrets by running `./run.sh -d` and encrypt secrets by running `./run.sh -e`, do not forget to re-encrypt secrets when changes are made.*
 
@@ -217,7 +223,7 @@ It is possible to cleanly destroy the K3s cluster by running:
 
 ### OS upgrades
 
-Run a dist-upgrade on all managed hosts (gateway + K3s nodes), rebooting only if required:
+Run an OS package upgrade on all managed hosts (gateway + K3s nodes), rebooting only if required:
 
 ```sh
 ./run.sh -p ./ansible/install.yml -t os-upgrade
