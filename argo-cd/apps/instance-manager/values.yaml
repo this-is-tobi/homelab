@@ -13,6 +13,10 @@ instance:
 destination:
   server: https://kubernetes.default.svc
 
+# Namespace the ArgoCD instance (and therefore the generated ApplicationSets)
+# lives in. Passed down by the root manager — do not hardcode elsewhere.
+argocdNamespace: argocd-system
+
 repoURL: ""
 valuesRepoURL: ""
 targetRevision: main
@@ -30,3 +34,31 @@ scopes:
 # Default namespace pattern for generated apps: "<prefix><app><suffix>".
 namespacePrefix: ""
 namespaceSuffix: ""
+
+# Progressive sync (ApplicationSet RollingSync): actually ENFORCES the
+# syncWave ordering between generated Applications. Without it, syncWave on
+# an AppSet-generated Application orders nothing — all apps sync in parallel
+# and converge by retry.
+#
+# OPT-IN because it needs the alpha ApplicationSetProgressiveSyncs feature
+# gate on the ArgoCD instance (utils/helm values set
+# `applicationsetcontroller.enable.progressive.syncs: true`) and it changes
+# rollout behaviour: the AppSet controller drives each step's sync itself
+# and STRIPS `syncPolicy.automated` from the generated Applications (prune
+# is carried into the triggered sync; instead of selfHeal the controller
+# re-triggers a sync when an app drifts OutOfSync) — expected, not a bug.
+# Generated Applications carry a `ohmlab.fr/sync-wave: w<syncWave>` label
+# ("w" prefix because a bare "-10" is not a valid label value); each step
+# below lists the wave values it syncs, in order, and everything not listed
+# lands in an automatic final catch-all step. The SAME steps apply to the
+# core and the tenant AppSet: list your tenant waves (e.g. 80, 85, ...) here
+# too, otherwise every tenant app lands in the catch-all step unordered.
+progressiveSync:
+  enabled: false
+  steps:
+  - [-10]
+  - [0, 5]
+  - [10, 11, 12, 15]
+  - [20]
+  - [30, 40]
+  - [50, 55, 60]

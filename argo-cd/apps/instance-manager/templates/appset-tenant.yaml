@@ -12,12 +12,15 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: tenant-{{ $instance }}
-  namespace: argocd-system
+  namespace: {{ .Values.argocdNamespace | default "argocd-system" }}
   labels:
     {{- include "instance-manager.labels" . | nindent 4 }}
     ohmlab.fr/instance-scope: "tenant"
 spec:
   goTemplate: true
+  {{- if .Values.progressiveSync.enabled }}
+  {{- include "instance-manager.rollingSyncStrategy" . | nindent 2 }}
+  {{- end }}
   generators:
   - matrix:
       generators:
@@ -39,11 +42,16 @@ spec:
       name: '{{ $instance }}-{{ `{{ .app }}` }}'
       annotations:
         argocd.argoproj.io/compare-options: ServerSideDiff=true
-        argocd.argoproj.io/sync-wave: '{{ `{{ .syncWave }}` }}'
+        argocd.argoproj.io/sync-wave: '{{ `{{ default 0 .syncWave }}` }}'
       labels:
         {{- include "instance-manager.labels" . | nindent 8 }}
         ohmlab.fr/instance-scope: "tenant"
         ohmlab.fr/app-name: '{{ `{{ .app }}` }}'
+        # Consumed by the RollingSync steps (see values.progressiveSync).
+        # "w" prefix: a bare "-10" is not a valid label value. `default 0`
+        # so a catalogue entry without syncWave still yields a valid label
+        # (a bare "w<no value>" would make the Application unschedulable).
+        ohmlab.fr/sync-wave: 'w{{ `{{ default 0 .syncWave }}` }}'
       # NO resources-finalizer — see appset-core.yaml: app deletion must
       # never cascade into deleting live resources.
     spec:
@@ -74,6 +82,9 @@ spec:
           labels:
             ohmlab.fr/vault-access: "true"
             ohmlab.fr/managed-by: '{{ $instance }}'
+            # Tier label: kyverno's pod-security-restricted policy keys on
+            # instance-scope=tenant namespaces.
+            ohmlab.fr/instance-scope: "tenant"
         syncOptions:
         - CreateNamespace=true
         - ApplyOutOfSyncOnly=true
