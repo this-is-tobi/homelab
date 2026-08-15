@@ -65,6 +65,10 @@ spec:
           parameters:
           - name: instance.name
             value: '{{ `{{ .path.basename }}` }}'
+          # Keep the child AppSets in the same namespace as this ArgoCD
+          # instance — instance-manager must not hardcode it.
+          - name: argocdNamespace
+            value: {{ .Values.argocdNamespace | quote }}
           valueFiles:
           - '$values/argo-cd/instances/{{ `{{ .path.basename }}` }}/instance.yaml'
       - repoURL: {{ $repoValues | quote }}
