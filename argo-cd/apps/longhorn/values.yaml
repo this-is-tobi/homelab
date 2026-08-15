@@ -78,6 +78,21 @@ vso:
             cookie-secret:
               text: '{{ get .Secrets "keycloak" | dig "cookieSecret" "" }}'
 
+# Volume snapshot/backup schedules (templates/recurringjob.yaml). Empty by
+# default — define per instance, alongside longhorn.defaultSettings
+# .backupTarget. Typical shape:
+#   recurringJobs:
+#   - name: snapshot-daily
+#     task: snapshot
+#     cron: "0 3 * * *"
+#     retain: 7
+#   - name: backup-weekly
+#     task: backup            # requires a reachable backupTarget
+#     cron: "0 4 * * 0"
+#     retain: 4
+backups:
+  recurringJobs: []
+
 longhorn:
   preUpgradeChecker:
     jobEnabled: false
@@ -96,6 +111,12 @@ longhorn:
     storageMinimalAvailablePercentage: 25
     storageOverProvisioningPercentage: 200
     storageReservedPercentageForDefaultDisk: 10
+    # Backup destination for `task: backup` RecurringJobs and manual volume
+    # backups: "s3://<bucket>@<region>/<prefix>" (or nfs://...). Empty =
+    # backups have nowhere to go — snapshots still work (they are local).
+    # Set per instance together with the credential secret below (must hold
+    # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_ENDPOINTS).
+    backupTarget: ""
     backupTargetCredentialSecret: longhorn-s3
     # Rolling live-upgrade of volume engines to the default engine image
     # (only healthy attached volumes are touched, max 2 per node at a
