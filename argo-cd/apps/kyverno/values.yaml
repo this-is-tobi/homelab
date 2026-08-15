@@ -18,18 +18,15 @@ kyverno:
       enabled: true
       namespace: kyverno
   admissionController:
-    replicas: 1
-    rbac:
-      clusterRole:
-        extraResources:
-        - apiGroups:
-          - ""
-          resources:
-          - secrets
-          verbs:
-          - get
-          - list
-          - watch
+    # The webhook is fail-closed (failurePolicy: Fail) cluster-wide: with a
+    # single replica, one node drain / OOM / eviction stalls ALL pod
+    # admission. 2 replicas auto-enables the chart's PodDisruptionBudget and
+    # the default soft anti-affinity spreads them across nodes.
+    # NOTE (least privilege): no secrets RBAC here — the admission controller
+    # does not resolve the sync-vault-ca apiCall (the background controller
+    # does); the narrowly scoped read it might need is granted by
+    # templates/vault-ca-rbac.yaml (get on vault-tls only).
+    replicas: 2
     resources:
       requests:
         cpu: 100m
@@ -37,7 +34,12 @@ kyverno:
       limits:
         memory: 384Mi
   backgroundController:
-    replicas: 1
+    # Cluster-wide secrets/configmaps write: required by generate rules
+    # (sync-vault-ca). This CANNOT be scoped with resourceNames — kyverno
+    # validates generate policies at admission with a SubjectAccessReview
+    # that carries no resourceName, so a name-scoped role fails that check
+    # and the policy is rejected. Kind-scoped + verb-complete is the
+    # upstream-documented minimum for generate targets.
     rbac:
       clusterRole:
         extraResources:
@@ -45,6 +47,9 @@ kyverno:
           - ""
           resources:
           - secrets
+          - configmaps
+          # limitranges: generate target of add-default-limitrange
+          - limitranges
           verbs:
           - get
           - list
@@ -84,9 +89,45 @@ kyverno:
 policies:
   podSecurityBaseline:
     failureAction: Enforce
+  # Restricted PSS profile for TENANT namespaces only (matched via the
+  # ohmlab.fr/instance-scope=tenant namespace label set by the
+  # instance-manager AppSets). Audit first: review the PolicyReports, fix
+  # the offending tenant charts, THEN flip to Enforce.
+  podSecurityRestricted:
+    failureAction: Audit
   requireNonRoot:
     failureAction: Enforce
   disallowLatestTag:
     failureAction: Enforce
   requireResourceLimits:
     failureAction: Audit
+  # Registry allowlist. Audit by default — watch the PolicyReports for
+  # registries used by chart-default images before considering Enforce.
+  restrictImageRegistries:
+    failureAction: Audit
+    registries:
+    - "docker.io/*"
+    - "ghcr.io/*"
+    - "quay.io/*"
+    - "registry.k8s.io/*"
+    - "public.ecr.aws/*"
+    - "cgr.dev/*"
+    # Chart-default registries of apps in the catalogue.
+    - "docker.gitea.com/*"
+    - "mirror.gcr.io/*"
+    - "reg.kyverno.io/*"
+  # Generate a default LimitRange in every TENANT namespace
+  # (ohmlab.fr/instance-scope=tenant) so containers without explicit
+  # resources get sane defaults (prerequisite for flipping
+  # requireResourceLimits to Enforce). Core namespaces are excluded on
+  # purpose (controller pods with requests only would be capped/rejected).
+  # Disabled by default: the injected defaults apply to pods on their next
+  # recreation, which can surprise a running cluster — enable deliberately.
+  defaultLimitRange:
+    enabled: false
+    default:
+      cpu: 500m
+      memory: 512Mi
+    defaultRequest:
+      cpu: 25m
+      memory: 64Mi

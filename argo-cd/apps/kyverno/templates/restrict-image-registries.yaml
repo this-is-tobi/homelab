@@ -1,0 +1,37 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-image-registries
+  annotations:
+    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
+    # zero-replica RS history otherwise reports stale violations forever.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
+    policies.kyverno.io/title: Restrict Image Registries
+    policies.kyverno.io/description: >-
+      Images may only come from the allow-listed registries
+      (policies.restrictImageRegistries.registries in values). Uses
+      image_normalize() so bare Docker Hub names (nginx, prom/xyz) resolve
+      to docker.io/... before matching. failureAction comes from values —
+      keep Audit until the PolicyReports are clean.
+spec:
+  background: true
+  rules:
+  - name: allowed-registries
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      failureAction: {{ .Values.policies.restrictImageRegistries.failureAction | default "Audit" }}
+      message: >-
+        Image registry is not in the cluster allowlist
+        ({{ .Values.policies.restrictImageRegistries.registries | join ", " }}).
+      foreach:
+      - list: "request.object.spec.[containers, initContainers, ephemeralContainers][]"
+        deny:
+          conditions:
+            all:
+            - key: '{{`{{ image_normalize(element.image) }}`}}'
+              operator: NotIn
+              value: {{ .Values.policies.restrictImageRegistries.registries | toJson }}

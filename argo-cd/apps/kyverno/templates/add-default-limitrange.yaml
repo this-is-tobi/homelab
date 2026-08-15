@@ -1,0 +1,49 @@
+{{- if .Values.policies.defaultLimitRange.enabled }}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-default-limitrange
+  annotations:
+    policies.kyverno.io/title: Add default LimitRange to managed namespaces
+    policies.kyverno.io/description: >-
+      Generates a LimitRange with default requests/limits in every TENANT
+      namespace (ohmlab.fr/instance-scope=tenant, labelled by the
+      instance-manager AppSets). Containers that declare nothing inherit
+      these on their next (re)creation, which is the prerequisite for
+      flipping requireResourceLimits to Enforce without breaking
+      operator-created pods. Core namespaces are deliberately excluded:
+      storage/ingress/monitoring controllers spawn pods with requests only
+      (Longhorn instance-managers, Traefik, ...) and a LimitRange would cap
+      or even reject them (LimitRanger rejects request > default limit).
+    # Kyverno rejects patches to immutable generate-rule fields via its
+    # admission webhook, so ArgoCD must replace (delete + create) the policy.
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  rules:
+  - name: add-default-limitrange
+    match:
+      any:
+      - resources:
+          kinds:
+          - Namespace
+          selector:
+            matchLabels:
+              ohmlab.fr/instance-scope: "tenant"
+    generate:
+      generateExisting: true
+      # synchronize: false on purpose — the LimitRange is a starting point;
+      # operators may tune it per namespace without kyverno reverting them.
+      synchronize: false
+      apiVersion: v1
+      kind: LimitRange
+      name: default-limits
+      namespace: '{{`{{request.object.metadata.name}}`}}'
+      data:
+        spec:
+          limits:
+          - type: Container
+            default:
+              {{- toYaml .Values.policies.defaultLimitRange.default | nindent 14 }}
+            defaultRequest:
+              {{- toYaml .Values.policies.defaultLimitRange.defaultRequest | nindent 14 }}
+{{- end }}

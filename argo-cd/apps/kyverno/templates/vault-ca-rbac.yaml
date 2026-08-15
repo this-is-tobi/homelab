@@ -1,29 +1,41 @@
----
-# Allow kyverno-background-controller to manage vault-ca secrets cluster-wide
-# Required for generate rule with synchronize: true
+# RBAC for the sync-vault-ca generate policy (templates/vault-ca-sync.yaml).
+#
+# Read side (this file): the policy's apiCall GETs one specific secret —
+# vault-operator-system/vault-tls — so the read is scoped with resourceNames
+# to exactly that object. Both controllers get it: the background controller
+# resolves the apiCall when processing UpdateRequests, and the admission
+# controller may evaluate rule context on the trigger path depending on the
+# kyverno version.
+#
+# Write side (values.yaml backgroundController.rbac.clusterRole
+# .extraResources): creating the generated vault-ca secret/configmap CANNOT
+# be scoped with resourceNames — Kubernetes RBAC never matches resourceNames
+# for `create` (the object name is unknown at authorization time), and
+# kyverno's own SubjectAccessReview at policy admission carries no
+# resourceName either. Kind-scoped (secrets+configmaps only) is the real
+# minimum there.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kyverno:generate-vault-ca
+  name: kyverno:read-vault-ca-source
 rules:
 - apiGroups: [""]
   resources: ["secrets"]
-  resourceNames: ["vault-ca"]
-  verbs: ["get", "list", "create", "update", "patch", "delete"]
-- apiGroups: [""]
-  resources: ["configmaps"]
-  resourceNames: ["vault-ca"]
-  verbs: ["get", "list", "create", "update", "patch", "delete"]
+  resourceNames: ["vault-tls"]
+  verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kyverno:generate-vault-ca
+  name: kyverno:read-vault-ca-source
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kyverno:generate-vault-ca
+  name: kyverno:read-vault-ca-source
 subjects:
 - kind: ServiceAccount
   name: kyverno-background-controller
+  namespace: kyverno
+- kind: ServiceAccount
+  name: kyverno-admission-controller
   namespace: kyverno
