@@ -1,0 +1,140 @@
+name: Lint & test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck
+        run: shellcheck -S warning run.sh scripts/*.sh
+
+  ansible-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ansible-lint and collections
+        run: |
+          pip install ansible-lint
+          ansible-galaxy collection install -r ansible/collections/requirements.yml
+      - name: Provide a dummy vault password + plaintext example vault
+        # The committed vault.yml is AES256-encrypted with the operator's key;
+        # CI can't (and must not) decrypt it. Substitute the documented
+        # plaintext example so lint never depends on decryption behaviour.
+        run: |
+          echo ci-dummy > ansible/.vault_password
+          cp ansible/inventory-example/group_vars/vault.yml ansible/inventory/group_vars/vault.yml
+      - name: Run ansible-lint
+        working-directory: ansible
+        run: ansible-lint
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Install kubeconform
+        env:
+          KUBECONFORM_VERSION: v0.7.0
+        run: |
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kubeconform
+      - name: Add chart repositories from Chart.yaml dependencies
+        run: |
+          set -euo pipefail
+          i=0
+          for repo in $(yq -N '.dependencies[]?.repository' utils/helm/Chart.yaml argo-cd/apps/*/Chart.yaml 2>/dev/null | grep '^http' | sort -u); do
+            i=$((i + 1))
+            helm repo add "repo$i" "$repo"
+          done
+          helm repo update
+      - name: Lint, render and validate every chart
+        run: |
+          set -euo pipefail
+          failures=0
+          for chart in utils/helm argo-cd/apps/*/; do
+            chart="${chart%/}"
+            [ -f "$chart/Chart.yaml" ] || continue
+            name="$(basename "$chart")"
+            # Render each app chart the way production does: against a real
+            # instance values file (homelab first, the documented _example
+            # template as fallback). Charts with `required` values get them
+            # via --set instead.
+            args=()
+            case "$name" in
+              instance-manager) args=(--set instance.name=ci --set repoURL=https://example.com/ci.git) ;;
+              root-manager)     args=(--set repoURL.sources=https://example.com/ci.git) ;;
+              *)
+                for inst in homelab _example; do
+                  for scope in core tenant; do
+                    vf="argo-cd/instances/$inst/values/$scope/$name.yaml"
+                    if [ -f "$vf" ]; then args=(-f "$vf"); break 2; fi
+                  done
+                done
+                ;;
+            esac
+            echo "::group::$name ${args[*]:-}"
+            if [ -f "$chart/Chart.lock" ]; then
+              helm dependency build "$chart" >/dev/null
+            fi
+            helm lint --quiet "$chart" "${args[@]+"${args[@]}"}"
+            # Render and schema-validate. CRD-typed resources (Applications,
+            # ClusterPolicies, ...) have no upstream schema — skipped via
+            # -ignore-missing-schemas; core types still get checked.
+            helm template ci "$chart" "${args[@]+"${args[@]}"}" \
+              | kubeconform -ignore-missing-schemas -strict -summary \
+              || failures=$((failures + 1))
+            echo "::endgroup::"
+          done
+          exit "$failures"
+
+  go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: utils
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: utils/go.mod
+          cache-dependency-path: utils/go.sum
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "gofmt needed on:"; echo "$unformatted"; exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go test
+        run: go test ./...
+      - name: go build
+        run: go build ./...
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # gitleaks-action resolves the PR commit range through the API.
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -111,6 +111,11 @@ gitea:
       server:
         DOMAIN: ""
         ROOT_URL: ""
+        # Explicit on purpose: the upstream chart only defaults HTTP_PORT from
+        # a helper that runs AFTER the http Service template is rendered, so
+        # without this the Service ships `targetPort:` empty (the API server
+        # silently defaults it — but rendered manifests fail schema checks).
+        HTTP_PORT: 3000
         SSH_LISTEN_PORT: 2222
       openid:
         ENABLE_OPENID_SIGNIN: true

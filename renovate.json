@@ -1,0 +1,110 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 5,
+  "helmv3": {
+    "managerFilePatterns": [
+      "/(^|/)Chart\\.yaml$/"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Group all kyverno-related updates",
+      "matchPackageNames": [
+        "/kyverno/"
+      ],
+      "groupName": "kyverno"
+    },
+    {
+      "description": "Major chart bumps often carry breaking values changes \u2014 never automerge, flag loudly",
+      "matchManagers": [
+        "helmv3"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "labels": [
+        "dependencies",
+        "major"
+      ]
+    },
+    {
+      "description": "kubectl in utils/Dockerfile tracks the cluster's k3s minor \u2014 only patch bumps automatically, minors are bumped by hand together with k3sVersion",
+      "matchDepNames": [
+        "kubernetes/kubernetes"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "enabled": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Pinned tool versions in utils/Dockerfile ARGs",
+      "managerFilePatterns": [
+        "/^utils/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG VAULT_VERSION=(?<currentValue>[0-9.]+)"
+      ],
+      "depNameTemplate": "hashicorp/vault",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^utils/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG KUBECTL_VERSION=(?<currentValue>v[0-9.]+)"
+      ],
+      "depNameTemplate": "kubernetes/kubernetes",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^utils/Dockerfile$/"
+      ],
+      "matchStrings": [
+        "ARG HELM_VERSION=(?<currentValue>v[0-9.]+)"
+      ],
+      "depNameTemplate": "helm/helm",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "k3s version pin (inventory example, real inventory, role default \u2014 bumped together)",
+      "managerFilePatterns": [
+        "/^ansible/(inventory(-example)?/group_vars/k3s\\.ya?ml|roles/k3s/download/defaults/main\\.ya?ml)$/"
+      ],
+      "matchStrings": [
+        "k3sVersion: \"(?<currentValue>v[^\"]+)\""
+      ],
+      "depNameTemplate": "k3s-io/k3s",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Gateway API CRD bundle applied by run.sh",
+      "managerFilePatterns": [
+        "/^run\\.sh$/"
+      ],
+      "matchStrings": [
+        "GATEWAY_API_VERSION=\"(?<currentValue>v[0-9.]+)\""
+      ],
+      "depNameTemplate": "kubernetes-sigs/gateway-api",
+      "datasourceTemplate": "github-releases"
+    }
+  ]
+}
