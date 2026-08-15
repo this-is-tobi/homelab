@@ -1,24 +1,56 @@
 ---
+# Primary election is inventory-driven: the first host of the `masters` group
+# bootstraps the cluster (--cluster-init), everyone else joins it. Do NOT use
+# ansible_facts.default_ipv4 for this — the default route may sit on another
+# interface (second NIC, VLAN, WireGuard) than ansible_host, which would
+# silently leave the cluster with no --cluster-init master at all.
+- name: Determine whether this host is the primary master
+  ansible.builtin.set_fact:
+    masters_is_primary: "{{ inventory_hostname == groups['masters'][0] }}"
+
 - name: Define masters init args
   ansible.builtin.set_fact:
     k3s_init_server_args: >-
-      {{ '--cluster-init' if (ansible_facts['default_ipv4']['address'] == k3sMasterIP)
+      {{ '--cluster-init' if masters_is_primary
       else '--server https://' + k3sApiServerEndpoint + ':6443 --token-file /etc/rancher/k3s/token' }}
   no_log: true
 
+# Same fallback chain as the workers role: prefer the runtime token fact set
+# on the primary master earlier in this run, then the vaulted k3sToken, then
+# the token fetched to the controller by a previous run
+# (inventory/group_vars/.k3sToken) for --limit runs on a single secondary.
+- name: Resolve k3s join token (secondary masters)
+  ansible.builtin.set_fact:
+    masters_k3s_join_token: >-
+      {{ (hostvars[groups['masters'][0]]['k3s_token'] | default(''))
+         or (k3sToken | default(''))
+         or lookup('ansible.builtin.file',
+                   playbook_dir + '/inventory/group_vars/.k3sToken',
+                   errors='ignore')
+         or '' }}
+  no_log: true
+  when: not masters_is_primary
+
+- name: Assert k3s join token is available (secondary masters)
+  ansible.builtin.assert:
+    that:
+      - masters_k3s_join_token | trim | length > 0
+    fail_msg: >-
+      No k3s join token available: run the play with the primary master
+      included, set vault_k3s_token in inventory/group_vars/vault.yml, or
+      make sure inventory/group_vars/.k3sToken exists from a previous run.
+    quiet: true
+  when: not masters_is_primary
+
 - name: Deploy k3s token file for joining masters
-  # k3s_token is a runtime fact set on the primary master later in this role,
-  # so it only exists when the primary is in the play — under a --limit run on
-  # a single secondary master, fall back to the vaulted k3sToken (the same
-  # token workers join with).
   ansible.builtin.copy:
-    content: "{{ hostvars[groups['masters'][0]]['k3s_token'] | default(k3sToken) }}"
+    content: "{{ masters_k3s_join_token | trim }}"
     dest: /etc/rancher/k3s/token
     owner: root
     group: root
     mode: "0600"
   no_log: true
-  when: ansible_facts['default_ipv4']['address'] != k3sMasterIP
+  when: not masters_is_primary
 
 - name: Copy k3s service file
   register: k3s_service
@@ -30,14 +62,29 @@
     mode: "0644"
 
 - name: Enable and check k3s service
+  register: masters_k3s_started
   ansible.builtin.systemd:
     name: k3s
     daemon_reload: true
-    state: restarted
+    state: started
     enabled: true
   timeout: 300
   retries: 3
   delay: 10
+
+# Only restart when the unit actually changed — an idempotent re-run must
+# never bounce the control plane (the old unconditional `state: restarted`
+# rolled the whole control plane on every run). Skipped when the task above
+# just started the service (fresh install / stopped service), which already
+# runs the new unit. The play runs serial: 1, so this stays a rolling restart.
+- name: Restart k3s server to apply changed unit
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+  timeout: 300
+  retries: 3
+  delay: 10
+  when: k3s_service.changed and not masters_k3s_started.changed
 
 - name: Wait for node-token
   ansible.builtin.wait_for:
@@ -61,7 +108,7 @@
     dest: "{{ playbook_dir }}/inventory/group_vars/.k3sToken"
     mode: "0600"
   no_log: true
-  when: ansible_facts['default_ipv4']['address'] == k3sMasterIP
+  when: masters_is_primary
 
 - name: Create directory .kube
   ansible.builtin.file:
@@ -90,25 +137,27 @@
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/kubectl
     state: link
+    force: true
 
 - name: Create crictl symlink
   ansible.builtin.file:
     src: /usr/local/bin/k3s
     dest: /usr/local/bin/crictl
     state: link
+    force: true
 
 - name: Fetch kube config
   ansible.builtin.fetch:
     src: "{{ ansible_facts['user_dir'] }}/.kube/config"
     dest: ~/.kube/config.d/homelab
     flat: true
-  when: ansible_facts['default_ipv4']['address'] == k3sMasterIP
+  when: masters_is_primary
 
 - name: Get cluster CA data
   ansible.builtin.shell:
     cmd: |
       kubectl config view --raw -o jsonpath='{ .clusters[0].cluster.certificate-authority-data }'
-  when: ansible_facts['default_ipv4']['address'] == k3sMasterIP
+  when: masters_is_primary
   register: k3s_ca_data
   changed_when: false
 
@@ -119,4 +168,4 @@
     content: "{{ k3s_ca_data.stdout }}"
     dest: "{{ playbook_dir }}/inventory/group_vars/.k3sCaData"
     mode: "0600"
-  when: ansible_facts['default_ipv4']['address'] == k3sMasterIP
+  when: masters_is_primary

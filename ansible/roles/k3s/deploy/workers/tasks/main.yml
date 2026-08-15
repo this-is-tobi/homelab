@@ -7,9 +7,35 @@
     group: root
     mode: "0700"
 
+# Same fallback chain as the masters role: prefer the runtime token fact read
+# from the primary master earlier in this run (the only source that exists on
+# a fresh install, where the vaulted k3sToken is still empty), then the
+# vaulted k3sToken, then the token fetched to the controller by a previous
+# masters run (inventory/group_vars/.k3sToken) for --limit runs.
+- name: Resolve k3s join token
+  ansible.builtin.set_fact:
+    workers_k3s_join_token: >-
+      {{ (hostvars[groups['masters'][0]]['k3s_token'] | default(''))
+         or (k3sToken | default(''))
+         or lookup('ansible.builtin.file',
+                   playbook_dir + '/inventory/group_vars/.k3sToken',
+                   errors='ignore')
+         or '' }}
+  no_log: true
+
+- name: Assert k3s join token is available
+  ansible.builtin.assert:
+    that:
+      - workers_k3s_join_token | trim | length > 0
+    fail_msg: >-
+      No k3s join token available: run the masters play first (full run),
+      set vault_k3s_token in inventory/group_vars/vault.yml, or make sure
+      inventory/group_vars/.k3sToken exists from a previous masters run.
+    quiet: true
+
 - name: Deploy k3s token file
   ansible.builtin.copy:
-    content: "{{ k3sToken }}"
+    content: "{{ workers_k3s_join_token | trim }}"
     dest: /etc/rancher/k3s/token
     owner: root
     group: root
@@ -17,6 +43,7 @@
   no_log: true
 
 - name: Copy k3s service file
+  register: workers_k3s_service
   ansible.builtin.template:
     src: k3s.service.j2
     dest: "{{ k3sSystemdDir }}/k3s.service"
@@ -25,9 +52,21 @@
     mode: "0644"
 
 - name: Enable and check k3s service
+  register: workers_k3s_started
   ansible.builtin.systemd:
     name: k3s
     daemon_reload: true
     state: started
     enabled: true
   timeout: 360
+
+# Only restart when the unit actually changed — an idempotent re-run must
+# never bounce the agents. Skipped when the task above just started the
+# service (fresh install), which already runs the new unit. The play runs
+# serial: 1, so this stays rolling.
+- name: Restart k3s agent to apply changed unit
+  ansible.builtin.systemd:
+    name: k3s
+    state: restarted
+  timeout: 360
+  when: workers_k3s_service.changed and not workers_k3s_started.changed
