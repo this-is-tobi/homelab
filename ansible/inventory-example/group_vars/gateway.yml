@@ -23,10 +23,19 @@ pihole:
   password: "{{ vault_pihole_password }}"
 wireguard:
   enabled: false
+  # wg-easy v15 (config in its own DB, seeded from INIT_* on FIRST start —
+  # later changes go through the UI or a fresh /services/wireguard/.wg-easy).
   version: "15"
   domain: "vpn.{{ rootDomain }}"
+  # Admin UI account (min 12-char password; auto-generated when empty).
+  adminUser: admin
   password: "{{ vault_wireguard_password }}"
+  # VPN client network. `ipv4Cidr` wins; the legacy `ipRange: 10.8.0.x` form
+  # is converted to a /24.
   ipRange: 10.8.0.x
+  # ipv4Cidr: 10.8.0.0/24
+  # ipv6Cidr: fd42:42:42::/64
+  # disableIpv6: true   # IPv4-only LAN (default); false adds the v6 sysctls
   allowedIps: "0.0.0.0/0, ::/0"
 crowdsec:
   enabled: false

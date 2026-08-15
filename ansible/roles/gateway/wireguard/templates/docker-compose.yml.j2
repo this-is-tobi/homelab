@@ -4,21 +4,32 @@ services:
     container_name: wg-easy
     restart: unless-stopped
     env_file:
+      # INIT_USERNAME / INIT_PASSWORD (admin credentials, 0600)
       - .env.wireguard
+    # wg-easy v15: configuration lives in its database and is seeded from the
+    # INIT_* variables on the FIRST start only (an existing volume keeps its
+    # settings — change them in the UI afterwards, or wipe ./.wg-easy).
     environment:
-      WG_HOST: "{{ wireguard.domain }}"
-      WG_DEFAULT_DNS: "{{ gatewayIp }}, 9.9.9.9"
-      WG_DEFAULT_ADDRESS: "{{ wireguard.ipRange | default('10.6.0.x') }}"
-      WG_ALLOWED_IPS: "{{ wireguard.allowedIps | default('0.0.0.0/0, ::/0') }}"
-      WG_POST_UP: ""
-      WG_POST_DOWN: ""
+      INIT_ENABLED: "true"
+      INIT_HOST: "{{ wireguard.domain }}"
+      INIT_PORT: "51820"
+      INIT_DNS: "{{ gatewayIp }},9.9.9.9"
+      INIT_IPV4_CIDR: "{{ gateway_wireguard_ipv4_cidr }}"
+      INIT_IPV6_CIDR: "{{ wireguard.ipv6Cidr | default('fd42:42:42::/64') }}"
+      INIT_ALLOWED_IPS: "{{ (wireguard.allowedIps | default('0.0.0.0/0, ::/0')) | replace(' ', '') }}"
+      # The UI is bound to 127.0.0.1 (see ports) and reached over an SSH
+      # tunnel — plain HTTP, so the session cookie must not be Secure-only.
+      INSECURE: "true"
+      DISABLE_IPV6: "{{ 'true' if (wireguard.disableIpv6 | default(true)) else 'false' }}"
     volumes:
       - ./.wg-easy:/etc/wireguard
+      - /lib/modules:/lib/modules:ro
     ports:
       - 51820:51820/udp
       - 127.0.0.1:51821:51821/tcp
     cap_add:
       - NET_ADMIN
+      - SYS_MODULE
     security_opt:
       - no-new-privileges:true
     deploy:
@@ -28,10 +39,17 @@ services:
     sysctls:
       - net.ipv4.ip_forward=1
       - net.ipv4.conf.all.src_valid_mark=1
+{% if not (wireguard.disableIpv6 | default(true)) %}
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.default.forwarding=1
+{% endif %}
     networks:
       - homelab
 
 networks:
   homelab:
     driver: bridge
-
+{% if not (wireguard.disableIpv6 | default(true)) %}
+    enable_ipv6: true
+{% endif %}

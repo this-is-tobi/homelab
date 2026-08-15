@@ -24,6 +24,8 @@ Using the web interface, you can enable/disable ad and tracker blocking, add a l
 
 Wireguard's web interface lets you create / delete / activate / deactivate VPN users, download their configuration file and display the user's QrCode. With this user configuration file, a user can access the homelab network to perform an ssh connection to the machines and then request the Kubernetes api server.
 
+The gateway role deploys [wg-easy](https://github.com/wg-easy/wg-easy) v15: the admin account and network settings are seeded from the inventory (`wireguard.*`) on the container's first start and afterwards live in wg-easy's own database — later changes are made in the UI (or by wiping `/services/wireguard/.wg-easy`). The UI is bound to `127.0.0.1:51821` on the gateway; reach it through an SSH tunnel (`ssh -L 51821:127.0.0.1:51821 <gateway>`). Every `adminUsers` entry gets a VPN client of the same name; `state: absent` deletes it.
+
 ### CrowdSec
 
 [CrowdSec](https://www.crowdsec.net/) is an open-source security engine that analyses logs from various sources (HAProxy, sshd, syslog) and detects malicious behaviour using community-curated scenarios. Detected attackers are blocked at the network level via an nftables firewall bouncer.

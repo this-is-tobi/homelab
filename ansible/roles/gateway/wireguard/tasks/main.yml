@@ -35,11 +35,29 @@
                          length=24, chars=['ascii_letters', 'digits']) }}
       no_log: true
 
+    # wg-easy v15 refuses passwords shorter than 12 characters at setup.
     - name: Assert wireguard admin password is set
       ansible.builtin.assert:
         that:
-          - gateway_wireguard_password | length > 0
-        fail_msg: "wireguard admin password resolved empty — refusing to deploy an unauthenticated admin UI"
+          - gateway_wireguard_password | length >= 12
+        fail_msg: "wireguard admin password must be at least 12 characters (wg-easy v15) — refusing to deploy"
+        quiet: true
+
+    # v15 takes a CIDR; the legacy `ipRange: 10.8.0.x` form is still accepted
+    # and converted to /24.
+    - name: Resolve wireguard IPv4 CIDR
+      ansible.builtin.set_fact:
+        gateway_wireguard_ipv4_cidr: >-
+          {{ wireguard.ipv4Cidr
+             if (wireguard.ipv4Cidr | default('') | length > 0)
+             else (wireguard.ipRange | default('10.8.0.x')) | regex_replace('\.x$', '.0/24') }}
+
+    - name: Assert wireguard IPv4 CIDR is valid
+      ansible.builtin.assert:
+        that:
+          # ipaddr('net') returns the network string, or False when invalid
+          - (gateway_wireguard_ipv4_cidr | ansible.utils.ipaddr('net')) is string
+        fail_msg: "wireguard.ipv4Cidr / ipRange does not resolve to a valid IPv4 network (got '{{ gateway_wireguard_ipv4_cidr }}')"
         quiet: true
 
     - name: Create wireguard service dir
@@ -74,9 +92,26 @@
         files:
           - docker-compose.yml
 
-    # Offboarded users (state: absent) never get a VPN peer. Existing peers
-    # are not deleted here — remove them in the wg-easy UI.
-    - name: Create wireguard users
+    # The API accepts HTTP Basic auth on every call (no session needed) and
+    # is bound to 127.0.0.1 — so this runs on the gateway. Retried while the
+    # container finishes its first-start setup.
+    - name: List wireguard clients
+      ansible.builtin.uri:
+        url: http://127.0.0.1:51821/api/client
+        url_username: "{{ wireguard.adminUser | default('admin') }}"
+        url_password: "{{ gateway_wireguard_password }}"
+        force_basic_auth: true
+        return_content: true
+        status_code: [200]
+      register: gateway_wireguard_clients
+      until: gateway_wireguard_clients.status == 200
+      retries: 12
+      delay: 5
+      no_log: true
+
+    # One client per admin user; `state: absent` deletes the client.
+    - name: Manage wireguard clients
       ansible.builtin.include_tasks: users.yml
-      loop: "{{ adminUsers | selectattr('state', 'undefined') | list
-                + adminUsers | selectattr('state', 'defined') | rejectattr('state', 'equalto', 'absent') | list }}"
+      loop: "{{ adminUsers }}"
+      loop_control:
+        label: "{{ item.username }}"

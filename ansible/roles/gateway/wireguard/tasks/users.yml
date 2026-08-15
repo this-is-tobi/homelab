@@ -1,25 +1,41 @@
 ---
-# The wg-easy UI/API is bound to 127.0.0.1 on the gateway (see
-# docker-compose.yml.j2), so these calls must run ON the gateway host —
-# from the controller the port is unreachable by design.
-- name: Login to wireguard
-  ansible.builtin.uri:
-    url: http://127.0.0.1:51821/api/session
-    force_basic_auth: true
-    body_format: json
-    body:
-      password: "{{ gateway_wireguard_password }}"
-    status_code: [200]
-  register: gateway_wireguard_login
-  no_log: true
+# One adminUsers entry -> one wg-easy client of the same name. Idempotent:
+# the current client list (gateway_wireguard_clients) is fetched once in
+# main.yml. Runs ON the gateway: the API is bound to 127.0.0.1 by design.
+- name: Set wireguard client facts
+  ansible.builtin.set_fact:
+    users_wg_state: "{{ item.state | default('present') }}"
+    users_wg_existing: "{{ gateway_wireguard_clients.json | selectattr('name', 'equalto', item.username) | list }}"
 
-- name: Create wireguard user
+- name: Create wireguard client
   ansible.builtin.uri:
-    url: http://127.0.0.1:51821/api/wireguard/client
+    url: http://127.0.0.1:51821/api/client
+    method: POST
+    url_username: "{{ wireguard.adminUser | default('admin') }}"
+    url_password: "{{ gateway_wireguard_password }}"
     force_basic_auth: true
     body_format: json
     body:
       name: "{{ item.username }}"
+      expiresAt: null
     status_code: [200]
-    headers:
-      Cookie: "{{ gateway_wireguard_login.cookies_string }}"
+  no_log: true
+  changed_when: true
+  when: users_wg_state == 'present' and users_wg_existing | length == 0
+
+# Offboarding: remove every client carrying the user's name.
+- name: Delete wireguard client
+  ansible.builtin.uri:
+    url: http://127.0.0.1:51821/api/client/{{ users_wg_client.id }}
+    method: DELETE
+    url_username: "{{ wireguard.adminUser | default('admin') }}"
+    url_password: "{{ gateway_wireguard_password }}"
+    force_basic_auth: true
+    status_code: [200]
+  loop: "{{ users_wg_existing }}"
+  loop_control:
+    loop_var: users_wg_client
+    label: "{{ users_wg_client.name }}"
+  no_log: true
+  changed_when: true
+  when: users_wg_state == 'absent'
