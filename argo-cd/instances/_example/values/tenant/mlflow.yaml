@@ -14,7 +14,12 @@ mlflow:
       host: mlflow-pg-cluster-rw
       database: mlflow
       user: mlflow
-      password: ""
+    # Credentials come from the CNPG app-user secret (see cnpg.credentials
+    # below) — never put the password inline here.
+    existingDatabaseSecret:
+      name: mlflow-pg-cluster-app
+      usernameKey: username
+      passwordKey: password
   artifactRoot:
     s3:
       bucket: mlflow
