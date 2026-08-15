@@ -534,6 +534,12 @@ backup-utils:
       env:
         VAULT_ADDR: "https://vault.vault-operator-system.svc.cluster.local:8200"
         # VAULT_EXTRA_ARGS: ""
+        # ⚠ Known gap: the backup-utils chart has no volume mounts, so the
+        # vault-ca secret (distributed by kyverno precisely for this) cannot
+        # be mounted and VAULT_CACERT cannot point at it. Skip-verify is
+        # bounded here by in-cluster svc DNS + the namespace NetworkPolicy,
+        # but the right fix is extraVolumes support in backup-utils, then
+        # flip this to "false" + VAULT_CACERT=/vault/tls/ca.crt.
         VAULT_SKIP_VERIFY: "true"
         S3_PATH_STYLE: "true"
         RETENTION: 30d
