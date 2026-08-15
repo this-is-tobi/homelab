@@ -1,0 +1,30 @@
+{{- /*
+Longhorn RecurringJobs — snapshot/backup schedules for PVC data. Without
+these (and defaultSettings.backupTarget), NOTHING protects volume contents:
+CNPG/Vault cover databases, but Gitea repositories/LFS, object stores and
+every other filesystem PVC live only on the 3 in-cluster replicas.
+
+Entries in .Values.backups.recurringJobs render one RecurringJob each. Jobs
+in the special group "default" apply to every volume that has no explicit
+recurring-job group of its own.
+*/ -}}
+{{- range .Values.backups.recurringJobs }}
+---
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Release.Namespace }}
+spec:
+  name: {{ .name }}
+  task: {{ .task | default "backup" }}
+  cron: {{ .cron | quote }}
+  groups:
+    {{- toYaml (.groups | default (list "default")) | nindent 2 }}
+  retain: {{ .retain | default 7 }}
+  concurrency: {{ .concurrency | default 2 }}
+  {{- with .labels }}
+  labels:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
