@@ -72,9 +72,52 @@ See `Installation > Topologies` for the all-in-one / SaaS / dedicated-core varia
 
 ### Backups & disaster recovery
 
-- Vault is the source of truth for all credentials — back up the `vault` PVC.
-- PostgreSQL clusters are managed by [CloudNative-PG](https://cloudnative-pg.io/), which can be configured to push base backups + WAL to S3-compatible storage (see `secrets.s3` blocks in the secret values).
-- ArgoCD is fully reconcilable from git — only `argocd-secret` (admin password / TLS) needs to survive a reinstall.
+Three data layers, three mechanisms — check each is actually **enabled** for your instance (several ship disabled until S3 credentials exist):
+
+| Layer | Mechanism | Where configured |
+| ----- | --------- | ---------------- |
+| PostgreSQL databases | [CloudNative-PG](https://cloudnative-pg.io/) base backups + WAL to S3 | `backup.enabled` in each app's instance values (gitea, keycloak, mattermost, crowdsec, ...) |
+| Vault (all credentials) | Raft snapshot CronJob to S3 | `backup-utils` block in `values/core/vault-operator.yaml` |
+| Everything else on PVCs (git repos/LFS, attachments, object stores) | Longhorn RecurringJobs: local snapshots + S3 backups | `backups.recurringJobs` + `longhorn.defaultSettings.backupTarget` in `values/core/longhorn.yaml` |
+
+ArgoCD itself is fully reconcilable from git — only `argocd-secret` (admin password / TLS) needs to survive a reinstall.
+
+> ⚠ Local Longhorn **snapshots** live on the same disks as the volume — they protect against application-level mistakes, not disk or cluster loss. Only `task: backup` jobs (with a configured `backupTarget`) leave the cluster.
+
+#### Restore runbooks
+
+An untested backup is not a backup — rehearse these on a scratch namespace before you need them.
+
+**PostgreSQL (CNPG)** — restore into a NEW cluster from S3 (never in place). The apps use the `cnpg-cluster` chart, whose recovery mode is selected with `mode` + a `recovery` block pointing at the OLD cluster's object store:
+
+```yaml
+# In the app's cnpg-cluster values (new cluster name, same bucket):
+mode: recovery
+recovery:
+  destinationPath: s3://<bucket>/<path>   # the OLD cluster's backup destinationPath
+  endpointURL: https://s3.<region>.<provider>
+  clusterName: <old-cluster-name>         # serverName the backups were written under
+  s3Credentials:
+    secretName: <existing-s3-secret>       # or create: true + inline keys
+```
+
+then let the operator bootstrap from the base backup + WAL. Details: [CNPG recovery docs](https://cloudnative-pg.io/documentation/current/recovery/).
+
+**Vault** — restore a raft snapshot (also the recovery path if the PVC is lost):
+
+```sh
+# Fetch the snapshot from S3, copy it into the pod, then restore:
+kubectl -n vault-operator-system cp vault-<date>.snap vault-0:/tmp/vault-<date>.snap
+kubectl -n vault-operator-system exec -it vault-0 -- \
+  vault operator raft snapshot restore -force /tmp/vault-<date>.snap
+# -force is required when the snapshot comes from a different cluster ID
+# (fresh reinstall). Unseal keys are those of the cluster that TOOK the
+# snapshot — keep them offline, and with operator-managed auto-unseal replace
+# the `vault-unseal-keys` secret with the OLD cluster's keys before restoring,
+# otherwise the operator can never unseal the restored data.
+```
+
+**Longhorn volume** — UI → Backup → select backup → *Restore Latest Backup* (creates a new volume), then create a PV/PVC from it and point the workload at it. CLI equivalent: create a `Volume` CR with `spec.fromBackup` set to the backup URL.
 
 ## Platform user
 
