@@ -1,0 +1,33 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pod-security-restricted
+  annotations:
+    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
+    # zero-replica RS history otherwise reports stale violations forever.
+    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
+    policies.kyverno.io/title: Enforce Pod Security Standards (Restricted) on tenant namespaces
+    policies.kyverno.io/description: >-
+      Enforces the Pod Security Standards RESTRICTED profile on tenant-tier
+      namespaces (ohmlab.fr/instance-scope=tenant, labelled by the
+      instance-manager AppSets). Restricted is what actually requires
+      allowPrivilegeEscalation: false, capabilities.drop: [ALL] and a
+      seccompProfile — the cluster-wide baseline policy permits all three.
+      failureAction comes from values (policies.podSecurityRestricted).
+spec:
+  background: true
+  rules:
+  - name: restricted
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          namespaceSelector:
+            matchLabels:
+              ohmlab.fr/instance-scope: "tenant"
+    validate:
+      failureAction: {{ .Values.policies.podSecurityRestricted.failureAction | default "Audit" }}
+      podSecurity:
+        level: restricted
+        version: latest
