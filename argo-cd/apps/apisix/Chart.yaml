@@ -13,7 +13,7 @@ dependencies:
 # bundled bitnami etcd subchart (bitnamilegacy images are frozen/unmaintained).
 - name: etcd
   alias: etcd
-  version: 0.8.1
+  version: 0.8.6
   repository: oci://registry-1.docker.io/cloudpirates
   condition: etcd.enabled
 # VSO integration — delivers the admin API credentials from Vault as the
