@@ -6,7 +6,7 @@ appVersion: "0.14.1"
 dependencies:
 - name: gha-runner-scale-set-controller
   alias: arc-controller
-  version: 0.14.1
+  version: 0.14.2
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
 - name: gha-runner-scale-set
   alias: runner-group-001 # TODO: make generic with labels to qualify the target repo
