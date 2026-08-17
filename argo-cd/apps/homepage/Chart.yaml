@@ -6,5 +6,5 @@ appVersion: "1.13.1"
 dependencies:
 - name: homepage
   alias: homepage
-  version: 1.8.5
+  version: 1.8.7
   repository: https://unknowniq.github.io/helm-charts/
