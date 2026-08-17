@@ -1,6 +1,6 @@
 dependencies:
 - name: homepage
   repository: https://unknowniq.github.io/helm-charts/
-  version: 1.8.4
-digest: sha256:623e8b5fadf494a4c905a2e35a68dd7911e419a14dcc55aab1886e16e3d38eeb
-generated: "2026-07-18T17:21:36.672816+02:00"
+  version: 1.8.5
+digest: sha256:79c73c8f4f5aaf45c9e6fdf15c6a5ee72ceda2d7d91ee51b4ab64da6c4e823e7
+generated: "2026-08-17T09:32:54.983548164Z"
