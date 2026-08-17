@@ -6,7 +6,7 @@ appVersion: "v1.21.0"
 dependencies:
 - name: cert-manager
   alias: cert-manager
-  version: v1.21.0
+  version: v1.21.1
   repository: https://charts.jetstack.io
 - name: scaleway-certmanager-webhook
   alias: scaleway-certmanager-webhook
