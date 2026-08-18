@@ -8,7 +8,7 @@
 coredns:
   enabled: false
   replicas: 1
-  image: rancher/mirrored-coredns-coredns:1.14.2
+  image: rancher/mirrored-coredns-coredns:1.14.6
   clusterIP: 10.43.0.10
   resources:
     requests:
