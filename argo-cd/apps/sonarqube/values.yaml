@@ -89,7 +89,7 @@ sonarqube:
     mountPath: /opt/sonarqube/web
   extraInitContainers:
   - name: download-webapp
-    image: docker.io/busybox:1.37
+    image: docker.io/busybox:1.38
     volumeMounts:
     - name: webapp
       mountPath: /web
