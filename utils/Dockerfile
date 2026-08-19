@@ -1,4 +1,4 @@
-ARG GO_IMAGE=docker.io/golang:1.26-alpine
+ARG GO_IMAGE=docker.io/golang:1.27-alpine
 ARG BASE_IMAGE=docker.io/alpine:3.24.1
 
 # =============================================================================
