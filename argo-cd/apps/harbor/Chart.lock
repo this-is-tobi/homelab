@@ -1,12 +1,12 @@
 dependencies:
 - name: harbor
   repository: https://helm.goharbor.io
-  version: 1.18.3
+  version: 1.19.2
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.3.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:a033cc57abb58593fa33406d9e988c2ec0d015367c476adf73d8629891481e34
-generated: "2026-08-20T03:02:47.881245289Z"
+digest: sha256:cd418553df0cfa97fbd48358f657b84a5d5a699186f9df83277bd76ddc80d8a0
+generated: "2026-08-20T14:48:37.434612554Z"
