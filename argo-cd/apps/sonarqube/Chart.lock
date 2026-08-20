@@ -1,12 +1,12 @@
 dependencies:
 - name: sonarqube
   repository: https://SonarSource.github.io/helm-chart-sonarqube
-  version: 2026.2.1
+  version: 2026.4.1
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.3.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:d385c26c0e236897d0cd5e942f599a5bafbf2effb0f1dd01df38db63b313cae0
-generated: "2026-08-20T03:04:33.161337995Z"
+digest: sha256:63ac059740f0e19fd23643b061c62a937c447e7584aebbb3a9f2c1c0177b3447
+generated: "2026-08-20T21:53:36.863548269Z"
