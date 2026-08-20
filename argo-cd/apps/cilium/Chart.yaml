@@ -5,7 +5,7 @@ version: 1.19.6
 appVersion: "1.19.6"
 dependencies:
   - name: cilium
-    version: 1.19.6
+    version: 1.20.1
     repository: https://helm.cilium.io/
   # Both are conditional so the chart can be rendered with ONLY the upstream
   # cilium subchart — needed when bootstrapping Cilium as the CNI on a fresh
