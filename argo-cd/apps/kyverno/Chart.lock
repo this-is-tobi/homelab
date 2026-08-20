@@ -1,6 +1,6 @@
 dependencies:
 - name: kyverno
   repository: https://kyverno.github.io/kyverno/
-  version: 3.8.2
-digest: sha256:4e1fb44a2deb15c31e81673129d2e4caefd8942d8463af8b1d7bcfe0bee881c8
-generated: "2026-07-18T17:21:25.03739+02:00"
+  version: 3.9.0
+digest: sha256:80ae277024b23ff271b2c08588ae37839c3e1b5b35e052243f6398fa3f19cf38
+generated: "2026-08-20T15:09:38.716846064Z"
