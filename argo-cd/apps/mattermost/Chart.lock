@@ -1,12 +1,12 @@
 dependencies:
 - name: mattermost-team-edition
   repository: https://helm.mattermost.com
-  version: 6.6.104
+  version: 6.6.105
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.3.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:89b5352675fe685a1638baf17efbd1a09a92c78f096ede4778dc2c80838a485c
-generated: "2026-08-20T03:03:19.454727496Z"
+digest: sha256:0671f93e5256d157c368f84ca17375a4ab373630890f0ae2f4a160a484a81cd2
+generated: "2026-08-20T03:09:01.01922507Z"
