@@ -1,7 +1,7 @@
 dependencies:
 - name: mlflow
   repository: https://community-charts.github.io/helm-charts
-  version: 0.16.4
+  version: 0.18.0
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.3.0
@@ -11,5 +11,5 @@ dependencies:
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:30357fc2dfd7bbc7e91e42de9b615c081174474f10d82d4e0c74a6395f362ecf
-generated: "2026-08-20T03:03:37.087684421Z"
+digest: sha256:408761efa16e2a5690800bffe883b8287289761f48ef5c2bb5a8ca2ab426882e
+generated: "2026-08-20T19:29:28.362941615Z"
