@@ -105,6 +105,18 @@
       ],
       "depNameTemplate": "kubernetes-sigs/gateway-api",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Custom ARM64 mattermost image (upstream has no official arm64 build) — tracked independently of the chart's helmv3 bump since the chart's appVersion/digest targets amd64 only",
+      "managerFilePatterns": [
+        "/^argo-cd/instances/.*/values/tenant/mattermost\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "tag: (?<currentValue>[0-9.]+)"
+      ],
+      "depNameTemplate": "ghcr.io/this-is-tobi/mirror/mattermost",
+      "datasourceTemplate": "docker"
     }
   ]
 }
