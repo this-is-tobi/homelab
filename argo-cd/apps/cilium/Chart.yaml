@@ -18,6 +18,6 @@ dependencies:
     condition: vso.enabled
   - name: oauth2-proxy
     alias: sso
-    version: 7.12.8
+    version: 7.18.0
     repository: https://oauth2-proxy.github.io/manifests
     condition: sso.enabled
