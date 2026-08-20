@@ -1,9 +1,9 @@
 dependencies:
 - name: rustfs
   repository: https://charts.rustfs.com
-  version: 0.8.0
+  version: 0.12.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:b676773a0ac6c0d0bc272fee3bef5bed5eca0e88228cc6692b64cdf7ff43bb9d
-generated: "2026-06-22T04:23:29.622257+02:00"
+digest: sha256:d4f2a3f880f3f5dd52d1c3ddcdb631f68b67fcb5a9d0aead2409db51281db026
+generated: "2026-08-20T20:07:53.756931114Z"
