@@ -1,7 +1,7 @@
 dependencies:
 - name: keycloak
   repository: oci://registry-1.docker.io/cloudpirates
-  version: 0.21.28
+  version: 0.21.30
 - name: keycloak-config-cli
   repository: https://jkroepke.github.io/helm-charts
   version: 1.3.7
@@ -11,5 +11,5 @@ dependencies:
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:265b9362bb8067c6e4f2838d0a5d5f66192f1f2f8249eaba561098d2a5cfc9fe
-generated: "2026-08-20T03:03:03.891982761Z"
+digest: sha256:ab5bdf21337a06b7f80dc9036470bdce6aa65f2659cbb1f7ea8f016c96582a2e
+generated: "2026-08-20T14:48:15.878776586Z"
