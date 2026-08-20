@@ -14,7 +14,7 @@ dependencies:
   repository: https://this-is-tobi.github.io/helm-charts
 - name: cnpg-cluster
   alias: cnpg
-  version: 2.1.0
+  version: 2.3.0
   repository: https://this-is-tobi.github.io/helm-charts
 - name: loki
   alias: loki
