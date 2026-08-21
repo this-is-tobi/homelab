@@ -4,9 +4,9 @@ dependencies:
   version: 1.24.0
 - name: vault-secrets-operator
   repository: https://helm.releases.hashicorp.com
-  version: 1.4.1
+  version: 1.5.1
 - name: backup-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.5.4
-digest: sha256:22cd677f664a6c5265c977d35be983cc7c9ffb48d7f91964ec804dc2ea97e58e
-generated: "2026-08-19T21:54:33.215566894Z"
+digest: sha256:4d64c519b082a2936f3d7d2304d937523b57a571a0e4630a1bdb340b04ab7b47
+generated: "2026-08-21T21:24:37.664078803Z"
