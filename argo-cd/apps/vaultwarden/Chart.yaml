@@ -6,7 +6,7 @@ appVersion: "1.35.8"
 dependencies:
 - name: vaultwarden
   alias: vaultwarden
-  version: 0.36.3
+  version: 0.46.0
   repository: https://guerzon.github.io/vaultwarden
 - name: vso-utils
   alias: vso
