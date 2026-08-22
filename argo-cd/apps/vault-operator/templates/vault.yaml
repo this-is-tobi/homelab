@@ -137,14 +137,79 @@ spec:
       prometheus_retention_time: {{ .Values.vault.config.telemetry.retention }}
       disable_hostname: {{ .Values.vault.config.telemetry.disableHostname }}
   externalConfig:
-    {{- if .Values.vault.externalConfig.policies }}
+    {{- if or .Values.vault.externalConfig.policies .Values.vault.externalConfig.tenantClusters }}
     policies:
-      {{- toYaml .Values.vault.externalConfig.policies | nindent 6 }}
+      {{- with .Values.vault.externalConfig.policies }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- /*
+        One policy per tenant app, pinned to that cluster's own path segment.
+        The shared app policies above use "platforms/+/+/<app>", which reads
+        across EVERY environment — fine for a single cluster, a cross-tenant
+        read once a second cluster exists. Never hand a tenant role one of
+        those; it gets this scoped policy instead.
+      */}}
+      {{- range $cluster := .Values.vault.externalConfig.tenantClusters }}
+      {{- range $app := $cluster.apps }}
+      - name: {{ printf "%s-%s" $cluster.name $app.name | quote }}
+        rules: |
+          path "homelab/data/platforms/{{ $cluster.name }}/{{ $app.tier | default "+" }}/{{ $app.name }}" {
+            capabilities = ["read"]
+          }
+      {{- end }}
+      {{- end }}
     {{- end }}
-    {{- if or .Values.vault.externalConfig.auth .Values.vault.externalConfig.oidcEnabled }}
+    {{- if or .Values.vault.externalConfig.auth .Values.vault.externalConfig.oidcEnabled .Values.vault.externalConfig.tenantClusters }}
     auth:
       {{- if .Values.vault.externalConfig.auth }}
       {{- toYaml .Values.vault.externalConfig.auth | nindent 6 }}
+      {{- end }}
+      {{- /*
+        One jwt mount per tenant cluster. Signature validation is pinned to
+        that cluster's public keys, so Vault never calls back into its API
+        server — unlike the kubernetes method, whose TokenReview call needs a
+        route from Vault to every tenant cluster.
+      */}}
+      {{- range $cluster := .Values.vault.externalConfig.tenantClusters }}
+      {{- $name := $cluster.name | required "name is required for every entry in vault.externalConfig.tenantClusters" }}
+      {{- $audience := $cluster.audience | default "vault" }}
+      {{- /*
+        apps is required rather than optional: the configurer casts this list
+        unconditionally, so a cluster with no roles fails the whole external
+        config rather than just its own mount.
+      */}}
+      {{- $apps := $cluster.apps | required (printf "apps is required for tenant cluster %s — a mount with no roles breaks the configurer" $name) }}
+      - type: jwt
+        path: {{ printf "jwt-%s" $name | quote }}
+        config:
+          # Local keys only. Setting jwks_url or oidc_discovery_url here would
+          # reintroduce the outbound dependency this mount exists to avoid.
+          jwt_validation_pubkeys: {{ $cluster.publicKeys | required (printf "publicKeys is required for tenant cluster %s" $name) | toJson }}
+          bound_issuer: {{ $cluster.issuer | default "https://kubernetes.default.svc.cluster.local" | quote }}
+        roles:
+        {{- range $app := $apps }}
+        {{- $ns := $app.namespace | required (printf "namespace is required for app %s in tenant cluster %s — without it bound_subject renders malformed and the role can never match" $app.name $name) }}
+        - name: {{ $app.name | required (printf "name is required for every app in tenant cluster %s" $name) | quote }}
+          # role_type must be explicit: a mount that has ever seen an oidc
+          # role otherwise defaults new roles to oidc, which rejects a direct
+          # JWT login.
+          role_type: jwt
+          user_claim: sub
+          bound_audiences: [{{ $audience | quote }}]
+          bound_subject: {{ printf "system:serviceaccount:%s:%s" $ns ($app.serviceAccount | default "vso") | quote }}
+          bound_claims:
+            # JSON-pointer syntax is required for nested claims: the token
+            # carries kubernetes.io as an object, so a flat
+            # "kubernetes.io/namespace" key fails login with `claim ... is
+            # missing` — which reads like a policy fault, not a syntax one.
+            "/kubernetes.io/namespace": {{ $ns | quote }}
+          token_policies: [{{ printf "%s-%s" $name $app.name | quote }}]
+          # `default` is intentionally left in place (Vault appends it): VSO
+          # renews its own token via auth/token/renew-self, which that policy
+          # grants and nothing else here does.
+          token_ttl: {{ $app.tokenTtl | default $cluster.tokenTtl | default "1h" | quote }}
+          token_max_ttl: {{ $app.tokenMaxTtl | default $cluster.tokenMaxTtl | default "4h" | quote }}
+        {{- end }}
       {{- end }}
       {{- if .Values.vault.externalConfig.oidcEnabled }}
       - type: oidc
