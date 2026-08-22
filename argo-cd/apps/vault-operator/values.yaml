@@ -99,6 +99,46 @@ vault:
       retention: 10m
       disableHostname: true
   externalConfig:
+    # Tenant clusters that pull their secrets from this hub Vault.
+    #
+    # Each entry renders a dedicated `jwt` auth mount validating that
+    # cluster's projected ServiceAccount tokens against pinned public keys.
+    # This is what makes hub-and-spoke work: the `kubernetes` auth method
+    # validates a token by calling TokenReview on the cluster that issued it,
+    # so it needs a route from Vault INTO every tenant API server — the
+    # opposite of the direction that survives NAT and firewalls. The jwt
+    # method validates the signature locally and needs no route at all.
+    #
+    # Empty by default, so a single-cluster instance renders no jwt mounts.
+    tenantClusters: []
+    # - name: tenant-a
+    #   # PEM public keys from that cluster:
+    #   #   kubectl --context <ctx> get --raw /openid/v1/jwks
+    #   # then convert each JWK to a PEM SubjectPublicKeyInfo. Public key
+    #   # material — safe to commit. Re-pin if the cluster's ServiceAccount
+    #   # signing keys are ever rotated, or every login there starts failing
+    #   # with "no known key successfully validated the token signature".
+    #   publicKeys:
+    #   - |
+    #     -----BEGIN PUBLIC KEY-----
+    #     ...
+    #     -----END PUBLIC KEY-----
+    #   # `iss` of that cluster's tokens. k3s gives EVERY cluster the same
+    #   # default value, so this pins nothing on its own — isolation comes
+    #   # from publicKeys. Set a distinct per-cluster issuer
+    #   # (--kube-apiserver-arg=service-account-issuer=...) to make it
+    #   # meaningful; k3s accepts the flag repeatedly, first signs and the
+    #   # rest still validate, so it can be rolled out without a flag day.
+    #   issuer: https://kubernetes.default.svc.cluster.local
+    #   # Audience VSO requests in its VaultAuth (`jwt.audiences`).
+    #   audience: vault
+    #   # Apps allowed to authenticate from that cluster. Each renders one
+    #   # role plus one policy scoped to platforms/<cluster>/<tier>/<app>.
+    #   apps:
+    #   - name: sonarqube
+    #     namespace: sonarqube
+    #     # serviceAccount: vso   # default
+    #     # tier: tenant          # default "+" (any tier)
     policies:
     - name: vault-post-config
       rules: |
