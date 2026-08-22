@@ -44,6 +44,47 @@
         "minor"
       ],
       "enabled": false
+    },
+    {
+      "description": "SonarQube server, its Community Build number and the community-branch-plugin are version-locked upstream (plugin X.Y.Z only supports Community Build X.Y.Z.*) \u2014 they move as one reviewed change, gated behind the dashboard so a server bump can never land ahead of a plugin release",
+      "matchDepNames": [
+        "sonarqube",
+        "SonarSource/sonarqube",
+        "mc1arke/sonarqube-community-branch-plugin"
+      ],
+      "groupName": "sonarqube",
+      "dependencyDashboardApproval": true,
+      "labels": [
+        "dependencies",
+        "sonarqube"
+      ],
+      "prBodyNotes": [
+        "#### Plugin compatibility checklist",
+        "- [ ] a [community-branch-plugin](https://github.com/mc1arke/sonarqube-community-branch-plugin/releases) release exists for this Community Build, and its `X.Y.Z` matches `community.buildNumber` in all 5 places (install URL, jar filename, `jvmOpts`, `jvmCeOpts`, webapp zip URL)",
+        "- [ ] [sonar-auth-oidc](https://github.com/sonar-auth-oidc/sonar-auth-oidc/releases) still declares this server version as supported",
+        "- [ ] [sonar-cnes-report](https://github.com/cnescatlab/sonar-cnes-report/releases) still declares this server version as supported"
+      ]
+    },
+    {
+      "description": "SonarQube plugins that version independently of the server \u2014 each release pins a supported server range, so read the notes before merging",
+      "matchDepNames": [
+        "sonar-auth-oidc/sonar-auth-oidc",
+        "cnescatlab/sonar-cnes-report"
+      ],
+      "labels": [
+        "dependencies",
+        "sonarqube"
+      ],
+      "prBodyNotes": [
+        "Check the release notes declare the running SonarQube version as supported before merging."
+      ]
+    },
+    {
+      "description": "sonar-auth-oidc tags are `v`-prefixed but its jar filename is not, so the two occurrences extract as separate deps \u2014 group them to keep both edits in one PR",
+      "matchDepNames": [
+        "sonar-auth-oidc/sonar-auth-oidc"
+      ],
+      "groupName": "sonar-auth-oidc"
     }
   ],
   "customManagers": [
@@ -108,7 +149,7 @@
     },
     {
       "customType": "regex",
-      "description": "Custom ARM64 mattermost image (upstream has no official arm64 build) — tracked independently of the chart's helmv3 bump since the chart's appVersion/digest targets amd64 only",
+      "description": "Custom ARM64 mattermost image (upstream has no official arm64 build) \u2014 tracked independently of the chart's helmv3 bump since the chart's appVersion/digest targets amd64 only",
       "managerFilePatterns": [
         "/^argo-cd/instances/.*/values/tenant/mattermost\\.ya?ml$/"
       ],
@@ -117,6 +158,59 @@
       ],
       "depNameTemplate": "ghcr.io/this-is-tobi/mirror/mattermost",
       "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "SonarQube Community Build number \u2014 the helmv3 bump only moves the chart, the running server version lives in `community.buildNumber` (image tag `<buildNumber>-community`) and is mirrored in our own appVersion",
+      "managerFilePatterns": [
+        "/^argo-cd/apps/sonarqube/(values|Chart)\\.yaml$/"
+      ],
+      "matchStrings": [
+        "buildNumber: (?<currentValue>[0-9][0-9.]+)",
+        "appVersion: \"(?<currentValue>[0-9][0-9.]+)\""
+      ],
+      "depNameTemplate": "SonarSource/sonarqube",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "loose"
+    },
+    {
+      "customType": "regex",
+      "description": "sonarqube-community-branch-plugin \u2014 the version appears in the release URL, the jar filename (install list plus both javaagent opts) and the webapp zip URL; all of them must carry the same value",
+      "managerFilePatterns": [
+        "/^argo-cd/apps/sonarqube/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "sonarqube-community-branch-plugin/releases/download/(?<currentValue>[0-9.]+)/",
+        "sonarqube-community-branch-plugin-(?<currentValue>[0-9.]+)\\.jar"
+      ],
+      "depNameTemplate": "mc1arke/sonarqube-community-branch-plugin",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "sonar-auth-oidc plugin (project moved from the vaulttec org, which the GitHub API does not redirect)",
+      "managerFilePatterns": [
+        "/^argo-cd/apps/sonarqube/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "sonar-auth-oidc/releases/download/(?<currentValue>v[0-9.]+)/",
+        "sonar-auth-oidc-plugin-(?<currentValue>[0-9.]+)\\.jar"
+      ],
+      "depNameTemplate": "sonar-auth-oidc/sonar-auth-oidc",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "sonar-cnes-report plugin",
+      "managerFilePatterns": [
+        "/^argo-cd/apps/sonarqube/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "sonar-cnes-report/releases/download/(?<currentValue>[0-9.]+)/",
+        "sonar-cnes-report-(?<currentValue>[0-9.]+)\\.jar"
+      ],
+      "depNameTemplate": "cnescatlab/sonar-cnes-report",
+      "datasourceTemplate": "github-releases"
     }
   ]
 }
