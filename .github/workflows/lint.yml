@@ -101,6 +101,51 @@ jobs:
           done
           exit "$failures"
 
+  sonarqube-plugins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check plugin/server version lockstep and artifact availability
+        # The community branch plugin only supports the exact Community Build it
+        # was released for, and its version is repeated in five places (install
+        # URL, jar filename, both javaagent opts, webapp zip URL). Renovate can
+        # propose a server bump the plugins don't support yet, so the invariant
+        # is enforced here rather than left to review.
+        run: |
+          set -uo pipefail
+          values=argo-cd/apps/sonarqube/values.yaml
+          chart=argo-cd/apps/sonarqube/Chart.yaml
+          ref='sonarqube-community-branch-plugin(-|/releases/download/)[0-9]+\.[0-9]+\.[0-9]+'
+          fail=0
+
+          build="$(yq '.sonarqube.community.buildNumber' "$values")"
+          app="$(yq '.appVersion' "$chart")"
+          [ "$app" = "$build" ] \
+            || { echo "::error::Chart.yaml appVersion ($app) != community.buildNumber ($build)"; fail=1; }
+          # Release tags occasionally carry a suffix the image tag drops
+          # (26.5.0.122743b vs 26.5.0.122743-community), so confirm the tag the
+          # chart will actually pull exists.
+          curl -fsS -o /dev/null --retry 3 \
+            "https://hub.docker.com/v2/repositories/library/sonarqube/tags/$build-community" \
+            || { echo "::error::no image sonarqube:$build-community"; fail=1; }
+
+          found="$(grep -oE "$ref" "$values" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+$' | sort -u | tr '\n' ' ')"
+          found="${found% }"
+          n="$(grep -oE "$ref" "$values" | wc -l | tr -d ' ')"
+          [ "$n" -eq 5 ] \
+            || { echo "::error::expected 5 branch-plugin references in $values, found $n"; fail=1; }
+          [ "$found" = "${build%.*}" ] \
+            || { echo "::error::branch plugin '$found' does not match Community Build $build"; fail=1; }
+
+          while read -r url; do
+            [ -n "$url" ] || continue
+            curl -fsSL --retry 3 -r 0-0 -o /dev/null "$url" \
+              || { echo "::error::unreachable plugin artifact: $url"; fail=1; }
+          done <<<"$(yq '.sonarqube.plugins.install[]' "$values"
+                    grep -oE 'https://[^ ]+sonarqube-webapp\.zip' "$values")"
+
+          exit "$fail"
+
   go:
     runs-on: ubuntu-latest
     defaults:
