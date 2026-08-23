@@ -69,7 +69,7 @@ vault:
     node-type: worker
   image:
     repository: hashicorp/vault
-    tag: 2.0.3
+    tag: 2.0.4
   bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:v1.33.1"
   service:
     type: ClusterIP
