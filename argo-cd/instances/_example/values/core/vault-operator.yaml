@@ -38,6 +38,64 @@ vault:
       disableHostname: true
   # External configuration (GitOps!)
   externalConfig:
+    # Multi-cluster secrets delivery: OPTIONAL, empty by default.
+    #
+    # This instance's Vault can act as a hub other Kubernetes clusters pull
+    # secrets from — for example a `tenant`-tier instance deployed as its
+    # own separate cluster rather than the tenant tier of THIS instance.
+    # Called "spoke" specifically so it doesn't collide with that existing
+    # core/tenant TIER vocabulary — a spoke cluster's apps can be in either
+    # tier, that's an unrelated axis.
+    #
+    # Why not just add another `kubernetes` auth role per cluster (like the
+    # roles below)? Kubernetes auth validates a ServiceAccount token by
+    # calling TokenReview on the cluster that ISSUED it — so this Vault
+    # would need a network route INTO every spoke cluster's API server, a
+    # reviewer credential there, and a separate mount per cluster
+    # (kubernetes_host is per-mount). That's backwards for a hub: spokes can
+    # already reach this Vault (it's the thing being exposed), the hub
+    # reaching back into each of them does not survive NAT/firewalls/churn.
+    #
+    # jwt auth instead validates the token's signature locally against
+    # pinned public keys — no route back to the spoke needed at all. Each
+    # entry below renders one `jwt-<name>` auth mount plus, per app, a role
+    # bound to that exact ServiceAccount identity and a policy scoped to
+    # that cluster's own KV path segment (never the shared `+`-wildcard
+    # policies above — those read across every environment, which is
+    # harmless with one cluster and a cross-tenant leak with two).
+    #
+    # spokeClusters: []
+    # - name: tenant                     # becomes the "cluster" path segment
+    #                                     # below and the auth mount "jwt-tenant"
+    #   # Pinned public keys, PEM-encoded. Get them from the SPOKE cluster
+    #   # (not this one):
+    #   #   kubectl --context <spoke-context> get --raw /openid/v1/jwks
+    #   # then convert each JWK to a PEM SubjectPublicKeyInfo — public key
+    #   # material, safe to commit. Re-pin whenever that cluster's
+    #   # ServiceAccount signing key rotates, or logins there start failing
+    #   # signature validation.
+    #   publicKeys:
+    #   - |
+    #     -----BEGIN PUBLIC KEY-----
+    #     ...
+    #     -----END PUBLIC KEY-----
+    #   # `iss` claim to require. k3s defaults EVERY cluster to the same
+    #   # value, so on its own this pins nothing — isolation actually comes
+    #   # from publicKeys above being unique per cluster. Only meaningful
+    #   # once the spoke's kube-apiserver sets a distinct
+    #   # --service-account-issuer (safe to roll out live: k3s accepts the
+    #   # flag repeatedly, the first entry signs, the rest still validate).
+    #   issuer: https://kubernetes.default.svc.cluster.local
+    #   # Audience the spoke's VaultAuth requests (jwt.audiences).
+    #   audience: vault
+    #   # One entry per app allowed to authenticate FROM that spoke cluster.
+    #   apps:
+    #   - name: sonarqube               # -> role "sonarqube", policy "tenant-sonarqube"
+    #     namespace: sonarqube          # namespace of the spoke's `vso` ServiceAccount
+    #     # serviceAccount: vso         # default, only override if renamed
+    #     # tier: tenant                # KV path segment (this app's existing
+    #     #                             # core/tenant tier) — default "+" (any)
+    #
     # Policies - no more shell scripts!
     policies:
       - name: argo-cd
