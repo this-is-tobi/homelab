@@ -257,6 +257,53 @@ Each app also gets a dedicated least-privilege Vault policy
 bound to the `vso` ServiceAccount **in the app's own namespace** — a role
 bound to the wrong namespace fails with `403 namespace not authorized`.
 
+#### Multi-cluster (spoke clusters)
+
+Everything above assumes VSO and Vault live in the same cluster — the
+default, and what every instance in this repo runs today. Vault can
+additionally act as a **hub** that separate Kubernetes clusters pull their
+own secrets from, via `vault.externalConfig.spokeClusters` in
+[argo-cd/apps/vault-operator/values.yaml](../argo-cd/apps/vault-operator/values.yaml)
+(shape documented, commented out, in
+[argo-cd/instances/_example/values/core/vault-operator.yaml](../argo-cd/instances/_example/values/core/vault-operator.yaml)).
+Not enabled on any instance in this repo; nothing changes until an instance
+sets it.
+
+A **spoke cluster** here means a separate physical/virtual Kubernetes
+cluster — for instance a `tenant`-tier instance ([Tier-flexible
+apps](03-installation.md#tier-flexible-apps)) deployed as its own cluster
+rather than the tenant tier of the hub's own instance. That is a different
+axis from the existing core/tenant **tier** split within one instance
+(above); a spoke cluster's apps can sit in either tier.
+
+```mermaid
+flowchart LR
+    subgraph hub[Hub cluster]
+        vault[(HashiCorp Vault)]
+    end
+    subgraph spoke[Spoke cluster]
+        vso[Vault Secrets Operator]
+        secret[Kubernetes Secret]
+        pod([App pod])
+    end
+
+    vso -->|1: jwt login, pinned pubkeys| vault
+    vso -->|2: read own path only| vault
+    vso -->|materializes| secret
+    pod -->|envFrom / volume| secret
+```
+
+The reason this needs a different Vault auth method, not just another
+`kubernetes`-auth role: that method validates a token by calling
+**TokenReview on the cluster that issued it**, so the hub would need a
+network route *into* every spoke's API server — the direction that does not
+survive NAT, firewalls, or a spoke cluster that comes and goes. `jwt` auth
+validates the token's signature locally against public keys pinned per
+spoke, so the hub never calls back into it. Isolation between spokes is
+therefore cryptographic (mismatched signature → rejected), not based on
+`bound_issuer` — Kubernetes gives every cluster the same default issuer, so
+that claim alone would tell spokes apart in name only.
+
 ### Security policies
 
 Four Kyverno ClusterPolicies guard admissions (see
