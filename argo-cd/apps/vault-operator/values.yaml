@@ -99,19 +99,25 @@ vault:
       retention: 10m
       disableHostname: true
   externalConfig:
-    # Tenant clusters that pull their secrets from this hub Vault.
+    # Remote clusters that pull their secrets from this hub Vault — a
+    # separate Kubernetes cluster (e.g. a `tenant`-tier instance under
+    # argo-cd/instances/), NOT the existing core/tenant tier split within
+    # one instance. Named "spoke" specifically to avoid colliding with that
+    # tier vocabulary: an entry below can itself contain apps in either tier
+    # (see `tier:` on each app), because both tiers of a remote cluster are
+    # equally "not this cluster" from the hub's point of view.
     #
     # Each entry renders a dedicated `jwt` auth mount validating that
     # cluster's projected ServiceAccount tokens against pinned public keys.
     # This is what makes hub-and-spoke work: the `kubernetes` auth method
     # validates a token by calling TokenReview on the cluster that issued it,
-    # so it needs a route from Vault INTO every tenant API server — the
+    # so it needs a route from Vault INTO every remote API server — the
     # opposite of the direction that survives NAT and firewalls. The jwt
     # method validates the signature locally and needs no route at all.
     #
     # Empty by default, so a single-cluster instance renders no jwt mounts.
-    tenantClusters: []
-    # - name: tenant-a
+    spokeClusters: []
+    # - name: spoke-a
     #   # PEM public keys from that cluster:
     #   #   kubectl --context <ctx> get --raw /openid/v1/jwks
     #   # then convert each JWK to a PEM SubjectPublicKeyInfo. Public key
@@ -138,7 +144,9 @@ vault:
     #   - name: sonarqube
     #     namespace: sonarqube
     #     # serviceAccount: vso   # default
-    #     # tier: tenant          # default "+" (any tier)
+    #     # tier is the EXISTING core/tenant split, scoped to this one app's
+    #     # KV path — unrelated to this being a spoke cluster entry.
+    #     # tier: tenant           # default "+" (any tier)
     policies:
     - name: vault-post-config
       rules: |
