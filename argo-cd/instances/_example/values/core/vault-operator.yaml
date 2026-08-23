@@ -65,8 +65,8 @@ vault:
     # harmless with one cluster and a cross-tenant leak with two).
     #
     # spokeClusters: []
-    # - name: tenant                     # becomes the "cluster" path segment
-    #                                     # below and the auth mount "jwt-tenant"
+    # - name: spoke-a                    # becomes the "cluster" path segment
+    #                                     # below and the auth mount "jwt-spoke-a"
     #   # Pinned public keys, PEM-encoded. Get them from the SPOKE cluster
     #   # (not this one):
     #   #   kubectl --context <spoke-context> get --raw /openid/v1/jwks
@@ -90,7 +90,7 @@ vault:
     #   audience: vault
     #   # One entry per app allowed to authenticate FROM that spoke cluster.
     #   apps:
-    #   - name: sonarqube               # -> role "sonarqube", policy "tenant-sonarqube"
+    #   - name: sonarqube               # -> role "sonarqube", policy "spoke-a-sonarqube"
     #     namespace: sonarqube          # namespace of the spoke's `vso` ServiceAccount
     #     # serviceAccount: vso         # default, only override if renamed
     #     # tier: tenant                # KV path segment (this app's existing
