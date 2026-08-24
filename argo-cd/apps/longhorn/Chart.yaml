@@ -14,5 +14,5 @@ dependencies:
   repository: https://this-is-tobi.github.io/helm-charts
 - name: oauth2-proxy
   alias: sso
-  version: 7.18.0
+  version: 10.7.0
   repository: https://oauth2-proxy.github.io/manifests
