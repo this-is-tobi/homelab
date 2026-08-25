@@ -6,7 +6,7 @@ appVersion: "2.35.1"
 dependencies:
 - name: coder
   alias: coder
-  version: 2.36.1
+  version: 2.36.3
   repository: https://helm.coder.com/v2
 - name: cnpg-cluster
   alias: cnpg
