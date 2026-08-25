@@ -6,7 +6,7 @@ appVersion: "1.6.1"
 dependencies:
 - name: outline
   alias: outline
-  version: 1.11.0
+  version: 2.2.2
   repository: https://helm.liam.sh
 - name: cnpg-cluster
   alias: cnpg
