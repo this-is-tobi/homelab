@@ -20,6 +20,7 @@ generates values, and writes them to Vault using deep-merge semantics
 
 Template placeholders:
   <random:N>          Cryptographic random alphanumeric string of length N
+  <hex:N>             Cryptographic random hex string of length N (N must be even)
   <uuid>              Random UUID v4
   <age:secret>        Age X25519 secret key (one per entry)
   <age:public>        Age X25519 public key (paired with secret)
