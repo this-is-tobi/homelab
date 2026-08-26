@@ -419,6 +419,12 @@ ohmlab:
     #     admin:
     #       username: "admin"
     #       password: "<random:24>"
+    #     app:
+    #       # Outline decodes both as 32 raw bytes, so they must be hex.
+    #       secretKey: "<hex:64>"
+    #       utilsSecret: "<hex:64>"
+    #     valkey:
+    #       password: "<random:32>"
     #     postgres:
     #       admin:
     #         username: "postgres"

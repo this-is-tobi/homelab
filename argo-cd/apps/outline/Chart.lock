@@ -1,12 +1,15 @@
 dependencies:
 - name: outline
-  repository: https://helm.liam.sh
-  version: 1.11.0
+  repository: https://community-charts.github.io/helm-charts
+  version: 0.9.3
+- name: valkey
+  repository: oci://registry-1.docker.io/cloudpirates
+  version: 0.25.5
 - name: cnpg-cluster
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.3.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:d12bc57739ed9c5b53baa1f865236019e493a9f8dbf5a329d94a80bdb85900cb
-generated: "2026-08-20T03:03:56.035637126Z"
+digest: sha256:08ea9dbeacda3b68b05ee56603f764fae6b03f2bfc5547787b43633873b221fb
+generated: "2026-08-26T02:07:48.619518+02:00"

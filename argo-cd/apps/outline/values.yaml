@@ -8,77 +8,78 @@ outline:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-dns-prod
     hosts:
-    - ""
+    - host: ""
+      paths:
+      - path: /
+        pathType: Prefix
     tls:
     - hosts:
       - ""
       secretName: ""
-  outline:
-    generateEncryptionKeys: false
-    defaultLanguage: en_US
-  environment:
-  - name: URL
-    value: ""
-  - name: DATABASE_URL
-    value: ""
-  - name: SECRET_KEY
-    value: ""
-  - name: UTILS_SECRET
-    value: ""
-  - name: AWS_ACCESS_KEY_ID
-    value: ""
-  - name: AWS_REGION
-    value: ""
-  - name: AWS_SECRET_ACCESS_KEY
-    value: ""
-  - name: AWS_S3_UPLOAD_BUCKET_URL
-    value: ""
-  - name: AWS_S3_UPLOAD_BUCKET_NAME
-    value: ""
-  - name: AWS_S3_FORCE_PATH_STYLE
-    value: "true"
-  - name: AWS_S3_ACL
-    value: private
-  - name: FILE_STORAGE_UPLOAD_MAX_SIZE
-    value: "26214400"
-  - name: OIDC_CLIENT_ID
-    value: ""
-  - name: OIDC_CLIENT_SECRET
-    value: ""
-  - name: OIDC_AUTH_URI
-    value: ""
-  - name: OIDC_TOKEN_URI
-    value: ""
-  - name: OIDC_USERINFO_URI
-    value: ""
-  - name: OIDC_USERNAME_CLAIM
-    value: email
-  - name: OIDC_DISPLAY_NAME
-    value: Keycloak
-  - name: OIDC_SCOPES
-    value: openid profile email groups roles
-  - name: SMTP_HOST
-    value: ""
-  - name: SMTP_PORT
-    value: ""
-  - name: SMTP_USERNAME
-    value: ""
-  - name: SMTP_PASSWORD
-    value: ""
-  - name: SMTP_FROM_EMAIL
-    value: ""
-  - name: REDIS_URL
-    value: "redis://outline-redis:6379"
+  url: ""
+  defaultLanguage: en_US
+  # The chart auto-generates SECRET_KEY/UTILS_SECRET when no external secret is
+  # given, which would re-roll them on every render and invalidate every stored
+  # session and encrypted field. Both come from Vault instead.
+  secretKeyExternalSecret:
+    name: outline-config
+    key: SECRET_KEY
+  utilsSecretExternalSecret:
+    name: outline-config
+    key: UTILS_SECRET
+  fileStorage:
+    mode: s3
+    uploadMaxSize: "26214400"
+    s3:
+      existingSecret: outline-s3
+      accessKeyIdSecretKey: S3_ACCESS_KEY
+      secretAccessKeySecretKey: S3_SECRET_KEY
+      bucket: outline
+      bucketUrl: ""
+      region: ""
+      forcePathStyle: true
+      acl: private
+  auth:
+    oidc:
+      enabled: true
+      clientId: outline
+      authUri: ""
+      tokenUri: ""
+      userInfoUri: ""
+      usernameClaim: email
+      displayName: Keycloak
+      scopes:
+      - openid
+      - profile
+      - email
+      - groups
+      - roles
+      existingSecret:
+        name: outline-sso
+        clientSecretKey: OIDC_CLIENT_SECRET
+  # Bundled subcharts are all off: postgres is the CNPG cluster below, redis is
+  # the valkey release below, and object storage is external.
   redis:
     enabled: false
   postgresql:
     enabled: false
-  cnpg:
-    enabled: false
   minio:
     enabled: false
-  dex:
-    enabled: false
+  externalRedis:
+    host: outline-valkey
+    port: 6379
+    existingSecret: outline-valkey-auth
+    usernameSecretKey: username
+    passwordSecretKey: password
+  externalPostgresql:
+    host: outline-pg-cluster-rw
+    port: 5432
+    username: outline
+    database: outline
+    existingSecret: outline-pg-cluster-app
+    passwordSecretKey: password
+  database:
+    sslMode: require
   resources:
     requests:
       memory: 512Mi
@@ -87,53 +88,34 @@ outline:
       memory: 1Gi
       cpu: "1"
 
-redis:
-  enabled: true
-  fullnameOverride: outline-redis
-  architecture: replication
+valkey:
+  fullnameOverride: outline-valkey
+  architecture: standalone
   replicaCount: 1
+  # Password auth — delivered from Vault via VSO (outline-valkey-auth secret);
+  # outline reads host/port/username/password and assembles the ioredis URL in
+  # its entrypoint.
   auth:
+    enabled: true
+    existingSecret: outline-valkey-auth
+    existingSecretPasswordKey: password
+  # Plain TCP: the outline chart's entrypoint builds the ioredis connection
+  # from host/port/username/password only, so it has no way to carry a CA or
+  # switch the scheme to TLS.
+  tls:
     enabled: false
-    # existingSecret: mysecret
-    # existingSecretPasswordKey: MY_KEY
-  # config:
-  #   content: ""
+  service:
+    port: 6379
   persistence:
     enabled: true
     size: 2Gi
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 50m
+      memory: 64Mi
     limits:
-      cpu: 500m
-      memory: 512Mi
-  # podSecurityContext:
-  #   runAsNonRoot: true
-  #   fsGroup: 10001
-  #   seccompProfile:
-  #     type: "RuntimeDefault"
-  # containerSecurityContext:
-  #   runAsUser: 10001
-  #   allowPrivilegeEscalation: false
-  #   capabilities:
-  #     drop: ["ALL"]
-  #   runAsNonRoot: true
-  #   seccompProfile:
-  #     type: RuntimeDefault
-  sentinel:
-    enabled: false
-    masterName: outline-redis
-    quorum: 2
-    downAfterMilliseconds: 30000
-    failoverTimeout: 180000
-    resources:
-      requests:
-        cpu: 50m
-        memory: 128Mi
-      limits:
-        cpu: 100m
-        memory: 256Mi
+      cpu: 250m
+      memory: 256Mi
 
 cnpg:
   fullnameOverride: outline-pg-cluster
@@ -202,6 +184,25 @@ vso:
       skipTLSVerify: false
       caCertSecretRef: vault-ca
   vaultStaticSecrets:
+    outlineConfig:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: outline-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: outline-config
+        create: true
+        type: Opaque
+        transformation:
+          excludes:
+          - ".*"
+          templates:
+            SECRET_KEY:
+              text: '{{ get .Secrets "app" | dig "secretKey" "" }}'
+            UTILS_SECRET:
+              text: '{{ get .Secrets "app" | dig "utilsSecret" "" }}'
     outlineS3:
       mount: ""
       path: ""
@@ -217,19 +218,11 @@ vso:
           excludes:
           - ".*"
           templates:
-            S3_ENDPOINT:
-              text: '{{ get .Secrets "s3" | dig "endpoint" "" }}'
-            S3_BUCKET_NAME:
-              text: '{{ get .Secrets "s3" | dig "bucketName" "" }}'
-            S3_BUCKET_PREFIX:
-              text: '{{ get .Secrets "s3" | dig "bucketPrefix" "" }}'
             S3_ACCESS_KEY:
               text: '{{ get .Secrets "s3" | dig "accessKey" "" }}'
             S3_SECRET_KEY:
               text: '{{ get .Secrets "s3" | dig "secretKey" "" }}'
-            S3_REGION:
-              text: '{{ get .Secrets "s3" | dig "region" "" }}'
-    outlineDbInfos:
+    outlineValkeyAuth:
       mount: ""
       path: ""
       type: kv-v2
@@ -237,19 +230,19 @@ vso:
       refreshAfter: 1h
       hmacSecretData: true
       destination:
-        name: outline-db-infos
+        name: outline-valkey-auth
         create: true
         type: Opaque
         transformation:
           excludes:
           - ".*"
           templates:
-            DB_URL:
-              text: 'postgresql://{{ get .Secrets "postgres" | dig "app" "username" "" }}:{{ get .Secrets "postgres" | dig "app" "password" "" }}@{{ get .Secrets "postgres" | dig "host" "" }}:{{ get .Secrets "postgres" | dig "port" "" }}/{{ get .Secrets "postgres" | dig "database" "" }}?sslmode=require'
-            DB_HOST:
-              text: '{{ get .Secrets "postgres" | dig "host" "" }}'
-            DB_PORT:
-              text: '{{ get .Secrets "postgres" | dig "port" "" }}'
+            # Valkey has no ACL users configured, so outline authenticates as
+            # the built-in `default` user with the requirepass secret.
+            username:
+              text: default
+            password:
+              text: '{{ get .Secrets "valkey" | dig "password" "" }}'
     outlineDbAdmin:
       mount: ""
       path: ""
