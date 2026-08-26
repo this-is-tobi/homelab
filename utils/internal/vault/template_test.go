@@ -52,6 +52,39 @@ func TestProcessRandomZeroLength(t *testing.T) {
 	}
 }
 
+func TestProcessHex(t *testing.T) {
+	result := process(t, map[string]any{
+		"a":        "<hex:64>",
+		"b":        "<hex:64>",
+		"prefixed": "key-<hex:8>-end",
+	})
+
+	a := result["a"].(string)
+	b := result["b"].(string)
+
+	if len(a) != 64 || len(b) != 64 {
+		t.Fatalf("expected 64-char values, got %d and %d", len(a), len(b))
+	}
+	if a == b {
+		t.Error("two <hex:64> placeholders produced the same value")
+	}
+	if !regexp.MustCompile(`^[0-9a-f]+$`).MatchString(a) {
+		t.Errorf("hex value contains non-hex characters: %q", a)
+	}
+
+	prefixed := result["prefixed"].(string)
+	if !regexp.MustCompile(`^key-[0-9a-f]{8}-end$`).MatchString(prefixed) {
+		t.Errorf("inline placeholder not replaced correctly: %q", prefixed)
+	}
+}
+
+func TestProcessHexOddLength(t *testing.T) {
+	engine := NewTemplateEngine(nil)
+	if _, err := engine.Process(map[string]any{"a": "<hex:7>"}); err == nil {
+		t.Error("expected error for <hex:7>, got nil")
+	}
+}
+
 func TestProcessUUID(t *testing.T) {
 	result := process(t, map[string]any{"a": "<uuid>", "b": "<uuid>"})
 

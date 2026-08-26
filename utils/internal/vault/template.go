@@ -2,6 +2,7 @@ package vault
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -17,6 +18,7 @@ const alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345
 
 var (
 	reRandom = regexp.MustCompile(`<random:(\d+)>`)
+	reHex    = regexp.MustCompile(`<hex:(\d+)>`)
 	reUUID   = regexp.MustCompile(`<uuid>`)
 	reAge    = regexp.MustCompile(`<age:(secret|public)>`)
 	reRef    = regexp.MustCompile(`<ref:([^#]+)#([^>]+)>`)
@@ -28,6 +30,7 @@ var (
 // Supported placeholders:
 //
 //	<random:N>   — cryptographically random alphanumeric string of length N
+//	<hex:N>      — cryptographically random hex string of length N (N must be even)
 //	<uuid>       — random UUID v4
 //	<age:secret> — age X25519 secret key (generated once per Process call)
 //	<age:public> — age X25519 public key (paired with the secret key)
@@ -108,6 +111,28 @@ func (e *TemplateEngine) processString(s string) (string, error) {
 		val, e := generateRandom(n)
 		if e != nil {
 			err = fmt.Errorf("generate random(%d): %w", n, e)
+			return match
+		}
+		return val
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Replace all <hex:N> (each gets a unique value)
+	s = reHex.ReplaceAllStringFunc(s, func(match string) string {
+		if err != nil {
+			return match
+		}
+		sub := reHex.FindStringSubmatch(match)
+		var n int
+		if _, e := fmt.Sscanf(sub[1], "%d", &n); e != nil {
+			err = fmt.Errorf("invalid hex length %q: %w", sub[1], e)
+			return match
+		}
+		val, e := generateHex(n)
+		if e != nil {
+			err = fmt.Errorf("generate hex(%d): %w", n, e)
 			return match
 		}
 		return val
@@ -248,6 +273,25 @@ func generateRandom(length int) (string, error) {
 	}
 
 	return string(result), nil
+}
+
+// generateHex produces a cryptographically random lowercase hex string of the
+// requested character length. Consumers that need N random bytes (an AES key,
+// for instance) ask for 2N characters.
+func generateHex(length int) (string, error) {
+	if length <= 0 {
+		return "", fmt.Errorf("length must be positive, got %d", length)
+	}
+	if length%2 != 0 {
+		return "", fmt.Errorf("length must be even, got %d", length)
+	}
+
+	buf := make([]byte, length/2)
+	if _, err := rand.Read(buf); err != nil {
+		return "", fmt.Errorf("crypto/rand: %w", err)
+	}
+
+	return hex.EncodeToString(buf), nil
 }
 
 // resolveBcryptFields walks a processed data map and replaces any remaining
