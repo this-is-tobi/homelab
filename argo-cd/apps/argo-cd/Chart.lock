@@ -1,9 +1,9 @@
 dependencies:
 - name: argo-cd
   repository: https://argoproj.github.io/argo-helm
-  version: 10.4.1
+  version: 10.4.2
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:7db279b464b6d087aa09b9d4217657b29b67b7032f81f0c36c07a833b184aef8
-generated: "2026-08-28T09:56:36.827055709Z"
+digest: sha256:98095f63d3761f4dbdf501cb6462c2db676af9f935f36f1fb149e582eb0df6eb
+generated: "2026-08-29T13:05:15.085573932Z"
