@@ -70,7 +70,7 @@ vault:
   image:
     repository: hashicorp/vault
     tag: 2.0.4
-  bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:v1.33.1"
+  bankVaultsImage: "ghcr.io/bank-vaults/bank-vaults:v1.33.2"
   service:
     type: ClusterIP
     annotations:
