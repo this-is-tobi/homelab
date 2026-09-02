@@ -6,7 +6,7 @@ appVersion: "v0.92.1"
 dependencies:
 - name: kube-prometheus-stack
   alias: kube-prometheus-stack
-  version: 88.6.2
+  version: 88.6.3
   repository: oci://ghcr.io/prometheus-community/charts
 - name: vso-utils
   alias: vso
