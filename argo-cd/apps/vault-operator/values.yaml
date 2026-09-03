@@ -477,7 +477,7 @@ vault:
     enabled: false
   statsd:
     enabled: true
-    image: "prom/statsd-exporter:v0.29.0"
+    image: "prom/statsd-exporter:v0.31.0"
   # Additional env vars injected into the Vault pod (merged after the built-in
   # POD_NAME / VAULT_API_ADDR / SKIP_CHOWN / SKIP_SETCAP entries).
   # Set per-instance — empty by default.
