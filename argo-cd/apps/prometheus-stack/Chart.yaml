@@ -18,7 +18,7 @@ dependencies:
   repository: https://this-is-tobi.github.io/helm-charts
 - name: loki
   alias: loki
-  version: 18.11.7
+  version: 18.12.1
   repository: https://grafana-community.github.io/helm-charts
   condition: loki.enabled
 - name: alloy
