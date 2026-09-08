@@ -4,9 +4,9 @@ dependencies:
   version: 2.17.0
 - name: etcd
   repository: oci://registry-1.docker.io/cloudpirates
-  version: 0.8.7
+  version: 0.8.8
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:e342ecb36f3c6b1ec455d485709ad93f1fc3e472ab5e46ed085a0adf5f448797
-generated: "2026-08-21T20:08:33.710913338Z"
+digest: sha256:92f8a9a73254773f4bf8eaeb6bd7a376edc16c3121b6d6de8c2f7f07ad36594b
+generated: "2026-09-08T12:30:29.982618813Z"
