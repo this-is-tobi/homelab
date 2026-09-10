@@ -40,7 +40,7 @@ ARG USER_GID=${USER_UID}
 # deliberately (kubectl tracks the cluster's k3s minor).
 ARG VAULT_VERSION=2.1.0
 ARG KUBECTL_VERSION=v1.35.3
-ARG HELM_VERSION=v4.2.4
+ARG HELM_VERSION=v4.3.0
 
 ENV HOME=/home/${USERNAME}
 
