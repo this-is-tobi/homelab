@@ -1,7 +1,7 @@
 dependencies:
 - name: kube-prometheus-stack
   repository: oci://ghcr.io/prometheus-community/charts
-  version: 90.2.0
+  version: 91.2.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
@@ -14,5 +14,5 @@ dependencies:
 - name: alloy
   repository: https://grafana.github.io/helm-charts
   version: 1.12.1
-digest: sha256:7431f99ca3cf4af91a02c34b476604bb461fcc389cb85d8b255eeb61f6dfb900
-generated: "2026-09-13T17:30:29.201554544Z"
+digest: sha256:d3c7afcd6ae67d308bfe66030bdb430364a632232cfcfc9a95ec55f0a4f808ad
+generated: "2026-09-13T20:22:18.984673179Z"
