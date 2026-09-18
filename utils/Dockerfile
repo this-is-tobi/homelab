@@ -1,5 +1,5 @@
 ARG GO_IMAGE=docker.io/golang:1.27-alpine
-ARG BASE_IMAGE=docker.io/alpine:3.24.1
+ARG BASE_IMAGE=docker.io/alpine:3.24.2
 
 # =============================================================================
 # Stage 1: Build Go binary
