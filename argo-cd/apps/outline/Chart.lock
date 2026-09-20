@@ -1,7 +1,7 @@
 dependencies:
 - name: outline
   repository: https://community-charts.github.io/helm-charts
-  version: 0.9.4
+  version: 0.9.5
 - name: valkey
   repository: oci://registry-1.docker.io/cloudpirates
   version: 0.25.11
@@ -11,5 +11,5 @@ dependencies:
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:a235b739de426039231a4672ae27f48d138580a1fd20ce66e936a66aa623da5e
-generated: "2026-09-08T19:00:22.713380464Z"
+digest: sha256:3bbc69ec1cb572ba639e037f73f8969633eec2009a9fefb9333e330567fd3810
+generated: "2026-09-20T04:42:24.632518411Z"
