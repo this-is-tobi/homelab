@@ -42,6 +42,25 @@
     mode: "0600"
   no_log: true
 
+# The unit passes --resolv-conf. If that file is missing the kubelet cannot
+# create any new pod sandbox, so never (re)start k3s before k3s/prereq has
+# rendered it (it is not part of the k3s-workers tag).
+- name: Check kubelet resolv.conf is present
+  ansible.builtin.stat:
+    path: "{{ k3sResolvConfPath }}"
+  register: workers_resolv_conf
+  when: k3sResolvConfPath | default('') | length > 0
+
+- name: Assert kubelet resolv.conf is present
+  ansible.builtin.assert:
+    that:
+      - workers_resolv_conf.stat.exists
+    fail_msg: >-
+      {{ k3sResolvConfPath }} is missing: run
+      `ansible-playbook install.yml --tags k3s-resolv-conf` for this host first.
+    quiet: true
+  when: k3sResolvConfPath | default('') | length > 0
+
 - name: Copy k3s service file
   register: workers_k3s_service
   ansible.builtin.template:

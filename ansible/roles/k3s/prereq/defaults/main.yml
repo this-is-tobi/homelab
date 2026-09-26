@@ -1,3 +1,7 @@
 ---
-# k3s/prereq defaults — no configurable variables.
-# Enables IP forwarding and cgroup support for K3s.
+# k3s/prereq defaults — no role-level variables.
+# Enables IP forwarding and cgroup support for K3s, and renders the kubelet
+# resolv.conf from k3sResolvConfPath / k3sResolvConfNameservers. Those two
+# live in group_vars/k3s.yml, not here: the deploy roles run in other plays
+# and reference k3sResolvConfPath too (--resolv-conf in k3sExtraArgs), and
+# role defaults do not reach other plays.

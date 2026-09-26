@@ -94,7 +94,7 @@ All Ansible roles live under `ansible/roles/` and follow a consistent structure 
 | gateway | `pihole`         | Deploy PiHole via Docker Compose (optional).                             |
 | gateway | `wireguard`      | Deploy WireGuard-Easy via Docker Compose (optional).                     |
 | gateway | `crowdsec`       | Deploy CrowdSec engine + firewall bouncer (optional).                    |
-| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, utility packages.            |
+| k3s     | `prereq`         | K3s prerequisites — IP forwarding, cgroups, packages, kubelet DNS.       |
 | k3s     | `download`       | Download the K3s binary matching the target architecture.                |
 | k3s     | `storage`        | Install iSCSI/NFS packages and mount additional storage disks.           |
 | k3s     | `cni`            | Bootstrap Cilium when K3s is installed without a CNI (`k3sCni: cilium`). |

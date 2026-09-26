@@ -4,7 +4,7 @@ galaxy_info:
   role_name: prereq
   namespace: k3s
   license: MIT
-  description: K3s prerequisites — IP forwarding, cgroups, utility packages.
+  description: K3s prerequisites — IP forwarding, cgroups, utility packages, kubelet resolv.conf.
   min_ansible_version: "2.15"
   platforms:
     - name: Debian
