@@ -85,12 +85,44 @@
       - curl
       - grep
 
-# - name: Comment out "search" line in resolv.conf
-#   ansible.builtin.replace:
-#     path: /etc/resolv.conf
-#     regexp: '^search(.*)$'
-#     replace: '#\g<0>'
+# Kubelet resolv.conf, passed to every k3s node with --resolv-conf (see
+# group_vars/k3s.yml). Rendered here because the deploy roles refuse to
+# (re)start k3s without it: the kubelet cannot create any new pod sandbox
+# while the file is missing. The host's /etc/resolv.conf stays owned by the
+# node's DHCP/RA client. Tagged k3s-resolv-conf so it can be (re)rendered
+# alone, without the rest of this role.
+- name: Assert kubelet resolv.conf nameservers fit the resolver limit
+  ansible.builtin.assert:
+    that:
+      - k3sResolvConfNameservers is sequence
+      - k3sResolvConfNameservers is not string
+      - k3sResolvConfNameservers | length >= 1
+      - k3sResolvConfNameservers | length <= 3
+    fail_msg: >-
+      k3sResolvConfNameservers must be a list of 1 to 3 nameservers: the
+      kubelet and glibc use at most 3 (got {{ k3sResolvConfNameservers }}).
+    quiet: true
+  tags: [k3s-resolv-conf]
 
-# - name: Ensure resolv.conf is immutable
-#   ansible.builtin.command: chattr +i /etc/resolv.conf
-#   notify: reboot
+# Same owner/mode as the k3s/registry and k3s/deploy/workers roles set on it,
+# so runs do not flip-flop the directory permissions.
+- name: Ensure k3s config directory exists
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  tags: [k3s-resolv-conf]
+
+# No `search` line on purpose: pods must not inherit the host's DHCP search
+# domains. The kubelet reads this file for every new pod sandbox, so a
+# content change applies to new pods without restarting k3s.
+- name: Render kubelet resolv.conf
+  ansible.builtin.template:
+    src: resolv.conf.j2
+    dest: "{{ k3sResolvConfPath }}"
+    owner: root
+    group: root
+    mode: "0644"
+  tags: [k3s-resolv-conf]

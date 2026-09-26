@@ -1,0 +1,6 @@
+# Managed by ansible (k3s/prereq role) — do not edit by hand.
+# Kubelet --resolv-conf: upstreams for CoreDNS and hostNetwork pods only,
+# not the host resolver (that stays /etc/resolv.conf).
+{% for nameserver in k3sResolvConfNameservers %}
+nameserver {{ nameserver }}
+{% endfor %}

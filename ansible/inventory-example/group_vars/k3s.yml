@@ -9,6 +9,29 @@ k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 
+# --- Kubelet DNS upstreams ---
+# Every k3s node (servers and agents) is started with --resolv-conf pointing
+# at a file the k3s/prereq role renders, instead of letting each kubelet read
+# the host's /etc/resolv.conf. The host file is written by each node's own
+# DHCP/RA client (NetworkManager, dhcpcd, ...), so it can differ from node to
+# node and list more than 3 nameservers — the resolver limit, above which the
+# kubelet emits a DNSConfigForming warning on every pod sync.
+# This list is what CoreDNS forwards to (dnsPolicy: Default +
+# `forward . /etc/resolv.conf`) and what hostNetwork pods resolve with. The
+# host's own resolver is not touched.
+# Keep ONE coherent upstream set: CoreDNS picks a random upstream for every
+# query, so mixing a filtering/LAN resolver (e.g. a Pi-hole) with public ones
+# makes blocked and LAN-only names flip between answers. Use either public
+# resolvers only (below), or your LAN resolver only — which then becomes a
+# single point of failure for all cluster external DNS. 1 to 3 entries.
+# The kubelet reads the file for every new pod sandbox, so changing the list
+# only needs `ansible-playbook install.yml --tags k3s-resolv-conf` (no k3s
+# restart); changing the path changes the k3s unit and restarts k3s.
+k3sResolvConfPath: /etc/rancher/k3s/resolv.conf
+k3sResolvConfNameservers:
+  - 9.9.9.9
+  - 9.9.9.10
+
 # ==========================================================================
 # NETWORKING CHOICES — pick these before the first install
 # ==========================================================================
@@ -114,9 +137,11 @@ k3sServiceLbArgs: "{{ '' if k3sServiceLb | bool else '--disable servicelb' }}"
 k3sMasterTaintArgs: >-
   {{ '--node-taint node-role.kubernetes.io/control-plane=true:PreferNoSchedule' if k3sTaintMasters | bool else '' }}
 
+# Shared by servers and agents (both compose it below).
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
+  --resolv-conf {{ k3sResolvConfPath }}
 k3sExtraServerArgs: >-
   {{ k3sExtraArgs }}
   {{ k3sCniServerArgs }}

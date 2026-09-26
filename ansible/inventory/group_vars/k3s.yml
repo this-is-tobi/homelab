@@ -9,6 +9,20 @@ k3sApiServerEndpoint: "{{ hostvars[groups['gateway'][0]]['ansible_host'] }}"
 k3sMasterIP: "{{ hostvars[groups['masters'][0]]['ansible_host'] }}"
 k3sNodeIP: "{{ ansible_facts['eth0']['ipv4']['address'] }}"
 
+# --- Kubelet DNS upstreams (see inventory-example/group_vars/k3s.yml) ---
+# Every k3s node gets --resolv-conf pointing at this file, rendered by
+# k3s/prereq, instead of the host's /etc/resolv.conf: that one is written by
+# each node's own DHCP/RA client, differs between nodes and can exceed the
+# 3-nameserver resolver limit. CoreDNS (dnsPolicy: Default, random upstream
+# per query) and hostNetwork pods resolve with this list, so it must be ONE
+# coherent upstream set — never mix the Pi-hole with public resolvers.
+# Quad9 only, the same upstreams the Pi-hole itself forwards to. 1 to 3
+# entries. The host's own resolver is left alone.
+k3sResolvConfPath: /etc/rancher/k3s/resolv.conf
+k3sResolvConfNameservers:
+  - 9.9.9.9
+  - 9.9.9.10
+
 # --- Networking choices (see inventory-example/group_vars/k3s.yml for the
 # full explanation of each option and how to move between them) ---
 #
@@ -50,9 +64,11 @@ k3sServiceLbArgs: "{{ '' if k3sServiceLb | bool else '--disable servicelb' }}"
 k3sMasterTaintArgs: >-
   {{ '--node-taint node-role.kubernetes.io/control-plane=true:PreferNoSchedule' if k3sTaintMasters | bool else '' }}
 
+# Shared by servers and agents (both compose it below).
 k3sExtraArgs: >-
   --node-name {{ inventory_hostname }}
   --node-ip={{ k3sNodeIP }}
+  --resolv-conf {{ k3sResolvConfPath }}
 k3sExtraServerArgs: >-
   {{ k3sExtraArgs }}
   {{ k3sCniServerArgs }}
