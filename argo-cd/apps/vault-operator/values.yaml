@@ -454,6 +454,18 @@ vault:
       requests:
         cpu: 50m
         memory: 64Mi
+  # Merged by container name into the operator-generated vault-configurer pod
+  # (spec.vaultConfigurerPodSpec). resources.bankVaults above sizes both that
+  # pod and the unseal sidecar inside every Vault pod, so raising it there
+  # rolls the whole raft cluster; overriding here restarts only the
+  # configurer. At 100m the configurer throttled in over a third of its CFS
+  # periods, the unseal sidecars in under 4%.
+  configurerPodSpec:
+    containers:
+    - name: bank-vaults
+      resources:
+        limits:
+          cpu: 500m
   # Vault 2.0.0+ runs as vault user (UID 100, GID 1000) by default
   # runAsUser: 100 at pod level ensures the config-templating init container also writes
   # vault.json as UID 100, so the vault container can read it (fixes permission denied)
@@ -626,6 +638,15 @@ ohmlab:
       authMethod: kubernetes
       authMount: kubernetes
       skipTLSVerify: false
+      # Rotation mode: each path under ohmlab.vault.secrets that already exists
+      # is overwritten with a freshly templated copy instead of deep-merged, so
+      # anything set by hand is lost: fields declared as "" placeholders
+      # (alertmanagerMattermostWebhookUrl, crowdsec console.enrollKey, S3 and
+      # Scaleway keys) come back empty, undeclared keys are dropped, and every
+      # generated value is regenerated (database passwords, client secrets,
+      # the sops age key). The post-config job is a PostSync hook, so this
+      # repeats on every sync while true. Previous values remain readable as
+      # older KV v2 versions.
       forceRotate: false
       backoffLimit: 3
       ttlSecondsAfterFinished: 86400

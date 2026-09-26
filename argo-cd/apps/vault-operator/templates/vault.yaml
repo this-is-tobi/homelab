@@ -257,6 +257,10 @@ spec:
   securityContext:
     {{- toYaml .Values.vault.securityContext | nindent 4 }}
   {{- end }}
+  {{- with .Values.vault.configurerPodSpec }}
+  vaultConfigurerPodSpec:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   vaultEnvsConfig:
   - name: POD_NAME
     valueFrom:
