@@ -249,6 +249,11 @@ ohmlab:
           cookieSecret: "<random:32>"
     - path: homelab/platforms/production/core/prometheus-stack
       data:
+        # Set manually in Vault with `vault kv patch` (Mattermost generates
+        # the hook id): the in-cluster form
+        # http://mattermost.mattermost.svc.cluster.local:8065/hooks/<id>.
+        # Empty means every Alertmanager notification fails.
+        alertmanagerMattermostWebhookUrl: ""
         admin:
           username: admin
           password: "<random:24>"

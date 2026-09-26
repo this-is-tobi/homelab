@@ -96,6 +96,21 @@ networkPolicy:
             kubernetes.io/metadata.name: traefik
       ports:
       - { protocol: TCP, port: 8065 }
+  # Alertmanager posts to the incoming webhook through the in-cluster
+  # Service, so alert delivery doesn't depend on Traefik or the public
+  # hostname — the parts most likely to be broken when an alert matters.
+  - name: alertmanager
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: mattermost, app.kubernetes.io/instance: mattermost }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: prometheus-stack
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: alertmanager }
+      ports:
+      - { protocol: TCP, port: 8065 }
   - name: cnpg-operator
     podSelector:
       matchLabels: { cnpg.io/cluster: mattermost-pg-cluster, cnpg.io/podRole: instance }
