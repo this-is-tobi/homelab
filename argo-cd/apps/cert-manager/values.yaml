@@ -34,6 +34,15 @@ cert-manager:
       limits:
         cpu: 200m
         memory: 256Mi
+  # PostSync hook Job (API readiness check), re-run on every sync.
+  startupapicheck:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
   prometheus:
     enabled: true
     servicemonitor:
