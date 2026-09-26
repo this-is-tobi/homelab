@@ -308,6 +308,8 @@ projects:
       kind: "*"
     - group: cilium.io
       kind: "*"
+    - group: postgresql.cnpg.io
+      kind: ClusterImageCatalog
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
     - group: "*"
