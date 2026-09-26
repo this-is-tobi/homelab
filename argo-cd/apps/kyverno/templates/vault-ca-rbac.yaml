@@ -14,6 +14,11 @@
 # kyverno's own SubjectAccessReview at policy admission carries no
 # resourceName either. Kind-scoped (secrets+configmaps only) is the real
 # minimum there.
+#
+# Separately, the admission controller needs cluster-wide secrets get/list
+# to admit the policy at all (values.yaml admissionController.rbac). It is
+# kind-scoped too: `list` never matches resourceNames, and the target
+# namespace is a variable.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
