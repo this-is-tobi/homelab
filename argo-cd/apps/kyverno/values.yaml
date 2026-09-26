@@ -22,11 +22,29 @@ kyverno:
     # single replica, one node drain / OOM / eviction stalls ALL pod
     # admission. 2 replicas auto-enables the chart's PodDisruptionBudget and
     # the default soft anti-affinity spreads them across nodes.
-    # NOTE (least privilege): no secrets RBAC here — the admission controller
-    # does not resolve the sync-vault-ca apiCall (the background controller
-    # does); the narrowly scoped read it might need is granted by
-    # templates/vault-ca-rbac.yaml (get on vault-tls only).
     replicas: 2
+    # Cluster-wide secrets get/list is REQUIRED, not optional: kyverno only
+    # admits a generate rule with synchronize: true if the ADMISSION
+    # controller's ServiceAccount can list+get the generated kind (a
+    # SubjectAccessReview run while validating the policy, separate from the
+    # background controller's write check and absent from the upstream
+    # docs). sync-vault-ca's target namespace is a variable, so the grant
+    # cannot be scoped by namespace or resourceNames. Without it every UPDATE
+    # of sync-vault-ca is denied — including Argo's server-side-diff dry-runs,
+    # which turns the whole app's comparison into an error. ConfigMaps (the
+    # policy's second target) are already covered by the chart's core role.
+    # Renders as ClusterRole kyverno:admission-controller:additional,
+    # aggregated into kyverno:admission-controller.
+    rbac:
+      clusterRole:
+        extraResources:
+        - apiGroups:
+          - ""
+          resources:
+          - secrets
+          verbs:
+          - get
+          - list
     resources:
       requests:
         cpu: 100m
