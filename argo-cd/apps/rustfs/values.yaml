@@ -31,19 +31,23 @@ rustfs:
       address: ":9000"
       console_address: ":9001"
       console_enable: "true"
-      log_level: info
+      # INFO logs every tracing span (new/enter/exit/close), which made
+      # RustFS most of the cluster's Loki volume; warnings and errors are
+      # what matter here.
+      log_level: warn
       region: eu-west-1
-      # The chart ships no rotation, so file logs grew until the 1Gi logs
-      # volume was full. 100MB x 5 kept files stays well inside it.
+      # RustFS rotates its file log hourly; this bounds how many rotated
+      # files the cleaner keeps (the chart's `size` knob maps to a variable
+      # RustFS doesn't read). The size cap and compression switch live in
+      # extraEnv below.
       log_rotation:
-        size: 100
         keep_files: 5
 
   # The chart feeds config.rustfs to the pod via envFrom and has no config
   # checksum, so changes only apply on restart. Bump this value together
-  # with any config.rustfs change to roll the pod.
+  # with any config.rustfs or extraEnv change to roll the pod.
   podAnnotations:
-    ohmlab.fr/config-revision: "log-rotation-100mb-x5"
+    ohmlab.fr/config-revision: "log-cleanup-512mib-nocompress"
 
   ingress:
     enabled: false
@@ -56,13 +60,15 @@ rustfs:
     dataStorageSize: 500Gi
     logStorageSize: 1Gi
 
+  # Working set stays around 120-250Mi; a 1Gi request only skewed
+  # scheduling on busy nodes.
   resources:
     limits:
       cpu: "1"
       memory: 2Gi
     requests:
       cpu: 500m
-      memory: 1Gi
+      memory: 384Mi
 
   containerSecurityContext:
     capabilities:
@@ -71,7 +77,15 @@ rustfs:
     readOnlyRootFilesystem: true
     runAsNonRoot: true
 
-  extraEnv: []
+  # The log cleaner compresses a rotated file before deleting it and keeps
+  # the file if compression fails — on a full logs volume nothing was ever
+  # freed. Delete without compressing (stdout is mirrored to Loki anyway)
+  # and cap the total below the 1Gi volume (the default cap is 2GiB).
+  extraEnv:
+  - name: RUSTFS_OBS_LOG_COMPRESS_OLD_FILES
+    value: "false"
+  - name: RUSTFS_OBS_LOG_MAX_TOTAL_SIZE_BYTES
+    value: "536870912"
 
 vso:
   extraObjects:
