@@ -274,10 +274,11 @@ alloy:
     resources:
       requests: { cpu: 50m, memory: 640Mi }
       limits: { cpu: 250m, memory: 1Gi }
+  # Idle except on reload bursts, which a 50m quota throttled constantly.
   configReloader:
     resources:
       requests: { cpu: 10m, memory: 50Mi }
-      limits: { cpu: 50m, memory: 64Mi }
+      limits: { cpu: 250m, memory: 64Mi }
   # No hostPath needed (see above), so any non-root UID works. Nested
   # under global: — that's the key this chart actually reads; a
   # top-level alloy.podSecurityContext (as some docs suggest) doesn't
