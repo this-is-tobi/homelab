@@ -85,6 +85,22 @@
         "sonar-auth-oidc/sonar-auth-oidc"
       ],
       "groupName": "sonar-auth-oidc"
+    },
+    {
+      "description": "CNPG ClusterImageCatalog holds one entry per Postgres major \u2014 a major moves by adding an entry and bumping the app's `version.postgresql` (in-place pg_upgrade), never by rewriting an existing entry; minor/patch bumps of every entry ride one PR since they roll every cluster anyway",
+      "matchDepNames": [
+        "ghcr.io/cloudnative-pg/postgresql"
+      ],
+      "groupName": "cnpg postgres images"
+    },
+    {
+      "matchDepNames": [
+        "ghcr.io/cloudnative-pg/postgresql"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
@@ -211,6 +227,18 @@
       ],
       "depNameTemplate": "cnescatlab/sonar-cnes-report",
       "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "description": "Postgres images in the shared CNPG ClusterImageCatalog \u2014 tags carry a build timestamp, which the default docker versioning treats as an incompatible suffix, so it is parsed as the patch component instead",
+      "managerFilePatterns": [
+        "/^argo-cd/apps/cloudnative-pg/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "image: (?<depName>ghcr\\.io/cloudnative-pg/postgresql):(?<currentValue>\\d+\\.\\d+-\\d{12}-standard-trixie)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-(?<patch>\\d{12})-standard-trixie$"
     }
   ]
 }

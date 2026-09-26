@@ -1,0 +1,12 @@
+{{- range $name, $images := .Values.clusterImageCatalogs }}
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: ClusterImageCatalog
+metadata:
+  name: {{ $name }}
+  annotations:
+    # The CRD ships with the operator subchart of this same app.
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  images: {{- toYaml $images | nindent 4 }}
+{{- end }}
