@@ -43,6 +43,14 @@ mattermost:
     runAsUser: 2000
     runAsGroup: 2000
     runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  # Restricted PSS (tenant namespace); the chart sets nothing by default.
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
   resources:
     requests:
       cpu: 250m
