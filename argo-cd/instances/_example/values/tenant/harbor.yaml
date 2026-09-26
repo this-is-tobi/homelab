@@ -17,29 +17,17 @@ harbor:
       password: ""
 
 cnpg:
-  mode: primary
-  credentials:
-    password: ""
-    postgresPassword: ""
-    # existingSecrets:
-    #   enabled: true
-    #   postgres:
-    #     secretName: "harbor-pg-cluster-admin"
-    #   app:
-    #     secretName: "harbor-pg-cluster-app"
-  backup:
+  # Operator-generated credentials by default; to bootstrap from
+  # pre-existing (e.g. VSO-managed) secrets instead:
+  # cluster:
+  #   superuserSecret: harbor-pg-cluster-admin
+  #   initdb:
+  #     secret:
+  #       name: harbor-pg-cluster-app
+  backups:
     enabled: false
     endpointURL: "https://s3.example.com"
     destinationPath: "s3://backups/cnpg"
-    s3Credentials:
-      # create: false
-      secretName: harbor-pg-cluster-backup
-      accessKeyId:
-        value: ""
-      secretAccessKey:
-        value: ""
-      region:
-        value: fr-par
 
 vso:
   vaultStaticSecrets:

@@ -228,55 +228,74 @@ kube-prometheus-stack:
 # for automatic failover; same pattern as every other stateful app here.
 cnpg:
   fullnameOverride: prometheus-stack-pg-cluster
-  imageName: "ghcr.io/cloudnative-pg/postgresql:17.10"
-  extraSpec:
+  version:
+    postgresql: "17"
+  cluster:
+    # Image resolved for the major above from the shared catalog (see the
+    # cloudnative-pg app); bumping `version.postgresql` runs an in-place
+    # pg_upgrade.
+    imageCatalogRef:
+      kind: ClusterImageCatalog
+      name: postgresql-standard-trixie
+    instances: 2
     # Protects against voluntary disruption (drain/descheduler): with
     # masters excluded from CNPG scheduling and only 2 instances, losing
     # one to an eviction would leave a single replica. A drain on the
     # node hosting a PDB-protected instance needs --disable-eviction/
     # --force until CNPG relocates it first.
     enablePDB: true
-  mode: primary
-  dbName: grafana
-  credentials:
-    username: grafana
-    # existingSecrets (not empty passwords / "operator" mode, which every
-    # other cnpg cluster in this repo uses): with empty passwords, CNPG's
-    # own Cluster controller races VSO to create prometheus-stack-pg-
-    # cluster-app/-admin, and VSO refuses to overwrite a secret it didn't
-    # create — whichever one wins, the other errors forever trying to
-    # reconcile a secret it doesn't own. existingSecrets tells CNPG to
-    # wait for and use the VSO-created secret instead of racing to
-    # generate its own — no chart-mode `lookup` either, which is
-    # documented as unreliable under ArgoCD's non-live template
-    # rendering.
-    existingSecrets:
+    enableSuperuserAccess: false
+    # VSO-provided secrets (not operator-generated ones, which every other
+    # cnpg cluster in this repo uses): left to itself, CNPG's own Cluster
+    # controller races VSO to create prometheus-stack-pg-cluster-app/
+    # -admin, and VSO refuses to overwrite a secret it didn't create —
+    # whichever one wins, the other errors forever trying to reconcile a
+    # secret it doesn't own. Pointing initdb.secret/superuserSecret at the
+    # VSO secrets makes CNPG wait for and use them instead of generating
+    # its own.
+    superuserSecret: prometheus-stack-pg-cluster-admin
+    initdb:
+      database: grafana
+      owner: grafana
+      secret:
+        name: prometheus-stack-pg-cluster-app
+    storage:
+      size: 3Gi
+    walStorage:
       enabled: true
-      app:
-        secretName: prometheus-stack-pg-cluster-app
-      postgres:
-        secretName: prometheus-stack-pg-cluster-admin
-  instances: 2
-  enableSuperuserAccess: false
-  pvcSize:
-    data: 3Gi
-    wal: 1Gi
-  # Caps WAL retained by replication slots: a lagging/dead replica costs
-  # a re-clone, not disk pressure on the primary.
-  parameters:
-    max_slot_wal_keep_size: 512MB
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 250m
-      memory: 512Mi
-  affinity:
-    topologyKey: kubernetes.io/hostname
-    # Masters run etcd — keep data-bearing workloads off them.
-    nodeSelector:
-      node-type: worker
+      size: 1Gi
+    postgresql:
+      # Caps WAL retained by replication slots: a lagging/dead replica costs
+      # a re-clone, not disk pressure on the primary.
+      parameters:
+        max_slot_wal_keep_size: 512MB
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 250m
+        memory: 512Mi
+    affinity:
+      topologyKey: kubernetes.io/hostname
+      # Masters run etcd — keep data-bearing workloads off them.
+      nodeSelector:
+        node-type: worker
+    # PodMonitor for the cnpg_* metrics (chart default is disabled) — the
+    # cloudnative-pg Grafana dashboard was showing no data for every cluster
+    # in the repo until this was turned on.
+    monitoring:
+      enabled: true
+      prometheusRule:
+        # HAWarning fires permanently below 3 instances, and ZoneSpread
+        # needs topology.kubernetes.io/zone labels the nodes don't carry.
+        excludeRules:
+        - CNPGClusterHAWarning
+        - CNPGClusterZoneSpreadWarning
+      instrumentation:
+        # The chart renders this queries ConfigMap but never wires it into
+        # the Cluster, so it would only sit there unused.
+        logicalReplication: false
   # Disabled: the S3 credentials at this Vault path are still empty
   # placeholders (same as every other app's backup config in this repo).
   # For an already-bootstrapped cluster that's harmless, but the
@@ -286,31 +305,41 @@ cnpg:
   # the reconciliation loop" / barman-cloud.cloudnative-pg.io, zero pods
   # created until fixed). Re-enable once real S3 credentials are added to
   # Vault.
-  backup:
+  backups:
     enabled: false
-    legacyMode: false
+    method: plugin
+    pluginConfiguration:
+      name: barman-cloud.cloudnative-pg.io
     endpointURL: ""
     destinationPath: "s3://"
-    cron: "0 0 0 * * *"
+    # VSO-managed (never inline keys here). The chart hardcodes the
+    # ACCESS_KEY_ID / ACCESS_SECRET_KEY key names.
+    secret:
+      create: false
+      name: prometheus-stack-pg-cluster-backup
+    # The chart has no S3 region setting; the barman sidecar picks it up
+    # from the standard AWS env var instead.
+    instanceSidecarConfiguration:
+      env:
+      - name: AWS_DEFAULT_REGION
+        valueFrom:
+          secretKeyRef:
+            name: prometheus-stack-pg-cluster-backup
+            key: S3_REGION
+    # Chart default requests AES256 server-side encryption, which not every
+    # S3-compatible store implements — defer to the bucket's own default.
+    wal:
+      encryption: ""
+    data:
+      encryption: ""
     retentionPolicy: 30d
-    compression: gzip
-    s3Credentials:
-      create: true
-      secretName: prometheus-stack-pg-cluster-backup
-      accessKeyId:
-        key: accessKeyId
-        value: ""
-      secretAccessKey:
-        key: secretAccessKey
-        value: ""
-      region:
-        key: region
-        value: ""
-  # PodMonitor for the cnpg_* metrics (chart default is disabled) — the
-  # cloudnative-pg Grafana dashboard was showing no data for every cluster
-  # in the repo until this was turned on.
-  monitoring:
-    enabled: true
+    scheduledBackups:
+    - name: daily
+      schedule: "0 0 0 * * *"
+      backupOwnerReference: self
+      method: plugin
+      pluginConfiguration:
+        name: barman-cloud.cloudnative-pg.io
 
 vso:
   extraObjects:
@@ -448,9 +477,9 @@ vso:
               text: '{{ get .Secrets "postgres" | dig "s3" "bucketName" "" }}'
             S3_BUCKET_PREFIX:
               text: '{{ get .Secrets "postgres" | dig "s3" "bucketPrefix" "" }}'
-            S3_ACCESS_KEY:
+            ACCESS_KEY_ID:
               text: '{{ get .Secrets "postgres" | dig "s3" "accessKey" "" }}'
-            S3_SECRET_KEY:
+            ACCESS_SECRET_KEY:
               text: '{{ get .Secrets "postgres" | dig "s3" "secretKey" "" }}'
             S3_REGION:
               text: '{{ get .Secrets "postgres" | dig "s3" "region" "" }}'

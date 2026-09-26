@@ -43,27 +43,15 @@ mattermost:
         key: S3_SECRET_KEY
 
 cnpg:
-  mode: primary
-  credentials:
-    existingSecrets:
-      enabled: true
-      postgres:
-        secretName: mattermost-pg-cluster-admin
-      app:
-        secretName: mattermost-pg-cluster-app
-  backup:
+  cluster:
+    superuserSecret: mattermost-pg-cluster-admin
+    initdb:
+      secret:
+        name: mattermost-pg-cluster-app
+  backups:
     enabled: false  # S3 keys not configured yet — re-enable when available
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
-    s3Credentials:
-      create: false
-      secretName: mattermost-pg-cluster-backup
-      accessKeyId:
-        key: S3_ACCESS_KEY
-      secretAccessKey:
-        key: S3_SECRET_KEY
-      region:
-        key: S3_REGION
 
 vso:
   vaultStaticSecrets:

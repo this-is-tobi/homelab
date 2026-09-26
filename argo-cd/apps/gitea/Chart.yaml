@@ -12,10 +12,10 @@ dependencies:
   alias: valkey
   version: 0.25.11
   repository: oci://registry-1.docker.io/cloudpirates
-- name: cnpg-cluster
+- name: cluster
   alias: cnpg
-  version: 2.3.0
-  repository: https://this-is-tobi.github.io/helm-charts
+  version: 0.8.1
+  repository: https://cloudnative-pg.github.io/charts
 - name: vso-utils
   alias: vso
   version: 2.0.0

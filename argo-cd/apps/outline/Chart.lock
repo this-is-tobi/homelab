@@ -5,11 +5,11 @@ dependencies:
 - name: valkey
   repository: oci://registry-1.docker.io/cloudpirates
   version: 0.25.11
-- name: cnpg-cluster
-  repository: https://this-is-tobi.github.io/helm-charts
-  version: 2.3.0
+- name: cluster
+  repository: https://cloudnative-pg.github.io/charts
+  version: 0.8.1
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:3bbc69ec1cb572ba639e037f73f8969633eec2009a9fefb9333e330567fd3810
-generated: "2026-09-20T04:42:24.632518411Z"
+digest: sha256:5f69f212853cc08df3f547ed93b971205d6346fd70ed1ec6e12bdc6ee7bd2db3
+generated: "2026-09-26T15:33:00.580159+02:00"

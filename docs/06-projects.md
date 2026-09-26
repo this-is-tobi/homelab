@@ -88,17 +88,25 @@ ArgoCD itself is fully reconcilable from git — only `argocd-secret` (admin pas
 
 An untested backup is not a backup — rehearse these on a scratch namespace before you need them.
 
-**PostgreSQL (CNPG)** — restore into a NEW cluster from S3 (never in place). The apps use the `cnpg-cluster` chart, whose recovery mode is selected with `mode` + a `recovery` block pointing at the OLD cluster's object store:
+**PostgreSQL (CNPG)** — restore into a NEW cluster from S3 (never in place). The apps use the official CloudNativePG [`cluster` chart](https://artifacthub.io/packages/helm/cloudnative-pg/cluster) under the `cnpg` key, whose recovery mode is selected with `mode` + a `recovery` block pointing at the OLD cluster's object store:
 
 ```yaml
-# In the app's cnpg-cluster values (new cluster name, same bucket):
+# In the app's `cnpg` values (new fullnameOverride, same bucket):
 mode: recovery
 recovery:
-  destinationPath: s3://<bucket>/<path>   # the OLD cluster's backup destinationPath
-  endpointURL: https://s3.<region>.<provider>
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io
   clusterName: <old-cluster-name>         # serverName the backups were written under
-  s3Credentials:
-    secretName: <existing-s3-secret>       # or create: true + inline keys
+  destinationPath: s3://<bucket>/<path>   # the OLD cluster's backups.destinationPath
+  endpointURL: https://s3.<region>.<provider>
+  secret:
+    create: false
+    name: <existing-s3-secret>            # keys ACCESS_KEY_ID / ACCESS_SECRET_KEY
+  instanceSidecarConfiguration:
+    env:
+    - name: AWS_DEFAULT_REGION
+      value: <region>
 ```
 
 then let the operator bootstrap from the base backup + WAL. Details: [CNPG recovery docs](https://cloudnative-pg.io/documentation/current/recovery/).

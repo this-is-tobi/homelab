@@ -5,11 +5,11 @@ dependencies:
 - name: keycloak-config-cli
   repository: https://jkroepke.github.io/helm-charts
   version: 1.3.8
-- name: cnpg-cluster
-  repository: https://this-is-tobi.github.io/helm-charts
-  version: 2.3.0
+- name: cluster
+  repository: https://cloudnative-pg.github.io/charts
+  version: 0.8.1
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:0edb452b4fc589f1a2122e9781017a8f34f13eabfbd0206b4882c32e52bcdeb2
-generated: "2026-09-22T12:02:00.718125163Z"
+digest: sha256:27cb49d8bb9700139051752e3d69824274e38df3187e651295119bf52b4ea748
+generated: "2026-09-26T15:32:28.389951+02:00"
