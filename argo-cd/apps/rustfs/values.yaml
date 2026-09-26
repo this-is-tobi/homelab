@@ -33,6 +33,17 @@ rustfs:
       console_enable: "true"
       log_level: info
       region: eu-west-1
+      # The chart ships no rotation, so file logs grew until the 1Gi logs
+      # volume was full. 100MB x 5 kept files stays well inside it.
+      log_rotation:
+        size: 100
+        keep_files: 5
+
+  # The chart feeds config.rustfs to the pod via envFrom and has no config
+  # checksum, so changes only apply on restart. Bump this value together
+  # with any config.rustfs change to roll the pod.
+  podAnnotations:
+    ohmlab.fr/config-revision: "log-rotation-100mb-x5"
 
   ingress:
     enabled: false
