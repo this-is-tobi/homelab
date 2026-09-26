@@ -13,7 +13,6 @@ gateway:
 kube-prometheus-stack:
   prometheus:
     prometheusSpec:
-      minReadySeconds: 1800
       maximumStartupDurationSeconds: 1800
       # Matches the 200Gi PVC below (app default is 90GB for 100Gi).
       retentionSize: 180GB
