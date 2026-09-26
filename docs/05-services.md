@@ -220,7 +220,7 @@ Services currently connected through SSO (client secrets are stored in Vault and
 - Gitea
 - Grafana
 - Longhorn
-- RustFS (console OIDC)
+- RustFS (console OIDC): the `rustfs` client emits a flat `rustfs_policy` claim from its client roles, and RustFS uses its values as policy names. Members of `/admin` get the `consoleAdmin` client role (full admin); any other realm user has no RustFS policy and is denied. RustFS discovers the provider only at startup, so if the *Keycloak* button is missing from the console login page, restart the RustFS pod once Keycloak is reachable. The static root credential keeps working either way.
 - Vault
 
 Optional catalog apps (Coder, Harbor, Outline, SonarQube, ...) ship with the same Keycloak OIDC wiring and join the list when enabled.
