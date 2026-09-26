@@ -28,9 +28,6 @@ spec:
           - kyverno
           # Internal tooling images — always built as :latest by design
           - vault-operator-system
-          # Upstream chart hardcodes a busybox:latest config-init container
-          # with no values knob (candidate for an upstream PR).
-          - homepage
     validate:
       failureAction: {{ .Values.policies.disallowLatestTag.failureAction | default "Audit" }}
       message: "Image tag 'latest' is not allowed. Use a specific tag or digest."

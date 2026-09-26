@@ -129,6 +129,9 @@ policies:
     - "quay.io/*"
     - "registry.k8s.io/*"
     - "public.ecr.aws/*"
+    # Dual-stack (IPv4+IPv6) Docker/OCI endpoint of the same ECR Public
+    # registry; the argo-cd chart pulls redis/haproxy from this hostname.
+    - "ecr-public.aws.com/*"
     - "cgr.dev/*"
     # Chart-default registries of apps in the catalogue.
     - "docker.gitea.com/*"

@@ -51,6 +51,41 @@ spec:
         names:
         - homepage*
 ---
+# The same hardcoded config-init container also has no securityContext
+# knob, so it can never set allowPrivilegeEscalation: false or drop ALL
+# capabilities. Exempt only those two restricted controls, only for the
+# busybox image; the pod-level controls (runAsNonRoot, seccomp) are met
+# via the chart's podSecurityContext, and the homepage container itself
+# stays fully checked.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: homepage-config-init-restricted
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: pod-security-restricted
+    ruleNames:
+    - restricted
+    - autogen-restricted
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Deployment
+        namespaces:
+        - homepage
+        names:
+        - homepage*
+  podSecurity:
+  - controlName: Privilege Escalation
+    images:
+    - "*busybox:*"
+  - controlName: Capabilities
+    images:
+    - "*busybox:*"
+---
 # Same shape again: the rustfs chart hardcodes an init-step initContainer
 # (creates data/log dirs) with no resources values knob.
 apiVersion: kyverno.io/v2
