@@ -26,6 +26,16 @@ server:
     limits:
       cpu: 1000m
       memory: 1Gi
+  # auth-test / proxy-test PreSync hook Jobs (config validation). Upstream
+  # sizes them at up to 500Mi; the request stays small since they are
+  # short-lived.
+  jobResources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
   operator:
     enabled: true
     resources:
