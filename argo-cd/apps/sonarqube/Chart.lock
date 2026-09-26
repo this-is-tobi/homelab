@@ -1,12 +1,12 @@
 dependencies:
 - name: sonarqube
   repository: https://SonarSource.github.io/helm-chart-sonarqube
-  version: 2026.2.1
+  version: 2026.4.1
 - name: cluster
   repository: https://cloudnative-pg.github.io/charts
   version: 0.8.1
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-digest: sha256:b7d5f30a885517a31c7e0700f8be7ff498bac2579b154754f4e320ac2db502a0
-generated: "2026-09-26T15:26:00.135315+02:00"
+digest: sha256:315076282bc94e06c22833a16e252f1afdb096af009d4ff85daad76a82a62c16
+generated: "2026-09-26T14:11:12.247719049Z"
