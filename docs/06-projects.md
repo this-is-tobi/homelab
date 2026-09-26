@@ -111,6 +111,8 @@ recovery:
 
 then let the operator bootstrap from the base backup + WAL. Details: [CNPG recovery docs](https://cloudnative-pg.io/documentation/current/recovery/).
 
+After any change of Postgres base image (a bump of the shared `ClusterImageCatalog`, or a restore onto a different image than the one that wrote the backup), run the read-only [cnpg-collation-audit.sql](../scripts/cnpg-collation-audit.sql) on each cluster's replica: its header explains how to run it and what to do if it reports collation-dependent objects.
+
 **Vault** — restore a raft snapshot (also the recovery path if the PVC is lost):
 
 ```sh
