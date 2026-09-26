@@ -81,6 +81,10 @@ crowdsec:
   # 9 pods -> 1 (~30-60m CPU / ~350-650Mi memory reclaimed cluster-wide).
   agent:
     isDeployment: true
+    # Every acquisition reads from Loki, so the chart's default hostPath
+    # /var/log mount has no reader left — and is exactly the node
+    # colocation dependency the Deployment was meant to shed.
+    hostVarLog: false
     # `acquisition` (namespace/podName/program) looks like it reads via
     # the k8s pod-log API but actually translates to a hostPath file glob
     # under the hood (same as this chart's DaemonSet mode) — broken for a
@@ -96,6 +100,17 @@ crowdsec:
       labels:
         type: traefik
         program: traefik
+      # By default Loki is a hard dependency: the agent exits fatally if
+      # /ready doesn't answer within 10s at startup, or if queries keep
+      # failing for 30s once running. A crash-looping agent stops sending
+      # heartbeats, so after agents_autodelete LAPI deletes its machine,
+      # and the restarted container can't log back in once Loki is back:
+      # container restarts reuse the pod's registration, which is gone.
+      # Skip the ready gate and retry forever instead (retries back off to
+      # one every 10s and resume from the last line read), so a Loki outage
+      # makes the agent blind, never dead. CrowdsecAgentBlind alerts on it.
+      no_ready_check: true
+      max_failure_duration: 87600h
     env:
     - name: COLLECTIONS
       value: >-
@@ -168,7 +183,13 @@ crowdsec:
           # incidents. Live components heartbeat/pull every ~60s, so 24h
           # without activity means a dead pod, not a quiet one.
           agents_autodelete:
-            login_password: 24h
+            # Longer for agents: a live agent pod that crash-loops (LAPI
+            # unreachable, OOM, bad hub item...) stops heartbeating too, and
+            # once its machine is deleted it stays locked out ("machine not
+            # found") until the pod is deleted. 7d gives time to notice and
+            # fix the cause first. The single-replica Deployment leaves at
+            # most one orphan per rollout, so the longer window costs little.
+            login_password: 7d
             cert: 24h
           bouncers_autodelete:
             api_key: 24h

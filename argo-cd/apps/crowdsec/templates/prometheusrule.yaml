@@ -2,29 +2,73 @@
 # Detect+alert is the first-class goal for crowdsec: the Mattermost
 # notification plugin (values.yaml crowdsec.config.notifications) covers
 # "an attack was detected"; this covers "the detector itself went blind".
+{{- $ns := .Release.Namespace }}
+{{- $agentUp := printf "kube_deployment_status_replicas_available{namespace=%q, deployment=\"%s-agent\"}" $ns .Release.Name }}
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ .Release.Name }}-liveness
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $ns }}
 spec:
   groups:
   - name: crowdsec.liveness
     rules:
     - alert: CrowdsecLapiDown
-      expr: kube_deployment_status_replicas_available{namespace="{{ .Release.Namespace }}", deployment="{{ .Release.Name }}-lapi"} == 0
+      expr: kube_deployment_status_replicas_available{namespace="{{ $ns }}", deployment="{{ .Release.Name }}-lapi"} == 0
       for: 5m
       labels:
         severity: critical
       annotations:
         summary: CrowdSec LAPI has no available replicas
         description: No decisions are being made or served — detection and enforcement are both blind.
-    - alert: CrowdsecAgentNotFullyReady
-      expr: kube_daemonset_status_number_ready{namespace="{{ .Release.Namespace }}", daemonset="{{ .Release.Name }}-agent"} < kube_daemonset_status_desired_number_scheduled{namespace="{{ .Release.Namespace }}", daemonset="{{ .Release.Name }}-agent"}
+    - alert: CrowdsecAgentDown
+      expr: {{ $agentUp }} == 0
+      for: 15m
+      labels:
+        severity: critical
+      annotations:
+        summary: CrowdSec agent has no available replicas
+        description: >-
+          No Traefik log is parsed, so no new attack is detected. If the
+          agent logs "machine not found", LAPI auto-deleted its registration
+          while it was down, and container restarts keep reusing the dead
+          credentials: delete the agent pod so a new one registers.
+    # The two rules below only fire while the agent pod is up, so they
+    # don't pile onto CrowdsecAgentDown. `or vector(0)` covers a counter
+    # that doesn't exist yet: a fresh agent pod only creates its series on
+    # the first matching event.
+    - alert: CrowdsecAgentBlind
+      # The agent stays Running while Loki is unreachable (see the loki
+      # acquisition in values.yaml), so only this counter shows it.
+      expr: |
+        (sum(increase(cs_lokisource_hits_total{namespace="{{ $ns }}"}[30m])) or vector(0)) == 0
+        and on() {{ $agentUp }} > 0
       for: 15m
       labels:
         severity: warning
       annotations:
-        summary: CrowdSec agent DaemonSet is not fully ready
-        description: One or more nodes are not being monitored for traefik/auth.log attack scenarios.
+        summary: CrowdSec agent has read no Traefik log line from Loki for 45m
+        description: >-
+          The agent is running but the Traefik -> Alloy -> Loki -> agent log
+          path is broken somewhere, so no attack is detected. Check Loki
+          first, then the agent logs for "loki is not available".
+    - alert: CrowdsecAgentNotReporting
+      # Counted by LAPI for authenticated requests only, so this also
+      # catches an agent that is running but locked out ("machine not
+      # found") or cut off from LAPI. The ServiceMonitor overwrites
+      # `machine` with the node name, which moves the machine ID to
+      # `exported_machine`.
+      expr: |
+        (sum(increase(cs_lapi_machine_requests_total{namespace="{{ $ns }}", route="/v1/heartbeat", exported_machine=~"{{ .Release.Name }}-agent-.*"}[30m])) or vector(0)) == 0
+        and on() {{ $agentUp }} > 0
+      for: 15m
+      labels:
+        severity: warning
+      annotations:
+        summary: No heartbeat from the CrowdSec agent has reached LAPI for 45m
+        description: >-
+          The agent pod is up but LAPI isn't receiving its heartbeats, so
+          its alerts can't be pushed either. If the agent logs "machine not
+          found", delete the agent pod so a new one registers; otherwise
+          check the agent -> LAPI network path.
 {{- end }}
