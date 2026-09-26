@@ -30,6 +30,29 @@ kube-prometheus-stack:
       image:
         busybox:
           tag: "1.37.0"
+      # PreSync hook Job (bzcat init + kubectl apply of the CRDs), re-run on
+      # every sync; require-resource-limits flags it without these.
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+  # k3s servers expose the shared apiserver/etcd metrics registry on the
+  # kubelet /metrics endpoint as well, so every apiserver_*/etcd_* series
+  # was scraped twice (job=kubelet on each master, on top of job=apiserver)
+  # — over a third of the head. No rule or dashboard reads them through
+  # job=kubelet. Lists replace, so the chart's own default drop is restated.
+  kubelet:
+    serviceMonitor:
+      metricRelabelings:
+      - action: drop
+        sourceLabels: [__name__, le]
+        regex: (csi_operations|storage_operation_duration)_seconds_bucket;(0.25|2.5|15|25|120|600)(\.0)?
+      - action: drop
+        sourceLabels: [__name__]
+        regex: (apiserver|etcd)_.+
   prometheusOperator:
     resources:
       requests:
@@ -123,16 +146,33 @@ kube-prometheus-stack:
       # 2Gi proved too small for this scrape load (9 nodes + kube-state +
       # full operator stack): the head hit the limit after ~6h and the pod
       # OOM-looped, paying a multi-minute WAL replay per restart. Keep the
-      # limit comfortably above steady-state head size. The request tracks
-      # the ~2Gi steady state: scheduling on a lower figure let it stack
-      # with other heavy pods and push a node into memory pressure.
+      # limit comfortably above steady-state head size (and WAL replay after
+      # a restart, which peaked near 3Gi). The request tracks the ~2Gi
+      # steady state: scheduling on a lower figure let it stack with other
+      # heavy pods and push a node into memory pressure.
       resources:
         requests:
           cpu: 500m
           memory: 2Gi
         limits:
           cpu: 2000m
-          memory: 3Gi
+          memory: 4Gi
+      # Prometheus and the Argo CD application controller are the two
+      # largest memory consumers; the scheduler kept co-locating them
+      # (image locality outweighs free memory), so keep them apart. The
+      # chart's default soft self anti-affinity is disabled because it would
+      # render a second podAntiAffinity key; with one replica it did nothing.
+      podAntiAffinity: ""
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: kubernetes.io/hostname
+            namespaceSelector:
+              matchLabels:
+                kubernetes.io/metadata.name: argocd-system
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: argocd-application-controller
       scrapeConfigSelector:
         matchLabels: {}
       ruleSelector:
