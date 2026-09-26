@@ -5,14 +5,14 @@ dependencies:
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.0.0
-- name: cnpg-cluster
-  repository: https://this-is-tobi.github.io/helm-charts
-  version: 2.3.0
+- name: cluster
+  repository: https://cloudnative-pg.github.io/charts
+  version: 0.8.1
 - name: loki
   repository: https://grafana-community.github.io/helm-charts
   version: 18.13.5
 - name: alloy
   repository: https://grafana.github.io/helm-charts
   version: 1.13.0
-digest: sha256:478d4c393fe8cb7e3471d24bbb924bb253c515851282a38c57b408d812a4b925
-generated: "2026-09-26T10:30:43.731382017Z"
+digest: sha256:1dd525b94fb5c5ca2b3a4f888e8f19a93aae04faf7de38e47079e0d98984e5bf
+generated: "2026-09-26T15:33:12.176399+02:00"

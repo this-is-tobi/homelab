@@ -31,27 +31,15 @@ mlflow:
   - mlflow-s3 # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY
 
 cnpg:
-  mode: primary
-  credentials:
-    existingSecrets:
-      enabled: true
-      postgres:
-        secretName: mlflow-pg-cluster-admin
-      app:
-        secretName: mlflow-pg-cluster-app
-  backup:
+  cluster:
+    superuserSecret: mlflow-pg-cluster-admin
+    initdb:
+      secret:
+        name: mlflow-pg-cluster-app
+  backups:
     enabled: true
     endpointURL: "https://s3.example.com"
     destinationPath: "s3://backups/cnpg"
-    s3Credentials:
-      create: false
-      secretName: mlflow-pg-cluster-backup
-      accessKeyId:
-        key: S3_ACCESS_KEY
-      secretAccessKey:
-        key: S3_SECRET_KEY
-      region:
-        key: S3_REGION
 
 sso:
   config:

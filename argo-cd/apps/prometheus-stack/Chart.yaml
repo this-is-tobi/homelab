@@ -12,10 +12,10 @@ dependencies:
   alias: vso
   version: 2.0.0
   repository: https://this-is-tobi.github.io/helm-charts
-- name: cnpg-cluster
+- name: cluster
   alias: cnpg
-  version: 2.3.0
-  repository: https://this-is-tobi.github.io/helm-charts
+  version: 0.8.1
+  repository: https://cloudnative-pg.github.io/charts
 - name: loki
   alias: loki
   version: 18.13.5
