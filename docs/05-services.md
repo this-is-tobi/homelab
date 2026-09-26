@@ -243,14 +243,7 @@ flowchart LR
     pod -->|envFrom / volume| secret
 ```
 
-VSO talks to Vault over TLS and validates the server against a `vault-ca`
-secret present in every app namespace. That secret is distributed by the
-Kyverno `sync-vault-ca` generate policy, which targets namespaces labelled
-`ohmlab.fr/vault-access=true`. The label itself is applied declaratively by
-the instance-manager ApplicationSets (`managedNamespaceMetadata`), so it
-survives namespace re-creation. **The whole secret chain silently stops if
-that label disappears** — `ohmlab check` reports failing `VaultStaticSecret`
-resources, which is the first symptom.
+VSO talks to Vault over TLS through the operator-wide `default` VaultConnection in `vault-operator-system`, which validates the server against the `vault-tls` secret (`defaultVaultConnection` in [argo-cd/apps/vault-operator/values.yaml](../argo-cd/apps/vault-operator/values.yaml)). No app `VaultAuth` sets `vaultConnectionRef`, and VSO falls back to that `default` connection when it is unset. Each app's `vso-utils` values still render a per-namespace `<release>-vso-default` VaultConnection pointing at a local `vault-ca` secret (copied into namespaces labelled `ohmlab.fr/vault-access=true` by the Kyverno `sync-vault-ca` generate policy), but no `VaultAuth` references those connections: an invalid one only produces VSO error events and does not stop secret delivery. When secrets do stop syncing, `ohmlab check` reports the failing `VaultStaticSecret` resources first.
 
 Each app also gets a dedicated least-privilege Vault policy
 (`homelab/data/platforms/+/+/<app>`, read-only) and a Kubernetes auth role
@@ -327,3 +320,13 @@ Some dashboards are already delivered with the installation but more can be adde
 | [longhorn.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/longhorn.json)             | [13032](https://grafana.com/grafana/dashboards/13032-longhorn-example-v1-1-0/)                                |
 | [trivy.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/trivy.json)                   | [16337](https://grafana.com/grafana/dashboards/16337-trivy-operator-vulnerabilities/)                         |
 | [vault.json](../argo-cd/apps/prometheus-stack/grafana-dashboards/vault.json)                   | [12904](https://grafana.com/grafana/dashboards/12904-hashicorp-vault/)                                        |
+
+#### Alerting
+
+Alertmanager posts every alert except the always-firing `Watchdog` to a Mattermost incoming webhook in the channel `alerts`, through its Slack-compatible receiver (`kube-prometheus-stack.alertmanager.config` in [argo-cd/apps/prometheus-stack/values.yaml](../argo-cd/apps/prometheus-stack/values.yaml)). Mattermost generates the hook id, so the webhook URL cannot be seeded: create the channel and an incoming webhook locked to it in Mattermost, then store the URL once by hand in the Vault field `alertmanagerMattermostWebhookUrl` (mount `homelab`, path `platforms/production/core/prometheus-stack`) with `vault kv patch`, never `vault kv put`, which would replace the whole path and wipe the Grafana, Keycloak and Postgres credentials stored next to it:
+
+```sh
+printf '%s' 'http://mattermost.mattermost.svc.cluster.local:8065/hooks/<id>' | vault kv patch -mount=homelab platforms/production/core/prometheus-stack alertmanagerMattermostWebhookUrl=-
+```
+
+Use the in-cluster Service form of the URL shown above rather than the public one: delivery then doesn't depend on Traefik or the public hostname, and the Mattermost NetworkPolicy admits Alertmanager on that port. VSO delivers the field to the `alertmanager-mattermost` secret within its hourly refresh, and Alertmanager reads it on every notification, so no restart is needed. While the field is empty or missing, every notification fails (`unsupported protocol scheme ""` in the Alertmanager logs) and no alert reaches anyone.

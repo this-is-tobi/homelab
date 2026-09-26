@@ -10,7 +10,7 @@ Any equipment can be used, but it has been tested with the following items :
 
 ## Operating System
 
-All raspberries are running with `Raspberry Pi OS (64-bit)` but any Debian based system should work. Tested with Debian 12 (bookworm) and Debian 13 (trixie). In-place major version upgrades are supported via the `dist-upgrade` Ansible tag (see `Maintenance`).
+The cluster nodes run Debian 13 (trixie) on the Debian generic arm64 kernel (installed by the opt-in `kernel-upgrade` Ansible tag), upgraded in place from `Raspberry Pi OS (64-bit)`. Any Debian based system should work: tested with Debian 12 (bookworm) and Debian 13 (trixie). In-place major version upgrades are supported via the `dist-upgrade` Ansible tag (see `Maintenance`).
 
 For Raspberry, see :
 - <https://www.raspberrypi.com/software>
