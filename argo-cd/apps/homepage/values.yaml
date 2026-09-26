@@ -4,6 +4,19 @@ homepage:
     repository: ghcr.io/gethomepage/homepage
     pullPolicy: IfNotPresent
     tag: v2.4.0
+  # Pod-level so it also covers the chart's hardcoded config-init container,
+  # which has no securityContext of its own (restricted PSS). It only copies
+  # the ConfigMap into an emptyDir, which needs no root.
+  podSecurityContext:
+    fsGroup: 1000
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  # Merged over the chart default (non-root 1000, drop ALL).
+  securityContext:
+    allowPrivilegeEscalation: false
   serviceAccount:
     create: true
     annotations: {}
