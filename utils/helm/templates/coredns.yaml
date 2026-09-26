@@ -103,6 +103,11 @@ spec:
     spec:
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
+      # `forward . /etc/resolv.conf` must see the node's upstream resolvers
+      # (the kubelet --resolv-conf file). The ClusterFirst default would put
+      # this Service's own ClusterIP there: CoreDNS would forward to itself
+      # and the `loop` plugin would stop it, taking cluster DNS down.
+      dnsPolicy: Default
       nodeSelector:
         kubernetes.io/os: linux
       tolerations:
