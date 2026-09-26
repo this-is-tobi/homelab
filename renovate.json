@@ -101,6 +101,19 @@
         "major"
       ],
       "enabled": false
+    },
+    {
+      "description": "The ClusterImageCatalog images are tracked by the custom regex manager below, whose versioning understands their build-timestamp tags; the built-in helm-values manager extracts the same `image:` strings a second time with docker versioning, which sees the timestamp as an incompatible suffix and only adds a duplicate dependency",
+      "matchManagers": [
+        "helm-values"
+      ],
+      "matchFileNames": [
+        "argo-cd/apps/cloudnative-pg/values.yaml"
+      ],
+      "matchDepNames": [
+        "ghcr.io/cloudnative-pg/postgresql"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
