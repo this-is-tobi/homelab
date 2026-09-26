@@ -716,6 +716,9 @@ keycloakConfigCli:
               description: Grafana admin role
             - name: editor
               description: Grafana editor role
+            rustfs:
+            - name: consoleAdmin
+              description: RustFS administrator role (built-in consoleAdmin policy)
         groups:
         - name: admin
           path: /admin
@@ -724,6 +727,8 @@ keycloakConfigCli:
           clientRoles:
             grafana-core:
             - grafanaadmin
+            rustfs:
+            - consoleAdmin
         clients:
         - clientId: gitea
           name: Gitea
@@ -986,6 +991,24 @@ keycloakConfigCli:
           serviceAccountsEnabled: false
           attributes:
             token.endpoint.auth.method: client_secret_post
+          # RustFS uses claim values verbatim as policy names and can't match
+          # the shared "groups" claim's full paths ("/admin"), so this client
+          # emits its own flat claim from its client roles. The clientRoleMapping
+          # key scopes it to this client's roles; without it the mapper emits
+          # every client's roles. RustFS only reads the ID token.
+          protocolMappers:
+          - name: rustfs-policy
+            protocol: openid-connect
+            protocolMapper: oidc-usermodel-client-role-mapper
+            consentRequired: false
+            config:
+              usermodel.clientRoleMapping.clientId: rustfs
+              claim.name: rustfs_policy
+              jsonType.label: String
+              multivalued: "true"
+              id.token.claim: "true"
+              access.token.claim: "false"
+              userinfo.token.claim: "false"
           defaultClientScopes:
           - web-origins
           - acr
