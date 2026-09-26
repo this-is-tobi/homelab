@@ -71,6 +71,16 @@ argo-cd:
       enabled: true
       serviceMonitor:
         enabled: true
+  # PreSync hook Job seeding the redis password, re-run on every sync;
+  # require-resource-limits flags it without these.
+  redisSecretInit:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   notifications:
     enabled: false
     argocdUrl: ""

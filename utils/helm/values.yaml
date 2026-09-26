@@ -125,18 +125,33 @@ argo-cd:
         limits:
           cpu: 100m
           memory: 64Mi
-    # The detection loop forks redis-cli every few seconds; a 100m quota
-    # throttled it in most CFS periods on every replica.
+    # The detection loop wakes every 60s and pipes redis-cli into a very
+    # large grep, a ~1 CPU-second burst that throttles under a small quota.
+    # The request is explicit: with only a limit set, Kubernetes defaults
+    # the request to the limit and would reserve a full core per replica.
     splitBrainDetection:
       resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
         limits:
-          cpu: 250m
+          cpu: "1"
           memory: 64Mi
   redis:
     metrics:
       enabled: true
       serviceMonitor:
         enabled: true
+  # PreSync hook Job seeding the redis password, re-run on every sync;
+  # require-resource-limits flags it without these.
+  redisSecretInit:
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 200m
+        memory: 128Mi
   notifications:
     replicas: 1
     resources:
@@ -161,11 +176,33 @@ argo-cd:
         memory: 1Gi
       limits:
         # 2-core burst: at 1000m the controller CPU-throttles during sync
-        # storms and app refreshes queue for tens of minutes. 2Gi: startup
-        # cluster-cache rebuild peaks well above steady state — at 1Gi the
-        # controller OOM-crash-loops (exit 137 ~100s after start).
+        # storms and app refreshes queue for tens of minutes. Memory: the
+        # startup cluster-cache rebuild peaks well above steady state — at
+        # 1Gi the controller OOM-crash-loops (exit 137 ~100s after start),
+        # and peaks came within a few MiB of a 2Gi limit.
         cpu: 2000m
-        memory: 2Gi
+        memory: 3Gi
+    # Setting affinity replaces the chart's preset, so its soft
+    # anti-affinity between shards is restated. The hard rule keeps the
+    # controller off the node running Prometheus: the two largest memory
+    # consumers otherwise kept landing together.
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: argocd-application-controller
+            topologyKey: kubernetes.io/hostname
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: prometheus-stack
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
     metrics:
       enabled: true
       serviceMonitor:
