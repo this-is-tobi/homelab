@@ -465,12 +465,16 @@ vso:
         create: true
         type: Opaque
         transformation:
+          # Alertmanager only needs the URL; without this the Secret also
+          # carries `_raw`, the whole Vault path (Grafana admin, Keycloak and
+          # Postgres credentials).
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
-            # Flat key (the pre-existing `alertmanager` key at this path is a
-            # plain string, so it cannot host nested fields). Missing key
-            # renders empty until the webhook URL is added to Vault.
+            # Flat key, declared empty in the vault-operator instance values
+            # and set by hand in Vault. While it is empty every notification
+            # fails with "unsupported protocol scheme".
             webhookUrl:
               text: '{{ get .Secrets "alertmanagerMattermostWebhookUrl" | default "" }}'
     grafanaDbAdmin:
