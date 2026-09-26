@@ -39,13 +39,16 @@ kube-prometheus-stack:
         cpu: 500m
         memory: 512Mi
     # Applies to the config-reloader (init + sidecar) in prometheus/alertmanager pods.
+    # Idle almost always but bursty on reload: a 100m quota throttled it
+    # for most of its CFS periods (CPUThrottlingHigh), so the limit only
+    # caps bursts while the request stays at the real footprint.
     prometheusConfigReloader:
       resources:
         requests:
           cpu: 10m
           memory: 32Mi
         limits:
-          cpu: 100m
+          cpu: 250m
           memory: 64Mi
   kube-state-metrics:
     resources:
@@ -56,12 +59,14 @@ kube-prometheus-stack:
         cpu: 200m
         memory: 256Mi
   prometheus-node-exporter:
+    # Scrapes are short CPU bursts; at a 200m quota the exporter throttled
+    # on every node while averaging under 10m.
     resources:
       requests:
         cpu: 25m
         memory: 32Mi
       limits:
-        cpu: 200m
+        cpu: 500m
         memory: 128Mi
   # k3s bundles the scheduler, controller-manager and (embedded) etcd inside
   # the single k3s server process and doesn't expose them as separate
@@ -118,11 +123,13 @@ kube-prometheus-stack:
       # 2Gi proved too small for this scrape load (9 nodes + kube-state +
       # full operator stack): the head hit the limit after ~6h and the pod
       # OOM-looped, paying a multi-minute WAL replay per restart. Keep the
-      # limit comfortably above steady-state head size.
+      # limit comfortably above steady-state head size. The request tracks
+      # the ~2Gi steady state: scheduling on a lower figure let it stack
+      # with other heavy pods and push a node into memory pressure.
       resources:
         requests:
           cpu: 500m
-          memory: 1536Mi
+          memory: 2Gi
         limits:
           cpu: 2000m
           memory: 3Gi
@@ -149,13 +156,16 @@ kube-prometheus-stack:
                 storage: 100Gi
   grafana:
     adminPassword: ""
+    # Steady state sits near 500Mi: at a 512Mi limit it ran against the
+    # ceiling, /api/health slowed past the liveness timeout and the pod
+    # restart-looped.
     resources:
       requests:
         cpu: 100m
-        memory: 256Mi
+        memory: 512Mi
       limits:
         cpu: 500m
-        memory: 512Mi
+        memory: 1Gi
     # No persistence (below): Grafana keeps no state on local disk once the
     # database is external Postgres, so there's nothing left to chown.
     # Readiness tuned looser than the k8s default (1s timeout) — on this
@@ -168,12 +178,14 @@ kube-prometheus-stack:
       periodSeconds: 10
       failureThreshold: 6
     sidecar:
+      # Dashboard/datasource reloads are bursty; at 200m the sidecar was
+      # throttled in most CFS periods despite a tiny average.
       resources:
         requests:
           cpu: 25m
           memory: 64Mi
         limits:
-          cpu: 200m
+          cpu: 500m
           memory: 256Mi
       # Organise our dashboards into Grafana folders via a per-ConfigMap
       # `grafana_folder` annotation (set in templates/dashboards.yaml).
@@ -269,12 +281,15 @@ cnpg:
       # a re-clone, not disk pressure on the primary.
       parameters:
         max_slot_wal_keep_size: 512MB
+    # Grafana's health check queries this database on every probe; at a
+    # 250m quota Postgres was throttled in a third of its CFS periods,
+    # which surfaced as Grafana liveness timeouts.
     resources:
       requests:
         cpu: 100m
         memory: 256Mi
       limits:
-        cpu: 250m
+        cpu: "1"
         memory: 512Mi
     affinity:
       topologyKey: kubernetes.io/hostname

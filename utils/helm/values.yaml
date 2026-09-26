@@ -125,10 +125,12 @@ argo-cd:
         limits:
           cpu: 100m
           memory: 64Mi
+    # The detection loop forks redis-cli every few seconds; a 100m quota
+    # throttled it in most CFS periods on every replica.
     splitBrainDetection:
       resources:
         limits:
-          cpu: 100m
+          cpu: 250m
           memory: 64Mi
   redis:
     metrics:
@@ -150,10 +152,13 @@ argo-cd:
         enabled: true
   controller:
     replicas: 2
+    # The request tracks the ~1Gi steady-state cluster cache: scheduling on
+    # 512Mi let a shard stack with Prometheus and push a node into memory
+    # pressure.
     resources:
       requests:
         cpu: 250m
-        memory: 512Mi
+        memory: 1Gi
       limits:
         # 2-core burst: at 1000m the controller CPU-throttles during sync
         # storms and app refreshes queue for tens of minutes. 2Gi: startup
