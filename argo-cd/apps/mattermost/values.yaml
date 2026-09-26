@@ -17,6 +17,16 @@ networkPolicy:
   extraEgress: []
 
 mattermost:
+  # The data and plugins volumes are ReadWriteOnce: a rolling update's surge
+  # pod on another node can never attach them while the old pod holds them,
+  # so the rollout hangs forever. With one replica, maxSurge 0 stops the old
+  # pod first. (Not `type: Recreate`: server-side apply can't drop the
+  # API-defaulted rollingUpdate block, so that switch is rejected.)
+  deploymentStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   persistence:
     data:
       enabled: false
