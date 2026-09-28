@@ -76,7 +76,6 @@ jobs:
             args=()
             case "$name" in
               instance-manager) args=(--set instance.name=ci --set repoURL=https://example.com/ci.git) ;;
-              root-manager)     args=(--set repoURL.sources=https://example.com/ci.git) ;;
               *)
                 for inst in homelab _example; do
                   for scope in core tenant; do
