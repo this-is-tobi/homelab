@@ -23,7 +23,7 @@ system-upgrade:
 
   controller:
     job:
-      kubectlImage: docker.io/rancher/kubectl:v1.31.6
+      kubectlImage: docker.io/rancher/kubectl:v1.36.2
 
   # Plans after the CRD (the CRD ships in the chart's crds/ and syncs first).
   planDefaults:
