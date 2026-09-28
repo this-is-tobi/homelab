@@ -4,7 +4,7 @@ dependencies:
   version: 91.8.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
-  version: 2.0.0
+  version: 2.1.0
 - name: cluster
   repository: https://cloudnative-pg.github.io/charts
   version: 0.8.1
@@ -14,5 +14,5 @@ dependencies:
 - name: alloy
   repository: https://grafana.github.io/helm-charts
   version: 1.13.0
-digest: sha256:cf398533e43ccd19c0335f4f30d284e9a54463638ae7c41545a1d9b575301e82
-generated: "2026-09-28T18:57:42.757081405Z"
+digest: sha256:93f1d7cf2da07ca84eb73ceaa2b2c98f8e29df98af12659785337efa6bb556a3
+generated: "2026-09-28T19:26:57.343789723Z"

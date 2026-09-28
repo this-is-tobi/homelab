@@ -4,9 +4,9 @@ dependencies:
   version: 1.12.1
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
-  version: 2.0.0
+  version: 2.1.0
 - name: oauth2-proxy
   repository: https://oauth2-proxy.github.io/manifests
   version: 10.7.0
-digest: sha256:70dfb28074736eab6914081efb597c1a108ad49a488b61de705d4587123fc5a0
-generated: "2026-08-24T09:35:50.885055127Z"
+digest: sha256:0c61c6cbbb0c4d17f24058bb4782c5efcfb91f04b90d6e93f3cc5be84bf4bea5
+generated: "2026-09-28T19:25:39.349366792Z"
