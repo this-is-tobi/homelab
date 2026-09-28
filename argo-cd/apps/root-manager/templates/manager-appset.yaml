@@ -52,7 +52,8 @@ spec:
         ohmlab.fr/instance-name: '{{ `{{ .path.basename }}` }}'
       # NO resources-finalizer — deleting an instance-manager Application
       # must not cascade into deleting the instance AppSets (see
-      # instance-manager/templates/appset-core.yaml for why).
+      # instance-manager/templates/appset-core.yaml for why). Leaving it out
+      # of the template is not enough: see syncPolicy below.
     spec:
       project: {{ .Values.project | default "admin-core" | quote }}
       revisionHistoryLimit: 3
@@ -84,4 +85,7 @@ spec:
         syncOptions:
         - ServerSideApply=true
   syncPolicy:
-    preserveResourcesOnDeletion: false
+    # The AppSet controller injects the resources-finalizer into every
+    # generated Application whose template has no finalizers, unless this is
+    # true.
+    preserveResourcesOnDeletion: true
