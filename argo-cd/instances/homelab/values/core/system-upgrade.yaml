@@ -2,4 +2,4 @@ system-upgrade:
   k3s:
     # Must match the cluster's current k3s version or be the next step up: never skip a
     # minor version. Bumping it upgrades every node, inside the maintenance window.
-    version: "v1.35.3+k3s1"
+    version: "v1.36.4+k3s1"
