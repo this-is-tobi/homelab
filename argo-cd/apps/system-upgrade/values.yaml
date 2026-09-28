@@ -1,1 +1,44 @@
-system-upgrade: {}
+system-upgrade:
+  # Identity inherited from the upstream manifests this app used to vendor, so the chart
+  # takes the live objects over in place. The Deployment selector (controllerName) is
+  # immutable, and every node carries a `plan.upgrade.cattle.io/<plan>` label holding a
+  # hash of the version and the ServiceAccount name: renaming a Plan or the ServiceAccount
+  # would re-run every Plan on every node.
+  fullnameOverride: system-upgrade-controller
+  controllerName: system-upgrade-controller
+  serviceAccount:
+    name: system-upgrade
+
+  # The live Deployment carries the API server's RollingUpdate defaults; the chart's
+  # Recreate would be rejected, as server-side apply cannot drop the defaulted
+  # `rollingUpdate` field it does not own. Rolling is safe here: leader election keeps a
+  # single active controller, and the surge pod lands on another control-plane node.
+  strategy:
+    type: RollingUpdate
+
+  # The Namespace is part of this app: dropping it from the manifests would make Argo CD
+  # prune the namespace and everything in it. The upgrade Jobs are privileged by design.
+  namespace:
+    create: true
+
+  controller:
+    job:
+      kubectlImage: docker.io/rancher/kubectl:v1.31.6
+
+  # Plans after the CRD (the CRD ships in the chart's crds/ and syncs first).
+  planDefaults:
+    annotations:
+      argocd.argoproj.io/sync-wave: "1"
+
+  # The version is instance-specific (see the instance values file).
+  k3s:
+    enabled: true
+    window:
+      days: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+      startTime: "02:00"
+      endTime: "06:00"
+      timeZone: Europe/Paris
+    server:
+      name: server-plan
+    agent:
+      name: agent-plan

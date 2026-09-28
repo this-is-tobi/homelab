@@ -2,4 +2,8 @@ apiVersion: v2
 name: system-upgrade
 type: application
 version: 0.1.0
-appVersion: "0.14.2"
+dependencies:
+- name: system-upgrade-controller
+  alias: system-upgrade
+  version: 0.1.0
+  repository: https://this-is-tobi.github.io/helm-charts

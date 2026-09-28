@@ -1,5 +1,9 @@
-# system-upgrade-controller — defaults are sensible.
-# Customize the upgrade Plan(s) inside the chart templates if you need a
-# different cadence, channel, or node selector.
+# system-upgrade-controller: upgrades k3s in-cluster through a server Plan (control-plane
+# nodes, one at a time) then an agent Plan (the other nodes), inside the nightly window set
+# in argo-cd/apps/system-upgrade/values.yaml.
 
-system-upgrade: {}
+system-upgrade:
+  k3s:
+    # The cluster's current k3s version (e.g. the ansible k3sVersion it was installed with).
+    # Bumping it upgrades every node; never skip a minor version.
+    version: "v1.35.3+k3s1"
