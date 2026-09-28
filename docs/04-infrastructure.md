@@ -74,7 +74,7 @@ See the comments in [inventory-example/group_vars/k3s.yml](../ansible/inventory-
 
 This repo's own cluster runs `cilium` with ServiceLB disabled, exposing Traefik through a static `externalIPs` list; the gateway HAProxy forwards public 80/443 onto the node IPs.
 
-[system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed cluster-wide to perform automatic K3s upgrades through two plans (one for masters, one for workers).
+[system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) is deployed cluster-wide to perform K3s upgrades through two plans (control-plane nodes one at a time, then the workers), inside a nightly maintenance window, to the version pinned in the instance values (see [K3s version updates](./03-installation.md#k3s-version-updates)).
 
 [Longhorn](https://longhorn.io/) provides distributed block storage on top of the disks of the worker nodes flagged `additional_disk: true`.
 
