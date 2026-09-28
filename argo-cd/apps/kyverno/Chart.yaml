@@ -1,8 +1,7 @@
 apiVersion: v2
 name: kyverno
 type: application
-version: 3.8.2
-appVersion: "1.18.2"
+version: 0.1.0
 dependencies:
 - name: kyverno
   alias: kyverno

@@ -1,8 +1,7 @@
 apiVersion: v2
 type: application
 name: traefik
-version: 41.0.2
-appVersion: "v3.7.6"
+version: 0.1.0
 description: >-
   Traefik v3 edge router — the cluster ingress controller and Gateway API
   implementation.

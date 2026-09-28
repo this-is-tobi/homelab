@@ -2,8 +2,7 @@ apiVersion: v2
 name: harbor
 type: application
 # NOTE: harbor ARM64 support is not complete yet, see https://github.com/goharbor/harbor/pull/22311
-version: 1.18.3
-appVersion: "2.14.3"
+version: 0.1.0
 dependencies:
 - name: harbor
   alias: harbor

@@ -1,8 +1,7 @@
 apiVersion: v2
 name: sops-secrets-operator
 type: application
-version: 0.28.0
-appVersion: "0.21.1"
+version: 0.1.0
 dependencies:
 - name: sops-secrets-operator
   alias: sops

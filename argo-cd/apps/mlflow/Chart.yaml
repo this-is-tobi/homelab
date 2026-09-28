@@ -1,8 +1,7 @@
 apiVersion: v2
 name: mlflow
 type: application
-version: 0.16.4
-appVersion: "2.21.3"
+version: 0.1.0
 dependencies:
 - name: mlflow
   alias: mlflow
