@@ -1,3 +1,4 @@
+{{- if .Values.rootManager.enabled }}
 {{- /*
 Root `manager` ApplicationSet.
 
@@ -6,8 +7,10 @@ and emits ONE Application per instance pointing at the `instance-manager` chart
 (under `argo-cd/apps/instance-manager`). That chart in turn renders the
 per-scope child AppSets (core + tenant) for the matched instance.
 
-Two-level pattern:
-  root-manager (Application — parent of this AppSet)
+Rendered directly by this chart: the ArgoCD ApplicationSet view (UI
+/applicationsets) is the entry point for the tree, no wrapper Application.
+
+  ohmlab (self-managed, this chart)
     └─> manager (this AppSet)
           └─> instance-<name>  (Application, helm-renders instance-manager chart)
                 ├─> core-<name>   (ApplicationSet)
@@ -15,17 +18,17 @@ Two-level pattern:
                 └─> tenant-<name> (ApplicationSet)
                       └─> <name>-<app>  (Application)  -- tenant tier
 */ -}}
-{{- $repoSources := required ".Values.repoURL.sources is required" .Values.repoURL.sources -}}
-{{- $repoValues := .Values.repoURL.values | default $repoSources -}}
-{{- $rev := .Values.targetRevision | default "main" -}}
+{{- $repoSources := required ".Values.rootManager.repoURL.sources is required" .Values.rootManager.repoURL.sources -}}
+{{- $repoValues := .Values.rootManager.repoURL.values | default $repoSources -}}
+{{- $rev := .Values.rootManager.targetRevision | default "main" -}}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: manager
-  namespace: {{ .Values.argocdNamespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/managed-by: {{ .Values.releaseName }}
+    app.kubernetes.io/managed-by: {{ .Release.Name }}
     app.kubernetes.io/part-of: ohmlab
 spec:
   goTemplate: true
@@ -47,7 +50,7 @@ spec:
     metadata:
       name: 'instance-{{ `{{ .path.basename }}` }}'
       labels:
-        app.kubernetes.io/managed-by: {{ .Values.releaseName }}
+        app.kubernetes.io/managed-by: {{ .Release.Name }}
         app.kubernetes.io/part-of: ohmlab
         ohmlab.fr/instance-name: '{{ `{{ .path.basename }}` }}'
       # NO resources-finalizer — deleting an instance-manager Application
@@ -55,7 +58,7 @@ spec:
       # instance-manager/templates/appset-core.yaml for why). Leaving it out
       # of the template is not enough: see syncPolicy below.
     spec:
-      project: {{ .Values.project | default "admin-core" | quote }}
+      project: {{ .Values.projects.core.name | default "admin-core" | quote }}
       revisionHistoryLimit: 3
       sources:
       - repoURL: {{ $repoSources | quote }}
@@ -69,7 +72,7 @@ spec:
           # Keep the child AppSets in the same namespace as this ArgoCD
           # instance — instance-manager must not hardcode it.
           - name: argocdNamespace
-            value: {{ .Values.argocdNamespace | quote }}
+            value: {{ .Release.Namespace | quote }}
           valueFiles:
           - '$values/argo-cd/instances/{{ `{{ .path.basename }}` }}/instance.yaml'
       - repoURL: {{ $repoValues | quote }}
@@ -77,7 +80,7 @@ spec:
         targetRevision: {{ $rev | quote }}
       destination:
         server: https://kubernetes.default.svc
-        namespace: {{ .Values.argocdNamespace }}
+        namespace: {{ .Release.Namespace }}
       syncPolicy:
         automated:
           prune: true
@@ -89,3 +92,4 @@ spec:
     # generated Application whose template has no finalizers, unless this is
     # true.
     preserveResourcesOnDeletion: true
+{{- end }}
