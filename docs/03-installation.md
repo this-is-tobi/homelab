@@ -281,10 +281,17 @@ Image versions for gateway services (HAProxy, PiHole, WireGuard) are managed in 
 
 ### K3s version updates
 
-K3s patch-level upgrades are handled automatically in-cluster by the [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller). For major/minor version bumps:
+The K3s version is pinned in two places that Renovate bumps together in one PR:
 
-1. Update `k3sVersion` in `inventory/group_vars/k3s.yml`.
-2. Re-deploy: `./run.sh -p ./ansible/install.yml -t k3s`
+- `system-upgrade.k3s.version` in [argo-cd/instances/\<instance\>/values/core/system-upgrade.yaml](../argo-cd/instances/homelab/values/core/system-upgrade.yaml): the version the running cluster is upgraded to. The [system-upgrade-controller](https://github.com/rancher/system-upgrade-controller) applies it in-cluster, control-plane nodes one at a time then the agents, inside the maintenance window set in [argo-cd/apps/system-upgrade/values.yaml](../argo-cd/apps/system-upgrade/values.yaml) (every night, 02:00–06:00 Europe/Paris).
+- `k3sVersion` in `inventory/group_vars/k3s.yml` (plus the example inventory and the role default): the version ansible installs on new or re-provisioned nodes.
+
+Merging the PR is the upgrade: it starts in the next window, or right away if merged during one. Follow it with `kubectl -n system-upgrade get plans,jobs` and `kubectl get nodes`.
+
+Kubernetes does not support skipping a minor version, so Renovate opens one PR per minor, and minor bumps wait for approval on the dependency dashboard (patch bumps open on their own, after a week of soak). Before approving a minor:
+
+1. Check that every chart deployed on the cluster supports the new Kubernetes minor.
+2. In the same PR, bump by hand `KUBECTL_VERSION` in `utils/Dockerfile` and `controller.job.kubectlImage` in `argo-cd/apps/system-upgrade/values.yaml` to that minor (Renovate only moves their patch version).
 
 ### Kubernetes application updates
 

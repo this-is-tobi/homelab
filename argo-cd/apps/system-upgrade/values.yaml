@@ -23,9 +23,13 @@ system-upgrade:
 
   controller:
     job:
-      kubectlImage: docker.io/rancher/kubectl:v1.31.6
+      # Runs the cordon/drain init containers: keep it on the cluster's k3s minor (kubectl
+      # supports one minor of skew). Renovate only moves the patch; bump the minor with k3s.
+      kubectlImage: docker.io/rancher/kubectl:v1.36.2
 
-  # Plans after the CRD (the CRD ships in the chart's crds/ and syncs first).
+  # Plans after the CRD (the CRD ships in the chart's crds/ and syncs first). A chart bump
+  # whose CRD adds fields the Plans use needs that CRD applied by hand first: Argo CD diffs
+  # the Plans against the live CRD before it syncs anything.
   planDefaults:
     annotations:
       argocd.argoproj.io/sync-wave: "1"
