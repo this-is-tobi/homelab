@@ -28,7 +28,6 @@ spec:
           # System components that legitimately require privileged / hostNetwork
           - longhorn-system
           - prometheus-stack
-          - system-upgrade
           # Log-processing agent needs hostPath (/var/log, container runtime)
           - crowdsec
           # bank-vaults operator unconditionally adds IPC_LOCK to the vault

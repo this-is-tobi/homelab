@@ -27,7 +27,6 @@ spec:
           - kyverno
           # System components managed by upstream charts without configurable limits
           - longhorn-system
-          - system-upgrade
     validate:
       failureAction: {{ .Values.policies.requireResourceLimits.failureAction | default "Audit" }}
       message: "CPU and memory limits are required for all containers."
