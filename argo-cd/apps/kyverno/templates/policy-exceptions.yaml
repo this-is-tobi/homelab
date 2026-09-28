@@ -110,3 +110,70 @@ spec:
         - rustfs
         names:
         - rustfs*
+---
+# system-upgrade-controller's upgrade Jobs (apply-<plan>-on-<node>-with-<hash>)
+# run the k3s installer on the host: hostPID/hostIPC/hostNetwork, the host
+# root mounted via hostPath, and a privileged upgrade container with
+# CAP_SYS_BOOT, all hardcoded by the controller. Exempt exactly those
+# baseline controls; the privileged/capability ones only for the
+# k3s-upgrade image. The controller Deployment in the same namespace stays
+# fully checked.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: system-upgrade-jobs-baseline
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: pod-security-baseline
+    ruleNames:
+    - baseline
+    - autogen-baseline
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Job
+        namespaces:
+        - system-upgrade
+        names:
+        - apply-*
+  podSecurity:
+  - controlName: Host Namespaces
+  - controlName: HostPath Volumes
+  - controlName: Privileged Containers
+    images:
+    - "*rancher/k3s-upgrade:*"
+  - controlName: Capabilities
+    images:
+    - "*rancher/k3s-upgrade:*"
+---
+# The same Jobs run as root (the installer writes to the host root) and the
+# Plan API has no resources field, so their containers can never set
+# runAsNonRoot or limits.
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: system-upgrade-jobs-root-limits
+  namespace: kyverno
+spec:
+  exceptions:
+  - policyName: require-non-root
+    ruleNames:
+    - require-non-root
+    - autogen-require-non-root
+  - policyName: require-resource-limits
+    ruleNames:
+    - require-limits
+    - autogen-require-limits
+  match:
+    any:
+    - resources:
+        kinds:
+        - Pod
+        - Job
+        namespaces:
+        - system-upgrade
+        names:
+        - apply-*

@@ -29,7 +29,6 @@ spec:
           # System / infrastructure components with upstream root requirements
           - longhorn-system
           - prometheus-stack
-          - system-upgrade
           - cert-manager
           - teleport-system
           # Log-processing agent reads host logs as root
