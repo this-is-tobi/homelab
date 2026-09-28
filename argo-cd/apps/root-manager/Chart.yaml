@@ -2,7 +2,6 @@ apiVersion: v2
 name: root-manager
 type: application
 version: 0.1.0
-appVersion: "0.1.0"
 description: |
   Root manager chart. Renders the `manager` ApplicationSet that discovers
   every instance folder under `argo-cd/instances/*` and fans out into

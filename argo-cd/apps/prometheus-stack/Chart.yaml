@@ -1,8 +1,7 @@
 apiVersion: v2
 name: prometheus-stack
 type: application
-version: 87.17.0
-appVersion: "v0.92.1"
+version: 0.1.0
 dependencies:
 - name: kube-prometheus-stack
   alias: kube-prometheus-stack

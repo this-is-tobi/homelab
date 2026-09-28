@@ -1,8 +1,7 @@
 apiVersion: v2
 name: keycloak
 type: application
-version: 0.21.16
-appVersion: "26.7.0"
+version: 0.1.0
 dependencies:
 - name: keycloak
   alias: keycloak

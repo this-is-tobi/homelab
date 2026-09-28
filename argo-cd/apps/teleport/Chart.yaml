@@ -1,8 +1,7 @@
 apiVersion: v2
 type: application
 name: teleport
-version: 18.10.0
-appVersion: "18.10.0"
+version: 0.1.0
 dependencies:
 - name: teleport-cluster
   alias: server

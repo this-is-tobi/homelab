@@ -1,8 +1,7 @@
 apiVersion: v2
 name: argo-cd
 type: application
-version: 10.1.4
-appVersion: "3.4.5"
+version: 0.1.0
 dependencies:
 - name: argo-cd
   alias: argo-cd

@@ -1,8 +1,7 @@
 apiVersion: v2
 name: vaultwarden
 type: application
-version: 0.36.3
-appVersion: "1.35.8"
+version: 0.1.0
 dependencies:
 - name: vaultwarden
   alias: vaultwarden

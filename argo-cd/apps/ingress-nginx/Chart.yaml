@@ -1,8 +1,7 @@
 apiVersion: v2
 type: application
 name: ingress-nginx
-version: 4.15.1
-appVersion: "1.15.1"
+version: 0.1.0
 dependencies:
   - name: ingress-nginx
     alias: ingress-nginx

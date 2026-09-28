@@ -1,8 +1,7 @@
 apiVersion: v2
 name: rustfs
 type: application
-version: 0.8.0
-appVersion: "1.0.0-beta.8"
+version: 0.1.0
 dependencies:
 - name: rustfs
   alias: rustfs

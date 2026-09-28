@@ -1,8 +1,7 @@
 apiVersion: v2
 name: argo-workflows
 type: application
-version: 1.0.14
-appVersion: "4.0.5"
+version: 0.1.0
 dependencies:
 - name: argo-workflows
   alias: argo-workflows
