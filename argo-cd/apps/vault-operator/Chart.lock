@@ -1,12 +1,12 @@
 dependencies:
 - name: vault-operator
   repository: oci://ghcr.io/bank-vaults/helm-charts
-  version: 1.24.0
+  version: 1.24.1
 - name: vault-secrets-operator
   repository: https://helm.releases.hashicorp.com
   version: 1.6.0
 - name: backup-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.5.6
-digest: sha256:a99e929de5d435d2b2d58312520da88ff83e7e042ffbc7fa3cc7c6229d16bdab
-generated: "2026-09-26T01:26:27.582904722Z"
+digest: sha256:b53d7a3e9e8adb81e6d8c19f0be4e20a5f021774a5249f224a5fe2675357b7c6
+generated: "2026-10-01T18:03:13.033418072Z"
