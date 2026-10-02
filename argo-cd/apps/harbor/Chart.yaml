@@ -10,7 +10,7 @@ dependencies:
   repository: https://helm.goharbor.io
 - name: cluster
   alias: cnpg
-  version: 0.8.1
+  version: 0.9.0
   repository: https://cloudnative-pg.github.io/charts
 - name: vso-utils
   alias: vso
