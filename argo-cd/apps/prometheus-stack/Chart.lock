@@ -7,12 +7,12 @@ dependencies:
   version: 2.1.0
 - name: cluster
   repository: https://cloudnative-pg.github.io/charts
-  version: 0.8.1
+  version: 0.9.0
 - name: loki
   repository: https://grafana-community.github.io/helm-charts
   version: 18.13.7
 - name: alloy
   repository: https://grafana.github.io/helm-charts
   version: 1.13.0
-digest: sha256:d13e2667bedfd3d729b3e0edc9288f53257e72394287e5cb8686834f6383bedb
-generated: "2026-09-30T17:28:01.936237272Z"
+digest: sha256:952b342046e5a7ac2850f3296806ef37252e1321177a3b4c6c39e87f2ace0b99
+generated: "2026-10-02T02:10:13.011166669Z"
