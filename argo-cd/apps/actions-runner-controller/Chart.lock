@@ -4,9 +4,9 @@ dependencies:
   version: 0.15.0
 - name: gha-runner-scale-set
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
-  version: 0.14.2
+  version: 0.15.0
 - name: gha-runner-scale-set
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
-  version: 0.14.2
-digest: sha256:58d61076bb6c115692ce8aff62ab3820157550c35dc8a9e1ebd3315dcff30e0a
-generated: "2026-10-01T20:27:17.675078122Z"
+  version: 0.15.0
+digest: sha256:f01b33a71f57c3860ab8b0f2d52c4ad6fa9faaa9f55050a303e53d7d98081675
+generated: "2026-10-02T17:58:46.308674385Z"
