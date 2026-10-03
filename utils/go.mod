@@ -2,6 +2,8 @@ module github.com/this-is-tobi/homelab/utils
 
 go 1.26.0
 
+toolchain go1.27.1
+
 require (
 	filippo.io/age v1.3.2
 	github.com/google/uuid v1.6.0
