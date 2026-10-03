@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 # Decide the chart bump level for a cd.yml run.
 #
-#   chart-bump-level.sh <before-sha> <after-sha> <chart-dir> <dispatch-level>
+#   chart-bump-level.sh <chart-dir> <dispatch-level>
 #
-# An explicit dispatch level wins. Otherwise a push that changes anything under
-# <chart-dir> gets a patch bump - unless the pushed range already moves the
-# chart's version (a merged bump PR, or a deliberate hand bump), which must not
-# open another bump PR. Prints none|patch|minor|major.
+# An explicit dispatch level wins. Otherwise the answer comes from history, not
+# from the pushed range: anything changed under <chart-dir> since the commit
+# that last changed the chart's version gets a patch bump. A range would miss
+# changes from runs GitHub never ran (a pending run in the same concurrency
+# group is replaced by the next one); history cannot. A merged bump PR or a
+# deliberate hand bump moves the version, so nothing is left to bump.
+# Prints none|patch|minor|major.
 set -euo pipefail
 
-before="$1" after="$2" chart_dir="${3%/}" dispatch="$4"
+chart_dir="${1%/}" dispatch="$2"
 
 case "$dispatch" in
   none) ;;
@@ -17,23 +20,16 @@ case "$dispatch" in
   *) echo "invalid dispatch level: $dispatch" >&2; exit 1 ;;
 esac
 
-# No usable base (first push of a branch, force-push to an unknown commit):
-# never guess.
-if [ -z "$before" ] || [[ "$before" =~ ^0+$ ]] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
+# `^version:` only matches the chart's own version: dependency versions are
+# indented under `dependencies:`.
+since=$(git log -1 --format=%H -G '^version:' -- "$chart_dir/Chart.yaml")
+if [ -z "$since" ]; then
   echo none
   exit 0
 fi
 
-if git diff --quiet "$before" "$after" -- "$chart_dir"; then
+if git diff --quiet "$since" HEAD -- "$chart_dir"; then
   echo none
-  exit 0
+else
+  echo patch
 fi
-
-old=$(git show "$before:$chart_dir/Chart.yaml" 2>/dev/null | yq '.version' || true)
-new=$(git show "$after:$chart_dir/Chart.yaml" | yq '.version')
-if [ "$old" != "$new" ]; then
-  echo none
-  exit 0
-fi
-
-echo patch
