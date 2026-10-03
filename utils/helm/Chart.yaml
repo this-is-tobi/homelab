@@ -1,26 +1,26 @@
 apiVersion: v2
 name: ohmlab
 type: application
-version: 0.1.0
+version: 0.1.1
 description: A Helm chart to deploy ohmlab.
 home: https://this-is-tobi.com/homelab
 deprecated: false
 annotations: {}
 keywords: []
 dependencies:
-- name: argo-cd
-  alias: argo-cd
-  version: 10.9.6
-  repository: https://argoproj.github.io/argo-helm
-  condition: argo-cd.enabled
-- name: vso-utils
-  alias: vso
-  version: 2.1.0
-  repository: https://this-is-tobi.github.io/helm-charts
-  condition: vso.enabled
+  - name: argo-cd
+    alias: argo-cd
+    version: 10.9.6
+    repository: https://argoproj.github.io/argo-helm
+    condition: argo-cd.enabled
+  - name: vso-utils
+    alias: vso
+    version: 2.1.0
+    repository: https://this-is-tobi.github.io/helm-charts
+    condition: vso.enabled
 sources:
-- https://github.com/this-is-tobi/homelab
+  - https://github.com/this-is-tobi/homelab
 maintainers:
-- name: this-is-tobi
-  email: this-is-tobi@proton.me
-  url: https://this-is-tobi.com
+  - name: this-is-tobi
+    email: this-is-tobi@proton.me
+    url: https://this-is-tobi.com
