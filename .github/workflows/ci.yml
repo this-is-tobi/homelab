@@ -1,10 +1,10 @@
-name: Lint & test
+name: CI
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-  pull_request:
+  push:
     branches:
       - main
 
@@ -12,7 +12,24 @@ permissions:
   contents: read
 
 jobs:
+  # Which gates a change can affect. On a push (not a pull request) every
+  # group reports changed, so main always runs the full set.
+  classify:
+    uses: this-is-tobi/github-workflows/.github/workflows/classify-changes.yml@v0
+    permissions:
+      pull-requests: read
+    with:
+      GROUPS: >-
+        {"utils": ["utils/*"],
+        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*"],
+        "ansible": ["ansible/*"],
+        "shell": ["run.sh", "scripts/*"],
+        "sonarqube": ["argo-cd/apps/sonarqube/*"],
+        "ci": [".github/*"]}
+
   shellcheck:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).shell || fromJSON(needs.classify.outputs.groups).ci }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -20,6 +37,8 @@ jobs:
         run: shellcheck -S warning run.sh scripts/*.sh
 
   ansible-lint:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).ansible || fromJSON(needs.classify.outputs.groups).ci }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -42,6 +61,8 @@ jobs:
         run: ansible-lint
 
   helm:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).charts || fromJSON(needs.classify.outputs.groups).ci }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -101,6 +122,8 @@ jobs:
           exit "$failures"
 
   sonarqube-plugins:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).sonarqube || fromJSON(needs.classify.outputs.groups).ci }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -145,40 +168,99 @@ jobs:
 
           exit "$fail"
 
-  go:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: utils
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: utils/go.mod
-          cache-dependency-path: utils/go.sum
-      - name: gofmt
-        run: |
-          unformatted="$(gofmt -l .)"
-          if [ -n "$unformatted" ]; then
-            echo "gofmt needed on:"; echo "$unformatted"; exit 1
-          fi
-      - name: go vet
-        run: go vet ./...
-      - name: go test
-        run: go test ./...
-      - name: go build
-        run: go build ./...
-
-  gitleaks:
-    runs-on: ubuntu-latest
+  lint-go:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).utils || fromJSON(needs.classify.outputs.groups).ci }}
+    uses: this-is-tobi/github-workflows/.github/workflows/lint-go.yml@v0
     permissions:
       contents: read
-      # gitleaks-action resolves the PR commit range through the API.
-      pull-requests: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      WORKING_DIRECTORY: utils
+      FORMAT: true
+      VET: true
+      GOLANGCI_LINT: false
+
+  test-go:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).utils || fromJSON(needs.classify.outputs.groups).ci }}
+    uses: this-is-tobi/github-workflows/.github/workflows/test-go.yml@v0
+    permissions:
+      contents: read
+    with:
+      WORKING_DIRECTORY: utils
+
+  govulncheck:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).utils || fromJSON(needs.classify.outputs.groups).ci }}
+    uses: this-is-tobi/github-workflows/.github/workflows/scan-govulncheck.yml@v0
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    with:
+      WORKING_DIRECTORY: utils
+
+  # Built, not pushed: the tarball feeds the Trivy scan and nothing reaches
+  # the registry from CI.
+  build-image:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).utils || fromJSON(needs.classify.outputs.groups).ci }}
+    uses: this-is-tobi/github-workflows/.github/workflows/build-docker.yml@v0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/utils
+      IMAGE_TAG: ci-${{ github.sha }}
+      IMAGE_DOCKERFILE: utils/Dockerfile
+      IMAGE_CONTEXT: utils/
+      PUSH: false
+      BUILD_AMD64: true
+      BUILD_ARM64: true
+
+  scan-image:
+    needs: build-image
+    uses: this-is-tobi/github-workflows/.github/workflows/scan-trivy.yml@v0
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+      packages: read
+    with:
+      IMAGE_ARTIFACT: ${{ needs.build-image.outputs.artifact-prefix }}-amd64
+
+  gitleaks:
+    uses: this-is-tobi/github-workflows/.github/workflows/scan-gitleaks.yml@v0
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+  lint-commits:
+    if: ${{ github.event_name == 'pull_request' }}
+    uses: this-is-tobi/github-workflows/.github/workflows/lint-commits.yml@v0
+    permissions:
+      contents: read
+
+  # The single check to require in branch protection: path-gated jobs that
+  # were skipped count as passed.
+  ci-status:
+    if: ${{ always() }}
+    needs:
+      - classify
+      - shellcheck
+      - ansible-lint
+      - helm
+      - sonarqube-plugins
+      - lint-go
+      - test-go
+      - govulncheck
+      - build-image
+      - scan-image
+      - gitleaks
+      - lint-commits
+    uses: this-is-tobi/github-workflows/.github/workflows/check-jobs.yml@v0
+    permissions: {}
+    with:
+      NEEDS: ${{ toJson(needs) }}
+      ALLOW_SKIPPED: true
