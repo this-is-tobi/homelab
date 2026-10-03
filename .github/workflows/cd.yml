@@ -81,9 +81,12 @@ jobs:
     needs: release
     if: ${{ needs.release.outputs.releases-created == 'true' }}
     uses: this-is-tobi/github-workflows/.github/workflows/release-go.yml@v0
+    # release-go declares packages: write for configurations that push images;
+    # GitHub refuses to start the run if the caller grants less, even though
+    # this GoReleaser config pushes none.
     permissions:
       contents: write
-      packages: none
+      packages: write
     with:
       WORKING_DIRECTORY: utils
     secrets:
