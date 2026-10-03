@@ -231,12 +231,16 @@ jobs:
     with:
       IMAGE_ARTIFACT: ${{ needs.build-image.outputs.artifact-prefix }}-amd64
 
+  # Scans the commits this event brings (the pull request, or the push), as
+  # gitleaks-action did. The shared workflow's default walks the whole history.
   gitleaks:
     uses: this-is-tobi/github-workflows/.github/workflows/scan-gitleaks.yml@v0
     permissions:
       contents: read
       security-events: write
       pull-requests: write
+    with:
+      LOG_OPTS: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.sha) || format('{0}..{1}', github.event.before, github.sha) }}
 
   lint-commits:
     if: ${{ github.event_name == 'pull_request' }}
