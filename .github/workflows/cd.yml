@@ -105,3 +105,86 @@ jobs:
       PROVENANCE: true
       SBOM: true
       SIGN: true
+
+  # The ohmlab chart has its own version stream: a change under utils/helm
+  # opens a bump PR, and merging it publishes (see chart-guard).
+  chart-bump-level:
+    runs-on: ubuntu-latest
+    outputs:
+      level: ${{ steps.level.outputs.level }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: level
+        env:
+          BEFORE: ${{ github.event.before }}
+          DISPATCH: ${{ inputs.bump_chart || 'none' }}
+        run: echo "level=$(scripts/ci/chart-bump-level.sh "$BEFORE" HEAD utils/helm "$DISPATCH")" >>"$GITHUB_OUTPUT"
+
+  bump-chart:
+    needs: chart-bump-level
+    if: ${{ needs.chart-bump-level.outputs.level != 'none' }}
+    uses: this-is-tobi/github-workflows/.github/workflows/update-helm-chart.yml@v0
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      RUN_MODE: called
+      CHART_PATH: utils/helm
+      UPGRADE_TYPE: ${{ needs.chart-bump-level.outputs.level }}
+      BASE_BRANCH: main
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  # Publish whatever Chart.yaml says if that version is not in the registry
+  # yet: idempotent, and it covers the very first publication too.
+  chart-guard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      publish: ${{ steps.guard.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - id: guard
+        env:
+          GH_ACTOR: ${{ github.actor }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(yq '.version' utils/helm/Chart.yaml)
+          echo "$GH_TOKEN" | helm registry login ghcr.io -u "$GH_ACTOR" --password-stdin
+          if helm show chart oci://ghcr.io/this-is-tobi/homelab/ohmlab --version "$version" >/dev/null 2>&1; then
+            echo "ohmlab $version already published"
+            echo "publish=false" >>"$GITHUB_OUTPUT"
+          else
+            echo "ohmlab $version not in the registry - publishing"
+            echo "publish=true" >>"$GITHUB_OUTPUT"
+          fi
+
+  publish-chart:
+    needs: chart-guard
+    if: ${{ needs.chart-guard.outputs.publish == 'true' }}
+    uses: this-is-tobi/github-workflows/.github/workflows/release-helm-local.yml@v0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      CHART_PATH: utils/helm
+      HELM_REPOS: argo=https://argoproj.github.io/argo-helm,this-is-tobi=https://this-is-tobi.github.io/helm-charts
+
+  attest-chart:
+    needs: publish-chart
+    uses: this-is-tobi/github-workflows/.github/workflows/attest-helm.yml@v0
+    permissions:
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      CHARTS: ${{ needs.publish-chart.outputs.published-charts }}
+      PROVENANCE: true
+      SIGN: true

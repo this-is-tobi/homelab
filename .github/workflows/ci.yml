@@ -34,7 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run shellcheck
-        run: shellcheck -S warning run.sh scripts/*.sh
+        run: shellcheck -S warning run.sh scripts/*.sh scripts/ci/*.sh
+      - name: Test the chart bump decision used by cd.yml
+        run: scripts/ci/chart-bump-level.test.sh
 
   ansible-lint:
     needs: classify
