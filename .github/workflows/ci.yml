@@ -38,6 +38,19 @@ jobs:
       - name: Test the chart bump decision used by cd.yml
         run: scripts/ci/chart-bump-level.test.sh
 
+  # actionlint cannot see remote reusable workflows: a caller granting less
+  # than a called job declares only fails on main, as a startup failure.
+  workflow-permissions:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).ci }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check reusable-workflow permission grants
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/ci/check-reusable-permissions.sh .github/workflows/*.yml
+
   ansible-lint:
     needs: classify
     if: ${{ fromJSON(needs.classify.outputs.groups).ansible || fromJSON(needs.classify.outputs.groups).ci }}
@@ -265,6 +278,7 @@ jobs:
       - scan-image
       - gitleaks
       - lint-commits
+      - workflow-permissions
     uses: this-is-tobi/github-workflows/.github/workflows/check-jobs.yml@v0
     permissions: {}
     with:
