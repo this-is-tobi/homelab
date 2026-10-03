@@ -1,0 +1,107 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      bump_chart:
+        description: Bump the ohmlab chart version (chart-only release)
+        type: choice
+        options:
+          - none
+          - patch
+          - minor
+          - major
+        default: none
+
+permissions:
+  contents: read
+
+# One release at a time: two overlapping runs would race on the release PR
+# and on the chart guard's "is this version published yet" check.
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # Opens or updates the release PR for utils/. Nothing below publishes the
+  # CLI until that PR is merged.
+  release:
+    uses: this-is-tobi/github-workflows/.github/workflows/release-app.yml@v0
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    with:
+      AUTOMERGE_RELEASE: false
+      TAG_MAJOR_AND_MINOR: false
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  # `latest` stays owned by build-utils.yml until the cutover: the live
+  # vault-post-config Job runs that tag.
+  image:
+    needs: release
+    if: ${{ needs.release.outputs.releases-created == 'true' }}
+    uses: this-is-tobi/github-workflows/.github/workflows/build-docker.yml@v0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/utils
+      IMAGE_TAG: ${{ fromJSON(needs.release.outputs.release-outputs)['utils--version'] }}
+      IMAGE_DOCKERFILE: utils/Dockerfile
+      IMAGE_CONTEXT: utils/
+      LATEST_TAG: false
+      BUILD_AMD64: true
+      BUILD_ARM64: true
+      BUILD_ARGS: |
+        VERSION=${{ fromJSON(needs.release.outputs.release-outputs)['utils--version'] }}
+        COMMIT=${{ github.sha }}
+        BUILD_DATE=${{ github.event.head_commit.timestamp }}
+
+  attest-image:
+    needs: image
+    uses: this-is-tobi/github-workflows/.github/workflows/attest-docker.yml@v0
+    permissions:
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      IMAGE_NAME: ${{ needs.image.outputs.image }}
+      DIGEST: ${{ needs.image.outputs.digest }}
+      PROVENANCE: true
+      SBOM: true
+      SIGN: true
+
+  binaries:
+    needs: release
+    if: ${{ needs.release.outputs.releases-created == 'true' }}
+    uses: this-is-tobi/github-workflows/.github/workflows/release-go.yml@v0
+    permissions:
+      contents: write
+      packages: none
+    with:
+      WORKING_DIRECTORY: utils
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+
+  attest-binaries:
+    needs:
+      - release
+      - binaries
+    uses: this-is-tobi/github-workflows/.github/workflows/attest-go.yml@v0
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    with:
+      TAG: ${{ fromJSON(needs.release.outputs.release-outputs)['utils--tag_name'] }}
+      WORKING_DIRECTORY: utils
+      PROVENANCE: true
+      SBOM: true
+      SIGN: true
