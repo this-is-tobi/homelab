@@ -118,9 +118,8 @@ jobs:
           fetch-depth: 0
       - id: level
         env:
-          BEFORE: ${{ github.event.before }}
           DISPATCH: ${{ inputs.bump_chart || 'none' }}
-        run: echo "level=$(scripts/ci/chart-bump-level.sh "$BEFORE" HEAD utils/helm "$DISPATCH")" >>"$GITHUB_OUTPUT"
+        run: echo "level=$(scripts/ci/chart-bump-level.sh utils/helm "$DISPATCH")" >>"$GITHUB_OUTPUT"
 
   bump-chart:
     needs: chart-bump-level

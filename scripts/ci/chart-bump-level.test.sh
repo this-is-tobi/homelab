@@ -12,13 +12,20 @@ repo() {
   git -C "$dir" config user.email t@t
   git -C "$dir" config user.name t
   mkdir -p "$dir/utils/helm"
-  printf 'apiVersion: v2\nname: ohmlab\nversion: 0.1.0\n' >"$dir/utils/helm/Chart.yaml"
+  chart_yaml 0.1.0 1.0.0 >"$dir/utils/helm/Chart.yaml"
   printf 'a: 1\n' >"$dir/utils/helm/values.yaml"
   printf 'x\n' >"$dir/README.md"
   git -C "$dir" add -A
   git -C "$dir" commit -qm init
   echo "$dir"
 }
+
+# chart_yaml <chart-version> <dependency-version>
+chart_yaml() {
+  printf 'apiVersion: v2\nname: ohmlab\nversion: %s\ndependencies:\n  - name: argo-cd\n    version: %s\n    repository: https://argoproj.github.io/argo-helm\n' "$1" "$2"
+}
+
+commit() { git -C "$1" add -A && git -C "$1" commit -qm "$2"; }
 
 check() {
   local label="$1" expected="$2" actual="$3"
@@ -30,48 +37,60 @@ check() {
   fi
 }
 
-# A chart change on push gets a patch bump.
-d=$(repo); b=$(git -C "$d" rev-parse HEAD)
-printf 'a: 2\n' >"$d/utils/helm/values.yaml"; git -C "$d" commit -qam "fix(ohmlab): tweak"
-check "chart change bumps patch" patch "$(cd "$d" && "$SCRIPT" "$b" HEAD utils/helm none)"
+level() { (cd "$1" && "$SCRIPT" "${2:-utils/helm}" "${3:-none}"); }
+
+# A chart change gets a patch bump.
+d=$(repo)
+printf 'a: 2\n' >"$d/utils/helm/values.yaml"; commit "$d" "fix(ohmlab): tweak"
+check "chart change bumps patch" patch "$(level "$d")"
 
 # A change elsewhere does nothing.
-d=$(repo); b=$(git -C "$d" rev-parse HEAD)
-printf 'y\n' >"$d/README.md"; git -C "$d" commit -qam "docs: readme"
-check "unrelated change does nothing" none "$(cd "$d" && "$SCRIPT" "$b" HEAD utils/helm none)"
+d=$(repo)
+printf 'y\n' >"$d/README.md"; commit "$d" "docs: readme"
+check "unrelated change does nothing" none "$(level "$d")"
 
-# The range already moves the chart version (a merged bump PR): no re-bump.
-d=$(repo); b=$(git -C "$d" rev-parse HEAD)
-printf 'apiVersion: v2\nname: ohmlab\nversion: 0.1.1\n' >"$d/utils/helm/Chart.yaml"
-git -C "$d" commit -qam "chore: update chart ohmlab to v0.1.1"
-check "a version bump in range does not re-bump" none "$(cd "$d" && "$SCRIPT" "$b" HEAD utils/helm none)"
+# A dependency bump (Renovate) is a chart change, not a chart version change.
+d=$(repo)
+chart_yaml 0.1.0 1.0.1 >"$d/utils/helm/Chart.yaml"; commit "$d" "chore(deps): update argo-cd"
+check "a dependency bump bumps patch" patch "$(level "$d")"
+
+# A merged bump PR (the version moved, nothing since) does not re-bump.
+d=$(repo)
+printf 'a: 2\n' >"$d/utils/helm/values.yaml"; commit "$d" "fix(ohmlab): tweak"
+chart_yaml 0.1.1 1.0.0 >"$d/utils/helm/Chart.yaml"; commit "$d" "chore: update chart ohmlab to v0.1.1"
+check "a merged bump does not re-bump" none "$(level "$d")"
 
 # A hand bump alongside other chart changes is respected as-is.
-d=$(repo); b=$(git -C "$d" rev-parse HEAD)
-printf 'apiVersion: v2\nname: ohmlab\nversion: 0.2.0\n' >"$d/utils/helm/Chart.yaml"
-printf 'a: 3\n' >"$d/utils/helm/values.yaml"; git -C "$d" commit -qam "feat(ohmlab): x, bumped by hand"
-check "a hand bump is respected" none "$(cd "$d" && "$SCRIPT" "$b" HEAD utils/helm none)"
+d=$(repo)
+chart_yaml 0.2.0 1.0.0 >"$d/utils/helm/Chart.yaml"
+printf 'a: 3\n' >"$d/utils/helm/values.yaml"; commit "$d" "feat(ohmlab): x, bumped by hand"
+check "a hand bump is respected" none "$(level "$d")"
+
+# A chart change after the last version change bumps again.
+d=$(repo)
+chart_yaml 0.2.0 1.0.0 >"$d/utils/helm/Chart.yaml"; commit "$d" "chore: update chart ohmlab to v0.2.0"
+printf 'a: 4\n' >"$d/utils/helm/values.yaml"; commit "$d" "fix(ohmlab): tweak"
+check "a change after a bump bumps again" patch "$(level "$d")"
+
+# A chart change pushed in a run that never happened (GitHub replaces a
+# pending run of the same concurrency group) is still seen by the next run.
+d=$(repo)
+printf 'a: 5\n' >"$d/utils/helm/values.yaml"; commit "$d" "fix(ohmlab): tweak"
+printf 'z\n' >"$d/README.md"; commit "$d" "docs: readme"
+check "a chart change from a skipped run still bumps" patch "$(level "$d")"
+
+# A trailing slash on the chart dir is tolerated.
+d=$(repo)
+printf 'a: 6\n' >"$d/utils/helm/values.yaml"; commit "$d" "fix(ohmlab): tweak"
+check "trailing slash on chart dir" patch "$(level "$d" utils/helm/)"
 
 # An explicit dispatch level wins, whatever changed.
 d=$(repo)
-check "dispatch minor" minor "$(cd "$d" && "$SCRIPT" "" HEAD utils/helm minor)"
-
-# A trailing slash on the chart dir is tolerated.
-d=$(repo); b=$(git -C "$d" rev-parse HEAD)
-printf 'a: 4\n' >"$d/utils/helm/values.yaml"; git -C "$d" commit -qam "fix(ohmlab): tweak"
-check "trailing slash on chart dir" patch "$(cd "$d" && "$SCRIPT" "$b" HEAD utils/helm/ none)"
-
-# An unknown base (all-zero sha on a new branch) is a no-op, never a guess.
-d=$(repo)
-check "unknown base is a no-op" none "$(cd "$d" && "$SCRIPT" 0000000000000000000000000000000000000000 HEAD utils/helm none)"
-
-# A base that is not in the clone (force-push) is a no-op too.
-d=$(repo)
-check "base missing from the clone is a no-op" none "$(cd "$d" && "$SCRIPT" 1111111111111111111111111111111111111111 HEAD utils/helm none)"
+check "dispatch minor" minor "$(level "$d" utils/helm minor)"
 
 # An invalid dispatch level fails.
 d=$(repo)
-if (cd "$d" && "$SCRIPT" "" HEAD utils/helm huge) >/dev/null 2>&1; then
+if level "$d" utils/helm huge >/dev/null 2>&1; then
   echo "FAIL invalid level must fail"
   fail=1
 else
