@@ -99,9 +99,10 @@ kyverno:
         memory: 256Mi
 
 # Per-policy failureAction. Enforce blocks non-compliant admission; Audit
-# only reports. baseline / non-root / latest-tag ship as Enforce (no
-# expected violations — excluded namespaces are carved out in each policy
-# template). resource-limits stays Audit: it is the most likely to reject
+# only reports. baseline / non-root / latest-tag / verify-images ship as
+# Enforce (no expected violations — excluded namespaces are carved out in
+# each policy template, and verify-images only matches images cd.yml
+# signs). resource-limits stays Audit: it is the most likely to reject
 # pods created by upstream operators/hooks unexpectedly, which is a worse
 # failure mode than a report entry.
 policies:
@@ -143,12 +144,14 @@ policies:
   # provenance. The signer identity alone proves little: that workflow is
   # public, so any repository can sign with it. The provenance's source
   # repository is what ties an image to this one. Audit reports and admits
-  # the pod when the check cannot run; Enforce denies and fails closed. With
+  # the pod when the check cannot run; Enforce denies and fails closed: with
+  # the registry or Sigstore unreachable, matching pods wait (their
+  # controllers retry) while every other pod is unaffected. With
   # networkPolicy.egressDeny, the admission and reports controllers need
   # egress to the registry and to Sigstore (TCP 443).
   verifyImages:
     enabled: true
-    failureAction: Audit
+    failureAction: Enforce
     images:
     - "ghcr.io/this-is-tobi/homelab/*"
     identities:
