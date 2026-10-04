@@ -1,0 +1,23 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  namespace: {{ .Release.Namespace }}
+spec:
+  groups:
+  - name: rustfs
+    rules:
+    - alert: RustFSMetricsAbsent
+      # The job label is the OTLP service.name, which RustFS sets as
+      # "RustFS"; label matchers are case-sensitive, hence (?i).
+      expr: absent_over_time(target_info{job=~"(?i).*rustfs.*"}[15m])
+      labels:
+        severity: warning
+      annotations:
+        summary: RustFS has stopped pushing metrics
+        description: >-
+          No RustFS metrics reached Prometheus for 15m. Check the RustFS pod,
+          then Alloy's OTLP receiver (otelcol_receiver_* metrics) and the
+          rustfs to Alloy network policy.
+{{- end }}

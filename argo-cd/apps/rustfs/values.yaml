@@ -145,3 +145,9 @@ vso:
               # ref-copied there from core/keycloak by vault-post-config) —
               # the rustfs role has no read access to core/keycloak.
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+
+# RustFS pushes its metrics (OTLP) instead of being scraped, so the usual
+# TargetDown cannot notice it going silent; this app alerts on absence.
+monitoring:
+  prometheusRule:
+    enabled: true
