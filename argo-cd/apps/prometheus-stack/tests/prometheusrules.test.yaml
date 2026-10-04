@@ -1,0 +1,66 @@
+rule_files: [rules.yaml]
+evaluation_interval: 1m
+tests:
+# Over budget for more than an hour fires; under budget never does.
+- interval: 1m
+  input_series:
+  - series: 'prometheus_tsdb_head_series{container="prometheus", job="prom"}'
+    values: '400000x90'
+  alert_rule_test:
+  - eval_time: 30m
+    alertname: PrometheusSeriesBudget
+    exp_alerts: []
+  - eval_time: 65m
+    alertname: PrometheusSeriesBudget
+    exp_alerts:
+    - exp_labels: {severity: warning}
+      exp_annotations:
+        summary: Prometheus holds more series than its budget
+        description: The head is above monitoring.seriesBudget. Find the job that grew with topk(10, sum by (job) (scrape_samples_post_metric_relabeling)) and drop what no dashboard or alert reads.
+- interval: 1m
+  input_series:
+  - series: 'prometheus_tsdb_head_series{container="prometheus", job="prom"}'
+    values: '200000x90'
+  alert_rule_test:
+  - eval_time: 80m
+    alertname: PrometheusSeriesBudget
+    exp_alerts: []
+# A scrape rejected for exceeding its limit fires at once.
+- interval: 1m
+  input_series:
+  - series: 'prometheus_target_scrapes_exceeded_sample_limit_total{job="prom", instance="p:9090"}'
+    values: '0 0 0 1 1 1 1 1 1 1'
+  alert_rule_test:
+  - eval_time: 2m
+    alertname: ScrapeSampleLimitHit
+    exp_alerts: []
+  - eval_time: 5m
+    alertname: ScrapeSampleLimitHit
+    exp_alerts:
+    - exp_labels: {severity: critical, job: prom, instance: "p:9090"}
+      exp_annotations:
+        summary: A scrape target exceeded its sample limit and is no longer ingested
+        description: Its scrapes now fail as a whole (up == 0). Find it with up == 0, then raise its sampleLimit deliberately or drop series it exposes that nothing reads.
+# Above 80 % of a limit fires; under it, or with no limit (0), never does.
+- interval: 1m
+  input_series:
+  - series: 'scrape_samples_post_metric_relabeling{job="a", instance="a:1"}'
+    values: '900x40'
+  - series: 'scrape_sample_limit{job="a", instance="a:1"}'
+    values: '1000x40'
+  - series: 'scrape_samples_post_metric_relabeling{job="b", instance="b:1"}'
+    values: '500x40'
+  - series: 'scrape_sample_limit{job="b", instance="b:1"}'
+    values: '1000x40'
+  - series: 'scrape_samples_post_metric_relabeling{job="c", instance="c:1"}'
+    values: '900x40'
+  - series: 'scrape_sample_limit{job="c", instance="c:1"}'
+    values: '0x40'
+  alert_rule_test:
+  - eval_time: 35m
+    alertname: ScrapeNearSampleLimit
+    exp_alerts:
+    - exp_labels: {severity: warning, job: a, instance: "a:1"}
+      exp_annotations:
+        summary: A scrape target is above 80% of its sample limit
+        description: Raise its sampleLimit deliberately, or drop series it exposes that no dashboard or alert reads, before its scrapes start failing.

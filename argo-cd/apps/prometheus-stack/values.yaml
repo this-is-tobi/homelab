@@ -19,6 +19,14 @@ networkPolicy:
   extraIngress: []
   extraEgress: []
 
+# Guards on this Prometheus's own footprint (templates/prometheusrule.yaml).
+# seriesBudget is the head size the instance must stay under: new scrape
+# targets are paid for by dropping unused series elsewhere, never by growth.
+monitoring:
+  prometheusRule:
+    enabled: true
+  seriesBudget: 300000
+
 kube-prometheus-stack:
   crds:
     upgradeJob:
@@ -53,6 +61,24 @@ kube-prometheus-stack:
       - action: drop
         sourceLabels: [__name__]
         regex: (apiserver|etcd)_.+
+      # Read by no rule or dashboard (the kubelet dashboard reads
+      # rest_client_request_duration and storage_operation_duration).
+      - action: drop
+        sourceLabels: [__name__]
+        regex: (rest_client_rate_limiter_duration_seconds|csi_operations_seconds)_bucket
+  # The apiserver is the largest job (~40 % of the head). The rules and the
+  # apiserver dashboard read only apiserver_request_sli_duration_seconds;
+  # these histograms' buckets are read by nothing (their _sum/_count stay).
+  # Lists replace, so the chart's own default bucket drop is restated first.
+  kubeApiServer:
+    serviceMonitor:
+      metricRelabelings:
+      - action: drop
+        sourceLabels: [__name__, le]
+        regex: (etcd_request|apiserver_request_slo|apiserver_request_sli|apiserver_request)_duration_seconds_bucket;(0\.15|0\.2|0\.3|0\.35|0\.4|0\.45|0\.6|0\.7|0\.8|0\.9|1\.25|1\.5|1\.75|2|3|3\.5|4|4\.5|6|7|8|9|15|20|40|45|50)(\.0)?
+      - action: drop
+        sourceLabels: [__name__]
+        regex: (etcd_request_duration_seconds|apiserver_request_duration_seconds|apiserver_watch_list_duration_seconds|apiserver_request_body_size_bytes|apiserver_watch_cache_read_wait_seconds|apiserver_response_sizes)_bucket
   prometheusOperator:
     resources:
       requests:
@@ -183,6 +209,16 @@ kube-prometheus-stack:
         matchLabels: {}
       podMonitorSelector:
         matchLabels: {}
+      # Hard per-target cap, enforced over every ServiceMonitor/PodMonitor:
+      # a target that suddenly exposes far more series fails its scrape
+      # (TargetDown, ScrapeSampleLimitHit) instead of growing the head into
+      # the memory limit. 1.5x the largest target after the bucket drops.
+      enforcedSampleLimit: 45000
+      # Exposes scrape_sample_limit for ScrapeNearSampleLimit. The flag is
+      # deprecated for the extra_scrape_metrics config option, which the
+      # operator has no field for yet.
+      enableFeatures:
+      - extra-scrape-metrics
       retention: 30d
       # Disk guard: whichever of retention/retentionSize is hit first wins.
       # Sized for the default 100Gi PVC — override alongside storage.
