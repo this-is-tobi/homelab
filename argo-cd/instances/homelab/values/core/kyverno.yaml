@@ -36,3 +36,16 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
+  # verify-images: signatures and provenance live in the registry, and the
+  # Sigstore trust root (TUF, Rekor) is fetched over HTTPS. Admission
+  # controller only — no other Kyverno component verifies images.
+  - name: image-verification
+    podSelector:
+      matchLabels: { app.kubernetes.io/component: admission-controller }
+    rules:
+    - to:
+      - ipBlock:
+          cidr: 0.0.0.0/0
+          except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
+      ports:
+      - { protocol: TCP, port: 443 }
