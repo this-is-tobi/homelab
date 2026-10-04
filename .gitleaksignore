@@ -1,0 +1,9 @@
+# Findings in history that were revoked and no longer match any live
+# credential. Fingerprint: <commit>:<file>:<rule>:<line>.
+
+# An admin password committed in the removed homelab-utils values files,
+# since invalidated everywhere it was used.
+fdfb2369371873a44c41138c92febf5badc9fa4c:argo-cd/apps/homelab-utils/values.yaml:generic-api-key:89
+fdfb2369371873a44c41138c92febf5badc9fa4c:argo-cd/apps/homelab-utils/values/production.yaml:generic-api-key:89
+571945002eeca712b84ee42aa4b96cd0cdad2827:argo-cd/apps/homelab-utils/values.yaml:generic-api-key:92
+571945002eeca712b84ee42aa4b96cd0cdad2827:argo-cd/apps/homelab-utils/values/production.yaml:generic-api-key:92
