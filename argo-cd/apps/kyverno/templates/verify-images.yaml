@@ -19,21 +19,45 @@ spec:
   validationActions: [Audit]
   failurePolicy: Ignore
   {{- end }}
-  # Admission only: a background scan would fetch every running pod's
-  # signatures from the registry again on each pass.
+  # PolicyReports, and so `ohmlab check`, are fed by the background scan:
+  # without it, an Audit failure at admission is recorded nowhere.
   evaluation:
     background:
-      enabled: false
+      enabled: true
   webhookConfiguration:
     # An uncached check fetches the signature, the provenance and the
     # Sigstore trust root; the 10s default leaves no margin for that.
     timeoutSeconds: 20
+  # Pods only: the controllers that create them would put every Deployment,
+  # ReplicaSet and Job write behind this webhook too, for no extra coverage.
+  autogen:
+    podControllers:
+      controllers: []
   matchConstraints:
     resourceRules:
     - apiGroups: [""]
       apiVersions: [v1]
       operations: [CREATE, UPDATE]
       resources: [pods]
+  # Evaluated by the API server: pods running none of these images never
+  # reach Kyverno, so a slow or degraded Kyverno cannot delay them.
+  {{- $patterns := list }}
+  {{- range .images }}
+  {{- $patterns = append $patterns (printf "^%s$" (regexQuoteMeta . | replace "\\*" ".*" | replace "\\?" ".")) }}
+  {{- end }}
+  matchConditions:
+  - name: runs-a-verified-image
+    expression: >-
+      (object.spec.containers
+      + object.spec.?initContainers.orValue([])
+      + object.spec.?ephemeralContainers.orValue([]))
+      .exists(c, {{ $patterns | toJson }}.exists(p, c.image.matches(p)))
+  # Digests are required (verifyDigest), so rewriting tags to digests is
+  # never needed, and skipping it drops the mutating webhook.
+  validationConfigurations:
+    mutateDigest: false
+    verifyDigest: true
+    required: true
   matchImageReferences:
   {{- range .images }}
   - glob: {{ . | quote }}
