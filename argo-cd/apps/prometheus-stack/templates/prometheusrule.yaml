@@ -1,0 +1,48 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+# Keeps the metrics footprint inside its budget: the total head, and the
+# per-target sample caps (enforcedSampleLimit, per-monitor sampleLimit)
+# that make one exploding exporter fail its own scrape instead of filling
+# Prometheus's memory.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-budget
+  namespace: {{ .Release.Namespace }}
+spec:
+  groups:
+  - name: prometheus.budget
+    rules:
+    - alert: PrometheusSeriesBudget
+      expr: max(prometheus_tsdb_head_series{container="prometheus"}) > {{ int .Values.monitoring.seriesBudget }}
+      for: 1h
+      labels:
+        severity: warning
+      annotations:
+        summary: Prometheus holds more series than its budget
+        description: >-
+          The head is above monitoring.seriesBudget. Find the job that grew
+          with topk(10, sum by (job) (scrape_samples_post_metric_relabeling))
+          and drop what no dashboard or alert reads.
+    - alert: ScrapeSampleLimitHit
+      expr: increase(prometheus_target_scrapes_exceeded_sample_limit_total[10m]) > 0
+      labels:
+        severity: critical
+      annotations:
+        summary: A scrape target exceeded its sample limit and is no longer ingested
+        description: >-
+          Its scrapes now fail as a whole (up == 0). Find it with up == 0,
+          then raise its sampleLimit deliberately or drop series it exposes
+          that nothing reads.
+    - alert: ScrapeNearSampleLimit
+      # scrape_sample_limit is 0 for an unlimited target: filter it out
+      # rather than divide by zero.
+      expr: scrape_samples_post_metric_relabeling / (scrape_sample_limit > 0) > 0.8
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: A scrape target is above 80% of its sample limit
+        description: >-
+          Raise its sampleLimit deliberately, or drop series it exposes that
+          no dashboard or alert reads, before its scrapes start failing.
+{{- end }}

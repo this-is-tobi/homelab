@@ -127,6 +127,14 @@ longhorn:
   metrics:
     serviceMonitor:
       enabled: true
+      # 2x the per-manager sample count once the buckets below are dropped.
+      sampleLimit: 4500
+      metricRelabelings:
+      # Longhorn's internal REST client latency: half of this job's series,
+      # read by no rule or dashboard.
+      - action: drop
+        sourceLabels: [__name__]
+        regex: longhorn_rest_client_.*_bucket
 
 # oauth2-proxy in front of the Longhorn UI, in full reverse-proxy mode (it
 # is the sole HTTPRoute backend for the longhorn hostname — see
@@ -153,3 +161,9 @@ sso:
     limits:
       cpu: 200m
       memory: 128Mi
+
+# Grafana dashboards shipped with this app (templates/dashboards.yaml).
+monitoring:
+  dashboards:
+    enabled: true
+    folder: Services
