@@ -1,0 +1,17 @@
+{{- if .Values.monitoring.enabled }}
+# Replaces the chart's monitoring.podMonitorEnabled, which cannot set a
+# sampleLimit. Selects the operator only (the barman-cloud plugin is
+# app.kubernetes.io/name=plugin-barman-cloud).
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-operator
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudnative-pg
+  podMetricsEndpoints:
+  - port: metrics
+  sampleLimit: {{ int .Values.monitoring.sampleLimit }}
+{{- end }}

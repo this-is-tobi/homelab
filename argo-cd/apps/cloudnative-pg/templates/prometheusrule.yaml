@@ -1,0 +1,34 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  namespace: {{ .Release.Namespace }}
+spec:
+  groups:
+  - name: cloudnative-pg
+    rules:
+    - alert: CNPGWALArchivingFailing
+      # Both timestamps stay 0 while archiving is not configured.
+      expr: cnpg_pg_stat_archiver_last_failed_time > cnpg_pg_stat_archiver_last_archived_time
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: PostgreSQL WAL archiving is failing
+        description: >-
+          The last archive attempt failed after the last success, so
+          point-in-time recovery stops at that point. Check the barman-cloud
+          plugin logs and the ObjectStore credentials.
+    - alert: CNPGXIDWraparound
+      expr: max by (namespace, pod, datname) (cnpg_pg_database_xid_age) > 300000000
+      for: 30m
+      labels:
+        severity: warning
+      annotations:
+        summary: A PostgreSQL database is approaching transaction-ID wraparound
+        description: >-
+          Its oldest unfrozen transaction is over 300M transactions old
+          (PostgreSQL stops accepting writes near 2.1B). Look for a
+          long-running transaction or a stuck autovacuum.
+{{- end }}
