@@ -451,3 +451,9 @@ vso:
               text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
             secret:
               text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
+
+# Grafana dashboards shipped with this app (templates/dashboards.yaml).
+monitoring:
+  dashboards:
+    enabled: true
+    folder: Services

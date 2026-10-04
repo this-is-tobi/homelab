@@ -147,3 +147,9 @@ vso:
               text: '{{ get .Secrets "scaleway" | dig "secretKey" "" }}'
             SCW_DEFAULT_PROJECT_ID:
               text: '{{ get .Secrets "scaleway" | dig "projectId" "" }}'
+
+# Grafana dashboards shipped with this app (templates/dashboards.yaml).
+monitoring:
+  dashboards:
+    enabled: true
+    folder: Services
