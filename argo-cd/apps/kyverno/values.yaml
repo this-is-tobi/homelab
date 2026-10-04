@@ -137,6 +137,27 @@ policies:
     - "docker.gitea.com/*"
     - "mirror.gcr.io/*"
     - "reg.kyverno.io/*"
+  # Signature and provenance check for the images this repository publishes
+  # (the ohmlab CLI the vault-post-config Job runs). cd.yml signs them
+  # keyless through the shared attest-docker workflow and attaches SLSA
+  # provenance. The signer identity alone proves little: that workflow is
+  # public, so any repository can sign with it. The provenance's source
+  # repository is what ties an image to this one. Audit reports and admits
+  # the pod when the check cannot run; Enforce denies and fails closed. With
+  # networkPolicy.egressDeny, the admission controller needs egress to the
+  # registry and to Sigstore (TCP 443).
+  verifyImages:
+    enabled: true
+    failureAction: Audit
+    images:
+    - "ghcr.io/this-is-tobi/homelab/*"
+    identities:
+    - issuer: https://token.actions.githubusercontent.com
+      subjectRegExp: '^https://github\.com/this-is-tobi/github-workflows/\.github/workflows/attest-docker\.yml@refs/tags/v[0-9]+(\.[0-9]+)*$'
+    # Repositories allowed to build these images. During a repository
+    # rename, list both names until every running image is rebuilt.
+    sourceRepositories:
+    - https://github.com/this-is-tobi/homelab
   # Generate a default LimitRange in every TENANT namespace
   # (ohmlab.fr/instance-scope=tenant) so containers without explicit
   # resources get sane defaults (prerequisite for flipping
