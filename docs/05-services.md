@@ -286,7 +286,7 @@ The main Kyverno policies guarding admissions (see
 | `require-non-root`        | Enforce | runAsNonRoot; nginx/log-reader namespaces excluded                                             |
 | `disallow-latest-tag`     | Enforce | `:latest` blocked; `kube-system` and `kyverno` excluded                                        |
 | `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods unexpectedly is worse than a report               |
-| `verify-images`           | Audit   | this repo's images must be signed by its release workflow, with provenance naming this repo    |
+| `verify-images`           | Enforce | this repo's images must be signed by its release workflow, with provenance naming this repo    |
 
 Actions are configurable per instance via `policies.<name>.failureAction` in
 the kyverno app values. Exceptions are GitOps-managed: the kyverno
