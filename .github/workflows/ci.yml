@@ -21,7 +21,7 @@ jobs:
     with:
       GROUPS: >-
         {"utils": ["utils/*"],
-        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*"],
+        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*"],
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
@@ -135,6 +135,28 @@ jobs:
             echo "::endgroup::"
           done
           exit "$failures"
+      - name: Install promtool
+        env:
+          PROMETHEUS_VERSION: 3.15.0
+        run: |
+          set -euo pipefail
+          base="https://github.com/prometheus/prometheus/releases/download/v${PROMETHEUS_VERSION}"
+          tarball="prometheus-${PROMETHEUS_VERSION}.linux-amd64.tar.gz"
+          curl -fsSLO "$base/$tarball"
+          curl -fsSL "$base/sha256sums.txt" | grep " ${tarball}\$" | sha256sum --check
+          sudo tar -xzf "$tarball" -C /usr/local/bin --strip-components=1 \
+            "prometheus-${PROMETHEUS_VERSION}.linux-amd64/promtool"
+      - name: Test the alert-rule and dashboard checks
+        run: |
+          scripts/ci/test-prometheus-rules.test.sh
+          scripts/ci/check-dashboards.test.sh
+      - name: Unit-test alert rules
+        run: scripts/ci/test-prometheus-rules.sh
+      - name: Check dashboards
+        run: |
+          shopt -s nullglob
+          scripts/ci/check-dashboards.sh argo-cd/apps/*/dashboards/*.json \
+            argo-cd/apps/prometheus-stack/grafana-dashboards/*.json utils/helm/dashboards/*.json
 
   sonarqube-plugins:
     needs: classify
