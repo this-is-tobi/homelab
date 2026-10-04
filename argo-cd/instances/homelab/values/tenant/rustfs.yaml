@@ -21,6 +21,20 @@ rustfs:
   # Exposed via Gateway API HTTPRoutes (gateway.routes) — no Ingress.
   ingress:
     enabled: false
+  config:
+    rustfs:
+      # Metrics only, pushed over OTLP/HTTP to Alloy, which drops the
+      # histograms before Prometheus (pushed series bypass
+      # metricRelabelings).
+      obs_endpoint:
+        enabled: true
+        metrics:
+          enabled: true
+          endpoint: http://prometheus-stack-alloy.prometheus-stack.svc.cluster.local:4318/v1/metrics
+  # The chart has no config checksum: this value changes the pod template so
+  # the new endpoint is picked up (see the app values).
+  podAnnotations:
+    ohmlab.fr/config-revision: "obs-metrics-otlp"
   extraEnv:
   # Lists replace on merge, so this list drops the app-level rustfs.extraEnv
   # entirely. These two repeat it verbatim to keep log cleanup working;
@@ -98,6 +112,17 @@ networkPolicy:
       - { protocol: TCP, port: 9000 }
       - { protocol: TCP, port: 9001 }
   extraEgress:
+  # Metrics push to Alloy's OTLP receiver (obs_endpoint above).
+  - name: otlp-metrics
+    rules:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: prometheus-stack
+        podSelector:
+          matchLabels: { app.kubernetes.io/name: alloy }
+      ports:
+      - { protocol: TCP, port: 4318 }
   # Console OIDC (discovery, JWKS, token exchange) dials sso.core.ohmlab.fr
   # directly. The hairpin goes to the gateway's public IP, not a node IP;
   # https only.
