@@ -16,6 +16,10 @@ kube-prometheus-stack:
       maximumStartupDurationSeconds: 1800
       # Matches the 200Gi PVC below (app default is 90GB for 100Gi).
       retentionSize: 180GB
+      # Accepts OTLP pushes (RustFS, through Alloy). Anything that can reach
+      # :9090 can write: ingress to Prometheus stays limited to this
+      # namespace (Alloy, Grafana).
+      enableOTLPReceiver: true
       storageSpec:
         volumeClaimTemplate:
           spec:
@@ -127,6 +131,17 @@ networkPolicy:
           matchLabels: { k8s-app: crowdsec, type: agent }
       ports:
       - { protocol: TCP, port: 3100 }
+  # RustFS pushes its metrics to Alloy's OTLP receiver (alloy values below).
+  - name: rustfs-otlp
+    podSelector:
+      matchLabels: { app.kubernetes.io/name: alloy }
+    rules:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: rustfs
+      ports:
+      - { protocol: TCP, port: 4318 }
 
 # Centralized log aggregation. Loki + Alloy are bundled as Helm
 # dependencies of this chart (Chart.yaml, condition: loki.enabled /
@@ -265,6 +280,41 @@ alloy:
             url = "http://prometheus-stack-loki.prometheus-stack.svc.cluster.local:3100/loki/api/v1/push"
           }
         }
+
+        // RustFS pushes OTLP metrics here; its histograms are dropped
+        // (read by nothing, ~4x the series of everything else) before they
+        // reach Prometheus, whose metricRelabelings do not apply to pushes.
+        otelcol.receiver.otlp "rustfs" {
+          http {
+            endpoint = "0.0.0.0:4318"
+          }
+          output {
+            metrics = [otelcol.processor.filter.rustfs.input]
+          }
+        }
+
+        otelcol.processor.filter "rustfs" {
+          error_mode = "ignore"
+          metrics {
+            metric = [
+              "type == METRIC_DATA_TYPE_HISTOGRAM",
+            ]
+          }
+          output {
+            metrics = [otelcol.exporter.otlphttp.prometheus.input]
+          }
+        }
+
+        otelcol.exporter.otlphttp "prometheus" {
+          client {
+            endpoint = "http://prometheus-stack-kube-prom-prometheus.prometheus-stack.svc.cluster.local:9090/api/v1/otlp"
+          }
+        }
+    extraPorts:
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
     # Memory scales with the number of concurrently-open log streams
     # across the cluster, and takes several minutes after a restart to
     # reach steady state — re-check actual usage well after startup, not
