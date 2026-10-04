@@ -277,15 +277,16 @@ The reason this needs a different Vault auth method, not just another `kubernete
 
 ### Security policies
 
-Four Kyverno ClusterPolicies guard admissions (see
+The main Kyverno policies guarding admissions (see
 [argo-cd/apps/kyverno/templates/](../argo-cd/apps/kyverno/templates/)):
 
-| Policy                    | Action  | Notes                                                                            |
-| ------------------------- | ------- | -------------------------------------------------------------------------------- |
-| `pod-security-baseline`   | Enforce | PSS baseline; infra namespaces needing hostPath excluded                         |
-| `require-non-root`        | Enforce | runAsNonRoot; nginx/log-reader namespaces excluded                               |
-| `disallow-latest-tag`     | Enforce | `:latest` blocked; internal tooling images excluded                              |
-| `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods unexpectedly is worse than a report |
+| Policy                    | Action  | Notes                                                                                          |
+| ------------------------- | ------- | ---------------------------------------------------------------------------------------------- |
+| `pod-security-baseline`   | Enforce | PSS baseline; infra namespaces needing hostPath excluded                                       |
+| `require-non-root`        | Enforce | runAsNonRoot; nginx/log-reader namespaces excluded                                             |
+| `disallow-latest-tag`     | Enforce | `:latest` blocked; `kube-system` and `kyverno` excluded                                        |
+| `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods unexpectedly is worse than a report               |
+| `verify-images`           | Audit   | this repo's images must be signed by its release workflow, with provenance naming this repo    |
 
 Actions are configurable per instance via `policies.<name>.failureAction` in
 the kyverno app values. Exceptions are GitOps-managed: the kyverno

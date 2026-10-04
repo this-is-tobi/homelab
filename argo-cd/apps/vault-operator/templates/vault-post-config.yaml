@@ -47,7 +47,7 @@ spec:
       {{- end }}
       containers:
       - name: post-config
-        image: {{ .Values.ohmlab.vault.config.image | default "ghcr.io/this-is-tobi/homelab/utils:latest" }}
+        image: {{ required "ohmlab.vault.config.image is required" .Values.ohmlab.vault.config.image }}
         command:
         - /bin/sh
         - -c
