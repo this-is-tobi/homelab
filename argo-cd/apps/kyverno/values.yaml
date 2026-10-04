@@ -144,8 +144,8 @@ policies:
   # public, so any repository can sign with it. The provenance's source
   # repository is what ties an image to this one. Audit reports and admits
   # the pod when the check cannot run; Enforce denies and fails closed. With
-  # networkPolicy.egressDeny, the admission controller needs egress to the
-  # registry and to Sigstore (TCP 443).
+  # networkPolicy.egressDeny, the admission and reports controllers need
+  # egress to the registry and to Sigstore (TCP 443).
   verifyImages:
     enabled: true
     failureAction: Audit

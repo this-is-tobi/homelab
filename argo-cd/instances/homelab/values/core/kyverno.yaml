@@ -37,11 +37,13 @@ networkPolicy:
       ports:
       - { protocol: TCP, port: 6443 }
   # verify-images: signatures and provenance live in the registry, and the
-  # Sigstore trust root (TUF, Rekor) is fetched over HTTPS. Admission
-  # controller only — no other Kyverno component verifies images.
+  # Sigstore trust root (TUF, Rekor) is fetched over HTTPS. The admission
+  # controller verifies at admission, the reports controller on each
+  # background scan; the other components never verify images.
   - name: image-verification
     podSelector:
-      matchLabels: { app.kubernetes.io/component: admission-controller }
+      matchExpressions:
+      - { key: app.kubernetes.io/component, operator: In, values: [admission-controller, reports-controller] }
     rules:
     - to:
       - ipBlock:
