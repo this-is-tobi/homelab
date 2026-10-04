@@ -37,6 +37,8 @@ jobs:
         run: shellcheck -S warning run.sh scripts/*.sh scripts/ci/*.sh
       - name: Test the chart bump decision used by cd.yml
         run: scripts/ci/chart-bump-level.test.sh
+      - name: Test the dashboard coverage tool
+        run: scripts/dashboard-coverage.test.sh
 
   # actionlint cannot see remote reusable workflows: a caller granting less
   # than a called job declares only fails on main, as a startup failure.
