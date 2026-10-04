@@ -1,0 +1,38 @@
+{{- if .Values.monitoring.enabled }}
+# Auth and proxy serve metrics on their diag port; the operator on its own.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-servers
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+    matchExpressions:
+    - { key: app.kubernetes.io/component, operator: In, values: [auth, proxy] }
+  podMetricsEndpoints:
+  - port: diag
+    path: /metrics
+  sampleLimit: {{ int .Values.monitoring.sampleLimit.servers }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-operator
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: operator
+  podMetricsEndpoints:
+  - port: op-metrics
+    metricRelabelings:
+    # controller-runtime and client-go latency histograms, read by no rule
+    # or dashboard.
+    - action: drop
+      sourceLabels: [__name__]
+      regex: (workqueue_.*|rest_client_.*|controller_runtime_.*)_bucket
+  sampleLimit: {{ int .Values.monitoring.sampleLimit.operator }}
+{{- end }}

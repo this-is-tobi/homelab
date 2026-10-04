@@ -103,3 +103,18 @@ roles:
         - "*"
 
 users: {}
+
+# Metrics, alerts and dashboard for Teleport. The chart's podMonitor stays
+# off: it cannot carry a sampleLimit (templates/podmonitors.yaml replaces it).
+monitoring:
+  enabled: true
+  sampleLimit:
+    # 2x the auth server's ~960 samples (proxies expose ~200).
+    servers: 2000
+    # 2x the operator's ~450 samples left after the histogram drop.
+    operator: 1000
+  prometheusRule:
+    enabled: true
+  dashboards:
+    enabled: true
+    folder: Security
