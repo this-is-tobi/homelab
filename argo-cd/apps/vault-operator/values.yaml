@@ -667,3 +667,9 @@ ohmlab:
     identity:
       groups: []
       groupAliases: []
+
+# Grafana dashboards shipped with this app (templates/dashboards.yaml).
+monitoring:
+  dashboards:
+    enabled: true
+    folder: Services

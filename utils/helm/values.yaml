@@ -417,3 +417,11 @@ projects:
       policies:
       - p, proj:admin-tenant:admin, applications, *, admin-tenant/*, allow
     sourceNamespaces: []
+
+# Grafana dashboards shipped with this chart (templates/dashboards.yaml): the
+# Argo CD dashboard. Off by default so a consumer without Grafana's sidecar
+# does not get an unused ConfigMap.
+monitoring:
+  dashboards:
+    enabled: false
+    folder: Services
