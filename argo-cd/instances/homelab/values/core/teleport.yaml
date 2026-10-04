@@ -32,12 +32,14 @@ users:
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. No SSO (local auth only, no
-# connector config). No prometheus scrape (no ServiceMonitor/PodMonitor
-# exists for this app).
+# connector config). Prometheus scrapes auth/proxy (diag 3000) and the
+# operator (8080) — templates/podmonitors.yaml.
 networkPolicy:
   enabled: true
   egressDeny: true
-  prometheusScrapePorts: []
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 3000 }
+  - { protocol: TCP, port: 8080 }
   extraIngress:
   # TLS PASSTHROUGH (traefik terminates nothing) — genuine pod-to-pod flow
   # from traefik's own pod identity, not a node hairpin. Port is the
