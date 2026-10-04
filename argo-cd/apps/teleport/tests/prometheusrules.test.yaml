@@ -1,0 +1,25 @@
+rule_files: [rules.yaml]
+evaluation_interval: 1m
+tests:
+# Recovering (1) or degraded (2) for 5m fires; ok (0) and starting (3) never do.
+- interval: 1m
+  input_series:
+  - series: 'process_state{namespace="test", pod="teleport-auth-0"}'
+    values: '2x10'
+  - series: 'process_state{namespace="test", pod="teleport-proxy-0"}'
+    values: '0x10'
+  - series: 'process_state{namespace="test", pod="teleport-proxy-1"}'
+    values: '3x10'
+  - series: 'process_state{namespace="other", pod="unrelated"}'
+    values: '2x10'
+  alert_rule_test:
+  - eval_time: 3m
+    alertname: TeleportDegraded
+    exp_alerts: []
+  - eval_time: 8m
+    alertname: TeleportDegraded
+    exp_alerts:
+    - exp_labels: {severity: warning, pod: teleport-auth-0}
+      exp_annotations:
+        summary: A Teleport process is recovering or degraded
+        description: Its process_state has been 1 (recovering) or 2 (degraded) for 5m. Check the pod's logs for backend or certificate errors.

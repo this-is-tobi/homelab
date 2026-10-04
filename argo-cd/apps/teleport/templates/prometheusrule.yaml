@@ -1,0 +1,22 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  namespace: {{ .Release.Namespace }}
+spec:
+  groups:
+  - name: teleport
+    rules:
+    - alert: TeleportDegraded
+      # process_state: 0 ok, 1 recovering, 2 degraded, 3 starting.
+      expr: max by (pod) (process_state{namespace="{{ .Release.Namespace }}"}) > 0 < 3
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: A Teleport process is recovering or degraded
+        description: >-
+          Its process_state has been 1 (recovering) or 2 (degraded) for 5m.
+          Check the pod's logs for backend or certificate errors.
+{{- end }}
