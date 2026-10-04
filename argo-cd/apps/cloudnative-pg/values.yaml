@@ -7,6 +7,19 @@ networkPolicy:
   extraIngress: []
   extraEgress: []
 
+# Metrics, alerts and dashboard for the operator. The Postgres clusters are
+# scraped and alerted on by the cluster chart in each app; these rules add
+# only what that chart's rules lack.
+monitoring:
+  enabled: true
+  # 2x the operator's ~650 samples.
+  sampleLimit: 1500
+  prometheusRule:
+    enabled: true
+  dashboards:
+    enabled: true
+    folder: Services
+
 cloudnative-pg:
   crds:
     create: true

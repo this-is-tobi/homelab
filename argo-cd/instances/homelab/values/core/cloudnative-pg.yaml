@@ -11,6 +11,9 @@ cloudnative-pg: {}
 networkPolicy:
   enabled: true
   egressDeny: true
+  # Operator metrics (templates/podmonitor.yaml).
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 8080 }
   extraIngress:
   # 5 validating + 4 mutating webhooks, ALL failurePolicy: Fail. The
   # operator's own readinessProbe shares this port (9443).

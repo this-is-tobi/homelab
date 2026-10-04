@@ -1,0 +1,38 @@
+rule_files: [rules.yaml]
+evaluation_interval: 1m
+tests:
+# Last failure after last success for 10m fires; archiving not configured
+# (both 0) never does.
+- interval: 1m
+  input_series:
+  - series: 'cnpg_pg_stat_archiver_last_failed_time{namespace="gitea", pod="gitea-pg-cluster-1"}'
+    values: '2000x20'
+  - series: 'cnpg_pg_stat_archiver_last_archived_time{namespace="gitea", pod="gitea-pg-cluster-1"}'
+    values: '1000x20'
+  - series: 'cnpg_pg_stat_archiver_last_failed_time{namespace="crowdsec", pod="crowdsec-pg-cluster-1"}'
+    values: '0x20'
+  - series: 'cnpg_pg_stat_archiver_last_archived_time{namespace="crowdsec", pod="crowdsec-pg-cluster-1"}'
+    values: '0x20'
+  alert_rule_test:
+  - eval_time: 15m
+    alertname: CNPGWALArchivingFailing
+    exp_alerts:
+    - exp_labels: {severity: warning, namespace: gitea, pod: gitea-pg-cluster-1}
+      exp_annotations:
+        summary: PostgreSQL WAL archiving is failing
+        description: The last archive attempt failed after the last success, so point-in-time recovery stops at that point. Check the barman-cloud plugin logs and the ObjectStore credentials.
+# Above 300M transactions for 30m fires; a young database never does.
+- interval: 1m
+  input_series:
+  - series: 'cnpg_pg_database_xid_age{namespace="gitea", pod="gitea-pg-cluster-1", datname="gitea"}'
+    values: '400000000x40'
+  - series: 'cnpg_pg_database_xid_age{namespace="gitea", pod="gitea-pg-cluster-1", datname="postgres"}'
+    values: '1000x40'
+  alert_rule_test:
+  - eval_time: 35m
+    alertname: CNPGXIDWraparound
+    exp_alerts:
+    - exp_labels: {severity: warning, namespace: gitea, pod: gitea-pg-cluster-1, datname: gitea}
+      exp_annotations:
+        summary: A PostgreSQL database is approaching transaction-ID wraparound
+        description: Its oldest unfrozen transaction is over 300M transactions old (PostgreSQL stops accepting writes near 2.1B). Look for a long-running transaction or a stuck autovacuum.
