@@ -16,6 +16,9 @@ kyverno: {}
 networkPolicy:
   enabled: true
   egressDeny: true
+  # Metrics port shared by the four controllers (templates/servicemonitor.yaml).
+  prometheusScrapePorts:
+  - { protocol: TCP, port: 8000 }
   extraIngress:
   # background-controller and reports-controller are DELIBERATELY
   # EXCLUDED — no webhook Service targets them and neither pod defines
