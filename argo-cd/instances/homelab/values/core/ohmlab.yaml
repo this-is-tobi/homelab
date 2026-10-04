@@ -13,6 +13,11 @@
 # providing the clientSecret either inline (replaced manually) or via a
 # VaultStaticSecret applied out-of-band into argocd-system.
 
+# The Argo CD dashboard, picked up by Grafana's sidecar from this namespace.
+monitoring:
+  dashboards:
+    enabled: true
+
 # UI + appset webhook are exposed via HTTPRoutes on the traefik gateway.
 # argocd-server serves TLS on 443 (cert-manager LE cert, argocd-server-tls
 # via the chart's certificate integration) — traefik validates it with the
