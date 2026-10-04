@@ -1,0 +1,20 @@
+{{- if .Values.monitoring.enabled }}
+# One monitor for the four controllers' metrics Services; the webhook
+# Service shares the admission-controller label but has no metrics-port,
+# so it contributes no endpoint.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}-controllers
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: kyverno
+    matchExpressions:
+    - { key: app.kubernetes.io/component, operator: In, values: [admission-controller, background-controller, cleanup-controller, reports-controller] }
+  endpoints:
+  - port: metrics-port
+    interval: 30s
+  sampleLimit: {{ int .Values.monitoring.sampleLimit }}
+{{- end }}

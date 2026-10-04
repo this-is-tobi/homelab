@@ -1,0 +1,45 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  namespace: {{ .Release.Namespace }}
+spec:
+  groups:
+  - name: kyverno
+    rules:
+    - alert: KyvernoImageVerificationFailed
+      # Any ImageValidatingPolicy result other than pass, at admission or
+      # in a background scan: unsigned, wrongly signed, or unverifiable.
+      expr: sum by (policy_name, result) (increase(kyverno_image_validating_policy_execution_duration_seconds_count{result!="pass"}[10m])) > 0
+      labels:
+        severity: critical
+      annotations:
+        summary: An image failed signature verification
+        description: >-
+          In Enforce mode the pod was not admitted. Check the policy's
+          results with kubectl get policyreports -A and the admission
+          controllers' logs.
+    - alert: KyvernoAdmissionSlow
+      expr: histogram_quantile(0.95, sum by (le) (rate(kyverno_admission_review_duration_seconds_bucket[5m]))) > 2
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: Kyverno admission reviews are slow (p95 above 2s)
+        description: >-
+          Every pod admission waits on Kyverno. Check the admission
+          controllers' CPU and memory, and which policies call out (image
+          verification, API lookups).
+    - alert: KyvernoPolicyDenials
+      # Admission denials only: background-scan results on Enforce policies
+      # describe existing resources, not rejected requests.
+      expr: sum by (policy_name) (increase(kyverno_policy_results_total{rule_result="fail", policy_validation_mode="enforce", rule_execution_cause="admission_request"}[10m])) > 0
+      labels:
+        severity: info
+      annotations:
+        summary: Kyverno denied requests
+        description: >-
+          An Enforce policy rejected at least one admission in the last 10m;
+          the owning controller retries until the resource complies.
+{{- end }}

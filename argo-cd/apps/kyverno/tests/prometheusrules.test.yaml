@@ -1,0 +1,65 @@
+rule_files: [rules.yaml]
+evaluation_interval: 1m
+tests:
+# Any non-pass image verification fires at once; passes never do.
+- interval: 1m
+  input_series:
+  - series: 'kyverno_image_validating_policy_execution_duration_seconds_count{policy_name="verify-images", result="fail", job="kyverno-svc-metrics"}'
+    values: '0 0 1 1 1 1'
+  - series: 'kyverno_image_validating_policy_execution_duration_seconds_count{policy_name="verify-images", result="pass", job="kyverno-svc-metrics"}'
+    values: '0 5 10 15 20 25'
+  alert_rule_test:
+  - eval_time: 4m
+    alertname: KyvernoImageVerificationFailed
+    exp_alerts:
+    - exp_labels: {severity: critical, policy_name: verify-images, result: fail}
+      exp_annotations:
+        summary: An image failed signature verification
+        description: In Enforce mode the pod was not admitted. Check the policy's results with kubectl get policyreports -A and the admission controllers' logs.
+# p95 above 2s for 10m fires; fast reviews never do.
+- interval: 1m
+  input_series:
+  - series: 'kyverno_admission_review_duration_seconds_bucket{le="1", job="kyverno-svc-metrics"}'
+    values: '0+10x30'
+  - series: 'kyverno_admission_review_duration_seconds_bucket{le="5", job="kyverno-svc-metrics"}'
+    values: '0+100x30'
+  - series: 'kyverno_admission_review_duration_seconds_bucket{le="+Inf", job="kyverno-svc-metrics"}'
+    values: '0+100x30'
+  alert_rule_test:
+  - eval_time: 8m
+    alertname: KyvernoAdmissionSlow
+    exp_alerts: []
+  - eval_time: 20m
+    alertname: KyvernoAdmissionSlow
+    exp_alerts:
+    - exp_labels: {severity: warning}
+      exp_annotations:
+        summary: Kyverno admission reviews are slow (p95 above 2s)
+        description: Every pod admission waits on Kyverno. Check the admission controllers' CPU and memory, and which policies call out (image verification, API lookups).
+- interval: 1m
+  input_series:
+  - series: 'kyverno_admission_review_duration_seconds_bucket{le="1", job="kyverno-svc-metrics"}'
+    values: '0+100x30'
+  - series: 'kyverno_admission_review_duration_seconds_bucket{le="+Inf", job="kyverno-svc-metrics"}'
+    values: '0+100x30'
+  alert_rule_test:
+  - eval_time: 25m
+    alertname: KyvernoAdmissionSlow
+    exp_alerts: []
+# Enforce denials at admission fire; background-scan fails and Audit fails do not.
+- interval: 1m
+  input_series:
+  - series: 'kyverno_policy_results_total{policy_name="require-non-root", rule_result="fail", policy_validation_mode="enforce", rule_execution_cause="admission_request"}'
+    values: '0 0 2 2 2'
+  - series: 'kyverno_policy_results_total{policy_name="require-non-root", rule_result="fail", policy_validation_mode="enforce", rule_execution_cause="background_scan"}'
+    values: '0 5 10 15 20'
+  - series: 'kyverno_policy_results_total{policy_name="require-resource-limits", rule_result="fail", policy_validation_mode="audit", rule_execution_cause="admission_request"}'
+    values: '0 5 10 15 20'
+  alert_rule_test:
+  - eval_time: 3m
+    alertname: KyvernoPolicyDenials
+    exp_alerts:
+    - exp_labels: {severity: info, policy_name: require-non-root}
+      exp_annotations:
+        summary: Kyverno denied requests
+        description: An Enforce policy rejected at least one admission in the last 10m; the owning controller retries until the resource complies.

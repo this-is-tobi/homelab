@@ -10,7 +10,27 @@ networkPolicy:
   extraIngress: []
   extraEgress: []
 
+# Metrics, alerts and dashboard for Kyverno itself. The chart's own
+# ServiceMonitors (kyverno.*.serviceMonitor) stay off: they cannot carry a
+# sampleLimit, so templates/servicemonitor.yaml replaces them.
+monitoring:
+  enabled: true
+  # 2x the largest controller's sample count (~2k on an admission
+  # controller). Every policy adds its own series, so re-measure when the
+  # policy count grows or two generations of policies run side by side.
+  sampleLimit: 4000
+  prometheusRule:
+    enabled: true
+  dashboards:
+    enabled: true
+    folder: Security
+
 kyverno:
+  # Coarser than the chart's 15 buckets; keeps a 2s boundary for the
+  # KyvernoAdmissionSlow p95. Applied by the admission controller only
+  # after a restart.
+  metricsConfig:
+    bucketBoundaries: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20]
   # PolicyExceptions are only honoured from the kyverno namespace, so every
   # exception is GitOps-managed here — workloads cannot self-exempt.
   features:
