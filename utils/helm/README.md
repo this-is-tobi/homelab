@@ -1,6 +1,6 @@
 # ohmlab
 
-![Version: 0.1.1](https://img.shields.io/badge/Version-0.1.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+![Version: 0.1.2](https://img.shields.io/badge/Version-0.1.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A Helm chart to deploy ohmlab.
 
@@ -135,6 +135,8 @@ A Helm chart to deploy ohmlab.
 | gateway.gatewayName | string | `""` |  |
 | gateway.gatewayNamespace | string | `""` |  |
 | gateway.routes | list | `[]` |  |
+| monitoring.dashboards.enabled | bool | `false` |  |
+| monitoring.dashboards.folder | string | `"Services"` |  |
 | networkPolicy.egressDeny | bool | `true` |  |
 | networkPolicy.enabled | bool | `false` |  |
 | networkPolicy.extraEgress | list | `[]` |  |
