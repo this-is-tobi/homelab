@@ -11,12 +11,14 @@ metadata:
       secret via caCertSecretRef.
     # Replace=true only makes Argo write this policy with a PUT instead of a
     # server-side apply. A PUT is still an UPDATE, not delete + create, so it
-    # does NOT get past kyverno's admission check: once the policy has a
-    # synchronize: true generate rule, each generate rule's spec outside its
-    # generate block (name, match, preconditions, context) is immutable and
-    # no generate rule may be removed. To change one, add a new rule next to
-    # it. Never add Force=true to get a delete + recreate: deleting a
-    # synchronizing policy also deletes every vault-ca it generated.
+    # does NOT get past kyverno's admission check: each generate rule's spec
+    # outside its generate block (name, match, preconditions, context) is
+    # immutable and no generate rule may be removed. To change one, add a new
+    # rule next to it.
+    # Synchronization is off because nothing reads the generated vault-ca any
+    # more (consumers use the bank-vaults vault-tls copy, Traefik uses the
+    # trust-manager ConfigMap); the policy is kept only until it is deleted,
+    # which leaves the generated objects in place.
     argocd.argoproj.io/sync-options: Replace=true
 spec:
   rules:
@@ -47,7 +49,7 @@ spec:
         jmesPath: "data.\"ca.crt\""
     generate:
       generateExisting: true
-      synchronize: true
+      synchronize: false
       apiVersion: v1
       kind: Secret
       name: vault-ca
@@ -74,7 +76,7 @@ spec:
         jmesPath: "data.\"ca.crt\""
     generate:
       generateExisting: true
-      synchronize: true
+      synchronize: false
       apiVersion: v1
       kind: ConfigMap
       name: vault-ca
