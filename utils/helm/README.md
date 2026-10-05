@@ -236,7 +236,7 @@ A Helm chart to deploy ohmlab.
 | vso.vaultAuth.default.method | string | `"kubernetes"` |  |
 | vso.vaultAuth.default.mount | string | `"kubernetes"` |  |
 | vso.vaultConnection.default.address | string | `"https://vault.vault-operator-system.svc.cluster.local:8200"` |  |
-| vso.vaultConnection.default.caCertSecretRef | string | `"vault-ca"` |  |
+| vso.vaultConnection.default.caCertSecretRef | string | `"vault-tls"` |  |
 | vso.vaultConnection.default.skipTLSVerify | bool | `false` |  |
 | vso.vaultStaticSecrets | object | `{}` |  |
 
