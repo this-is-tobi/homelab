@@ -1,0 +1,56 @@
+{{- $sfx := .Values.policies.celNameSuffix | default "" }}
+{{- $re := `^(docker\.io/)?rancher/k3s-upgrade[:@]` }}
+{{- $busybox := `^(docker\.io/)?(library/)?busybox[:@]` }}
+{{- $exceptions := list
+  (dict "name" "crowdsec-agent-init-limits"
+        "reason" "The upstream crowdsec chart hardcodes the agent's wait-for-lapi init container resources (memory limit only, no CPU limit) with no values knob; exempt it instead of excluding the whole crowdsec namespace."
+        "policies" (list "require-resource-limits") "kinds" (list "Pod" "DaemonSet" "Deployment")
+        "ns" "crowdsec" "prefix" "crowdsec-agent" "allowed" (list))
+  (dict "name" "homepage-config-init-limits"
+        "reason" "The homepage chart hardcodes a config-init busybox initContainer (copies the ConfigMap into a writable volume) with no resources values knob."
+        "policies" (list "require-resource-limits") "kinds" (list "Pod" "Deployment")
+        "ns" "homepage" "prefix" "homepage" "allowed" (list))
+  (dict "name" "homepage-config-init-restricted"
+        "reason" "The same hardcoded init container has no securityContext knob, so it cannot set allowPrivilegeEscalation false or drop ALL. Exempt only those two restricted controls, only for the busybox image; the homepage container stays fully checked."
+        "policies" (list "pod-security-restricted") "kinds" (list "Pod" "Deployment")
+        "ns" "homepage" "prefix" "homepage"
+        "allowed" (list (printf "privilege-escalation@%s" $busybox) (printf "capabilities-strict@%s" $busybox)))
+  (dict "name" "rustfs-init-step-limits"
+        "reason" "The rustfs chart hardcodes an init-step initContainer (creates data/log dirs) with no resources values knob."
+        "policies" (list "require-resource-limits") "kinds" (list "Pod" "Deployment" "StatefulSet")
+        "ns" "rustfs" "prefix" "rustfs" "allowed" (list))
+  (dict "name" "system-upgrade-jobs-baseline"
+        "reason" "system-upgrade-controller's upgrade Jobs run the k3s installer on the host: hostPID/hostIPC/hostNetwork, the host root mounted via hostPath, and a privileged container with CAP_SYS_BOOT, all hardcoded by the controller. Exempt exactly those baseline controls, the privileged/capability ones only for the k3s-upgrade image. The controller Deployment in the same namespace stays fully checked."
+        "policies" (list "pod-security-baseline") "kinds" (list "Pod" "Job")
+        "ns" "system-upgrade" "prefix" "apply-"
+        "allowed" (list "host-namespaces" "host-path-volumes" (printf "privileged@%s" $re) (printf "capabilities@%s" $re)))
+  (dict "name" "system-upgrade-jobs-root-limits"
+        "reason" "The same Jobs run as root (the installer writes to the host root) and the Plan API has no resources field, so their containers can never set runAsNonRoot or limits."
+        "policies" (list "require-non-root" "require-resource-limits") "kinds" (list "Pod" "Job")
+        "ns" "system-upgrade" "prefix" "apply-" "allowed" (list)) }}
+{{- range $e := $exceptions }}
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: {{ $e.name }}
+  namespace: kyverno
+  annotations:
+    ohmlab.fr/exception-reason: {{ $e.reason | quote }}
+spec:
+  policyRefs:
+  {{- range $p := $e.policies }}
+  - name: {{ $p }}{{ $sfx }}
+    kind: ValidatingPolicy
+  {{- end }}
+  {{- if $e.allowed }}
+  allowedValues:
+  {{- toYaml $e.allowed | nindent 2 }}
+  {{- end }}
+  matchConditions:
+  - name: scope
+    expression: >-
+      object.kind in {{ $e.kinds | toJson }} &&
+      object.metadata.namespace == {{ $e.ns | quote }} &&
+      object.metadata.name.startsWith({{ $e.prefix | quote }})
+{{- end }}

@@ -1,0 +1,161 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: exceptions
+policies:
+- ../../rendered/policies.yaml
+exceptions:
+- ../../rendered/exceptions.yaml
+resources:
+- resources.yaml
+results:
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - crowdsec-agent-abc
+  result: skip
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - crowdsec-agent-wrongns
+  result: fail
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - homepage-abc
+  result: skip
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - homepage-wrongns
+  result: fail
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rustfs-abc
+  result: skip
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rustfs-wrongns
+  result: fail
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-plan-on-pi0
+  result: skip
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-plan-on-pi1
+  result: skip
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-plan-on-pi2
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-baseline-ok
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-baseline-extra
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-baseline-other-image
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-baseline-wrong-ns
+  result: fail
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - homepage-r-ok
+  result: pass
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - homepage-r-main-bad
+  result: fail
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - homepage-r-init-uid0
+  result: fail
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - homepage-r-wrong-ns
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-baseline-other-priv-only
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - apply-baseline-other-cap-only
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - controller-abc
+  result: fail
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - controller-def
+  result: fail
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - other-in-crowdsec
+  result: fail
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - other-in-homepage
+  result: fail
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - other-in-rustfs
+  result: fail
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - other-in-homepage-restricted
+  result: fail
