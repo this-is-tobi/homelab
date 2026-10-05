@@ -68,3 +68,93 @@ results:
   - rg-bad-localhost
   - rg-bad-ecr
   result: fail
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-kube-system
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-kyverno
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-longhorn-system
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-prometheus-stack
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-cert-manager
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-teleport-system
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-excluded-crowdsec
+  result: pass
+- policy: disallow-latest-tag
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - lt-excluded-kube-system
+  result: pass
+- policy: disallow-latest-tag
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - lt-excluded-kyverno
+  result: pass
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rl-excluded-kube-system
+  result: pass
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rl-excluded-kyverno
+  result: pass
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rl-excluded-longhorn-system
+  result: pass
+- policy: disallow-latest-tag
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - lt-not-excluded-longhorn
+  result: fail
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-not-excluded-demo2
+  result: fail
+- policy: restrict-image-registries
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rg-kube-system-still-checked
+  result: fail

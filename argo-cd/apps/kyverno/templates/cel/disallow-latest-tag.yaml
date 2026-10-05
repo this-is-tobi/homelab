@@ -11,11 +11,13 @@ metadata:
       failureAction comes from values (policies.disallowLatestTag).
 spec:
   validationActions: {{ include "kyverno.cel.actions" (dict "failureAction" (.Values.policies.disallowLatestTag.failureAction | default "Audit") "root" $) }}
-  {{- include "kyverno.cel.common" (dict "namespaceSelector" (include "kyverno.cel.excludeNamespaces" $ns | fromYaml)) | nindent 2 }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
   variables:
+  {{- include "kyverno.cel.scope" (dict "exclude" $ns) | nindent 2 }}
   - name: allContainers
     expression: >-
       object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
   validations:
-  - expression: variables.allContainers.all(c, !c.image.endsWith(':latest'))
+  - expression: >-
+      variables.outOfScope || variables.allContainers.all(c, !c.image.endsWith(':latest'))
     message: "Image tag 'latest' is not allowed. Use a specific tag or digest."

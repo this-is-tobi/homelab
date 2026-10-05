@@ -387,3 +387,87 @@ spec:
       containers:
       - image: busybox:1.37
         name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-excluded-kube-system
+  namespace: kube-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-excluded-kyverno
+  namespace: kyverno
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-excluded-longhorn-system
+  namespace: longhorn-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-excluded-prometheus-stack
+  namespace: prometheus-stack
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-excluded-crowdsec
+  namespace: crowdsec
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-excluded-vault-operator-system
+  namespace: vault-operator-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bl-not-excluded-cert-manager
+  namespace: cert-manager
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      privileged: true
