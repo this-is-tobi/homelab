@@ -1,0 +1,321 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-container-level
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-pod-level
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-net-bind
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        add:
+        - NET_BIND_SERVICE
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-uid
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-pvc
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+  - name: v
+    persistentVolumeClaim:
+      claimName: c
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-escalation-unset
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-escalation-true
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-nonroot-unset
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-nonroot-false
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: false
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-uid-zero
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      runAsUser: 0
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-seccomp-unset
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-seccomp-unconfined
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: Unconfined
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-drop-missing
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities: {}
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-add-sys-admin
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        add:
+        - SYS_ADMIN
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-hostpath-volume
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+  - hostPath:
+      path: /
+    name: v
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-nfs-volume
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+  volumes:
+  - name: v
+    nfs:
+      path: /
+      server: s
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-pod-uid-zero
+  namespace: tenant-a
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 0
+    seccompProfile:
+      type: RuntimeDefault
