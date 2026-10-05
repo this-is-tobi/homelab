@@ -3,7 +3,7 @@ gateway:
   gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
   # Vault serves TLS on 8200 — traefik validates it via BackendTLSPolicy
-  # against the kyverno-generated vault-ca ConfigMap.
+  # against the vault-ca-bundle ConfigMap trust-manager publishes.
   backendTLS: true
   routes:
   - name: vault

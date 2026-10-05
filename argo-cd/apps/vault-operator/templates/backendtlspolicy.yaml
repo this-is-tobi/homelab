@@ -1,10 +1,10 @@
 {{- if and .Values.gateway.enabled .Values.gateway.backendTLS }}
 ---
 # Gateway API HTTPS-upstream validation: vault serves TLS on 8200, so
-# traefik connects with TLS and verifies against vault's CA. The `vault-ca`
-# ConfigMap is generated next to the Service by the kyverno
-# sync-vault-ca-configmap rule (BackendTLSPolicy only accepts ConfigMap CA
-# refs).
+# traefik connects with TLS and verifies against vault's CA. The
+# `vault-ca-bundle` ConfigMap is published next to the Service by
+# trust-manager from the bank-vaults `vault-tls` Secret (BackendTLSPolicy only
+# accepts ConfigMap CA refs).
 apiVersion: gateway.networking.k8s.io/v1
 kind: BackendTLSPolicy
 metadata:
@@ -18,7 +18,7 @@ spec:
     caCertificateRefs:
     - group: ""
       kind: ConfigMap
-      name: vault-ca
+      name: vault-ca-bundle
     # SNI sent to and validated against the backend certificate — must be in
     # the SAN list of the bank-vaults-issued cert (same name VSO validates).
     hostname: vault.vault-operator-system.svc.cluster.local
