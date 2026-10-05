@@ -6,11 +6,16 @@
 # Fixture files reference ../../rendered/policies.yaml and
 # ../../rendered/exceptions.yaml.
 #
-# The CLI knows no namespace labels but kubernetes.io/metadata.name, and it
-# reports a resource a policy does not apply to as a passing result whatever
-# the test expects. So label selectors (the tenant scoping) are dropped from the
-# exported policies, and a fixture that is still excluded fails the run: the
-# scoping itself is checked on a real cluster.
+# The CLI cannot evaluate namespaceObject and reports a resource a policy does
+# not apply to as a passing result whatever the test expects. So the tenant
+# scoping variable (outOfScope, which reads the namespace labels) is overridden
+# to false in the exported policies, and a fixture with no evaluated row for its
+# policy fails the run. The scoping itself is checked on a real cluster.
+#
+# Every ValidatingPolicy must also share one Kyverno webhook: a namespaceSelector,
+# matchConditions or webhookConfiguration of its own gives it a webhook of its
+# own, which costs one more admission call per pod and policy. Scope inside the
+# expressions instead (see kyverno.cel.scope).
 set -euo pipefail
 
 chart="${1:-argo-cd/apps/kyverno}"
@@ -40,8 +45,14 @@ mapfile -t args < <(values_args)
 
 mkdir -p "$work/rendered" "$work/tests"
 helm template ci "$chart" --namespace kyverno "${args[@]}" >"$work/all.yaml"
-yq ea 'select((.apiVersion // "") | test("^policies\\.kyverno\\.io/")) | select(.kind != "PolicyException") | del(.spec.matchConstraints.namespaceSelector.matchLabels)' "$work/all.yaml" >"$work/rendered/policies.yaml"
+yq ea 'select((.apiVersion // "") | test("^policies\\.kyverno\\.io/")) | select(.kind != "PolicyException") | (.spec.variables[]? | select(.name == "outOfScope" and (.expression | contains("namespaceObject"))) | .expression) = "false"' "$work/all.yaml" >"$work/rendered/policies.yaml"
 yq ea 'select((.apiVersion // "") | test("^policies\\.kyverno\\.io/")) | select(.kind == "PolicyException")' "$work/all.yaml" >"$work/rendered/exceptions.yaml"
+
+own_webhook=$(yq ea 'select(.kind == "ValidatingPolicy") | select(.spec.matchConstraints.namespaceSelector or .spec.matchConstraints.objectSelector or .spec.matchConditions or .spec.webhookConfiguration) | .metadata.name' "$work/all.yaml")
+if [ -n "$own_webhook" ]; then
+  echo "::error::these ValidatingPolicies would get a Kyverno webhook of their own (namespaceSelector, objectSelector, matchConditions or webhookConfiguration): $own_webhook"
+  failures=$((failures + 1))
+fi
 
 for d in "${dirs[@]}"; do
   t=$(basename "$d")
