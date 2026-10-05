@@ -1,0 +1,234 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-ok-container-uid
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      runAsUser: 1000
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-ok-pod-nonroot
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+  securityContext:
+    runAsNonRoot: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-ok-container-nonroot
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      runAsNonRoot: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-bad-unset
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-bad-uid0
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    securityContext:
+      runAsUser: 0
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-ok-tag
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-ok-digest
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-ok-untagged
+  namespace: demo
+spec:
+  containers:
+  - image: nginx
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-bad-latest
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:latest
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-bad-init-latest
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+  initContainers:
+  - image: busybox:latest
+    name: i
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-ok
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-bad-none
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-bad-memory-only
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    resources:
+      limits:
+        memory: 64Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-bad-init
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+    resources:
+      limits:
+        cpu: '1'
+        memory: 1Gi
+  initContainers:
+  - image: busybox:1
+    name: i
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-ok-dockerhub-short
+  namespace: demo
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-ok-dockerhub-user
+  namespace: demo
+spec:
+  containers:
+  - image: bitnami/redis:7
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-ok-ghcr
+  namespace: demo
+spec:
+  containers:
+  - image: ghcr.io/x/y:1
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-ok-quay
+  namespace: demo
+spec:
+  containers:
+  - image: quay.io/x/y:1
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-bad-private
+  namespace: demo
+spec:
+  containers:
+  - image: registry.example.com/x:1
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-bad-localhost
+  namespace: demo
+spec:
+  containers:
+  - image: localhost:5000/x:1
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-bad-ecr
+  namespace: demo
+spec:
+  containers:
+  - image: 123.dkr.ecr.eu-west-1.amazonaws.com/x:1
+    name: a
