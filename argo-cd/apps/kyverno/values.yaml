@@ -101,6 +101,12 @@ kyverno:
 # pods created by upstream operators/hooks unexpectedly, which is a worse
 # failure mode than a report entry.
 policies:
+  # While the CEL generation runs next to the legacy one, every CEL policy
+  # only audits, whatever failureAction says; the cutover removes this.
+  shadow: true
+  # Appended to every CEL policy name when the legacy policy of the same name
+  # still exists and reports/metrics cannot tell them apart.
+  celNameSuffix: ""
   podSecurityBaseline:
     failureAction: Enforce
   # Restricted PSS profile for TENANT namespaces only (matched via the

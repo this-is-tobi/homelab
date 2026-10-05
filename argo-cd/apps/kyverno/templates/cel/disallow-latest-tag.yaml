@@ -1,0 +1,21 @@
+{{- $ns := list "kube-system" "kyverno" }}
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: {{ include "kyverno.cel.name" (dict "name" "disallow-latest-tag" "root" $) }}
+  annotations:
+    policies.kyverno.io/title: Disallow the latest image tag
+    policies.kyverno.io/description: >-
+      Rejects images whose tag is `latest`; an untagged image or a digest
+      reference is not rejected, matching the policy this replaces.
+      failureAction comes from values (policies.disallowLatestTag).
+spec:
+  validationActions: {{ include "kyverno.cel.actions" (dict "failureAction" (.Values.policies.disallowLatestTag.failureAction | default "Audit") "root" $) }}
+  {{- include "kyverno.cel.common" (dict "namespaceSelector" (include "kyverno.cel.excludeNamespaces" $ns | fromYaml)) | nindent 2 }}
+  variables:
+  - name: allContainers
+    expression: >-
+      object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
+  validations:
+  - expression: variables.allContainers.all(c, !c.image.endsWith(':latest'))
+    message: "Image tag 'latest' is not allowed. Use a specific tag or digest."

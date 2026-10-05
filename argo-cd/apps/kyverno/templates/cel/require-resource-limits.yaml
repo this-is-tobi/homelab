@@ -1,0 +1,23 @@
+{{- $ns := list "kube-system" "kyverno" "longhorn-system" }}
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: {{ include "kyverno.cel.name" (dict "name" "require-resource-limits" "root" $) }}
+  annotations:
+    policies.kyverno.io/title: Require resource limits
+    policies.kyverno.io/description: >-
+      Every container, init and ephemeral ones included, must set CPU and
+      memory limits. failureAction comes from values
+      (policies.requireResourceLimits).
+spec:
+  validationActions: {{ include "kyverno.cel.actions" (dict "failureAction" (.Values.policies.requireResourceLimits.failureAction | default "Audit") "root" $) }}
+  {{- include "kyverno.cel.common" (dict "namespaceSelector" (include "kyverno.cel.excludeNamespaces" $ns | fromYaml)) | nindent 2 }}
+  variables:
+  - name: allContainers
+    expression: >-
+      object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
+  validations:
+  - expression: >-
+      variables.allContainers.all(c,
+        c.?resources.?limits.?memory.orValue('') != '' && c.?resources.?limits.?cpu.orValue('') != '')
+    message: CPU and memory limits are required for all containers.

@@ -1,0 +1,70 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: simple
+policies:
+- ../../rendered/policies.yaml
+resources:
+- resources.yaml
+results:
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-ok-container-uid
+  - nr-ok-pod-nonroot
+  - nr-ok-container-nonroot
+  result: pass
+- policy: require-non-root
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - nr-bad-unset
+  - nr-bad-uid0
+  result: fail
+- policy: disallow-latest-tag
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - lt-ok-tag
+  - lt-ok-digest
+  - lt-ok-untagged
+  result: pass
+- policy: disallow-latest-tag
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - lt-bad-latest
+  - lt-bad-init-latest
+  result: fail
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rl-ok
+  result: pass
+- policy: require-resource-limits
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rl-bad-none
+  - rl-bad-memory-only
+  - rl-bad-init
+  result: fail
+- policy: restrict-image-registries
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rg-ok-dockerhub-short
+  - rg-ok-dockerhub-user
+  - rg-ok-ghcr
+  - rg-ok-quay
+  result: pass
+- policy: restrict-image-registries
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - rg-bad-private
+  - rg-bad-localhost
+  - rg-bad-ecr
+  result: fail
