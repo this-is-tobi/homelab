@@ -1,0 +1,40 @@
+# Zero-trust NetworkPolicy for this namespace (templates/networkpolicy.yaml).
+# Disabled by default — real rules live in the instance override.
+networkPolicy:
+  enabled: false
+  egressDeny: true
+  prometheusScrapePorts: []
+  extraIngress: []
+  extraEgress: []
+
+# Publishes the Vault CA as a ConfigMap for the Gateway API BackendTLSPolicy,
+# which only accepts ConfigMap CA references. Everything else reads the
+# bank-vaults Secret copies directly.
+vaultCaBundle:
+  enabled: true
+  name: vault-ca-bundle
+  sourceSecret: vault-tls
+
+trust-manager:
+  app:
+    trust:
+      # The only namespace trust-manager may read Secrets from, and the only
+      # one it writes to (targetNamespaces below).
+      namespace: vault-operator-system
+    targetNamespaces:
+    - vault-operator-system
+  # Secret targets would grant cluster-wide Secret reads; the ConfigMap
+  # target does not need them.
+  secretTargets:
+    enabled: false
+  # Only enables the `useDefaultCAs` Bundle source, which nothing uses here.
+  defaultPackage:
+    enabled: false
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    # Idle use is ~15Mi and ~1m CPU; the limits only bound a runaway.
+    limits:
+      cpu: 100m
+      memory: 64Mi
