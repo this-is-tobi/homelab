@@ -9,7 +9,7 @@ dependencies:
   repository: https://dl.gitea.com/charts
 - name: valkey
   alias: valkey
-  version: 0.25.11
+  version: 0.25.13
   repository: oci://registry-1.docker.io/cloudpirates
 - name: cluster
   alias: cnpg
