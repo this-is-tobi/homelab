@@ -9,15 +9,15 @@ work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 failures=0
 
-make_chart() { # $1 = chart dir, $2 = expected result for the hostNetwork pod
-  local chart="$1"
+make_chart() { # $1 = chart dir, $2 = expected result for the hostNetwork pod, $3 = optional namespaceSelector YAML
+  local chart="$1" selector="${3:-}"
   mkdir -p "$chart/templates" "$chart/tests/policies/fixture"
   cat >"$chart/Chart.yaml" <<'EOF'
 apiVersion: v2
 name: fixture
 version: 0.1.0
 EOF
-  cat >"$chart/templates/policy.yaml" <<'EOF'
+  cat >"$chart/templates/policy.yaml" <<EOF
 apiVersion: policies.kyverno.io/v1
 kind: ValidatingPolicy
 metadata:
@@ -25,6 +25,7 @@ metadata:
 spec:
   validationActions: [Audit]
   matchConstraints:
+${selector}
     resourceRules:
     - apiGroups: [""]
       apiVersions: ["v1"]
@@ -74,5 +75,16 @@ check "a fixture expecting the wrong result fails" nonzero "$work/fail"
 mkdir -p "$work/empty/templates"
 printf 'apiVersion: v2\nname: empty\nversion: 0.1.0\n' >"$work/empty/Chart.yaml"
 check "no fixtures is a pass" 0 "$work/empty"
+
+# The CLI knows only a namespace's kubernetes.io/metadata.name label and treats
+# an excluded resource as matching any expected result, so a label-scoped policy
+# is tested with the label selector dropped, and a fixture that is still
+# excluded must fail the run.
+make_chart "$work/labelled" fail '    namespaceSelector: {matchLabels: {team: tenant}}'
+check "a label-scoped policy is still evaluated" 0 "$work/labelled"
+make_chart "$work/labelled-wrong" pass '    namespaceSelector: {matchLabels: {team: tenant}}'
+check "a label-scoped policy is not vacuously passed" nonzero "$work/labelled-wrong"
+make_chart "$work/excluded" fail '    namespaceSelector: {matchExpressions: [{key: kubernetes.io/metadata.name, operator: In, values: [other]}]}'
+check "fixtures that are excluded fail the run" nonzero "$work/excluded"
 
 exit "$failures"
