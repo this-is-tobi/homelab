@@ -50,7 +50,7 @@ vso:
     default:
       address: "https://vault.vault-operator-system.svc.cluster.local:8200"
       skipTLSVerify: false
-      caCertSecretRef: vault-ca
+      caCertSecretRef: vault-tls
   vaultStaticSecrets:
     # Keys match what the oauth2-proxy chart's `existingSecret` support
     # expects verbatim (templates/_helpers.tpl "oauth2-proxy.secrets") —
