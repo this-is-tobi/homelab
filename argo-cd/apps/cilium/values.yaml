@@ -62,8 +62,8 @@ vso:
         serviceAccount: vso
   # No per-namespace VaultConnection: the VaultAuth above sets no
   # vaultConnectionRef, so VSO uses the operator's `default` connection
-  # (vault-operator-system, CA from vault-tls). One here would only fail:
-  # sync-vault-ca deliberately never generates vault-ca in kube-system.
+  # (vault-operator-system, CA from vault-tls); a second one would only
+  # duplicate it.
   vaultStaticSecrets:
     # Keys match what the oauth2-proxy chart's `existingSecret` support
     # expects verbatim (same pattern as longhorn's longhornSso).
