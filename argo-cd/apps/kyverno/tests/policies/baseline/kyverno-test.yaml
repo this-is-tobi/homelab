@@ -1,0 +1,57 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: baseline
+policies:
+- ../../rendered/policies.yaml
+resources:
+- resources.yaml
+results:
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - good-clean
+  - good-cap-net-bind
+  - good-seccomp
+  - good-apparmor-annotation
+  - good-selinux
+  - good-sysctl
+  - good-probe-no-host
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bad-hostprocess
+  - bad-hostnet
+  - bad-hostpid
+  - bad-privileged
+  - bad-init-privileged
+  - bad-ephemeral-cap
+  - bad-cap
+  - bad-hostpath
+  - bad-hostport
+  - bad-apparmor-field
+  - bad-apparmor-annotation
+  - bad-selinux-type
+  - bad-selinux-user
+  - bad-procmount
+  - bad-seccomp
+  - bad-sysctl
+  - bad-probe-host
+  - bad-lifecycle-host
+  result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Deployment
+  resources:
+  - good-deploy
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Deployment
+  resources:
+  - bad-deploy-privileged
+  - bad-deploy-apparmor
+  result: fail
