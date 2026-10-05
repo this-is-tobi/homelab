@@ -1,0 +1,36 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: restricted
+policies:
+- ../../rendered/policies.yaml
+resources:
+- resources.yaml
+results:
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - good-container-level
+  - good-pod-level
+  - good-net-bind
+  - good-uid
+  - good-pvc
+  result: pass
+- policy: pod-security-restricted
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bad-escalation-unset
+  - bad-escalation-true
+  - bad-nonroot-unset
+  - bad-nonroot-false
+  - bad-uid-zero
+  - bad-seccomp-unset
+  - bad-seccomp-unconfined
+  - bad-drop-missing
+  - bad-add-sys-admin
+  - bad-hostpath-volume
+  - bad-nfs-volume
+  - bad-pod-uid-zero
+  result: fail
