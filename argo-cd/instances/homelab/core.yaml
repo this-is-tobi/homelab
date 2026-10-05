@@ -70,6 +70,12 @@ apps:
   enabled: "true"
   namespace: vault-operator-system
   syncWave: 10
+# After cert-manager (10): its webhook certificate. Publishes the Vault CA
+# ConfigMap Traefik validates Vault against, so Kyverno needs no Secret access.
+- app: trust-manager
+  enabled: "true"
+  namespace: trust-manager
+  syncWave: 13
 - app: kyverno
   enabled: "true"
   namespace: kyverno
