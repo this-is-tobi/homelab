@@ -26,11 +26,16 @@ yq ea 'select(.kind == "PolicyException" and .apiVersion == "kyverno.io/v2")' "$
 yq ea 'select(.kind == "ValidatingPolicy")' "$work/all.yaml" >"$work/cel-policies.yaml"
 yq ea 'select(.kind == "PolicyException" and (.apiVersion | test("^policies\\.kyverno\\.io/")))' "$work/all.yaml" >"$work/cel-exceptions.yaml"
 
+# pod-security-restricted only applies to tenant namespaces, a namespace label
+# the CLI cannot evaluate, so it is compared from PolicyReports on the cluster.
+# The CEL policies scope in expressions (one webhook for all of them), so a
+# resource in an excluded namespace is a CEL "pass" where the legacy policy
+# reports nothing; that is expected, a CEL result other than "pass" there is not.
 report() { # $1 = policies file, $2 = exceptions file
   # kyverno apply exits 1 when any resource fails a policy; that is data here.
   { kyverno apply "$1" "${res[@]}" --exception "$2" --policy-report 2>/dev/null || true; } \
     | sed -n '/^apiVersion/,$p' \
-    | yq -o=tsv '.results[]? | [.policy, (.resources[0].namespace // "-") + "/" + .resources[0].kind + "/" + .resources[0].name, .result]' \
+    | yq -o=tsv '.results[]? | select(.policy != "pod-security-restricted") | [.policy, (.resources[0].namespace // "-") + "/" + .resources[0].kind + "/" + .resources[0].name, .result]' \
     | sort
 }
 report "$work/legacy-policies.yaml" "$work/legacy-exceptions.yaml" >"$work/legacy.tsv"
@@ -45,4 +50,4 @@ echo "CEL:" >&2; tally "$work/cel.tsv"
 join -t$'\t' -a1 -a2 -e MISSING -o 0,1.2,2.2 \
   <(awk -F'\t' '{print $1 "|" $2 "\t" $3}' "$work/legacy.tsv" | sort -t$'\t' -k1,1) \
   <(awk -F'\t' '{print $1 "|" $2 "\t" $3}' "$work/cel.tsv" | sort -t$'\t' -k1,1) \
-  | awk -F'\t' '$2 != $3 {split($1, k, "|"); print "DIFF\t" k[1] "\t" k[2] "\t" $2 "\t" $3; n++} END {printf "%d legacy results, %d CEL results, %d differences\n", '"$(wc -l <"$work/legacy.tsv")"', '"$(wc -l <"$work/cel.tsv")"', n + 0 > "/dev/stderr"; exit n > 0}'
+  | awk -F'\t' '$2 == "MISSING" && $3 == "pass" {scoped++; next} $2 != $3 {split($1, k, "|"); print "DIFF\t" k[1] "\t" k[2] "\t" $2 "\t" $3; n++} END {printf "%d legacy results, %d CEL results (%d of them passes in namespaces the legacy policy excludes), %d differences\n", '"$(wc -l <"$work/legacy.tsv")"', '"$(wc -l <"$work/cel.tsv")"', scoped + 0, n + 0 > "/dev/stderr"; exit n > 0}'

@@ -16,7 +16,7 @@ metadata:
       (policies.restrictImageRegistries).
 spec:
   validationActions: {{ include "kyverno.cel.actions" (dict "failureAction" (.Values.policies.restrictImageRegistries.failureAction | default "Audit") "root" $) }}
-  {{- include "kyverno.cel.common" (dict) | nindent 2 }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
   variables:
   - name: allContainers
     expression: >-

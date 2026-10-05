@@ -12,9 +12,12 @@ metadata:
       values (policies.requireNonRoot).
 spec:
   validationActions: {{ include "kyverno.cel.actions" (dict "failureAction" (.Values.policies.requireNonRoot.failureAction | default "Audit") "root" $) }}
-  {{- include "kyverno.cel.common" (dict "namespaceSelector" (include "kyverno.cel.excludeNamespaces" $ns | fromYaml)) | nindent 2 }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
+  variables:
+  {{- include "kyverno.cel.scope" (dict "exclude" $ns) | nindent 2 }}
   validations:
   - expression: >-
+      variables.outOfScope ||
       object.spec.?securityContext.?runAsNonRoot.orValue(false) == true ||
       object.spec.?securityContext.?runAsUser.orValue(0) > 0 ||
       object.spec.containers.all(c, c.?securityContext.?runAsNonRoot.orValue(false) == true) ||

@@ -22,8 +22,9 @@ metadata:
     # non-default added capability.
 spec:
   validationActions: {{ include "kyverno.cel.actions" (dict "failureAction" (.Values.policies.podSecurityBaseline.failureAction | default "Audit") "root" $) }}
-  {{- include "kyverno.cel.common" (dict "namespaceSelector" (include "kyverno.cel.excludeNamespaces" $ns | fromYaml)) | nindent 2 }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
   variables:
+  {{- include "kyverno.cel.scope" (dict "exclude" $ns) | nindent 2 }}
   - name: allContainers
     expression: >-
       object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
@@ -32,21 +33,25 @@ spec:
       exceptions.allowedValues.filter(v, v.contains('@')).map(v, v.split('@', 2))
   validations:
   - expression: >-
+      variables.outOfScope ||
       'host-process' in exceptions.allowedValues ||
       (object.spec.?securityContext.?windowsOptions.?hostProcess.orValue(false) == false &&
        variables.allContainers.all(c, c.?securityContext.?windowsOptions.?hostProcess.orValue(false) == false))
     message: HostProcess containers are disallowed (windowsOptions.hostProcess must be unset or false).
   - expression: >-
+      variables.outOfScope ||
       'host-namespaces' in exceptions.allowedValues ||
       !(object.spec.?hostNetwork.orValue(false) || object.spec.?hostPID.orValue(false) || object.spec.?hostIPC.orValue(false))
     message: Sharing the host namespaces is disallowed (hostNetwork, hostPID and hostIPC must be unset or false).
   - expression: >-
+      variables.outOfScope ||
       'privileged' in exceptions.allowedValues ||
       variables.allContainers.all(c,
         c.?securityContext.?privileged.orValue(false) == false ||
         variables.imageExemptions.exists(e, e[0] == 'privileged' && c.image.matches(e[1])))
     message: Privileged containers are disallowed.
   - expression: >-
+      variables.outOfScope ||
       'capabilities' in exceptions.allowedValues ||
       variables.allContainers.all(c,
         c.?securityContext.?capabilities.?add.orValue([]).all(cap,
@@ -54,14 +59,17 @@ spec:
         variables.imageExemptions.exists(e, e[0] == 'capabilities' && c.image.matches(e[1])))
     message: Adding capabilities beyond the baseline list is disallowed.
   - expression: >-
+      variables.outOfScope ||
       'host-path-volumes' in exceptions.allowedValues ||
       object.spec.?volumes.orValue([]).all(v, !has(v.hostPath))
     message: HostPath volumes are disallowed.
   - expression: >-
+      variables.outOfScope ||
       'host-ports' in exceptions.allowedValues ||
       variables.allContainers.all(c, c.?ports.orValue([]).all(p, p.?hostPort.orValue(0) == 0))
     message: Host ports are disallowed.
   - expression: >-
+      variables.outOfScope ||
       'apparmor' in exceptions.allowedValues ||
       (object.spec.?securityContext.?appArmorProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'] &&
        variables.allContainers.all(c, c.?securityContext.?appArmorProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost']) &&
@@ -70,6 +78,7 @@ spec:
          object.metadata.annotations[k] == '' || object.metadata.annotations[k] == 'runtime/default' || object.metadata.annotations[k].startsWith('localhost/')))
     message: Only the RuntimeDefault and Localhost AppArmor profiles are allowed.
   - expression: >-
+      variables.outOfScope ||
       'selinux' in exceptions.allowedValues ||
       ((object.spec.?securityContext.?seLinuxOptions.?type.orValue('') in ['', 'container_t', 'container_init_t', 'container_kvm_t', 'container_engine_t']) &&
        (object.spec.?securityContext.?seLinuxOptions.?user.orValue('') == '' && object.spec.?securityContext.?seLinuxOptions.?role.orValue('') == '') &&
@@ -78,15 +87,18 @@ spec:
          c.?securityContext.?seLinuxOptions.?user.orValue('') == '' && c.?securityContext.?seLinuxOptions.?role.orValue('') == ''))
     message: SELinux type is restricted to the baseline set and user and role must be unset.
   - expression: >-
+      variables.outOfScope ||
       'proc-mount' in exceptions.allowedValues ||
       variables.allContainers.all(c, c.?securityContext.?procMount.orValue('Default') == 'Default')
     message: Changing the proc mount from Default is disallowed.
   - expression: >-
+      variables.outOfScope ||
       'seccomp' in exceptions.allowedValues ||
       (object.spec.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'] &&
        variables.allContainers.all(c, c.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost']))
     message: The Unconfined seccomp profile is disallowed.
   - expression: >-
+      variables.outOfScope ||
       'sysctls' in exceptions.allowedValues ||
       object.spec.?securityContext.?sysctls.orValue([]).all(s,
         s.name in ['kernel.shm_rmid_forced', 'net.ipv4.ip_local_port_range', 'net.ipv4.tcp_syncookies', 'net.ipv4.ping_group_range',
@@ -95,6 +107,7 @@ spec:
                    'net.ipv4.tcp_rmem', 'net.ipv4.tcp_wmem'])
     message: Only the safe sysctls are allowed.
   - expression: >-
+      variables.outOfScope ||
       'host-probes-lifecycle' in exceptions.allowedValues ||
       variables.allContainers.all(c,
         [c.?livenessProbe.?httpGet.?host.orValue(''), c.?livenessProbe.?tcpSocket.?host.orValue(''),

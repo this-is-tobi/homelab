@@ -55,3 +55,45 @@ results:
   - bad-deploy-privileged
   - bad-deploy-apparmor
   result: fail
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-excluded-kube-system
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-excluded-kyverno
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-excluded-longhorn-system
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-excluded-prometheus-stack
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-excluded-crowdsec
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-excluded-vault-operator-system
+  result: pass
+- policy: pod-security-baseline
+  isValidatingPolicy: true
+  kind: Pod
+  resources:
+  - bl-not-excluded-cert-manager
+  result: fail

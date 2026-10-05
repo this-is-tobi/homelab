@@ -232,3 +232,153 @@ spec:
   containers:
   - image: 123.dkr.ecr.eu-west-1.amazonaws.com/x:1
     name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-kube-system
+  namespace: kube-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-kyverno
+  namespace: kyverno
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-longhorn-system
+  namespace: longhorn-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-prometheus-stack
+  namespace: prometheus-stack
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-cert-manager
+  namespace: cert-manager
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-teleport-system
+  namespace: teleport-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-excluded-crowdsec
+  namespace: crowdsec
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-excluded-kube-system
+  namespace: kube-system
+spec:
+  containers:
+  - image: nginx:latest
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-excluded-kyverno
+  namespace: kyverno
+spec:
+  containers:
+  - image: nginx:latest
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-excluded-kube-system
+  namespace: kube-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-excluded-kyverno
+  namespace: kyverno
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rl-excluded-longhorn-system
+  namespace: longhorn-system
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lt-not-excluded-longhorn
+  namespace: longhorn-system
+spec:
+  containers:
+  - image: nginx:latest
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nr-not-excluded-demo2
+  namespace: demo2
+spec:
+  containers:
+  - image: nginx:1.27
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rg-kube-system-still-checked
+  namespace: kube-system
+spec:
+  containers:
+  - image: registry.example.com/x:1
+    name: a
