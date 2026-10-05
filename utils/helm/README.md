@@ -162,6 +162,8 @@ A Helm chart to deploy ohmlab.
 | projects.core.clusterResourceWhitelist[16].kind | string | `"*"` |  |
 | projects.core.clusterResourceWhitelist[17].group | string | `"postgresql.cnpg.io"` |  |
 | projects.core.clusterResourceWhitelist[17].kind | string | `"ClusterImageCatalog"` |  |
+| projects.core.clusterResourceWhitelist[18].group | string | `"trust.cert-manager.io"` |  |
+| projects.core.clusterResourceWhitelist[18].kind | string | `"Bundle"` |  |
 | projects.core.clusterResourceWhitelist[1].group | string | `"rbac.authorization.k8s.io"` |  |
 | projects.core.clusterResourceWhitelist[1].kind | string | `"ClusterRole"` |  |
 | projects.core.clusterResourceWhitelist[2].group | string | `"rbac.authorization.k8s.io"` |  |

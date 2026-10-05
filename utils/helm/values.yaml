@@ -352,6 +352,8 @@ projects:
       kind: "*"
     - group: postgresql.cnpg.io
       kind: ClusterImageCatalog
+    - group: trust.cert-manager.io
+      kind: Bundle
     clusterResourceBlacklist: []
     namespaceResourceWhitelist:
     - group: "*"

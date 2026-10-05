@@ -457,6 +457,7 @@ Apps are reconciled in `syncWave` order. Default ordering for the homelab instan
 | 0    | core   | `longhorn`                               |
 | 10   | core   | `cert-manager`, `vault-operator`         |
 | 11   | core   | `traefik`                                |
+| 13   | core   | `trust-manager`                          |
 | 15   | core   | `kyverno`                                |
 | 20   | core   | `cloudnative-pg`, `sops`                 |
 | 50   | core   | `prometheus-stack`                       |
@@ -473,6 +474,7 @@ Core services provide the foundation for the platform:
 - **Traefik** *- ingress controller & Gateway API implementation to expose services.*
 - **Cert-Manager** *- certificate management for TLS.*
 - **Vault Operator** *- secret management for services deployments.*
+- **Trust-Manager** *- publishes Vault's CA as a ConfigMap for Traefik's backend TLS validation.*
 - **Kyverno** *- admission policy enforcement.*
 - **ArgoCD** *- deployment management following GitOps.*
 - **CloudNative-PG** *- PostgreSQL operator for databases.*

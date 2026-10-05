@@ -97,6 +97,13 @@ apps:
   namespace: vault-operator-system
   syncWave: 10
 
+  # trust-manager — publishes the Vault CA as a ConfigMap (BackendTLSPolicy
+  # only accepts ConfigMap CA references). Needs cert-manager.
+- app: trust-manager
+  enabled: "false"
+  namespace: trust-manager
+  syncWave: 13
+
   # Kyverno — policy engine for secret distribution and security policies.
 - app: kyverno
   enabled: "false"
