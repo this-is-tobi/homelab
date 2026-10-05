@@ -4,12 +4,12 @@ dependencies:
   version: 0.9.5
 - name: valkey
   repository: oci://registry-1.docker.io/cloudpirates
-  version: 0.25.11
+  version: 0.25.13
 - name: cluster
   repository: https://cloudnative-pg.github.io/charts
   version: 0.9.0
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:f602ca8217269b36783d71f2e4a05c9088ce4e1662c7c7f47269dfd4e3d5aa02
-generated: "2026-10-02T02:09:58.512861724Z"
+digest: sha256:0150523c3c6749549f354ece5bd90f55839e8e78d8c3912a62339cc0dcfe57bd
+generated: "2026-10-05T15:13:33.050628245Z"
