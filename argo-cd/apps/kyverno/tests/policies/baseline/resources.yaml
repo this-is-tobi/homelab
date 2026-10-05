@@ -1,0 +1,389 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-clean
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-cap-net-bind
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      capabilities:
+        add:
+        - NET_BIND_SERVICE
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-seccomp
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  securityContext:
+    seccompProfile:
+      type: RuntimeDefault
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/a: runtime/default
+  name: good-apparmor-annotation
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-selinux
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      seLinuxOptions:
+        type: container_t
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-sysctl
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  securityContext:
+    sysctls:
+    - name: net.ipv4.ip_unprivileged_port_start
+      value: '0'
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: good-probe-no-host
+  namespace: demo
+spec:
+  containers:
+  - image: busybox
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-hostprocess
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      windowsOptions:
+        hostProcess: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-hostnet
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  hostNetwork: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-hostpid
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  hostPID: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-privileged
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-init-privileged
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  initContainers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-ephemeral-cap
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  ephemeralContainers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-cap
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      capabilities:
+        add:
+        - SYS_ADMIN
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-hostpath
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  volumes:
+  - hostPath:
+      path: /
+    name: h
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-hostport
+  namespace: demo
+spec:
+  containers:
+  - image: busybox
+    name: a
+    ports:
+    - containerPort: 80
+      hostPort: 80
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-apparmor-field
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      appArmorProfile:
+        type: Unconfined
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/a: unconfined
+  name: bad-apparmor-annotation
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-selinux-type
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      seLinuxOptions:
+        type: spc_t
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-selinux-user
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      seLinuxOptions:
+        user: system_u
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-procmount
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+    securityContext:
+      procMount: Unmasked
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-seccomp
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  securityContext:
+    seccompProfile:
+      type: Unconfined
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-sysctl
+  namespace: demo
+spec:
+  containers:
+  - image: busybox:1.37
+    name: a
+  securityContext:
+    sysctls:
+    - name: kernel.msgmax
+      value: '1'
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-probe-host
+  namespace: demo
+spec:
+  containers:
+  - image: busybox
+    livenessProbe:
+      httpGet:
+        host: 10.0.0.1
+        path: /
+        port: 80
+    name: a
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bad-lifecycle-host
+  namespace: demo
+spec:
+  containers:
+  - image: busybox
+    lifecycle:
+      preStop:
+        tcpSocket:
+          host: 10.0.0.1
+          port: 80
+    name: a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: good-deploy
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      a: b
+  template:
+    metadata:
+      annotations: {}
+      labels:
+        a: b
+    spec:
+      containers:
+      - image: busybox:1.37
+        name: a
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-deploy-privileged
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      a: b
+  template:
+    metadata:
+      annotations: {}
+      labels:
+        a: b
+    spec:
+      containers:
+      - image: busybox:1.37
+        name: a
+        securityContext:
+          privileged: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-deploy-apparmor
+  namespace: demo
+spec:
+  selector:
+    matchLabels:
+      a: b
+  template:
+    metadata:
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/a: unconfined
+      labels:
+        a: b
+    spec:
+      containers:
+      - image: busybox:1.37
+        name: a
