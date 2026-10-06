@@ -3,6 +3,28 @@
 
 vso:
   vaultStaticSecrets:
+    crowdsecDbAdmin:
+      mount: example
+      path: platforms/production/core/crowdsec
+    crowdsecDbApp:
+      mount: example
+      path: platforms/production/core/crowdsec
+    crowdsecPgBackup:
+      mount: example
+      path: platforms/production/core/crowdsec
+    crowdsecMattermostWebhook:
+      mount: example
+      path: platforms/production/core/crowdsec
+    crowdsecTraefikBouncerKey:
+      mount: example
+      path: platforms/production/core/crowdsec
     crowdsecConsole:
-      mount: "" # e.g. "homelab"
-      path: "" # e.g. "platforms/production/core/crowdsec"
+      mount: example
+      path: platforms/production/core/crowdsec
+
+# CloudNativePG backups of the CrowdSec database (S3-compatible object store).
+# Set your own endpoint and bucket, or disable them with `backups.enabled: false`.
+cnpg:
+  backups:
+    endpointURL: "https://s3.example.com"
+    destinationPath: "s3://example-backups/cnpg"

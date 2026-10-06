@@ -1,29 +1,33 @@
+# Exposed through Gateway API HTTPRoutes of the gateway app, no Ingress.
+gateway:
+  enabled: true
+  gatewayName: example-gateway
+  gatewayNamespace: kube-system
+  routes:
+  - name: rustfs
+    hostnames:
+    - console.s3.example.com
+    rules:
+    - backendService: rustfs-svc
+      backendPort: 9001
+  - name: rustfs-api
+    hostnames:
+    - s3.example.com
+    rules:
+    - backendService: rustfs-svc
+      backendPort: 9000
+
 rustfs:
   ingress:
-    hosts:
-    - host: s3.example.com
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: rustfs-tls
-      hosts:
-      - s3.example.com
-  consoleIngress:
-    hosts:
-    - host: console.s3.example.com
-      paths:
-      - path: /
-        pathType: Prefix
-    tls:
-    - secretName: rustfs-console-tls
-      hosts:
-      - console.s3.example.com
+    enabled: false
   dataPersistence:
     size: 250Gi
 
 vso:
   vaultStaticSecrets:
+    rustfsOidc:
+      mount: example
+      path: platforms/production/tenant/rustfs
     rustfsAdmin:
       mount: example
       path: platforms/production/tenant/rustfs

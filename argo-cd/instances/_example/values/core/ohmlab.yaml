@@ -61,7 +61,22 @@ argo-cd:
       #   clientID: "argo-cd-core"
       #   clientSecret: "$argocd-core-oidc:OIDC_CLIENT_SECRET"
       #   requestedScopes: ["openid", "profile", "email", "groups"]
+  # One replica of everything and no Redis HA, so the bootstrap works on a
+  # single node. The chart defaults are highly available (Redis HA with hard
+  # pod anti-affinity, two replicas of each component) and a bootstrap on one
+  # node never becomes ready: drop these overrides on three nodes or more.
+  redis-ha:
+    enabled: false
+  redis:
+    enabled: true
+  controller:
+    replicas: 1
+  repoServer:
+    replicas: 1
+  applicationSet:
+    replicas: 1
   server:
+    replicas: 1
     ingress:
       enabled: false
   crds:

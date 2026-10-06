@@ -144,6 +144,20 @@ The chart name is the entry's `chart` (default: the app name) and the values sti
 
 > **`syncWave` semantics**: on an AppSet-generated Application, the sync-wave annotation alone orders **nothing** — apps sync in parallel and converge by retry. To actually enforce the ordering, enable progressive sync (`progressiveSync.enabled: true` in the `instance-manager` chart values); it maps waves onto ApplicationSet `RollingSync` steps. Requires the alpha `ApplicationSetProgressiveSyncs` feature gate, which the `ohmlab` chart enables on the core ArgoCD.
 
+### What the apps expect from each other
+
+Waves are not enforced by default (see the `syncWave` semantics above), so an app whose chart ships objects of another app's CRDs fails its first sync and converges once that app is up. When you enable a subset, enable the providers first:
+
+| Needs                                                      | Provided by        | Used by                                                                                                                             |
+| ---------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Vault Secrets Operator CRDs (`secrets.hashicorp.com`)      | `vault-operator`   | Almost every chart: its secrets are `vso.vaultStaticSecrets` entries, each with the Vault KV `mount` and `path` to set per instance |
+| Prometheus Operator CRDs (`monitoring.coreos.com`)         | `prometheus-stack` | Charts that ship a ServiceMonitor, PodMonitor or PrometheusRule: switch their `monitoring` values off where you do not run it         |
+| Gateway API CRDs                                           | `./run.sh -b`      | The routes of the apps exposed through a gateway                                                                                    |
+
+Vault, delivered by the Vault Secrets Operator, is the only secret backend supported today. Other backends (External Secrets, ...) are planned: every chart declares its secrets in one place (`vso:`) so they can be swapped later.
+
+The `_example` values render for every chart (CI checks it) but only the Vault `mount` and `path` placeholders, hostnames and similar are yours to set. The bootstrap values of the example run Argo CD with one replica of each component and no Redis HA so that they work on a single node; the chart defaults are highly available (three nodes or more), so drop those overrides there.
+
 ### Secrets Management
 
 [Sops](https://github.com/getsops/sops) is used to encrypt sensitive values. These secrets are managed (encrypted/decrypted) using the wrapper script [run.sh](../run.sh) following the keys provided in [.sops.yaml](../.sops.yaml).

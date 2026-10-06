@@ -21,7 +21,7 @@ jobs:
     with:
       GROUPS: >-
         {"utils": ["utils/*"],
-        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*"],
+        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/render-example*"],
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
@@ -141,6 +141,8 @@ jobs:
           exit "$failures"
       - name: Test the instance-manager catalog sources
         run: scripts/ci/test-instance-manager.sh
+      - name: Render every chart with the example instance values
+        run: scripts/ci/render-example.sh
       - name: Check that Vault-managed Secrets carry only their own keys
         run: |
           scripts/ci/check-vso-isolation.test.sh

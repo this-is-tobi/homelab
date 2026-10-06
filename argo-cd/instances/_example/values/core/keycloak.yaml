@@ -4,7 +4,7 @@ keycloak:
     hostname: "https://keycloak.example.com"
   database:
     host: keycloak-pg-cluster-rw
-    port: 5432
+    port: "5432"
     name: keycloak
     existingSecret: keycloak-pg-cluster-app
     secretKeys:
@@ -34,6 +34,21 @@ cnpg:
 
 vso:
   vaultStaticSecrets:
+    clientArgoCdCore:
+      mount: example
+      path: platforms/production/core/keycloak
+    clientVaultCore:
+      mount: example
+      path: platforms/production/core/keycloak
+    clientLonghornCore:
+      mount: example
+      path: platforms/production/core/keycloak
+    clientHubbleCore:
+      mount: example
+      path: platforms/production/core/keycloak
+    clientRustfs:
+      mount: example
+      path: platforms/production/core/keycloak
     keycloakAdmin:
       mount: example
       path: platforms/production/core/keycloak
