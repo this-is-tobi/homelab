@@ -4,9 +4,10 @@ longhorn:
     host: longhorn.core.example.com
     tlsSecret: longhorn.core.example.com-tls
 
-# Vault Secrets Operator: the KV mount and path are placeholders, set your own.
+# Vault Secrets Operator: the KV mount is the one the vault-operator chart creates, the path is
+# the app's own under platforms/<environment>/<tier>/<app>.
 vso:
   vaultStaticSecrets:
     longhornSso:
-      mount: example
+      mount: homelab
       path: platforms/production/core/longhorn

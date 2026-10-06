@@ -51,20 +51,20 @@ cnpg:
 vso:
   vaultStaticSecrets:
     mattermostDbSecret:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mattermost
     mattermostS3:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mattermost
     mattermostDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mattermost
     mattermostDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mattermost
     mattermostDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mattermost
     mattermostPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mattermost

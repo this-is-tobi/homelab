@@ -50,11 +50,11 @@ argo-cd:
 vso:
   vaultStaticSecrets:
     argoCdAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/argo-cd
     argoCdConfig:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/argo-cd
     argoCdSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/argo-cd

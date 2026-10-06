@@ -30,23 +30,23 @@ cnpg:
 vso:
   vaultStaticSecrets:
     sonarqubeAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube
     sonarqubeProperties:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube
     sonarqubeDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube
     sonarqubeDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube
     sonarqubeDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube
     sonarqubePgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube
     sonarqubeSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/sonarqube

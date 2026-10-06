@@ -17,5 +17,5 @@ argo-workflows:
 vso:
   vaultStaticSecrets:
     argoWorkflowsSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/argo-workflows

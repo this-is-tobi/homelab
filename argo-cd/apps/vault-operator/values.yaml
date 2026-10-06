@@ -244,6 +244,21 @@ vault:
         path "homelab/data/platforms/+/+/prometheus-stack" {
           capabilities = ["read", "list"]
         }
+    - name: argo-workflows
+      rules: |
+        path "homelab/data/platforms/+/+/argo-workflows" {
+          capabilities = ["read", "list"]
+        }
+    - name: mlflow
+      rules: |
+        path "homelab/data/platforms/+/+/mlflow" {
+          capabilities = ["read", "list"]
+        }
+    - name: vaultwarden
+      rules: |
+        path "homelab/data/platforms/+/+/vaultwarden" {
+          capabilities = ["read", "list"]
+        }
     - name: sonarqube
       rules: |
         path "homelab/data/platforms/+/+/sonarqube" {
@@ -352,6 +367,21 @@ vault:
         bound_service_account_names: [vso]
         bound_service_account_namespaces: [prometheus-stack]
         policies: [prometheus-stack]
+        ttl: 1h
+      - name: argo-workflows
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [argo-workflows]
+        policies: [argo-workflows]
+        ttl: 1h
+      - name: mlflow
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [mlflow]
+        policies: [mlflow]
+        ttl: 1h
+      - name: vaultwarden
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [vaultwarden]
+        policies: [vaultwarden]
         ttl: 1h
       - name: sonarqube
         bound_service_account_names: [vso]

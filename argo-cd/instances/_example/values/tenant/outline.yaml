@@ -35,23 +35,23 @@ cnpg:
 vso:
   vaultStaticSecrets:
     outlineConfig:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline
     outlineS3:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline
     outlineValkeyAuth:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline
     outlineDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline
     outlineDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline
     outlinePgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline
     outlineSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/outline

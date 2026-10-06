@@ -41,20 +41,20 @@ kube-prometheus-stack:
 vso:
   vaultStaticSecrets:
     alertmanagerMattermost:
-      mount: example
+      mount: homelab
       path: platforms/production/core/prometheus-stack
     grafanaDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/core/prometheus-stack
     grafanaDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/core/prometheus-stack
     grafanaPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/core/prometheus-stack
     monitoringAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/core/prometheus-stack
     monitoringSso:
-      mount: example
+      mount: homelab
       path: platforms/production/core/prometheus-stack

@@ -79,23 +79,23 @@ cnpg:
 vso:
   vaultStaticSecrets:
     giteaValkeyAuth:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea
     giteaAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea
     giteaDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea
     giteaDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea
     giteaDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea
     giteaPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea
     giteaSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/gitea

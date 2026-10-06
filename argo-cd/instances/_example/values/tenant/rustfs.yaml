@@ -26,8 +26,8 @@ rustfs:
 vso:
   vaultStaticSecrets:
     rustfsOidc:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/rustfs
     rustfsAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/rustfs
