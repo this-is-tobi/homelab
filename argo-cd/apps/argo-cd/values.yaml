@@ -499,6 +499,7 @@ vso:
         create: true
         type: kubernetes.io/basic-auth
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -520,6 +521,7 @@ vso:
         labels:
           app.kubernetes.io/part-of: argocd
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -539,6 +541,7 @@ vso:
         labels:
           app.kubernetes.io/part-of: argocd
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
