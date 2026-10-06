@@ -5,6 +5,8 @@ arc-controller:
   serviceAccount:
     name: actions-runner-controller-sa
 
-arc-runner-tools: {}
+# One runner scale set per dependency alias of Chart.yaml; configure them in
+# the instance values (see argo-cd/instances/_example).
+runner-group-001: {}
 
-arc-runner-multiarch-mirror: {}
+runner-group-002: {}
