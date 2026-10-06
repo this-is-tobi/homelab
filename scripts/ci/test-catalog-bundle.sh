@@ -42,6 +42,13 @@ done
 ok "the bundle builds"
 mkdir "$work/bundle" && tar -xzf "$work/out/catalog.tar.gz" -C "$work/bundle" || { bad "the bundle extracts"; exit 1; }
 
+# The repository side of the comparison is a copy of the tracked files: rendering
+# the working tree would also render ignored local files (a plaintext secret).
+mkdir "$work/repo"
+git -C "$ROOT" ls-files -z -- argo-cd/apps argo-cd/instances/_example utils/helm \
+  | while IFS= read -r -d '' f; do [ -f "$ROOT/$f" ] && printf '%s\0' "$f"; done \
+  | (cd "$ROOT" && COPYFILE_DISABLE=1 tar --null -T - -cf -) | tar -xf - -C "$work/repo"
+
 # --- content ---------------------------------------------------------------
 tracked=$(git -C "$ROOT" ls-files -- argo-cd/apps argo-cd/instances/_example utils/helm | while IFS= read -r f; do [ -f "$ROOT/$f" ] && echo "$f"; done | sort)
 bundled=$(cd "$work/bundle" && find . -type f | sed 's|^\./||' | grep -v -E '/charts/[^/]+\.tgz$' | sort)
@@ -49,6 +56,7 @@ extra=$(comm -13 <(echo "$tracked") <(echo "$bundled"))
 missing=$(comm -23 <(echo "$tracked") <(echo "$bundled"))
 check "the bundle holds no file git does not track" "" "$extra"
 check "the bundle holds every tracked file" "" "$missing"
+check "the files of the bundle are the tracked files, byte for byte" "" "$(diff -rq -x charts "$work/repo" "$work/bundle")"
 check "a plaintext secret and a stale vendored chart are left out" "" "$(cd "$work/bundle" && find . -name 'zz-canary*')"
 
 # --- vendored dependencies -----------------------------------------------------
@@ -66,13 +74,6 @@ export HELM_REPOSITORY_CONFIG="$work/repositories.yaml"
 export HELM_REPOSITORY_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/ohmlab-catalog/helm"
 mkdir -p "$HELM_REPOSITORY_CACHE"
 add_dependency_repos "$ROOT"/argo-cd/apps/*/Chart.yaml "$ROOT/utils/helm/Chart.yaml"
-
-# The repository side of the comparison is a copy of the tracked files: rendering
-# the working tree would also render ignored local files (a plaintext secret).
-mkdir "$work/repo"
-git -C "$ROOT" ls-files -z -- argo-cd/apps argo-cd/instances/_example utils/helm \
-  | while IFS= read -r -d '' f; do [ -f "$ROOT/$f" ] && printf '%s\0' "$f"; done \
-  | (cd "$ROOT" && COPYFILE_DISABLE=1 tar --null -T - -cf -) | tar -xf - -C "$work/repo"
 
 # mask <file>: the lines of the render with the value of every key listed in
 # $work/volatile replaced, since a chart that generates random material changes
