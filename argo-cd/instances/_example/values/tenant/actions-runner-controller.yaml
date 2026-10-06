@@ -5,9 +5,6 @@ runner-group-001:
   runnerScaleSetName: example-001
   # The repository, organization or enterprise the runners register to.
   githubConfigUrl: https://github.com/example/example-001
-  # Secret (GitHub App or token) in the namespace, created by your secret
-  # backend; see the actions-runner-controller documentation for its keys.
-  githubConfigSecret: example-gh-app-secret
   minRunners: 1
   maxRunners: 4
   labels:
@@ -38,9 +35,6 @@ runner-group-002:
   runnerScaleSetName: example-002
   # The repository, organization or enterprise the runners register to.
   githubConfigUrl: https://github.com/example/example-002
-  # Secret (GitHub App or token) in the namespace, created by your secret
-  # backend; see the actions-runner-controller documentation for its keys.
-  githubConfigSecret: example-gh-app-secret
   minRunners: 1
   maxRunners: 4
   labels:
@@ -66,3 +60,9 @@ runner-group-002:
         image: ghcr.io/actions/actions-runner:2.337.0
         command:
         - /home/runner/run.sh
+
+vso:
+  vaultStaticSecrets:
+    githubApp:
+      mount: homelab
+      path: platforms/production/tenant/actions-runner-controller

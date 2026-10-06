@@ -3,7 +3,6 @@ arc-controller: {}
 runner-group-001:
   runnerScaleSetName: tools
   githubConfigUrl: https://github.com/this-is-tobi/tools
-  githubConfigSecret: this-is-tobi-gh-app-secret
   minRunners: 1
   maxRunners: 4
   labels:
@@ -33,7 +32,6 @@ runner-group-001:
 runner-group-002:
   runnerScaleSetName: multiarch-mirror
   githubConfigUrl: https://github.com/this-is-tobi/multiarch-mirror
-  githubConfigSecret: this-is-tobi-gh-app-secret
   minRunners: 1
   maxRunners: 4
   labels:
@@ -59,3 +57,9 @@ runner-group-002:
         image: ghcr.io/this-is-tobi/tools/gh-runner:1.5.0 # ghcr.io/actions/actions-runner:latest
         command:
         - /home/runner/run.sh
+
+vso:
+  vaultStaticSecrets:
+    githubApp:
+      mount: homelab
+      path: platforms/production/tenant/actions-runner-controller
