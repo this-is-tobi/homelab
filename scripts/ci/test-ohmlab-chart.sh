@@ -68,6 +68,17 @@ d=$(instance nover '- app: ohmlab
   catalog: ohmlab' "$catalogs")
 check "a catalog entry without a version is refused" "|1" "$(run "$d")"
 
+bundle='catalogs:
+  ohmlab:
+    repoURL: oci://ghcr.io/example/catalog
+    version: 0.2.0'
+d=$(instance bundlecat '- app: ohmlab
+  catalog: ohmlab
+  targetRevision: 0.1.3' "$bundle")
+check "a bundle catalog cannot give the bootstrap chart (helm installs a chart)" "|1" "$(run "$d")"
+msg=$("$SCRIPT" "$d" 2>&1 >/dev/null || true)
+check "the refusal says why" "ok" "$(grep -q 'registry path' <<<"$msg" && echo ok || echo no)"
+
 for v in latest 0.1 0.1.x '^0.1.0' '>=0.1.3' 'v0.1.3' main 0.1.3abc 1.2.3.4; do
   d=$(instance "ver-$RANDOM" "- app: ohmlab
   catalog: ohmlab
