@@ -141,6 +141,30 @@ jobs:
       PROVENANCE: true
       SIGN: true
 
+  # What an adopter's Argo CD would meet: an anonymous pull of the digest, the
+  # signature and provenance, and every chart rendering from the bundle alone.
+  # Re-run this job alone once a first-time package has been made public.
+  verify-catalog:
+    needs:
+      - release
+      - catalog
+      - attest-catalog
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4 # v2.0.2
+        with:
+          version: 1.3.4
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Verify the published catalog
+        env:
+          ARTIFACT: ${{ needs.catalog.outputs.image }}@${{ needs.catalog.outputs.digest }}
+          VERSION: ${{ fromJSON(needs.release.outputs.release-outputs)['argo-cd/apps--version'] }}
+        run: scripts/ci/verify-catalog.sh "$ARTIFACT" "$VERSION"
+
   # The ohmlab chart has its own version stream: a change under utils/helm
   # opens a bump PR, and merging it publishes (see chart-guard).
   chart-bump-level:
