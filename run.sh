@@ -427,8 +427,19 @@ bootstrap_instance() {
 
   log "Bootstrapping ohmlab for instance: $instance"
 
-  log "Updating chart dependencies..."
-  helm dependency update "$SCRIPT_PATH/utils/helm" >/dev/null
+  # The chart the self-managed `ohmlab` entry runs: the published chart at its
+  # pinned version when the entry has a `catalog`, the local chart otherwise.
+  local resolved chart_ref chart_version
+  resolved=$("$SCRIPT_PATH/scripts/ohmlab-chart.sh" "$instance_dir" "$SCRIPT_PATH/utils/helm") || exit 1
+  IFS=$'\t' read -r chart_ref chart_version <<<"$resolved"
+  local chart_args=("$chart_ref")
+  if [[ -n "$chart_version" ]]; then
+    chart_args+=(--version "$chart_version")
+    log "Using the published chart $chart_ref $chart_version"
+  else
+    log "Updating chart dependencies..."
+    helm dependency update "$chart_ref" >/dev/null
+  fi
 
   # Phase 1: If ArgoCD CRDs don't exist yet, install the chart with only
   # ArgoCD enabled (CRDs + core components). This solves the chicken-and-egg
@@ -439,7 +450,7 @@ bootstrap_instance() {
     # Gateway API CRDs first — the chart ships HTTPRoutes.
     ensure_gateway_api_crds
 
-    helm upgrade --install ohmlab "$SCRIPT_PATH/utils/helm" \
+    helm upgrade --install ohmlab "${chart_args[@]}" \
       --namespace argocd-system \
       --create-namespace \
       --values "$values_file" \
@@ -483,7 +494,7 @@ EOF
   # Phase 2: Full install/upgrade with all resources (AppProjects, root
   # Application, HTTPRoutes). CRDs are now present from phase 1 or prior run.
   log "Installing/upgrading ohmlab release..."
-  helm upgrade --install ohmlab "$SCRIPT_PATH/utils/helm" \
+  helm upgrade --install ohmlab "${chart_args[@]}" \
     --namespace argocd-system \
     --create-namespace \
     --values "$values_file" \
