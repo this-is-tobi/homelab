@@ -50,3 +50,17 @@ strategy:
         {{- end }}
 {{- end }}
 {{- end -}}
+
+{{/*
+ApplicationSet go-template expression (left for Argo CD to evaluate, not
+Helm) that maps an entry's `catalog` name to the registry URL declared in
+.Values.catalogs. An unknown name yields an empty string, so the Application
+has no repository and is invalid instead of silently falling back to git.
+*/}}
+{{- define "instance-manager.catalogLookup" -}}
+{{- $pairs := list -}}
+{{- range $name, $url := .Values.catalogs -}}
+{{- $pairs = append $pairs (printf "%q %q" $name $url) -}}
+{{- end -}}
+index (dict {{ join " " $pairs }}) .catalog | default ""
+{{- end -}}

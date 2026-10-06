@@ -21,6 +21,16 @@ repoURL: ""
 valuesRepoURL: ""
 targetRevision: main
 
+# Named Helm registries a catalogue entry can take its chart from, instead of
+# a path in `repoURL`: name -> registry path without a scheme (the chart
+# name is appended by Argo CD from the entry's `chart`, default the app).
+# An entry opts in with `catalog: <name>` and MUST pin an exact chart
+# version in `targetRevision`. The AppProject of the tier has to list the
+# same registry path in `sourceRepos`.
+#   catalogs:
+#     ohmlab: ghcr.io/example/ohmlab
+catalogs: {}
+
 projects:
   core: admin-core
   tenant: admin-tenant

@@ -58,9 +58,14 @@ spec:
       project: {{ $project | quote }}
       revisionHistoryLimit: 3
       sources:
-      - repoURL: {{ $repo | quote }}
-        path: '{{ `{{ default (printf "argo-cd/apps/%s" (default .app .chart)) .chartPath }}` }}'
-        targetRevision: '{{ printf "{{ default %q .targetRevision }}" $rev }}'
+      - repoURL: '{{ printf "{{ if .catalog }}{{ %s }}{{ else }}%s{{ end }}" (include "instance-manager.catalogLookup" .) $repo }}'
+        # A `catalog` entry is a Helm chart from a registry (chart + exact
+        # version); any other entry is a path in the git repository.
+        path: '{{ `{{ if not .catalog }}{{ default (printf "argo-cd/apps/%s" (default .app .chart)) .chartPath }}{{ end }}` }}'
+        chart: '{{ `{{ if .catalog }}{{ default .app .chart }}{{ end }}` }}'
+        # No default revision for a catalog entry: an unset version must not
+        # resolve to the newest chart, so it becomes an invalid constraint.
+        targetRevision: '{{ printf "{{ if .catalog }}{{ default \"catalog-version-required\" .targetRevision }}{{ else }}{{ default %q .targetRevision }}{{ end }}" $rev }}'
         helm:
           releaseName: '{{ `{{ default .app .releaseName }}` }}'
           valueFiles:
