@@ -27,6 +27,9 @@ chart=$(entry '.chart // .app')
 registry=$(CATALOG="$catalog" yq '.catalogs[strenv(CATALOG)] // ""' "$instance")
 
 [[ -n "$registry" ]] || die "catalog '$catalog' is not declared under catalogs in $instance"
+# A bundle ({repoURL, version}) is a tree for Argo CD, not a chart helm can install.
+[[ "$(CATALOG="$catalog" yq '.catalogs[strenv(CATALOG)] | tag' "$instance")" == "!!str" ]] \
+  || die "catalog '$catalog' is a bundle; the ohmlab chart needs a registry path (a string) under catalogs in $instance"
 # An exact version only: a range or a tag name would not be what the
 # self-managed Application runs, and a registry tag can be re-pushed.
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] \
