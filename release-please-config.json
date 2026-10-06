@@ -8,7 +8,10 @@
       "component": "utils",
       "package-name": "ohmlab",
       "changelog-path": "CHANGELOG.md",
-      "initial-version": "0.1.0"
+      "initial-version": "0.1.0",
+      "exclude-paths": [
+        "utils/helm"
+      ]
     }
   }
 }
