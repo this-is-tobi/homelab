@@ -277,6 +277,15 @@ ohmlab:
             endpoint: "https://s3.fr-par.scw.cloud"
             region: fr-par
             secretKey: ""
+    - path: homelab/platforms/production/tenant/actions-runner-controller
+      # GitHub App of the runner scale sets: set the three values by hand in
+      # Vault (they are not generated), VSO delivers them to the
+      # actions-runner-controller/github-app Secret.
+      data:
+        githubApp:
+          id: ""
+          installationId: ""
+          privateKey: ""
     - path: homelab/platforms/production/core/sops
       data:
         secret: "<age:secret>"
