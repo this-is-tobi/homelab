@@ -21,15 +21,28 @@ repoURL: ""
 valuesRepoURL: ""
 targetRevision: main
 
-# Named Helm registries a catalogue entry can take its chart from, instead of
-# a path in `repoURL`: name -> registry path without a scheme (the chart
-# name is appended by Argo CD from the entry's `chart`, default the app).
-# An entry opts in with `catalog: <name>` and MUST pin an exact chart
-# version in `targetRevision`. The AppProject of the tier has to list the
-# same registry path in `sourceRepos`.
+# Where the charts of the catalogue entries come from. `git` is the repository
+# of the instance itself (`repoURL` at `targetRevision`, the folder
+# argo-cd/apps/<chart>) and is what an entry gets when nothing else is set.
+# Named catalogs add other sources; an entry opts in with `catalog: <name>`:
+#   - a bundle, {repoURL, version}: a repository with the layout of this one,
+#     git or an `oci://` artifact of the whole catalog. Every entry of the
+#     catalog runs `version` unless it sets `targetRevision`.
+#   - a registry path (a string, no scheme): a Helm chart per app, the chart
+#     name taken from the entry's `chart` (default the app), at the exact
+#     version the entry pins in `targetRevision`.
+# The AppProject of the tier has to list the same repository in `sourceRepos`
+# (for a bundle with its scheme, for a registry path as written here).
 #   catalogs:
-#     ohmlab: ghcr.io/example/ohmlab
+#     ohmlab:
+#       repoURL: oci://ghcr.io/example/ohmlab/catalog
+#       version: 0.2.0
+#     charts: ghcr.io/example/charts
 catalogs: {}
+
+# The catalog of every entry that names none: a key of `catalogs`, or `git`
+# (empty means git). An entry opts out with `catalog: git`.
+defaultCatalog: ""
 
 projects:
   core: admin-core

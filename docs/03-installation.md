@@ -107,13 +107,38 @@ Per-app overrides supported in the JSON catalogues (all optional):
 | -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `chart`              | same as `app`                                            | Use a different chart directory under `argo-cd/apps/`.                     |
 | `chartPath`          | `argo-cd/apps/<chart>`                                   | Point at a chart **outside** `argo-cd/apps/` (e.g. self-managed `ohmlab`). |
-| `catalog`            | none (chart from the git repository)                     | Take the chart from a named Helm registry instead, see [Charts from a registry](#charts-from-a-registry). |
+| `catalog`            | `defaultCatalog`, else `git` (the repository of the instance) | Take the chart from another catalog, see [Catalogs](#catalogs) and [Charts from a registry](#charts-from-a-registry). |
 | `releaseName`        | same as `app`                                            | Adopt an existing helm release for self-management.                        |
 | `namespace`          | `<prefix><app><suffix>`                                  | Pin to an explicit namespace (e.g. `argocd-system`).                       |
 | `destination.server` | `instance.yaml.destination.server`                       | Target a different cluster (multi-cluster).                                |
 | `valuesPath`         | `argo-cd/instances/<instance>/values/<scope>/<app>.yaml` | Point to a non-conventional values file.                                   |
-| `targetRevision`     | `instance.yaml.targetRevision`                           | Pin app to a specific git revision, or to a chart version with `catalog`.  |
+| `targetRevision`     | the version of its catalog, else `instance.yaml.targetRevision` | Pin the app to a git revision, to another catalog version, or to a chart version with a registry catalog. |
 | `syncWave`           | required                                                 | ArgoCD sync ordering.                                                      |
+
+#### Catalogs
+
+Where the charts come from is the instance's choice, declared once in `instance.yaml`. Without any setting every chart is the folder `argo-cd/apps/<chart>` of `repoURL` at `targetRevision`, the catalog named `git`. A bundle catalog gives the same folder from another repository (git, or an `oci://` artifact holding the same layout) at one version, so an instance runs one tested set of charts and moves all of them by changing one line:
+
+```yaml
+# argo-cd/instances/<instance>/instance.yaml
+catalogs:
+  release:
+    repoURL: https://github.com/this-is-tobi/homelab.git
+    version: v0.1.0
+defaultCatalog: release # every entry without `catalog:` comes from it
+
+# argo-cd/instances/<instance>/core.yaml
+- app: gitea              # runs `release` at v0.1.0
+- app: kyverno
+  targetRevision: v0.0.9  # this app stays on an older version
+- app: my-own-app
+  catalog: git            # a chart of the instance repository, as without a default
+```
+
+- `catalogs.git` is reserved. `defaultCatalog` must be declared under `catalogs` (or be `git`), and a bundle needs a `repoURL`: the manager chart refuses to render otherwise, instead of Applications quietly coming from somewhere else.
+- A bundle without `version` leaves the revision to each entry's `targetRevision`; an entry with neither gets an invalid revision, so nothing resolves by accident. A catalog name that is not declared gives the Application no repository.
+- The AppProject of the tier must list the repository of every catalog in `sourceRepos`, spelled exactly like the catalog (with the `oci://` scheme for an artifact).
+- The `ohmlab` entry that `./run.sh -b` installs needs a registry catalog (below): helm installs a chart, not a bundle.
 
 #### Charts from a registry
 
