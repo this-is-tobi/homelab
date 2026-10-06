@@ -1,17 +1,22 @@
 arc-controller: {}
 
-arc-runner-tools:
-  runnerScaleSetName: tools
-  githubConfigUrl: "https://github.com/this-is-tobi/tools"
-  githubConfigSecret: this-is-tobi-gh-app-secret
+# Runner scale sets, keyed by the dependency aliases of the chart (runner-group-001 and runner-group-002).
+runner-group-001:
+  runnerScaleSetName: example-001
+  # The repository, organization or enterprise the runners register to.
+  githubConfigUrl: https://github.com/example/example-001
+  # Secret (GitHub App or token) in the namespace, created by your secret
+  # backend; see the actions-runner-controller documentation for its keys.
+  githubConfigSecret: example-gh-app-secret
   minRunners: 1
   maxRunners: 4
-  labels: {}
+  labels:
+    github-repo: example-001
   controllerServiceAccount:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
   containerMode:
-    type: dind # kubernetes
+    type: dind # dind or kubernetes
     # the following is required when containerMode.type=kubernetes
     kubernetesModeWorkVolumeClaim:
       accessModes:
@@ -24,22 +29,27 @@ arc-runner-tools:
     spec:
       containers:
       - name: runner
-        image: "ghcr.io/this-is-tobi/tools/gh-runner:1.5.0" # ghcr.io/actions/actions-runner:latest
+        # Pin a version: the Kyverno policy refuses the latest tag.
+        image: ghcr.io/actions/actions-runner:2.337.0
         command:
         - /home/runner/run.sh
 
-arc-runner-multiarch-mirror:
-  runnerScaleSetName: multiarch-mirror
-  githubConfigUrl: "https://github.com/this-is-tobi/multiarch-mirror"
-  githubConfigSecret: this-is-tobi-gh-app-secret
+runner-group-002:
+  runnerScaleSetName: example-002
+  # The repository, organization or enterprise the runners register to.
+  githubConfigUrl: https://github.com/example/example-002
+  # Secret (GitHub App or token) in the namespace, created by your secret
+  # backend; see the actions-runner-controller documentation for its keys.
+  githubConfigSecret: example-gh-app-secret
   minRunners: 1
   maxRunners: 4
-  labels: {}
+  labels:
+    github-repo: example-002
   controllerServiceAccount:
     namespace: actions-runner-controller
     name: actions-runner-controller-sa
   containerMode:
-    type: dind # kubernetes
+    type: dind # dind or kubernetes
     # the following is required when containerMode.type=kubernetes
     kubernetesModeWorkVolumeClaim:
       accessModes:
@@ -52,6 +62,7 @@ arc-runner-multiarch-mirror:
     spec:
       containers:
       - name: runner
-        image: "ghcr.io/this-is-tobi/tools/gh-runner:1.5.0" # ghcr.io/actions/actions-runner:latest
+        # Pin a version: the Kyverno policy refuses the latest tag.
+        image: ghcr.io/actions/actions-runner:2.337.0
         command:
         - /home/runner/run.sh
