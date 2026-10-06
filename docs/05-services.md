@@ -288,6 +288,8 @@ The main Kyverno policies guarding admissions (see
 | `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods unexpectedly is worse than a report               |
 | `verify-images`           | Enforce | this repo's images must be signed by its release workflow, with provenance naming this repo    |
 
+The same policies also exist as CEL `ValidatingPolicy` objects (`templates/cel/`), because Kyverno 1.20 removes `ClusterPolicy` and the legacy `PolicyException`. Until the cutover they run in Audit next to the legacy ones (`policies.shadow`), so every report and metric exists for both generations (report `source` is `kyverno` for the legacy ones and `KyvernoValidatingPolicy` for the CEL ones) and nothing is enforced differently. The CEL policies scope themselves inside their expressions instead of with a namespace selector: each policy with its own selector gets its own Kyverno webhook, which costs one more admission call per pod and policy.
+
 Actions are configurable per instance via `policies.<name>.failureAction` in
 the kyverno app values. Exceptions are GitOps-managed: the kyverno
 `PolicyException` feature is enabled but restricted to the `kyverno`
