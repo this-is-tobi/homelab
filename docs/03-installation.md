@@ -192,6 +192,8 @@ This installs the `ohmlab` Helm release in the `argocd-system` namespace, which 
 - The root `manager` ApplicationSet (discovers every instance under `argo-cd/instances/*`).
 - The `admin-core` and `admin-tenant` AppProjects.
 
+The chart is the local [./utils/helm](../utils/helm), unless the `ohmlab` entry of the instance's `core.yaml` has a `catalog` (see [Charts from a registry](#charts-from-a-registry)): then the published chart at the exact version pinned there is installed, which is the chart the self-managed Application runs afterwards. A `catalog` that is not declared in `instance.yaml`, or a version that is not exact, stops the script before it touches the cluster.
+
 The root manager then renders one `instance-<name>` Application per discovered folder. That Application points at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart, which produces two child ApplicationSets (`core-<name>` and `tenant-<name>`). The first sync wave (-10) reconciles `ohmlab` itself onto its chart — from git by default, or from a pinned registry version with `catalog` (see [Charts from a registry](#charts-from-a-registry)) — and the bootstrap release is then **self-managed**.
 
 ```mermaid

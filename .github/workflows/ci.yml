@@ -39,6 +39,8 @@ jobs:
         run: scripts/ci/chart-bump-level.test.sh
       - name: Test the dashboard coverage tool
         run: scripts/dashboard-coverage.test.sh
+      - name: Test the bootstrap chart resolver
+        run: scripts/ci/test-ohmlab-chart.sh
 
   # actionlint cannot see remote reusable workflows: a caller granting less
   # than a called job declares only fails on main, as a startup failure.
