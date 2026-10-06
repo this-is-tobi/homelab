@@ -27,3 +27,10 @@ gateway:
   tlsPassthroughListeners: []
   # - name: tls-teleport
   #   hostname: "*.teleport.core.example.com"
+
+# Vault Secrets Operator: the KV mount and path are placeholders, set your own.
+vso:
+  vaultStaticSecrets:
+    traefikCrowdsecBouncerKey:
+      mount: example
+      path: platforms/production/core/traefik

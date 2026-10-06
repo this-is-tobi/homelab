@@ -3,3 +3,10 @@ longhorn:
     enabled: true
     host: longhorn.core.example.com
     tlsSecret: longhorn.core.example.com-tls
+
+# Vault Secrets Operator: the KV mount and path are placeholders, set your own.
+vso:
+  vaultStaticSecrets:
+    longhornSso:
+      mount: example
+      path: platforms/production/core/longhorn

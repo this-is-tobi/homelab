@@ -50,6 +50,9 @@ cnpg:
 
 vso:
   vaultStaticSecrets:
+    mattermostDbSecret:
+      mount: example
+      path: platforms/production/tenant/mattermost
     mattermostS3:
       mount: example
       path: platforms/production/tenant/mattermost

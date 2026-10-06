@@ -30,8 +30,8 @@ etcd:
 vso:
   vaultStaticSecrets:
     apisixAdmin:
-      mount: ""
-      path: ""
+      mount: example
+      path: platforms/production/core/apisix
 
 gateway:
   enabled: true

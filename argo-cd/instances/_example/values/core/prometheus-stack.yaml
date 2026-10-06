@@ -40,6 +40,18 @@ kube-prometheus-stack:
 
 vso:
   vaultStaticSecrets:
+    alertmanagerMattermost:
+      mount: example
+      path: platforms/production/core/prometheus-stack
+    grafanaDbAdmin:
+      mount: example
+      path: platforms/production/core/prometheus-stack
+    grafanaDbApp:
+      mount: example
+      path: platforms/production/core/prometheus-stack
+    grafanaPgBackup:
+      mount: example
+      path: platforms/production/core/prometheus-stack
     monitoringAdmin:
       mount: example
       path: platforms/production/core/prometheus-stack
