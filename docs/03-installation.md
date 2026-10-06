@@ -158,6 +158,8 @@ The chart name is the entry's `chart` (default: the app name) and the values sti
 >
 > *During setup, every password, token and so on are randomly generated and stored into Vault secrets.*
 
+Each `vso.vaultStaticSecrets` entry copies only what its consumer needs into its Kubernetes Secret: its `destination.transformation` sets `excludeRaw: true` and `excludes: [".*"]` and lists the keys to build under `templates`. Without that, the Vault Secrets Operator also writes the whole Vault path (as `_raw`) into the Secret, so a pod that mounts one Secret of an app would receive every credential of that app, such as the database superuser. CI refuses an entry that leaves them out (`scripts/ci/check-vso-isolation.sh`).
+
 ## Deploy
 
 ### Infrastructure

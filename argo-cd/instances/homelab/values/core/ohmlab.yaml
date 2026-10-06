@@ -232,6 +232,7 @@ vso:
         labels:
           app.kubernetes.io/part-of: argocd
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:

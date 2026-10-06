@@ -65,6 +65,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:

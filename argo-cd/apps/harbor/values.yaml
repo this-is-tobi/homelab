@@ -175,6 +175,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -194,6 +195,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -211,6 +213,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -238,6 +241,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -259,6 +263,7 @@ vso:
         create: true
         type: kubernetes.io/basic-auth
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -278,6 +283,7 @@ vso:
         create: true
         type: kubernetes.io/basic-auth
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -297,6 +303,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
@@ -324,6 +331,7 @@ vso:
         create: true
         type: Opaque
         transformation:
+          excludeRaw: true
           excludes:
           - ".*"
           templates:
