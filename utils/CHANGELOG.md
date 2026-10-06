@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.0](https://github.com/this-is-tobi/homelab/compare/v0.1.0...v0.2.0) (2026-10-06)
+
+
+### Features
+
+* **trust-manager:** publish the Vault CA as a ConfigMap ([74423ca](https://github.com/this-is-tobi/homelab/commit/74423ca995e400537bc5234ab9616026bedde74b))
+* **vault:** read the Vault CA from the bank-vaults copy in every namespace ([4285100](https://github.com/this-is-tobi/homelab/commit/4285100e319102a8550377b43044bd684f10044a))
+
 ## 0.1.0 (2026-10-03)
 
 
