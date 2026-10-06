@@ -26,8 +26,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Opens or updates the release PR for utils/. Nothing below publishes the
-  # CLI until that PR is merged.
+  # Opens or updates one release PR per package: utils/ (the CLI) and
+  # argo-cd/apps (the catalog bundle). Nothing below publishes anything until
+  # its PR is merged, and each job below runs only for its own package
+  # (scripts/ci/check-release-gating.sh).
   release:
     uses: this-is-tobi/github-workflows/.github/workflows/release-app.yml@v0
     permissions:
@@ -44,7 +46,7 @@ jobs:
   # `latest` moves with releases only, never with an unreleased main.
   image:
     needs: release
-    if: ${{ needs.release.outputs.releases-created == 'true' }}
+    if: ${{ contains(fromJSON(needs.release.outputs.paths-released), 'utils') }}
     uses: this-is-tobi/github-workflows/.github/workflows/build-docker.yml@v0
     permissions:
       contents: read
@@ -78,7 +80,7 @@ jobs:
 
   binaries:
     needs: release
-    if: ${{ needs.release.outputs.releases-created == 'true' }}
+    if: ${{ contains(fromJSON(needs.release.outputs.paths-released), 'utils') }}
     uses: this-is-tobi/github-workflows/.github/workflows/release-go.yml@v0
     # release-go declares packages: write for configurations that push images;
     # GitHub refuses to start the run if the caller grants less, even though
@@ -106,6 +108,37 @@ jobs:
       WORKING_DIRECTORY: utils
       PROVENANCE: true
       SBOM: true
+      SIGN: true
+
+  # The catalog bundle: every chart of argo-cd/apps with its dependencies
+  # vendored, plus the example instance and the bootstrap chart, as one OCI
+  # artifact that an instance pins by version (docs/03-installation.md).
+  catalog:
+    needs: release
+    if: ${{ contains(fromJSON(needs.release.outputs.paths-released), 'argo-cd/apps') }}
+    uses: this-is-tobi/github-workflows/.github/workflows/build-oci-artifact.yml@v0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      ARTIFACT_NAME: ghcr.io/this-is-tobi/homelab/catalog
+      ARTIFACT_TAG: ${{ fromJSON(needs.release.outputs.release-outputs)['argo-cd/apps--version'] }}
+      ARTIFACT_TYPE: application/vnd.ohmlab.catalog.v1
+      BUILD_COMMAND: scripts/build-catalog.sh dist
+      ARTIFACT_FILE: dist/catalog.tar.gz
+      SETUP_HELM: true
+
+  attest-catalog:
+    needs: catalog
+    uses: this-is-tobi/github-workflows/.github/workflows/attest-docker.yml@v0
+    permissions:
+      packages: write
+      id-token: write
+      attestations: write
+    with:
+      IMAGE_NAME: ${{ needs.catalog.outputs.image }}
+      DIGEST: ${{ needs.catalog.outputs.digest }}
+      PROVENANCE: true
       SIGN: true
 
   # The ohmlab chart has its own version stream: a change under utils/helm
