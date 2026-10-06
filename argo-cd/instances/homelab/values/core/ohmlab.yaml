@@ -73,6 +73,12 @@ projects:
   core:
     enabled: true
     name: admin-core
+    # The chart default lists only the git repository. The registry holds the
+    # published ohmlab chart (`catalogs` in instance.yaml); it has to be
+    # allowed before an app takes its chart from there.
+    sourceRepos:
+    - "https://github.com/this-is-tobi/homelab.git"
+    - "ghcr.io/this-is-tobi/homelab"
   tenant:
     enabled: true
     name: admin-tenant
