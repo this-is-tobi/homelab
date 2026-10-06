@@ -13,9 +13,21 @@ GATE_CATALOG="\${{ contains(fromJSON(needs.release.outputs.paths-released), 'arg
 VERSION_UTILS="\${{ fromJSON(needs.release.outputs.release-outputs)['utils--version'] }}"
 VERSION_CATALOG="\${{ fromJSON(needs.release.outputs.release-outputs)['argo-cd/apps--version'] }}"
 
-config() { # config <path>...
+# config <path>... -> the packages of a config; argo-cd/apps is released as
+# `simple`, with the version file that type updates
+config() {
   local p out='' sep=''
-  for p in "$@"; do out="$out$sep\"$p\": {}"; sep=','; done
+  rm -rf "$dir/argo-cd"
+  for p in "$@"; do
+    if [ "$p" = argo-cd/apps ]; then
+      out="$out$sep\"$p\": {\"release-type\": \"simple\"}"
+      mkdir -p "$dir/$p"
+      echo 0.0.0 >"$dir/$p/version.txt"
+    else
+      out="$out$sep\"$p\": {\"release-type\": \"go\"}"
+    fi
+    sep=','
+  done
   printf '{"packages": {%s}}\n' "$out" >"$dir/config.json"
 }
 
@@ -132,5 +144,21 @@ has "the finding names the package" "gated on the release of 'argo-cd/apps'"
 config utils
 workflow "$utils_image" "$utils_binaries"
 check "a single package is enough" 0
+
+# release-please only updates a version.txt that exists: a package released as
+# `simple` without one gets a release PR with a changelog and no version file.
+config utils argo-cd/apps
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "$catalog_build" "$catalog_attest"
+rm "$dir/argo-cd/apps/version.txt"
+check "a simple package without its version file is refused" 1
+has "the finding names the file" "argo-cd/apps/version.txt"
+
+config utils argo-cd/apps
+jq '.packages["argo-cd/apps"]["version-file"] = "VERSION"' "$dir/config.json" >"$dir/config.next" && mv "$dir/config.next" "$dir/config.json"
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "$catalog_build" "$catalog_attest"
+check "a version file named by version-file is the one that must exist" 1
+has "the finding names the configured file" "argo-cd/apps/VERSION"
+echo 0.0.0 >"$dir/argo-cd/apps/VERSION"
+check "the configured version file is enough" 0
 
 exit "$fail"
