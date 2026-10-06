@@ -25,7 +25,7 @@ jobs:
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
-        "ci": [".github/*", "release-please-config.json"]}
+        "ci": [".github/*", "release-please-config.json", "renovate.json"]}
 
   shellcheck:
     needs: classify
@@ -43,6 +43,10 @@ jobs:
         run: scripts/ci/test-ohmlab-chart.sh
       - name: Test the release gating check
         run: scripts/ci/check-release-gating.test.sh
+      - name: Test the catalog verification used by cd.yml
+        run: scripts/ci/verify-catalog.test.sh
+      - name: Test the Renovate catalog manager
+        run: scripts/ci/test-renovate-managers.sh
 
   # actionlint cannot see remote reusable workflows: a caller granting less
   # than a called job declares only fails on main, as a startup failure.
