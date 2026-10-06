@@ -51,6 +51,14 @@ valuesRepoURL: ""
 
 targetRevision: main
 
+# Optional: named Helm registries a catalogue entry can take its chart from
+# (`catalog: <name>` + an exact chart version in `targetRevision` in
+# core.yaml / tenant.yaml) instead of a path in `repoURL`. The value is a
+# registry path without a scheme, and the AppProject of the tier must list
+# the same string in `sourceRepos` (see values/core/ohmlab.yaml).
+# catalogs:
+#   ohmlab: ghcr.io/this-is-tobi/homelab
+
 # AppProject bindings for the two child AppSets. Both projects are created by
 # the `ohmlab` chart at bootstrap time.
 projects:
