@@ -1,6 +1,7 @@
 {{- if .Values.scopes.core.enabled }}
 {{- $instance := required ".Values.instance.name is required" .Values.instance.name -}}
 {{- $repo := required ".Values.repoURL is required" .Values.repoURL -}}
+{{- include "instance-manager.validateCatalogs" . -}}
 {{- $valuesRepo := include "instance-manager.valuesRepo" . | trim -}}
 {{- $rev := .Values.targetRevision | default "main" -}}
 {{- $defaultServer := .Values.destination.server | default "https://kubernetes.default.svc" -}}
@@ -64,14 +65,16 @@ spec:
       project: {{ $project | quote }}
       revisionHistoryLimit: 3
       sources:
-      - repoURL: '{{ printf "{{ if .catalog }}{{ %s }}{{ else }}%s{{ end }}" (include "instance-manager.catalogLookup" .) $repo }}'
-        # A `catalog` entry is a Helm chart from a registry (chart + exact
-        # version); any other entry is a path in the git repository.
-        path: '{{ `{{ if not .catalog }}{{ default (printf "argo-cd/apps/%s" (default .app .chart)) .chartPath }}{{ end }}` }}'
-        chart: '{{ `{{ if .catalog }}{{ default .app .chart }}{{ end }}` }}'
-        # No default revision for a catalog entry: an unset version must not
-        # resolve to the newest chart, so it becomes an invalid constraint.
-        targetRevision: '{{ printf "{{ if .catalog }}{{ default \"catalog-version-required\" .targetRevision }}{{ else }}{{ default %q .targetRevision }}{{ end }}" $rev }}'
+      - repoURL: '{{ printf "{{ %s }}" (include "instance-manager.catalogRepoURL" .) }}'
+        # A registry catalog is a Helm chart (chart + exact version); every
+        # other catalog, `git` included, is a folder with the layout of this
+        # repository.
+        path: '{{ printf "{{ if not (has %s (list %s)) }}{{ default (printf \"argo-cd/apps/%%s\" (default .app .chart)) .chartPath }}{{ end }}" (include "instance-manager.catalogName" .) (include "instance-manager.chartCatalogs" .) }}'
+        chart: '{{ printf "{{ if has %s (list %s) }}{{ default .app .chart }}{{ end }}" (include "instance-manager.catalogName" .) (include "instance-manager.chartCatalogs" .) }}'
+        # No default revision for a registry catalog or a bundle without
+        # version: an unset version must not resolve to the newest one, so it
+        # becomes an invalid constraint.
+        targetRevision: '{{ printf "{{ default (%s) .targetRevision }}" (include "instance-manager.catalogRevision" .) }}'
         helm:
           releaseName: '{{ `{{ default .app .releaseName }}` }}'
           valueFiles:
