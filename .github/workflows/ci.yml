@@ -25,7 +25,7 @@ jobs:
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
-        "ci": [".github/*"]}
+        "ci": [".github/*", "release-please-config.json"]}
 
   shellcheck:
     needs: classify
@@ -41,6 +41,8 @@ jobs:
         run: scripts/dashboard-coverage.test.sh
       - name: Test the bootstrap chart resolver
         run: scripts/ci/test-ohmlab-chart.sh
+      - name: Test the release gating check
+        run: scripts/ci/check-release-gating.test.sh
 
   # actionlint cannot see remote reusable workflows: a caller granting less
   # than a called job declares only fails on main, as a startup failure.
@@ -54,6 +56,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: scripts/ci/check-reusable-permissions.sh .github/workflows/*.yml
+      - name: Check that a package release only runs its own jobs
+        run: scripts/ci/check-release-gating.sh
 
   ansible-lint:
     needs: classify
