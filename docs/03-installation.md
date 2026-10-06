@@ -139,6 +139,7 @@ defaultCatalog: release # every entry without `catalog:` comes from it
 - A bundle without `version` leaves the revision to each entry's `targetRevision`; an entry with neither gets an invalid revision, so nothing resolves by accident. A catalog name that is not declared gives the Application no repository.
 - The AppProject of the tier must list the repository of every catalog in `sourceRepos`, spelled exactly like the catalog (with the `oci://` scheme for an artifact).
 - The `ohmlab` entry that `./run.sh -b` installs needs a registry catalog (below): helm installs a chart, not a bundle.
+- `scripts/build-catalog.sh <dir>` builds the bundle from a checkout, for a fork or a local test: one `catalog.tar.gz` with the charts of `argo-cd/apps` and their dependencies vendored (so Argo CD needs no access to any upstream chart repository), the `ohmlab` chart and the example instance, from the files git tracks only. Push it as a single-layer OCI artifact (`crane append --oci-empty-base -f catalog.tar.gz -t <registry>/<repo>:<version>`) and declare that repository as a catalog.
 
 #### Charts from a registry
 

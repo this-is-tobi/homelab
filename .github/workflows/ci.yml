@@ -21,7 +21,7 @@ jobs:
     with:
       GROUPS: >-
         {"utils": ["utils/*"],
-        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/check-vault-access*", "scripts/ci/render-example*"],
+        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/check-vault-access*", "scripts/ci/render-example*", "scripts/build-catalog*", "scripts/lib/*", "scripts/ci/test-catalog-bundle*"],
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Run shellcheck
-        run: shellcheck -S warning run.sh scripts/*.sh scripts/ci/*.sh
+        run: shellcheck -S warning run.sh scripts/*.sh scripts/ci/*.sh scripts/lib/*.sh
       - name: Test the chart bump decision used by cd.yml
         run: scripts/ci/chart-bump-level.test.sh
       - name: Test the dashboard coverage tool
@@ -188,6 +188,19 @@ jobs:
       - name: Unit-test the CEL policies
         run: scripts/ci/test-kyverno-policies.sh
 
+  # The catalog bundle is built from the tracked files only, then every chart is
+  # rendered from it and from the repository and compared. It builds every
+  # chart's dependencies, so it runs next to the helm job instead of in it.
+  catalog:
+    needs: classify
+    if: ${{ fromJSON(needs.classify.outputs.groups).charts || fromJSON(needs.classify.outputs.groups).ci }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - name: Build the catalog bundle and compare it with the repository
+        run: scripts/ci/test-catalog-bundle.sh
+
   sonarqube-plugins:
     needs: classify
     if: ${{ fromJSON(needs.classify.outputs.groups).sonarqube || fromJSON(needs.classify.outputs.groups).ci }}
@@ -322,6 +335,7 @@ jobs:
       - shellcheck
       - ansible-lint
       - helm
+      - catalog
       - sonarqube-plugins
       - lint-go
       - test-go
