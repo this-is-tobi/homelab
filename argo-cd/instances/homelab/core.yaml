@@ -86,9 +86,6 @@ apps:
 - app: cloudnative-pg
   enabled: "true"
   syncWave: 20
-- app: sops
-  enabled: "true"
-  syncWave: 20
 - app: prometheus-stack
   enabled: "true"
   syncWave: 50

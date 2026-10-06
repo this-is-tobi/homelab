@@ -286,10 +286,6 @@ ohmlab:
           id: ""
           installationId: ""
           privateKey: ""
-    - path: homelab/platforms/production/core/sops
-      data:
-        secret: "<age:secret>"
-        public: "<age:public>"
     - path: homelab/platforms/production/core/apisix
       # APISIX admin API credentials — delivered by VSO into apisix/apisix-admin.
       # Rotation: change here is NOT enough — the apisix pods read the key via

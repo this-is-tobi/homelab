@@ -11,11 +11,11 @@ The installation is performed in two phases:
 
 Following tools need to be installed on the computer running the deployment:
 - [ansible](https://ansible.com) *- infrastructure as code software tools.*
-- [age](https://github.com/FiloSottile/age) *- simple, modern and secure encryption tool.*
+- [age](https://github.com/FiloSottile/age) *- simple, modern and secure encryption tool (only for the optional Sops secrets).*
 - [helm](https://helm.sh/) *- Kubernetes package manager.*
 - [htpasswd](https://httpd.apache.org/docs/current/programs/htpasswd.html) *- bcrypt password hashing (apache2-utils on Linux, ships with macOS).*
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/) *- Kubernetes command-line tool.*
-- [sops](https://github.com/getsops/sops) *- simple and flexible tool for managing secrets.*
+- [sops](https://github.com/getsops/sops) *- simple and flexible tool for managing secrets (only for the optional Sops secrets).*
 - [sshpass](https://sourceforge.net/projects/sshpass) *- non-interactive ssh password auth.*
 - [yq](https://github.com/mikefarah/yq) *- portable command-line YAML, JSON, XML, CSV, TOML and properties processor.*
 
@@ -160,19 +160,36 @@ The `_example` values render for every chart (CI checks it) but only the Vault `
 
 ### Secrets Management
 
-[Sops](https://github.com/getsops/sops) is used to encrypt sensitive values. These secrets are managed (encrypted/decrypted) using the wrapper script [run.sh](../run.sh) following the keys provided in [.sops.yaml](../.sops.yaml).
-
-> *__Notes:__*
->
-> *__Update the Sops keys in `.sops.yaml` with your own__: the first `age` entry must be the public key of the age keypair used by the in-cluster sops-secrets-operator (so the cluster can decrypt), and the PGP entry (or additional age entries) should be your own operator keys for local editing. The keys committed in this repo belong to this repo's own cluster — replace both.*
->
-> *Decrypt secrets by running `./run.sh -d` and encrypt secrets by running `./run.sh -e`, do not forget to re-encrypt secrets when changes are made.*
-
-> __*Notes*__:
->
-> *During setup, every password, token and so on are randomly generated and stored into Vault secrets.*
+Secrets live in Vault, delivered by the Vault Secrets Operator (see [Secrets](05-services.md#secrets)). During setup every password, token and so on that can be generated is randomly generated and stored in Vault; the credentials that cannot be generated (a GitHub App, a webhook URL, S3 keys) are declared as empty placeholders and set by hand. Nothing secret is committed.
 
 Each `vso.vaultStaticSecrets` entry copies only what its consumer needs into its Kubernetes Secret: its `destination.transformation` sets `excludeRaw: true` and `excludes: [".*"]` and lists the keys to build under `templates`. Without that, the Vault Secrets Operator also writes the whole Vault path (as `_raw`) into the Secret, so a pod that mounts one Secret of an app would receive every credential of that app, such as the database superuser. CI refuses an entry that leaves them out (`scripts/ci/check-vso-isolation.sh`).
+
+#### Optional: Sops-encrypted manifests
+
+The `sops` app ([sops-secrets-operator](https://github.com/isindir/sops-secrets-operator)) and the `./run.sh -d` / `-e` helpers are there for instances that prefer to commit encrypted Kubernetes manifests (a `SopsSecret` in the `templates/` of a chart) next to their values. This repository's own instance does not use them. Prefer Vault where you can: the operator creates Secrets in any namespace, so it holds a cluster-wide permission on Secrets.
+
+1. Have the post-config job generate the age key pair in Vault, by adding this entry to `ohmlab.vault.secrets` in the `vault-operator` values, then enable the `sops` app in `core.yaml` (the example values of the app point at that path).
+
+   ```yaml
+   - path: homelab/platforms/production/core/sops
+     data:
+       secret: "<age:secret>"
+       public: "<age:public>"
+   ```
+
+2. Create `.sops.yaml` at the root of the repository. The first `age` entry is the `public` key generated above, so the cluster can decrypt; add your own keys (age or PGP) so you can edit locally.
+
+   ```yaml
+   creation_rules:
+   - path_regex: \.yaml$
+     encrypted_regex: ^(data|stringData)$
+     key_groups:
+     - age:
+       - <public key of the cluster>
+       - <your own public key>
+   ```
+
+3. Write the manifests as `*.dec.yaml` (git-ignored) under `argo-cd/`, encrypt them with `./run.sh -e` and commit the `*.enc.yaml` files; `./run.sh -d` decrypts them back for editing.
 
 ## Deploy
 
@@ -505,7 +522,7 @@ Apps are reconciled in `syncWave` order. Default ordering for the homelab instan
 | 11   | core   | `traefik`                                |
 | 13   | core   | `trust-manager`                          |
 | 15   | core   | `kyverno`                                |
-| 20   | core   | `cloudnative-pg`, `sops`                 |
+| 20   | core   | `cloudnative-pg`                         |
 | 50   | core   | `prometheus-stack`                       |
 | 55   | core   | `keycloak`                               |
 | 60   | core   | `crowdsec`, `system-upgrade`, `teleport` |

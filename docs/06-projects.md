@@ -209,5 +209,5 @@ yq e '.' argo-cd/instances/homelab/tenant.yaml >/dev/null
 - One commit per logical change (Conventional Commits format).
 - Helm chart bumps go in the chart's `Chart.yaml` (subchart deps + parent version).
 - Per-app values changes go in `argo-cd/instances/<instance>/values/<tier>/<app>.yaml` — never in the chart's own `values.yaml` (which holds defaults only).
-- Secrets are never committed in plaintext; use [Sops](https://github.com/getsops/sops) (`./run.sh -e`).
+- Secrets are never committed in plaintext: they live in Vault (see [Secrets](05-services.md#secrets)).
 - Mermaid is the only diagram format used in docs.
