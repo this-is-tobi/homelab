@@ -8,7 +8,10 @@ apps:
   namespace: argocd-system
   syncWave: -10
   releaseName: ohmlab
-  chartPath: utils/helm
+  # Pinned published chart: a change under utils/helm only reaches the
+  # cluster once its version is released and bumped here.
+  catalog: ohmlab
+  targetRevision: 0.1.3
 - app: longhorn
   enabled: "true"
   namespace: longhorn-system

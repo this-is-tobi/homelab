@@ -190,7 +190,7 @@ This installs the `ohmlab` Helm release in the `argocd-system` namespace, which 
 - The root `manager` ApplicationSet (discovers every instance under `argo-cd/instances/*`).
 - The `admin-core` and `admin-tenant` AppProjects.
 
-The root manager then renders one `instance-<name>` Application per discovered folder. That Application points at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart, which produces two child ApplicationSets (`core-<name>` and `tenant-<name>`). The first sync wave (-10) reconciles `ohmlab` itself onto the chart in git — the bootstrap release is then **self-managed**.
+The root manager then renders one `instance-<name>` Application per discovered folder. That Application points at the [./argo-cd/apps/instance-manager](../argo-cd/apps/instance-manager) chart, which produces two child ApplicationSets (`core-<name>` and `tenant-<name>`). The first sync wave (-10) reconciles `ohmlab` itself onto its chart — from git by default, or from a pinned registry version with `catalog` (see [Charts from a registry](#charts-from-a-registry)) — and the bootstrap release is then **self-managed**.
 
 ```mermaid
 sequenceDiagram
