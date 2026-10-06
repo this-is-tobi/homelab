@@ -250,6 +250,13 @@ Each app also gets a dedicated least-privilege Vault policy
 bound to the `vso` ServiceAccount **in the app's own namespace** — a role
 bound to the wrong namespace fails with `403 namespace not authorized`.
 
+Values that cannot be generated are declared as empty placeholders under `ohmlab.vault.secrets` and set by hand in Vault; the post-config job keeps what is already there unless `forceRotate` is on. The GitHub App of the runner scale sets is one: put its `id`, `installationId` and `privateKey` (the PEM) in a JSON file and patch them in, so the key never lands in the shell history, then delete the file. VSO builds the `github-app` Secret that every scale set references from them.
+
+```sh
+vault kv patch -mount=homelab platforms/production/tenant/actions-runner-controller - < github-app.json
+# {"githubApp": {"id": "...", "installationId": "...", "privateKey": "-----BEGIN RSA PRIVATE KEY-----\n..."}}
+```
+
 #### Multi-cluster (spoke clusters)
 
 Everything above assumes VSO and Vault live in the same cluster — the default, and what every instance in this repo runs today. Vault can additionally act as a **hub** that separate Kubernetes clusters pull their own secrets from, via `vault.externalConfig.spokeClusters` in [argo-cd/apps/vault-operator/values.yaml](../argo-cd/apps/vault-operator/values.yaml) (shape documented, commented out, in [argo-cd/instances/_example/values/core/vault-operator.yaml](../argo-cd/instances/_example/values/core/vault-operator.yaml)). Not enabled on any instance in this repo; nothing changes until an instance sets it.

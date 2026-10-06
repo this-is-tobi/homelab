@@ -6,7 +6,55 @@ arc-controller:
     name: actions-runner-controller-sa
 
 # One runner scale set per dependency alias of Chart.yaml; configure them in
-# the instance values (see argo-cd/instances/_example).
-runner-group-001: {}
+# the instance values (see argo-cd/instances/_example). Each one authenticates
+# with the GitHub App Secret delivered from Vault (vso.vaultStaticSecrets.githubApp).
+runner-group-001:
+  githubConfigSecret: github-app
 
-runner-group-002: {}
+runner-group-002:
+  githubConfigSecret: github-app
+
+vso:
+  extraObjects:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: vso
+  vaultAuth:
+    default:
+      method: kubernetes
+      mount: kubernetes
+      kubernetes:
+        role: actions-runner-controller
+        serviceAccount: vso
+  vaultConnection:
+    default:
+      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
+      skipTLSVerify: false
+      caCertSecretRef: vault-tls
+  vaultStaticSecrets:
+    # GitHub App credentials, in the keys the runner scale sets expect. The
+    # Vault path holds githubApp.{id,installationId,privateKey}.
+    githubApp:
+      mount: ""
+      path: ""
+      type: kv-v2
+      vaultAuthRef: actions-runner-controller-vso-default
+      refreshAfter: 1h
+      hmacSecretData: true
+      destination:
+        name: github-app
+        create: true
+        type: Opaque
+        transformation:
+          excludeRaw: true
+          excludes:
+          - ".*"
+          templates:
+            github_app_id:
+              text: '{{ get .Secrets "githubApp" | dig "id" "" }}'
+            github_app_installation_id:
+              text: '{{ get .Secrets "githubApp" | dig "installationId" "" }}'
+            github_app_private_key:
+              text: '{{ get .Secrets "githubApp" | dig "privateKey" "" }}'
+

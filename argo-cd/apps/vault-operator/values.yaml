@@ -249,6 +249,11 @@ vault:
         path "homelab/data/platforms/+/+/sonarqube" {
           capabilities = ["read", "list"]
         }
+    - name: actions-runner-controller
+      rules: |
+        path "homelab/data/platforms/+/+/actions-runner-controller" {
+          capabilities = ["read", "list"]
+        }
     - name: sops
       rules: |
         path "homelab/data/platforms/+/+/sops" {
@@ -352,6 +357,11 @@ vault:
         bound_service_account_names: [vso]
         bound_service_account_namespaces: [sonarqube]
         policies: [sonarqube]
+        ttl: 1h
+      - name: actions-runner-controller
+        bound_service_account_names: [vso]
+        bound_service_account_namespaces: [actions-runner-controller]
+        policies: [actions-runner-controller]
         ttl: 1h
       - name: sops
         bound_service_account_names: [vso]
