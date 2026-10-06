@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Check that a release of one package only runs the jobs of that package.
+# Check the release setup of cd.yml against release-please-config.json.
 #
 #   check-release-gating.sh [release-please-config.json [workflow.yml]]
 #
@@ -11,7 +11,12 @@
 #
 # Without it, releasing the catalog also builds the CLI image with a version
 # that does not exist, and the other way round. A job counts as gated when it,
-# or any job it needs, carries that condition. Needs yq and jq.
+# or any job it needs, carries that condition.
+#
+# A package released as `simple` also needs its version file in the repository:
+# release-please only updates one that exists, so without it the release PR
+# carries a changelog and no version, and the published artifact cannot say
+# which version it is. Needs yq and jq.
 set -euo pipefail
 
 CONFIG=${1:-release-please-config.json}
@@ -74,5 +79,12 @@ for path in $(jq -r '.[]' <<<"$packages"); do
   fi
 done
 
-[ "$fail" = 0 ] && say "ok   every package release runs only its own jobs"
+while IFS=$'\t' read -r path file; do
+  if [ ! -f "$(dirname "$CONFIG")/$path/$file" ]; then
+    say "FAIL '$path' is released as simple but $path/$file does not exist: release-please only updates an existing file, so add it with the version before the first release (0.0.0)"
+    fail=1
+  fi
+done < <(jq -r '.packages | to_entries[] | select(.value["release-type"] == "simple") | [.key, (.value["version-file"] // "version.txt")] | @tsv' "$CONFIG")
+
+[ "$fail" = 0 ] && say "ok   every package release runs only its own jobs and has what its release type updates"
 exit "$fail"
