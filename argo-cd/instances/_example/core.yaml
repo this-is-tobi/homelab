@@ -40,7 +40,13 @@
 #                       Useful when several Apps share a values file, or when
 #                       the values live somewhere else in the values repo.
 #
-#   targetRevision      override git revision (defaults to instance default).
+#   catalog             name of a registry declared under `catalogs` in
+#                       instance.yaml: the chart is then a published Helm chart
+#                       (`chart`, default the app name) instead of a git path,
+#                       and `targetRevision` is its exact version (required).
+#
+#   targetRevision      override git revision (defaults to instance default);
+#                       with `catalog`, the exact chart version.
 #
 #   destination.server  override destination cluster (defaults to instance
 #                       default). Use to push specific apps to remote clusters.

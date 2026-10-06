@@ -107,12 +107,38 @@ Per-app overrides supported in the JSON catalogues (all optional):
 | -------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `chart`              | same as `app`                                            | Use a different chart directory under `argo-cd/apps/`.                     |
 | `chartPath`          | `argo-cd/apps/<chart>`                                   | Point at a chart **outside** `argo-cd/apps/` (e.g. self-managed `ohmlab`). |
+| `catalog`            | none (chart from the git repository)                     | Take the chart from a named Helm registry instead, see [Charts from a registry](#charts-from-a-registry). |
 | `releaseName`        | same as `app`                                            | Adopt an existing helm release for self-management.                        |
 | `namespace`          | `<prefix><app><suffix>`                                  | Pin to an explicit namespace (e.g. `argocd-system`).                       |
 | `destination.server` | `instance.yaml.destination.server`                       | Target a different cluster (multi-cluster).                                |
 | `valuesPath`         | `argo-cd/instances/<instance>/values/<scope>/<app>.yaml` | Point to a non-conventional values file.                                   |
-| `targetRevision`     | `instance.yaml.targetRevision`                           | Pin app to a specific git revision.                                        |
+| `targetRevision`     | `instance.yaml.targetRevision`                           | Pin app to a specific git revision, or to a chart version with `catalog`.  |
 | `syncWave`           | required                                                 | ArgoCD sync ordering.                                                      |
+
+#### Charts from a registry
+
+By default every chart is a directory of the git repository. An entry can instead take a published Helm chart from an OCI registry: declare the registry once in `instance.yaml`, then point the entry at it.
+
+```yaml
+# argo-cd/instances/<instance>/instance.yaml
+catalogs:
+  ohmlab: ghcr.io/this-is-tobi/homelab # registry path, no oci:// scheme
+
+# argo-cd/instances/<instance>/core.yaml
+- app: ohmlab
+  enabled: "true"
+  catalog: ohmlab
+  targetRevision: 0.1.3 # chart version, required
+  releaseName: ohmlab
+  namespace: argocd-system
+  syncWave: -10
+```
+
+The chart name is the entry's `chart` (default: the app name) and the values still come from the instance values tree, so nothing else changes. A few rules keep this safe:
+
+- `targetRevision` is the exact chart version and has no default. An entry without it, or with a version range, is not pinned: leave a range out, since a registry tag can be re-pushed. The Application of an entry that omits it reports an invalid revision and no other app is affected.
+- A `catalog` name that is not declared in `instance.yaml` gives that Application no repository, so it is invalid instead of falling back to git.
+- The AppProject of the tier must list the registry path in `sourceRepos` (`projects.<tier>.sourceRepos` in the `ohmlab` values), spelled exactly like the catalog entry.
 
 > **`syncWave` semantics**: on an AppSet-generated Application, the sync-wave annotation alone orders **nothing** — apps sync in parallel and converge by retry. To actually enforce the ordering, enable progressive sync (`progressiveSync.enabled: true` in the `instance-manager` chart values); it maps waves onto ApplicationSet `RollingSync` steps. Requires the alpha `ApplicationSetProgressiveSyncs` feature gate, which the `ohmlab` chart enables on the core ArgoCD.
 
