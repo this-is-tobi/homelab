@@ -47,7 +47,8 @@ for chart in "$stage"/argo-cd/apps/*/ "$stage/utils/helm"; do
   [ -f "$chart/Chart.yaml" ] || continue
   yq -e '.dependencies | length > 0' "$chart/Chart.yaml" >/dev/null 2>&1 || continue
   [ -f "$chart/Chart.lock" ] || die "$(basename "$chart") has dependencies but no Chart.lock: run helm dependency update and commit the lock"
-  helm dependency build "$chart" >/dev/null || die "helm dependency build failed for $(basename "$chart")"
+  retry 3 helm dependency build "$chart" >"$work/dependency.log" 2>&1 \
+    || die "helm dependency build failed for $(basename "$chart"): $(tail -1 "$work/dependency.log")"
 done
 
 COPYFILE_DISABLE=1 tar -C "$stage" -czf "$out/catalog.tar.gz" .

@@ -26,6 +26,16 @@ check() { # label expected actual
   if [ "$3" = "$2" ]; then ok "$1"; else bad "$1" "expected: $2" "actual:   $3"; fi
 }
 
+# --- retry of transient failures ---------------------------------------------
+export RETRY_DELAY=0
+attempts=0
+flaky() { attempts=$((attempts + 1)); [ "$attempts" -ge 3 ]; }
+retry 3 flaky; check "a command that fails twice and then works succeeds" 0 "$?"
+check "...after three attempts" 3 "$attempts"
+attempts=0; retry 2 flaky; check "a command that keeps failing fails once the attempts are used" 1 "$?"
+check "...after two attempts" 2 "$attempts"
+retry 3 true; check "a command that works is not repeated or failed" 0 "$?"
+
 # Files that must never reach the bundle: a plaintext secret and a stale vendored
 # chart, both ignored by git. They are planted in the working tree before the build.
 sops="$ROOT/argo-cd/apps/sops"
@@ -98,7 +108,7 @@ for chartdir in utils/helm argo-cd/apps/*/; do
   [ -f "$ROOT/$chartdir/Chart.yaml" ] || continue
   name=$(basename "$chartdir"); [ "$name" = helm ] && name=ohmlab
   if yq -e '.dependencies | length > 0' "$ROOT/$chartdir/Chart.yaml" >/dev/null 2>&1; then
-    helm dependency build "$work/repo/$chartdir" >/dev/null 2>&1 || { bad "$name: helm dependency build in the repository"; continue; }
+    retry 3 helm dependency build "$work/repo/$chartdir" >/dev/null 2>&1 || { bad "$name: helm dependency build in the repository"; continue; }
   fi
 
   for inst in "${instances[@]}"; do
