@@ -1,9 +1,9 @@
 dependencies:
 - name: vaultwarden
   repository: https://guerzon.github.io/vaultwarden
-  version: 0.46.2
+  version: 0.46.3
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:039567dedb025d7c47f7f65b4ef8b1dfeb54eb2f7e37367f5c45cd98e785038b
-generated: "2026-09-28T19:28:45.033282782Z"
+digest: sha256:5f28734d08f7baec77c69a37f40c96904adc26bc6ae9f0035cfbd7b577e02520
+generated: "2026-10-06T17:59:28.289692503Z"
