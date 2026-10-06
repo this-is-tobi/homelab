@@ -21,7 +21,7 @@ jobs:
     with:
       GROUPS: >-
         {"utils": ["utils/*"],
-        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/render-example*"],
+        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/check-vault-access*", "scripts/ci/render-example*"],
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
@@ -147,6 +147,10 @@ jobs:
         run: |
           scripts/ci/check-vso-isolation.test.sh
           scripts/ci/check-vso-isolation.sh
+      - name: Check that every chart can read its secrets from Vault
+        run: |
+          scripts/ci/check-vault-access.test.sh
+          scripts/ci/check-vault-access.sh
       - name: Install promtool
         env:
           PROMETHEUS_VERSION: 3.15.0
