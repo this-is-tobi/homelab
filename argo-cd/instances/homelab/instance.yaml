@@ -14,6 +14,11 @@ repoURL: https://github.com/this-is-tobi/homelab.git
 valuesRepoURL: ""
 targetRevision: main
 
+# Helm registries an entry can take its chart from (`catalog:` in core.yaml).
+# The AppProject must allow the same string (values/core/ohmlab.yaml).
+catalogs:
+  ohmlab: ghcr.io/this-is-tobi/homelab
+
 projects:
   core: admin-core
   tenant: admin-tenant

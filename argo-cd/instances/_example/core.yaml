@@ -96,6 +96,9 @@ apps:
   syncWave: -10
   releaseName: ohmlab
   chartPath: utils/helm
+  # Or pin the published chart instead of the git path: replace `chartPath`
+  # with `catalog: ohmlab` and `targetRevision: <chart version>`, and declare
+  # `catalogs.ohmlab` in instance.yaml.
 
   # Vault operator — manages Vault clusters and Vault Secrets Operator.
 - app: vault-operator
