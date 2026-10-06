@@ -303,6 +303,19 @@
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)-(?<patch>\\d{12})-standard-trixie$"
+    },
+    {
+      "customType": "regex",
+      "description": "Pinned ohmlab bootstrap chart (the registry catalog entry) in each instance's core.yaml; merging the bump is what updates the self-managed Argo CD",
+      "managerFilePatterns": [
+        "/^argo-cd/instances/[^/]+/core\\.yaml$/"
+      ],
+      "matchStrings": [
+        "catalog: ohmlab\\n\\s+targetRevision: (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\\s*\\n"
+      ],
+      "depNameTemplate": "ghcr.io/this-is-tobi/homelab/ohmlab",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "semver"
     }
   ]
 }
