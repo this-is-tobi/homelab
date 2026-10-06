@@ -29,20 +29,20 @@ cnpg:
 vso:
   vaultStaticSecrets:
     vaultwardenAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/core/vaultwarden
     vaultwardenDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/core/vaultwarden
     vaultwardenDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/core/vaultwarden
     vaultwardenDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/core/vaultwarden
     vaultwardenPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/core/vaultwarden
     vaultwardenSso:
-      mount: example
+      mount: homelab
       path: platforms/production/core/vaultwarden

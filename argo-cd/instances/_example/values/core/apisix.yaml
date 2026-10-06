@@ -30,7 +30,7 @@ etcd:
 vso:
   vaultStaticSecrets:
     apisixAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/core/apisix
 
 gateway:

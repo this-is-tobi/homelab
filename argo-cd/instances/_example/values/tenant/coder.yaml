@@ -56,17 +56,17 @@ cnpg:
 vso:
   vaultStaticSecrets:
     coderDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/coder
     coderDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/coder
     coderDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/coder
     coderPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/coder
     coderSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/coder

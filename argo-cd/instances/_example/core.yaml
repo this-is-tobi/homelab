@@ -146,6 +146,7 @@ apps:
 - app: longhorn
   enabled: "false"
   namespace: longhorn-system
+  releaseName: longhorn-system # the chart names its VaultAuth reference after this release
   syncWave: 0
 
   # [TIER-FLEXIBLE] X.509 certificate management (Let's Encrypt, internal CA, ...).

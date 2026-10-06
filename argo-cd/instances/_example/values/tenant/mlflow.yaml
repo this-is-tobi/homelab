@@ -64,23 +64,23 @@ sso:
 vso:
   vaultStaticSecrets:
     mlflowAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow
     mlflowS3:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow
     mlflowDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow
     mlflowDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow
     mlflowDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow
     mlflowPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow
     mlflowSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/mlflow

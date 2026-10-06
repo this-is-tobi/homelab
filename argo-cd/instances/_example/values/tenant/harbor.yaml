@@ -32,26 +32,26 @@ cnpg:
 vso:
   vaultStaticSecrets:
     harborAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborSecretkey:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborS3:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborDbInfos:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborDbAdmin:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborDbApp:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborPgBackup:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
     harborSso:
-      mount: example
+      mount: homelab
       path: platforms/production/tenant/harbor
