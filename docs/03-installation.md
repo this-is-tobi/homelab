@@ -156,7 +156,7 @@ Waves are not enforced by default (see the `syncWave` semantics above), so an ap
 
 Vault, delivered by the Vault Secrets Operator, is the only secret backend supported today. Other backends (External Secrets, ...) are planned: every chart declares its secrets in one place (`vso:`) so they can be swapped later.
 
-The `_example` values render for every chart (CI checks it) but only the Vault `mount` and `path` placeholders, hostnames and similar are yours to set. The bootstrap values of the example run Argo CD with one replica of each component and no Redis HA so that they work on a single node; the chart defaults are highly available (three nodes or more), so drop those overrides there.
+The `_example` values render for every chart (CI checks it) and every secret they declare is readable with the Vault policies and roles of the chart defaults (CI checks that too), so only the hostnames, the paths under `platforms/<environment>/<tier>/<app>` and similar are yours to set. The Vault KV mount is `homelab`, created by the `vault-operator` chart; to use another name, override its policies and `secrets` list completely. The example values run Argo CD with one replica of each component and no Redis HA, and Vault with one replica, so that they work on a single node; the chart defaults are highly available (three nodes or more), so drop those overrides there.
 
 ### Secrets Management
 
