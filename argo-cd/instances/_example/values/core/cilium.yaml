@@ -8,3 +8,10 @@ gateway:
   apexTlsSecret: gateway-wildcard-tls
   extraListeners: []
   tlsPassthroughListeners: []
+
+# Vault Secrets Operator: the KV mount and path are placeholders, set your own.
+vso:
+  vaultStaticSecrets:
+    hubbleSso:
+      mount: example
+      path: platforms/production/core/cilium
