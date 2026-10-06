@@ -4,10 +4,11 @@
 # people copy, so a chart that cannot render with it (a required value, a
 # stale key, a schema mismatch) breaks the first deployment of anyone else.
 # Needs helm; validates against the Kubernetes schemas when kubeconform is
-# available.
+# available. CATALOG_ROOT renders another tree with the layout of this
+# repository, such as an extracted catalog bundle.
 set -uo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT="${CATALOG_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 EXAMPLE="$ROOT/argo-cd/instances/_example"
 
 failures=0
