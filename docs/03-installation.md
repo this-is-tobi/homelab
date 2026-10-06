@@ -139,6 +139,8 @@ The chart name is the entry's `chart` (default: the app name) and the values sti
 - `targetRevision` is the exact chart version and has no default. An entry without it, or with a version range, is not pinned: leave a range out, since a registry tag can be re-pushed. The Application of an entry that omits it reports an invalid revision and no other app is affected.
 - A `catalog` name that is not declared in `instance.yaml` gives that Application no repository, so it is invalid instead of falling back to git.
 - The AppProject of the tier must list the registry path in `sourceRepos` (`projects.<tier>.sourceRepos` in the `ohmlab` values), spelled exactly like the catalog entry.
+- The manager chart reads `catalogs` from `instance.yaml` while the ApplicationSet reads the entries from `core.yaml` / `tenant.yaml`, on separate refreshes. An entry added in the same commit as its catalog can therefore show `Unknown` (invalid, nothing deployed or removed) for a few minutes until both have caught up. Declaring the catalog in an earlier change avoids it.
+- The `ohmlab` pin of an instance is bumped by Renovate (`renovate.json` watches the registry): merging its pull request is what updates the self-managed Argo CD.
 
 > **`syncWave` semantics**: on an AppSet-generated Application, the sync-wave annotation alone orders **nothing** — apps sync in parallel and converge by retry. To actually enforce the ordering, enable progressive sync (`progressiveSync.enabled: true` in the `instance-manager` chart values); it maps waves onto ApplicationSet `RollingSync` steps. Requires the alpha `ApplicationSetProgressiveSyncs` feature gate, which the `ohmlab` chart enables on the core ArgoCD.
 
