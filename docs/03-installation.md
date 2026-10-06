@@ -140,6 +140,13 @@ defaultCatalog: release # every entry without `catalog:` comes from it
 - The AppProject of the tier must list the repository of every catalog in `sourceRepos`, spelled exactly like the catalog (with the `oci://` scheme for an artifact).
 - The `ohmlab` entry that `./run.sh -b` installs needs a registry catalog (below): helm installs a chart, not a bundle.
 - `scripts/build-catalog.sh <dir>` builds the bundle from a checkout, for a fork or a local test: one `catalog.tar.gz` with the charts of `argo-cd/apps` and their dependencies vendored (so Argo CD needs no access to any upstream chart repository), the `ohmlab` chart and the example instance, from the files git tracks only. Push it as a single-layer OCI artifact (`crane append --oci-empty-base -f catalog.tar.gz -t <registry>/<repo>:<version>`) and declare that repository as a catalog.
+- The catalog released from this repository is `oci://ghcr.io/this-is-tobi/homelab/catalog`, one version per release of `argo-cd/apps` (OCI tag `X.Y.Z`, git tag `catalog-vX.Y.Z`). A release PR collects the conventional commits that touched `argo-cd/apps`, Renovate's chart bumps included (they are `fix(deps)`, or `feat(deps)` for a major); merging it publishes the bundle, signs it, attaches a build provenance and then checks the published digest the way an adopter would (`scripts/ci/verify-catalog.sh`: anonymous pull, signature, provenance, every chart rendered from the bundle alone). Check a version before you pin it:
+
+```sh
+cosign verify ghcr.io/this-is-tobi/homelab/catalog:<version> \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-identity-regexp '^https://github\.com/this-is-tobi/github-workflows/\.github/workflows/attest-docker\.yml@refs/tags/v[0-9]+(\.[0-9]+)*$'
+```
 
 #### Charts from a registry
 
