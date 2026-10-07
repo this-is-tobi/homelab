@@ -153,16 +153,18 @@
       "enabled": false
     },
     {
-      "description": "Everything under argo-cd/apps ships in the catalog bundle: a dependency bump there is a releasable fix, so release-please includes it in the next catalog release (chore commits are never released)",
+      "description": "Everything under argo-cd/apps (the catalog) and utils/helm (the bootstrap chart) is released by release-please: a dependency bump there is a releasable fix, so it is included in the next release of that part (chore commits are never released)",
       "matchFileNames": [
-        "argo-cd/apps/**"
+        "argo-cd/apps/**",
+        "utils/helm/**"
       ],
       "semanticCommitType": "fix"
     },
     {
-      "description": "A major bump of a chart in the catalog often carries breaking values changes: release it as a minor of the catalog (pre-1.0, a minor is the breaking level)",
+      "description": "A major bump of a chart dependency often carries breaking values changes: release it as a minor of the catalog or the chart (pre-1.0, a minor is the breaking level)",
       "matchFileNames": [
-        "argo-cd/apps/**"
+        "argo-cd/apps/**",
+        "utils/helm/**"
       ],
       "matchUpdateTypes": [
         "major"
