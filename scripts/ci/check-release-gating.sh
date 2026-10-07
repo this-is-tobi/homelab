@@ -11,7 +11,10 @@
 #
 # Without it, releasing the catalog also builds the CLI image with a version
 # that does not exist, and the other way round. A job counts as gated when it,
-# or any job it needs, carries that condition.
+# or any job it needs, carries that condition. A condition naming several
+# packages is an OR: such a job may run for any of them, so it must not read
+# the outputs of one (they are empty when another one was released); it may
+# only rely on a job it needs that is gated on that package alone.
 #
 # A package released as `simple` also needs its version file in the repository:
 # release-please only updates one that exists, so without it the release PR
@@ -28,20 +31,24 @@ jobs=$(yq -o=json '.jobs' "$WORKFLOW")
 # One TSV row per finding: <kind> <job> <path>.
 #   reads  - the job reads the per-path outputs of <path>
 #   gated  - the job (or a job it needs) is gated on <path>
+#   sure   - the job (or a job it needs) is gated on <path> alone, so it runs
+#            only when <path> was released
 #   any    - the job's own condition tests `releases-created`, whichever
 #            package was released
 rows=$(jq -r --arg q "'" '
   def listed: if type == "string" then [.] elif type == "array" then . else [] end;
-  def gates($jobs; $name):
-    $jobs[$name] as $j
-    | [($j.if // "" | tostring | scan("paths-released\\), \($q)([^\($q)]+)\($q)") | .[0])]
-      + ([($j.needs | listed)[] | gates($jobs; .)] | add // []);
+  def own($jobs; $name):
+    [$jobs[$name].if // "" | tostring | scan("paths-released\\), \($q)([^\($q)]+)\($q)") | .[0]] | unique;
+  def closure($jobs; $name):
+    [$name] + ([($jobs[$name].needs | listed)[] | closure($jobs; .)] | add // []) | unique;
   . as $jobs
   | to_entries[]
   | .key as $name
   | (.value | tojson) as $text
+  | closure($jobs; $name) as $up
   | ([$text | scan("release-outputs\\)\\[\($q)([^\($q)]+)--") | .[0]] | unique[] | ["reads", $name, .]),
-    (gates($jobs; $name) | unique[] | ["gated", $name, .]),
+    ([$up[] | own($jobs; .)[]] | unique[] | ["gated", $name, .]),
+    ([$up[] | own($jobs; .) | select(length == 1) | .[0]] | unique[] | ["sure", $name, .]),
     (select(.value.if // "" | tostring | test("releases-created")) | ["any", $name, ""])
   | @tsv' <<<"$jobs")
 
@@ -50,8 +57,8 @@ say() { printf '%s\n' "$*"; }
 
 while IFS=$'\t' read -r kind job path; do
   [ "$kind" = reads ] || continue
-  if ! grep -qxF "gated"$'\t'"$job"$'\t'"$path" <<<"$rows"; then
-    say "FAIL $job reads the release outputs of '$path' but is not gated on its release"
+  if ! grep -qxF "sure"$'\t'"$job"$'\t'"$path" <<<"$rows"; then
+    say "FAIL $job reads the release outputs of '$path' but does not run only when it is released: gate it, or a job it needs, on '$path' alone"
     fail=1
   fi
 done <<<"$rows"

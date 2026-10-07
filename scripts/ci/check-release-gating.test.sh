@@ -145,6 +145,49 @@ config utils
 workflow "$utils_image" "$utils_binaries"
 check "a single package is enough" 0
 
+# A condition naming two packages is an OR: the job also runs when only the
+# other one was released, and then the outputs it reads are empty.
+EITHER="\${{ contains(fromJSON(needs.release.outputs.paths-released), 'argo-cd/apps') || contains(fromJSON(needs.release.outputs.paths-released), 'utils') }}"
+config utils argo-cd/apps
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "$catalog_build" "$catalog_attest" "  keep-latest:
+    needs: release
+    if: $EITHER
+    runs-on: ubuntu-latest"
+check "a job that reads no output may run for either of two packages" 0
+
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "  catalog:
+    needs: release
+    if: $EITHER
+    uses: x/y/.github/workflows/build-oci-artifact.yml@v0
+    with:
+      ARTIFACT_TAG: $VERSION_CATALOG" "$catalog_attest"
+check "a job reading a package's outputs but also running for another package is refused" 1
+has "the finding says the job does not run only for that package" "catalog reads the release outputs of 'argo-cd/apps' but does not run only when it is released"
+has "a job inheriting that OR through needs is refused too" "attest-catalog reads the release outputs of 'argo-cd/apps' but does not run only when it is released"
+
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "$catalog_build" "$catalog_attest" "  both:
+    needs: [image, catalog]
+    uses: x/y/.github/workflows/verify.yml@v0
+    with:
+      A: $VERSION_UTILS
+      B: $VERSION_CATALOG"
+check "a job needing two gated jobs runs only when both were released, so it may read both" 0
+
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "$catalog_build" "$catalog_attest" "  notify:
+    needs: image
+    if: \${{ needs.release.outputs.releases-created == 'true' }}
+    runs-on: ubuntu-latest"
+check "testing releases-created is fine for a job that needs a gated job" 0
+
+workflow "$utils_image" "$utils_attest" "$utils_binaries" "$catalog_build" "$catalog_attest" "  flag:
+    needs: release
+    uses: x/y/.github/workflows/notify.yml@v0
+    with:
+      IS_CLI: \${{ contains(fromJSON(needs.release.outputs.paths-released), 'utils') }}
+      VERSION: $VERSION_UTILS"
+check "a package condition passed as an input does not gate the job" 1
+has "the finding names that job" "flag reads the release outputs of 'utils'"
+
 # release-please only updates a version.txt that exists: a package released as
 # `simple` without one gets a release PR with a changelog and no version file.
 config utils argo-cd/apps
