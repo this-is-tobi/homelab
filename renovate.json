@@ -151,23 +151,6 @@
         "ghcr.io/cloudnative-pg/postgresql"
       ],
       "enabled": false
-    },
-    {
-      "description": "Everything under argo-cd/apps ships in the catalog bundle: a dependency bump there is a releasable fix, so release-please includes it in the next catalog release (chore commits are never released)",
-      "matchFileNames": [
-        "argo-cd/apps/**"
-      ],
-      "semanticCommitType": "fix"
-    },
-    {
-      "description": "A major bump of a chart in the catalog often carries breaking values changes: release it as a minor of the catalog (pre-1.0, a minor is the breaking level)",
-      "matchFileNames": [
-        "argo-cd/apps/**"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "semanticCommitType": "feat"
     }
   ],
   "customManagers": [
