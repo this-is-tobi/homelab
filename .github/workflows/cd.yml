@@ -5,22 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      bump_chart:
-        description: Bump the ohmlab chart version (chart-only release)
-        type: choice
-        options:
-          - none
-          - patch
-          - minor
-          - major
-        default: none
 
 permissions:
   contents: read
 
-# One release at a time: two overlapping runs would race on the release PR
-# and on the chart guard's "is this version published yet" check.
+# One release at a time: two overlapping runs would race on the release PRs.
 concurrency:
   group: cd-${{ github.ref }}
   cancel-in-progress: false
@@ -165,68 +154,11 @@ jobs:
           VERSION: ${{ fromJSON(needs.release.outputs.release-outputs)['argo-cd/apps--version'] }}
         run: scripts/ci/verify-catalog.sh "$ARTIFACT" "$VERSION"
 
-  # The ohmlab chart has its own version stream: a change under utils/helm
-  # opens a bump PR, and merging it publishes (see chart-guard).
-  chart-bump-level:
-    runs-on: ubuntu-latest
-    outputs:
-      level: ${{ steps.level.outputs.level }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - id: level
-        env:
-          DISPATCH: ${{ inputs.bump_chart || 'none' }}
-        run: echo "level=$(scripts/ci/chart-bump-level.sh utils/helm "$DISPATCH")" >>"$GITHUB_OUTPUT"
-
-  bump-chart:
-    needs: chart-bump-level
-    if: ${{ needs.chart-bump-level.outputs.level != 'none' }}
-    uses: this-is-tobi/github-workflows/.github/workflows/update-helm-chart.yml@v0
-    permissions:
-      contents: write
-      pull-requests: write
-    with:
-      RUN_MODE: called
-      CHART_PATH: utils/helm
-      UPGRADE_TYPE: ${{ needs.chart-bump-level.outputs.level }}
-      BASE_BRANCH: main
-    secrets:
-      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
-
-  # Publish whatever Chart.yaml says if that version is not in the registry
-  # yet: idempotent, and it covers the very first publication too.
-  chart-guard:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    outputs:
-      publish: ${{ steps.guard.outputs.publish }}
-    steps:
-      - uses: actions/checkout@v7
-      - uses: azure/setup-helm@v5
-      - id: guard
-        env:
-          GH_ACTOR: ${{ github.actor }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          version=$(yq '.version' utils/helm/Chart.yaml)
-          echo "$GH_TOKEN" | helm registry login ghcr.io -u "$GH_ACTOR" --password-stdin
-          if helm show chart oci://ghcr.io/this-is-tobi/homelab/ohmlab --version "$version" >/dev/null 2>&1; then
-            echo "ohmlab $version already published"
-            echo "publish=false" >>"$GITHUB_OUTPUT"
-          else
-            echo "ohmlab $version not in the registry - publishing"
-            echo "publish=true" >>"$GITHUB_OUTPUT"
-          fi
-
+  # The bootstrap chart, published when its release PR is merged (its version
+  # is the one release-please wrote into Chart.yaml).
   publish-chart:
-    needs: chart-guard
-    if: ${{ needs.chart-guard.outputs.publish == 'true' }}
+    needs: release
+    if: ${{ contains(fromJSON(needs.release.outputs.paths-released), 'utils/helm') }}
     uses: this-is-tobi/github-workflows/.github/workflows/release-helm-local.yml@v0
     permissions:
       contents: read
@@ -246,3 +178,25 @@ jobs:
       CHARTS: ${{ needs.publish-chart.outputs.published-charts }}
       PROVENANCE: true
       SIGN: true
+
+  # GitHub marks the newest release as "Latest": a chart or catalog release
+  # would take it from the product, including one released in the same run.
+  keep-latest:
+    needs: release
+    if: ${{ contains(fromJSON(needs.release.outputs.paths-released), 'argo-cd/apps') || contains(fromJSON(needs.release.outputs.paths-released), 'utils/helm') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Mark the product release as Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version=$(jq -r '.utils' .release-please-manifest.json)
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::.release-please-manifest.json holds no product version (utils): '$version'"
+            exit 1
+          fi
+          gh release edit "v$version" --latest --repo "$GITHUB_REPOSITORY"

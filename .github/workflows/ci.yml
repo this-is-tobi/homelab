@@ -35,8 +35,6 @@ jobs:
       - uses: actions/checkout@v7
       - name: Run shellcheck
         run: shellcheck -S warning run.sh scripts/*.sh scripts/ci/*.sh scripts/lib/*.sh
-      - name: Test the chart bump decision used by cd.yml
-        run: scripts/ci/chart-bump-level.test.sh
       - name: Test the dashboard coverage tool
         run: scripts/dashboard-coverage.test.sh
       - name: Test the bootstrap chart resolver
@@ -149,6 +147,13 @@ jobs:
           exit "$failures"
       - name: Test the instance-manager catalog sources
         run: scripts/ci/test-instance-manager.sh
+      # The release PR only bumps Chart.yaml, so the README must carry nothing
+      # that changes with a release and must be regenerated with every change.
+      - name: Check that the bootstrap chart README is generated
+        run: |
+          go install -trimpath "github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2"
+          "$(go env GOPATH)/bin/helm-docs" --chart-search-root utils/helm
+          git diff --exit-code -- utils/helm/README.md
       - name: Render every chart with the example instance values
         run: scripts/ci/render-example.sh
       - name: Check that Vault-managed Secrets carry only their own keys
