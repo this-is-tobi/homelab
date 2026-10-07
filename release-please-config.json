@@ -2,7 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "include-component-in-tag": false,
   "bump-minor-pre-major": true,
-  "bootstrap-sha": "662b352792aecb44242d7f2e0a3633c9b4c9a457",
   "separate-pull-requests": true,
   "packages": {
     "utils": {
@@ -14,6 +13,13 @@
       "exclude-paths": [
         "utils/helm"
       ]
+    },
+    "utils/helm": {
+      "release-type": "helm",
+      "component": "chart",
+      "package-name": "ohmlab",
+      "include-component-in-tag": true,
+      "changelog-path": "CHANGELOG.md"
     },
     "argo-cd/apps": {
       "release-type": "simple",
