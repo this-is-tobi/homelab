@@ -150,8 +150,13 @@ jobs:
       # The release PR only bumps Chart.yaml, so the README must carry nothing
       # that changes with a release and must be regenerated with every change.
       - name: Check that the bootstrap chart README is generated
+        env:
+          HELM_DOCS_VERSION: v1.14.2
         run: |
-          go install -trimpath "github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2"
+          # The README footer names the helm-docs version, which a plain
+          # `go install` leaves empty: stamp it like the upstream release does.
+          go install -trimpath -ldflags "-s -w -X main.version=${HELM_DOCS_VERSION#v}" \
+            "github.com/norwoodj/helm-docs/cmd/helm-docs@$HELM_DOCS_VERSION"
           "$(go env GOPATH)/bin/helm-docs" --chart-search-root utils/helm
           git diff --exit-code -- utils/helm/README.md
       - name: Render every chart with the example instance values
