@@ -41,8 +41,6 @@ jobs:
         run: scripts/dashboard-coverage.test.sh
       - name: Test the bootstrap chart resolver
         run: scripts/ci/test-ohmlab-chart.sh
-      - name: Test the release gating check
-        run: scripts/ci/check-release-gating.test.sh
       - name: Test the catalog verification used by cd.yml
         run: scripts/ci/verify-catalog.test.sh
       - name: Test the Renovate catalog manager
@@ -60,8 +58,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: scripts/ci/check-reusable-permissions.sh .github/workflows/*.yml
-      - name: Check that a package release only runs its own jobs
-        run: scripts/ci/check-release-gating.sh
 
   ansible-lint:
     needs: classify

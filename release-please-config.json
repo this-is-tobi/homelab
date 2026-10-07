@@ -2,8 +2,6 @@
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "include-component-in-tag": false,
   "bump-minor-pre-major": true,
-  "bootstrap-sha": "662b352792aecb44242d7f2e0a3633c9b4c9a457",
-  "separate-pull-requests": true,
   "packages": {
     "utils": {
       "release-type": "go",
@@ -14,14 +12,6 @@
       "exclude-paths": [
         "utils/helm"
       ]
-    },
-    "argo-cd/apps": {
-      "release-type": "simple",
-      "component": "catalog",
-      "package-name": "catalog",
-      "include-component-in-tag": true,
-      "changelog-path": "CHANGELOG.md",
-      "initial-version": "0.1.0"
     }
   }
 }
