@@ -21,7 +21,7 @@ jobs:
     with:
       GROUPS: >-
         {"utils": ["utils/*"],
-        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/check-vault-access*", "scripts/ci/render-example*", "scripts/build-catalog*", "scripts/lib/*", "scripts/ci/test-catalog-bundle*"],
+        "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/check-no-legacy-kyverno*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/check-vault-access*", "scripts/ci/render-example*", "scripts/build-catalog*", "scripts/lib/*", "scripts/ci/test-catalog-bundle*"],
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
         "sonarqube": ["argo-cd/apps/sonarqube/*"],
@@ -138,12 +138,18 @@ jobs:
               helm dependency build "$chart" >/dev/null
             fi
             helm lint --quiet "$chart" "${args[@]+"${args[@]}"}"
-            # Render and schema-validate. CRD-typed resources (Applications,
-            # ClusterPolicies, ...) have no upstream schema — skipped via
-            # -ignore-missing-schemas; core types still get checked.
-            helm template ci "$chart" "${args[@]+"${args[@]}"}" \
-              | kubeconform -ignore-missing-schemas -strict -summary \
+            # Render, schema-validate and refuse legacy Kyverno objects.
+            # CRD-typed resources (Applications, ValidatingPolicies, ...) have
+            # no upstream schema — skipped via -ignore-missing-schemas; core
+            # types still get checked.
+            rendered="$(mktemp)"
+            helm template ci "$chart" "${args[@]+"${args[@]}"}" >"$rendered" \
               || failures=$((failures + 1))
+            kubeconform -ignore-missing-schemas -strict -summary <"$rendered" \
+              || failures=$((failures + 1))
+            scripts/ci/check-no-legacy-kyverno.sh <"$rendered" \
+              || failures=$((failures + 1))
+            rm -f "$rendered"
             echo "::endgroup::"
           done
           exit "$failures"
@@ -204,7 +210,9 @@ jobs:
           echo "${KYVERNO_SHA256}  ${tarball}" | sha256sum --check
           sudo tar -xzf "$tarball" -C /usr/local/bin kyverno
       - name: Test the Kyverno policy checks
-        run: scripts/ci/test-kyverno-policies.test.sh
+        run: |
+          scripts/ci/test-kyverno-policies.test.sh
+          scripts/ci/check-no-legacy-kyverno.test.sh
       - name: Unit-test the CEL policies
         run: scripts/ci/test-kyverno-policies.sh
 

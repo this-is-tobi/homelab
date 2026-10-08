@@ -1,37 +1,36 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+{{- $patterns := list }}
+{{- range .Values.policies.restrictImageRegistries.registries }}
+{{- $patterns = append $patterns (printf "^%s$" (regexQuoteMeta . | replace "\\*" ".*" | replace "\\?" ".")) }}
+{{- end }}
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-image-registries
   annotations:
-    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
-    # zero-replica RS history otherwise reports stale violations forever.
-    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
-    policies.kyverno.io/title: Restrict Image Registries
+    policies.kyverno.io/title: Restrict image registries
     policies.kyverno.io/description: >-
-      Images may only come from the allow-listed registries
-      (policies.restrictImageRegistries.registries in values). Uses
-      image_normalize() so bare Docker Hub names (nginx, prom/xyz) resolve
-      to docker.io/... before matching. failureAction comes from values —
-      keep Audit until the PolicyReports are clean.
+      Images must come from the registries in the cluster allowlist. A name
+      without a registry is read as docker.io, and docker.io/library for a
+      single-segment name, before matching, as the policy this replaces does.
+      failureAction and the allowlist come from values
+      (policies.restrictImageRegistries).
 spec:
-  background: true
-  rules:
-  - name: allowed-registries
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    validate:
-      failureAction: {{ .Values.policies.restrictImageRegistries.failureAction | default "Audit" }}
-      message: >-
-        Image registry is not in the cluster allowlist
-        ({{ .Values.policies.restrictImageRegistries.registries | join ", " }}).
-      foreach:
-      - list: "request.object.spec.[containers, initContainers, ephemeralContainers][]"
-        deny:
-          conditions:
-            all:
-            - key: '{{`{{ image_normalize(element.image) }}`}}'
-              operator: NotIn
-              value: {{ .Values.policies.restrictImageRegistries.registries | toJson }}
+  validationActions: {{ include "kyverno.cel.actions" (.Values.policies.restrictImageRegistries.failureAction | default "Audit") }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
+  variables:
+  - name: allContainers
+    expression: >-
+      object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
+  - name: allowedRegistries
+    expression: {{ $patterns | toJson | quote }}
+  validations:
+  - expression: >-
+      variables.allContainers.all(c,
+        variables.allowedRegistries.exists(p,
+          (c.image.split('/').size() > 1 &&
+           (c.image.split('/')[0].contains('.') || c.image.split('/')[0].contains(':') || c.image.split('/')[0] == 'localhost')
+             ? c.image
+             : 'docker.io/' + (c.image.split('/').size() == 1 ? 'library/' : '') + c.image).matches(p)))
+    message: >-
+      Image registry is not in the cluster allowlist
+      ({{ .Values.policies.restrictImageRegistries.registries | join ", " }}).

@@ -1,53 +1,25 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+{{- $ns := list "kube-system" "kyverno" "longhorn-system" "prometheus-stack" "cert-manager" "teleport-system" "crowdsec" }}
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-non-root
   annotations:
-    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
-    # zero-replica RS history otherwise reports stale violations forever.
-    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
-    policies.kyverno.io/title: Require Non-Root Containers
+    policies.kyverno.io/title: Require non-root containers
     policies.kyverno.io/description: >-
-      Containers must not run as root (UID 0). Either runAsNonRoot: true or
-      runAsUser > 0 must be set in the security context.
-      failureAction comes from values (policies.requireNonRoot).
+      Pods must run as non-root: runAsNonRoot or a non-zero runAsUser at the
+      pod level, or on every container. Init and ephemeral containers are not
+      inspected, matching the policy this replaces. failureAction comes from
+      values (policies.requireNonRoot).
 spec:
-  background: true
-  rules:
-  - name: require-non-root
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-          # System / infrastructure components with upstream root requirements
-          - longhorn-system
-          - prometheus-stack
-          - cert-manager
-          - teleport-system
-          # Log-processing agent reads host logs as root
-          - crowdsec
-    validate:
-      failureAction: {{ .Values.policies.requireNonRoot.failureAction | default "Audit" }}
-      message: "Containers must not run as root. Set runAsNonRoot: true or runAsUser > 0."
-      anyPattern:
-      - spec:
-          securityContext:
-            runAsNonRoot: true
-      - spec:
-          securityContext:
-            runAsUser: ">0"
-      - spec:
-          containers:
-          - securityContext:
-              runAsNonRoot: true
-      - spec:
-          containers:
-          - securityContext:
-              runAsUser: ">0"
+  validationActions: {{ include "kyverno.cel.actions" (.Values.policies.requireNonRoot.failureAction | default "Audit") }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
+  variables:
+  {{- include "kyverno.cel.scope" (dict "exclude" $ns) | nindent 2 }}
+  validations:
+  - expression: >-
+      variables.outOfScope ||
+      object.spec.?securityContext.?runAsNonRoot.orValue(false) == true ||
+      object.spec.?securityContext.?runAsUser.orValue(0) > 0 ||
+      object.spec.containers.all(c, c.?securityContext.?runAsNonRoot.orValue(false) == true) ||
+      object.spec.containers.all(c, c.?securityContext.?runAsUser.orValue(0) > 0)
+    message: "Containers must not run as root. Set runAsNonRoot: true or runAsUser > 0."

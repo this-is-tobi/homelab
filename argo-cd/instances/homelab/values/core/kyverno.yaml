@@ -4,7 +4,7 @@ kyverno: {}
 # fail-closed (validate.kyverno.svc-fail, failurePolicy: Fail) — if this
 # Service loses all healthy endpoints, ALL POD ADMISSION CLUSTER-WIDE
 # STALLS. This NetworkPolicy is safe to roll back independently: no
-# kyverno ClusterPolicy/PolicyException targets kind NetworkPolicy at any
+# Kyverno policy targets kind NetworkPolicy at any
 # level, so even a fully broken kyverno webhook would not block deleting
 # or reverting it. Roll out LAST, after every other namespace, with
 # `kubectl kyverno apply <policy> --resource <this-networkpolicy.yaml>`

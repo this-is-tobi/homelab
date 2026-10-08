@@ -1,12 +1,6 @@
-{{- /* Policy name, with the optional shadow suffix. */}}
-{{- define "kyverno.cel.name" -}}
-{{ .name }}{{ .root.Values.policies.celNameSuffix | default "" }}
-{{- end }}
-
 {{- /* validationActions for a failureAction value (Enforce -> Deny). */}}
 {{- define "kyverno.cel.actions" -}}
-{{- $action := ternary "Audit" .failureAction .root.Values.policies.shadow -}}
-[{{ ternary "Deny" "Audit" (eq $action "Enforce") }}]
+[{{ ternary "Deny" "Audit" (eq . "Enforce") }}]
 {{- end }}
 
 {{- /* The `outOfScope` variable every scoped validation starts with

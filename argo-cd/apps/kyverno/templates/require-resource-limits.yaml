@@ -1,49 +1,25 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+{{- $ns := list "kube-system" "kyverno" "longhorn-system" }}
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-resource-limits
   annotations:
-    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
-    # zero-replica RS history otherwise reports stale violations forever.
-    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
-    policies.kyverno.io/title: Require CPU and Memory Limits
+    policies.kyverno.io/title: Require resource limits
     policies.kyverno.io/description: >-
-      All containers must specify CPU and memory limits to prevent resource starvation.
-      failureAction comes from values (policies.requireResourceLimits).
+      Every container, init and ephemeral ones included, must set CPU and
+      memory limits. failureAction comes from values
+      (policies.requireResourceLimits).
 spec:
-  background: true
-  rules:
-  - name: require-limits
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-          # System components managed by upstream charts without configurable limits
-          - longhorn-system
-    validate:
-      failureAction: {{ .Values.policies.requireResourceLimits.failureAction | default "Audit" }}
-      message: "CPU and memory limits are required for all containers."
-      pattern:
-        spec:
-          containers:
-          - resources:
-              limits:
-                memory: "?*"
-                cpu: "?*"
-          =(initContainers):
-          - resources:
-              limits:
-                memory: "?*"
-                cpu: "?*"
-          =(ephemeralContainers):
-          - resources:
-              limits:
-                memory: "?*"
-                cpu: "?*"
+  validationActions: {{ include "kyverno.cel.actions" (.Values.policies.requireResourceLimits.failureAction | default "Audit") }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
+  variables:
+  {{- include "kyverno.cel.scope" (dict "exclude" $ns) | nindent 2 }}
+  - name: allContainers
+    expression: >-
+      object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
+  validations:
+  - expression: >-
+      variables.outOfScope ||
+      variables.allContainers.all(c,
+        c.?resources.?limits.?memory.orValue('') != '' && c.?resources.?limits.?cpu.orValue('') != '')
+    message: CPU and memory limits are required for all containers.

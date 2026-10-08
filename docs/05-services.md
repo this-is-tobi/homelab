@@ -295,12 +295,12 @@ The main Kyverno policies guarding admissions (see
 | `require-resource-limits` | Audit   | stays Audit — blocking operator-created pods unexpectedly is worse than a report               |
 | `verify-images`           | Enforce | this repo's images must be signed by its release workflow, with provenance naming this repo    |
 
-The same policies also exist as CEL `ValidatingPolicy` objects (`templates/cel/`), because Kyverno 1.20 removes `ClusterPolicy` and the legacy `PolicyException`. Until the cutover they run in Audit next to the legacy ones (`policies.shadow`), so every report and metric exists for both generations (report `source` is `kyverno` for the legacy ones and `KyvernoValidatingPolicy` for the CEL ones) and nothing is enforced differently. The CEL policies scope themselves inside their expressions instead of with a namespace selector: each policy with its own selector gets its own Kyverno webhook, which costs one more admission call per pod and policy.
+Every policy is a CEL object of the `policies.kyverno.io` group (`ValidatingPolicy`, `ImageValidatingPolicy`, `GeneratingPolicy` and `PolicyException`), the types that replace `ClusterPolicy` and the legacy `PolicyException` Kyverno 1.20 removes; CI refuses a chart that renders the old ones. `Enforce` in the table is the `failureAction` value and means `validationActions: [Deny]`, `Audit` means `[Audit]`. The policies scope themselves inside their expressions instead of with a namespace selector: each policy with its own selector gets its own Kyverno webhook, which costs one more admission call per pod and policy. Policy results are the `kyverno_validating_policy_results_total` metric and reports with source `KyvernoValidatingPolicy`; the Kyverno dashboard and the `KyvernoPolicyDenials` alert read them.
 
 Actions are configurable per instance via `policies.<name>.failureAction` in
 the kyverno app values. Exceptions are GitOps-managed: the kyverno
 `PolicyException` feature is enabled but restricted to the `kyverno`
-namespace, so every exception lives in
+namespace (a CEL `PolicyException` anywhere else is ignored), so every exception lives in
 [policy-exceptions.yaml](../argo-cd/apps/kyverno/templates/policy-exceptions.yaml)
 and workloads cannot self-exempt. In-cluster traffic is encrypted wherever the
 component supports it: CNPG PostgreSQL serves TLS and every client connects

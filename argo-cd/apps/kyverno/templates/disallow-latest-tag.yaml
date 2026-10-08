@@ -1,39 +1,23 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+{{- $ns := list "kube-system" "kyverno" }}
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-latest-tag
   annotations:
-    # Skip ReplicaSet autogen: Deployment rules already cover live pods, and
-    # zero-replica RS history otherwise reports stale violations forever.
-    pod-policies.kyverno.io/autogen-controllers: Deployment,StatefulSet,DaemonSet,Job,CronJob
-    policies.kyverno.io/title: Disallow Latest Image Tag
+    policies.kyverno.io/title: Disallow the latest image tag
     policies.kyverno.io/description: >-
-      Container images should use a specific, immutable tag instead of 'latest'
-      to ensure reproducible deployments and avoid unexpected updates.
+      Rejects images whose tag is `latest`; an untagged image or a digest
+      reference is not rejected, matching the policy this replaces.
       failureAction comes from values (policies.disallowLatestTag).
 spec:
-  background: true
-  rules:
-  - name: disallow-latest-tag
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    exclude:
-      any:
-      - resources:
-          namespaces:
-          - kube-system
-          - kyverno
-    validate:
-      failureAction: {{ .Values.policies.disallowLatestTag.failureAction | default "Audit" }}
-      message: "Image tag 'latest' is not allowed. Use a specific tag or digest."
-      pattern:
-        spec:
-          containers:
-          - image: "!*:latest"
-          =(initContainers):
-          - image: "!*:latest"
-          =(ephemeralContainers):
-          - image: "!*:latest"
+  validationActions: {{ include "kyverno.cel.actions" (.Values.policies.disallowLatestTag.failureAction | default "Audit") }}
+  {{- include "kyverno.cel.common" . | nindent 2 }}
+  variables:
+  {{- include "kyverno.cel.scope" (dict "exclude" $ns) | nindent 2 }}
+  - name: allContainers
+    expression: >-
+      object.spec.containers + object.spec.?initContainers.orValue([]) + object.spec.?ephemeralContainers.orValue([])
+  validations:
+  - expression: >-
+      variables.outOfScope || variables.allContainers.all(c, !c.image.endsWith(':latest'))
+    message: "Image tag 'latest' is not allowed. Use a specific tag or digest."
