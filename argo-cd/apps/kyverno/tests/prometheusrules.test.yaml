@@ -46,14 +46,16 @@ tests:
   - eval_time: 25m
     alertname: KyvernoAdmissionSlow
     exp_alerts: []
-# Enforce denials at admission fire; background-scan fails and Audit fails do not.
+# Deny denials at admission fire; background-scan fails and Audit fails do not.
 - interval: 1m
   input_series:
-  - series: 'kyverno_policy_results_total{policy_name="require-non-root", rule_result="fail", policy_validation_mode="enforce", rule_execution_cause="admission_request"}'
+  - series: 'kyverno_validating_policy_results_total{policy_name="require-non-root", result="fail", policy_validation_mode="Deny", execution_cause="admission_request"}'
     values: '0 0 2 2 2'
-  - series: 'kyverno_policy_results_total{policy_name="require-non-root", rule_result="fail", policy_validation_mode="enforce", rule_execution_cause="background_scan"}'
+  - series: 'kyverno_validating_policy_results_total{policy_name="pod-security-baseline", result="fail", policy_validation_mode="Deny", execution_cause="background_scan"}'
     values: '0 5 10 15 20'
-  - series: 'kyverno_policy_results_total{policy_name="require-resource-limits", rule_result="fail", policy_validation_mode="audit", rule_execution_cause="admission_request"}'
+  - series: 'kyverno_validating_policy_results_total{policy_name="require-resource-limits", result="fail", policy_validation_mode="Audit", execution_cause="admission_request"}'
+    values: '0 5 10 15 20'
+  - series: 'kyverno_validating_policy_results_total{policy_name="disallow-latest-tag", result="pass", policy_validation_mode="Deny", execution_cause="admission_request"}'
     values: '0 5 10 15 20'
   alert_rule_test:
   - eval_time: 3m
@@ -62,4 +64,4 @@ tests:
     - exp_labels: {severity: info, policy_name: require-non-root}
       exp_annotations:
         summary: Kyverno denied requests
-        description: An Enforce policy rejected at least one admission in the last 10m; the owning controller retries until the resource complies.
+        description: A Deny policy rejected at least one admission in the last 10m; the owning controller retries until the resource complies.

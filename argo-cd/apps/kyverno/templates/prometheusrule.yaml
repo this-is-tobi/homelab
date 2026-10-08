@@ -32,14 +32,14 @@ spec:
           controllers' CPU and memory, and which policies call out (image
           verification, API lookups).
     - alert: KyvernoPolicyDenials
-      # Admission denials only: background-scan results on Enforce policies
+      # Admission denials only: background-scan results on Deny policies
       # describe existing resources, not rejected requests.
-      expr: sum by (policy_name) (increase(kyverno_policy_results_total{rule_result="fail", policy_validation_mode="enforce", rule_execution_cause="admission_request"}[10m])) > 0
+      expr: sum by (policy_name) (increase(kyverno_validating_policy_results_total{result="fail", policy_validation_mode="Deny", execution_cause="admission_request"}[10m])) > 0
       labels:
         severity: info
       annotations:
         summary: Kyverno denied requests
         description: >-
-          An Enforce policy rejected at least one admission in the last 10m;
+          A Deny policy rejected at least one admission in the last 10m;
           the owning controller retries until the resource complies.
 {{- end }}
