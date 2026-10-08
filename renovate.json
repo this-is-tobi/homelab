@@ -343,7 +343,7 @@
         "/^argo-cd/instances/[^/]+/instance\\.ya?ml$/"
       ],
       "matchStrings": [
-        "repoURL: oci://(?<depName>\\S+)\\s*\\n\\s+version: (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)(?!\\S)"
+        "repoURL: oci://(?<depName>\\S+)\\s*\\n\\s+version: (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)(?:\\s|$)"
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "semver"
