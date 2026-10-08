@@ -22,16 +22,6 @@
       "groupName": "kyverno"
     },
     {
-      "description": "Kyverno 1.20 removes ClusterPolicy, the legacy PolicyException and CleanupPolicy: hold the chart on 3.9.x (Kyverno 1.19.x) until every policy is CEL",
-      "matchManagers": [
-        "helmv3"
-      ],
-      "matchDepNames": [
-        "kyverno"
-      ],
-      "allowedVersions": "<3.10.0"
-    },
-    {
       "description": "Major chart bumps often carry breaking values changes \u2014 never automerge, flag loudly",
       "matchManagers": [
         "helmv3"
