@@ -2,7 +2,7 @@ module github.com/this-is-tobi/homelab/utils
 
 go 1.26.0
 
-toolchain go1.27.1
+toolchain go1.27.2
 
 require (
 	filippo.io/age v1.3.2
