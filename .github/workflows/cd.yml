@@ -179,6 +179,32 @@ jobs:
       PROVENANCE: true
       SIGN: true
 
+  # What an adopter would meet: an anonymous pull of the published digest, the
+  # signature and provenance, and a render with the example instance.
+  verify-chart:
+    needs:
+      - publish-chart
+      - attest-chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - uses: oras-project/setup-oras@005458ad77f1c8facd38a094e4af2e69e5607ff4 # v2.0.2
+        with:
+          version: 1.3.4
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Verify the published chart
+        env:
+          CHARTS: ${{ needs.publish-chart.outputs.published-charts }}
+        run: |
+          set -euo pipefail
+          jq -e 'length > 0' <<<"$CHARTS" >/dev/null || { echo "::error::publish-chart reported no chart"; exit 1; }
+          jq -c '.[]' <<<"$CHARTS" | while IFS= read -r chart; do
+            scripts/ci/verify-chart.sh "$(jq -r '.repository + "@" + .digest' <<<"$chart")" "$(jq -r '.version' <<<"$chart")"
+          done
+
   # GitHub marks the newest release as "Latest": a chart or catalog release
   # would take it from the product, including one released in the same run.
   keep-latest:

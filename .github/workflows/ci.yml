@@ -43,6 +43,8 @@ jobs:
         run: scripts/ci/check-release-gating.test.sh
       - name: Test the catalog verification used by cd.yml
         run: scripts/ci/verify-catalog.test.sh
+      - name: Test the chart verification used by cd.yml
+        run: scripts/ci/verify-chart.test.sh
       - name: Test the Renovate catalog manager
         run: scripts/ci/test-renovate-managers.sh
 
