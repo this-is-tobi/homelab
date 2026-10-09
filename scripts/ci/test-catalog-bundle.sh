@@ -103,12 +103,22 @@ for d in "$ROOT"/argo-cd/instances/*/; do
   [ "${n#_}" = "$n" ] && instances+=("$n")
 done
 
+# The repository side builds its own dependencies, independently of the bundle's.
+repo_charts=()
+for chartdir in utils/helm argo-cd/apps/*/; do
+  chartdir="${chartdir%/}"
+  [ -f "$ROOT/$chartdir/Chart.yaml" ] || continue
+  yq -e '.dependencies | length > 0' "$ROOT/$chartdir/Chart.yaml" >/dev/null 2>&1 && repo_charts+=("$work/repo/$chartdir")
+done
+mkdir "$work/deps"
+vendor_dependencies "$work/deps" ${repo_charts[@]+"${repo_charts[@]}"}
+
 for chartdir in utils/helm argo-cd/apps/*/; do
   chartdir="${chartdir%/}"
   [ -f "$ROOT/$chartdir/Chart.yaml" ] || continue
   name=$(basename "$chartdir"); [ "$name" = helm ] && name=ohmlab
-  if yq -e '.dependencies | length > 0' "$ROOT/$chartdir/Chart.yaml" >/dev/null 2>&1; then
-    retry 3 helm dependency build "$work/repo/$chartdir" >/dev/null 2>&1 || { bad "$name: helm dependency build in the repository"; continue; }
+  if grep -qxF "$work/repo/$chartdir" "$work/deps/failed" 2>/dev/null; then
+    bad "$name: helm dependency build in the repository"; continue
   fi
 
   for inst in "${instances[@]}"; do

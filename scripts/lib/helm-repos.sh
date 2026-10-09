@@ -27,3 +27,26 @@ add_dependency_repos() {
   done < <(yq -N '.dependencies[]?.repository' "$@" 2>/dev/null | grep '^http' | sort -u)
   retry 3 helm repo update >/dev/null
 }
+
+# vendor_dependencies <log-dir> <chart-dir>...: `helm dependency build` for every
+# chart, DEPENDENCY_JOBS (default 6) at a time with transient failures retried.
+# The builds are network bound and independent, and none refreshes the
+# indexes again: without --skip-refresh each one downloads the index of every
+# added repository, so call add_dependency_repos first. Every chart is
+# attempted; the ones that could not be built are listed in <log-dir>/failed
+# (one directory per line) with their output in <log-dir>/<name>.log, and the
+# return status is 1 when there is any.
+vendor_dependencies() {
+  local logdir="$1"
+  shift
+  [ "$#" -gt 0 ] || return 0
+  rm -f "$logdir/failed"
+  export VENDOR_LOG_DIR="$logdir"
+  printf '%s\0' "$@" | xargs -0 -n1 -P "${DEPENDENCY_JOBS:-6}" bash -c '
+    source "$0"
+    chart=$1
+    log="$VENDOR_LOG_DIR/$(printf "%s" "$chart" | tr "/" "_").log"
+    retry 3 helm dependency build --skip-refresh "$chart" >"$log" 2>&1 || { echo "$chart" >>"$VENDOR_LOG_DIR/failed"; exit 1; }
+  ' "${BASH_SOURCE[0]}" >/dev/null 2>&1
+  [ ! -s "$logdir/failed" ] || return 1
+}

@@ -42,14 +42,19 @@ export HELM_REPOSITORY_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/ohmlab-catalog/hel
 mkdir -p "$HELM_REPOSITORY_CACHE"
 add_dependency_repos "$stage"/argo-cd/apps/*/Chart.yaml "$stage/utils/helm/Chart.yaml"
 
+charts=()
 for chart in "$stage"/argo-cd/apps/*/ "$stage/utils/helm"; do
   chart="${chart%/}"
   [ -f "$chart/Chart.yaml" ] || continue
   yq -e '.dependencies | length > 0' "$chart/Chart.yaml" >/dev/null 2>&1 || continue
   [ -f "$chart/Chart.lock" ] || die "$(basename "$chart") has dependencies but no Chart.lock: run helm dependency update and commit the lock"
-  retry 3 helm dependency build "$chart" >"$work/dependency.log" 2>&1 \
-    || die "helm dependency build failed for $(basename "$chart"): $(tail -1 "$work/dependency.log")"
+  charts+=("$chart")
 done
+if ! vendor_dependencies "$work" ${charts[@]+"${charts[@]}"}; then
+  failed=$(head -1 "$work/failed")
+  more=$(( $(wc -l <"$work/failed") - 1 ))
+  die "helm dependency build failed for $(basename "$failed")$([ "$more" -eq 0 ] || echo " (and $more more)"): $(tail -1 "$work/$(printf '%s' "$failed" | tr / _).log")"
+fi
 
 COPYFILE_DISABLE=1 tar -C "$stage" -czf "$out/catalog.tar.gz" .
 

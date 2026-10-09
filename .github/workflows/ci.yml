@@ -47,6 +47,8 @@ jobs:
         run: scripts/ci/verify-chart.test.sh
       - name: Test the Renovate catalog manager
         run: scripts/ci/test-renovate-managers.sh
+      - name: Test the Helm repository helpers
+        run: scripts/lib/helm-repos.test.sh
 
   # actionlint cannot see remote reusable workflows: a caller granting less
   # than a called job declares only fails on main, as a startup failure.
