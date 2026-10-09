@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.1](https://github.com/this-is-tobi/homelab/compare/v0.1.0...v0.1.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency hashicorp/vault to v2.1.2 ([bc42eb6](https://github.com/this-is-tobi/homelab/commit/bc42eb682aced7bd9780dae0754d65512b6e335c))
+* **deps:** update module golang.org/x/crypto to v0.58.0 ([788f96f](https://github.com/this-is-tobi/homelab/commit/788f96f4ba66904aa4e62347c3bc7fd8eb0df1fc))
+* **utils:** build with Go 1.27.2 for the net/http fixes ([02b09bb](https://github.com/this-is-tobi/homelab/commit/02b09bb5be0bfba48a7bde5431d0fc1c3887ba6c))
+
 ## 0.1.0 (2026-10-03)
 
 
