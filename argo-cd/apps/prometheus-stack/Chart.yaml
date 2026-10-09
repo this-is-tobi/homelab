@@ -22,6 +22,6 @@ dependencies:
   condition: loki.enabled
 - name: alloy
   alias: alloy
-  version: 1.13.0
+  version: 1.13.1
   repository: https://grafana.github.io/helm-charts
   condition: alloy.enabled
