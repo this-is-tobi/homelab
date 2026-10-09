@@ -104,16 +104,26 @@ jobs:
             | sudo tar -xz -C /usr/local/bin kubeconform
       - name: Add chart repositories from Chart.yaml dependencies
         run: |
-          set -euo pipefail
-          i=0
-          for repo in $(yq -N '.dependencies[]?.repository' utils/helm/Chart.yaml argo-cd/apps/*/Chart.yaml 2>/dev/null | grep '^http' | sort -u); do
-            i=$((i + 1))
-            helm repo add "repo$i" "$repo"
-          done
-          helm repo update
+          source scripts/lib/helm-repos.sh
+          add_dependency_repos utils/helm/Chart.yaml argo-cd/apps/*/Chart.yaml
       - name: Lint, render and validate every chart
         run: |
           set -euo pipefail
+          source scripts/lib/helm-repos.sh
+          # The dependencies of every chart are built first, several at a time:
+          # fetching them one chart after the other is most of this step.
+          locked=()
+          for chart in utils/helm argo-cd/apps/*/; do
+            chart="${chart%/}"
+            [ -f "$chart/Chart.lock" ] && locked+=("$chart")
+          done
+          logs="$(mktemp -d)"
+          if ! vendor_dependencies "$logs" "${locked[@]}"; then
+            while IFS= read -r chart; do
+              echo "::error::helm dependency build failed for $chart: $(tail -1 "$logs/$(printf '%s' "$chart" | tr / _).log")"
+            done <"$logs/failed"
+            exit 1
+          fi
           failures=0
           for chart in utils/helm argo-cd/apps/*/; do
             chart="${chart%/}"
@@ -136,9 +146,6 @@ jobs:
                 ;;
             esac
             echo "::group::$name ${args[*]:-}"
-            if [ -f "$chart/Chart.lock" ]; then
-              helm dependency build "$chart" >/dev/null
-            fi
             helm lint --quiet "$chart" "${args[@]+"${args[@]}"}"
             # Render, schema-validate and refuse legacy Kyverno objects.
             # CRD-typed resources (Applications, ValidatingPolicies, ...) have
