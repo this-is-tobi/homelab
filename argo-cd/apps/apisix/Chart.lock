@@ -3,10 +3,10 @@ dependencies:
   repository: https://charts.apiseven.com
   version: 2.18.0
 - name: etcd
-  repository: oci://registry-1.docker.io/cloudpirates
+  repository: oci://ghcr.io/cloudpirates-io/helm-charts
   version: 0.8.9
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:2171cc196e830080e9b64f36b74ff8e4a8169f911bd6ec066ea583d15a6b89a7
-generated: "2026-10-05T15:12:46.039911067Z"
+digest: sha256:b4e0ed53fdb63ee5f37ff4a405e4c6e75b4175f3604f8252057de8b90d716817
+generated: "2026-10-09T22:59:09.122253+02:00"
