@@ -3,6 +3,13 @@
   "include-component-in-tag": false,
   "bump-minor-pre-major": true,
   "separate-pull-requests": true,
+  "changelog-sections": [
+    { "type": "feat", "section": "Features" },
+    { "type": "fix", "section": "Bug Fixes" },
+    { "type": "perf", "section": "Performance Improvements" },
+    { "type": "revert", "section": "Reverts" },
+    { "type": "build", "section": "Build and dependencies" }
+  ],
   "packages": {
     "utils": {
       "release-type": "go",
