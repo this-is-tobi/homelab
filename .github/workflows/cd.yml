@@ -41,7 +41,7 @@ jobs:
       contents: read
       packages: write
     with:
-      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/utils
+      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/ohmlab
       IMAGE_TAG: ${{ fromJSON(needs.release.outputs.release-outputs)['utils--version'] }}
       IMAGE_DOCKERFILE: utils/Dockerfile
       IMAGE_CONTEXT: utils/

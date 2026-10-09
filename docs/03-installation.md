@@ -399,7 +399,7 @@ Three parts are released from this repository, each with its own version, releas
 
 | Part | Published as | Git tag | Changelog |
 |---|---|---|---|
-| `ohmlab` CLI (`utils/`) | binaries on the GitHub release, image `ghcr.io/this-is-tobi/homelab/utils:X.Y.Z` | `vX.Y.Z` | `utils/CHANGELOG.md` |
+| `ohmlab` CLI (`utils/`) | binaries on the GitHub release, image `ghcr.io/this-is-tobi/homelab/ohmlab:X.Y.Z` | `vX.Y.Z` | `utils/CHANGELOG.md` |
 | bootstrap chart (`utils/helm`) | `oci://ghcr.io/this-is-tobi/homelab/charts/ohmlab`, version `X.Y.Z` | `chart-vX.Y.Z` | `utils/helm/CHANGELOG.md` |
 | catalog (`argo-cd/apps`) | `oci://ghcr.io/this-is-tobi/homelab/catalog:X.Y.Z` | `catalog-vX.Y.Z` | `argo-cd/apps/CHANGELOG.md` |
 
