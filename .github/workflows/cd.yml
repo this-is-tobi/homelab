@@ -165,6 +165,7 @@ jobs:
       packages: write
     with:
       CHART_PATH: utils/helm
+      REPOSITORY: this-is-tobi/homelab/charts
       HELM_REPOS: argo=https://argoproj.github.io/argo-helm,this-is-tobi=https://this-is-tobi.github.io/helm-charts
 
   attest-chart:
