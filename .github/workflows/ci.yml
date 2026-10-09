@@ -327,7 +327,7 @@ jobs:
       contents: read
       packages: write
     with:
-      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/utils
+      IMAGE_NAME: ghcr.io/this-is-tobi/homelab/ohmlab
       IMAGE_TAG: ci-${{ github.sha }}
       IMAGE_DOCKERFILE: utils/Dockerfile
       IMAGE_CONTEXT: utils/
