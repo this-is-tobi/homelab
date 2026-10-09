@@ -322,7 +322,7 @@
       "matchStrings": [
         "catalog: ohmlab\\n\\s+targetRevision: (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\\s*\\n"
       ],
-      "depNameTemplate": "ghcr.io/this-is-tobi/homelab/ohmlab",
+      "depNameTemplate": "ghcr.io/this-is-tobi/homelab/charts/ohmlab",
       "datasourceTemplate": "docker",
       "versioningTemplate": "semver"
     },

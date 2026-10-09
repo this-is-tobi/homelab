@@ -61,7 +61,7 @@ check "a git bundle is left alone" "" \
 
 check "a registry catalog (a string) is left alone" "" \
   'catalogs:
-  ohmlab: ghcr.io/this-is-tobi/homelab'
+  ohmlab: ghcr.io/this-is-tobi/homelab/charts'
 
 check "the commented example is left alone" "" \
   '# catalogs:
