@@ -13,7 +13,7 @@ echo '{"auths": {}}' >"$dir/credentials/config.json"
 
 DIGEST=$(printf 'a%.0s' $(seq 64))
 LAYER_DIGEST="sha256:$(printf 'c%.0s' $(seq 64))"
-REF="ghcr.io/this-is-tobi/homelab/ohmlab@sha256:$DIGEST"
+REF="ghcr.io/this-is-tobi/homelab/charts/ohmlab@sha256:$DIGEST"
 CONFIG=application/vnd.cncf.helm.config.v1+json
 LAYER=application/vnd.cncf.helm.chart.content.v1.tar+gzip
 
@@ -100,7 +100,7 @@ expect() { # expect <label> <exit> [pattern in the output]
 reset; run "$REF" 0.2.0
 expect "a signed, attested chart that renders passes" 0 "renders with the example instance without a Helm repository"
 
-reset; run "ghcr.io/this-is-tobi/homelab/ohmlab:0.2.0" 0.2.0
+reset; run "ghcr.io/this-is-tobi/homelab/charts/ohmlab:0.2.0" 0.2.0
 expect "a tag instead of a digest is refused" 1 "pinned by digest"
 
 reset; run "$REF" v0.2.0
@@ -141,7 +141,7 @@ reset; manifest "$CONFIG" "[{\"mediaType\": \"$LAYER\", \"size\": 1}]"; run "$RE
 expect "a chart layer without a digest is refused" 1 "has no digest"
 
 reset; run "$REF" 0.2.0
-if [ "$(cat "$dir/blob.ref" 2>/dev/null)" = "ghcr.io/this-is-tobi/homelab/ohmlab@$LAYER_DIGEST" ]; then
+if [ "$(cat "$dir/blob.ref" 2>/dev/null)" = "ghcr.io/this-is-tobi/homelab/charts/ohmlab@$LAYER_DIGEST" ]; then
   echo "ok   the chart layer is fetched by the digest the manifest names"
 else
   echo "FAIL the chart layer is fetched by the digest the manifest names: $(cat "$dir/blob.ref" 2>/dev/null)"; fail=1
