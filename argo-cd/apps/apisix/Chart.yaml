@@ -13,7 +13,7 @@ dependencies:
 - name: etcd
   alias: etcd
   version: 0.8.9
-  repository: oci://registry-1.docker.io/cloudpirates
+  repository: oci://ghcr.io/cloudpirates-io/helm-charts
   condition: etcd.enabled
 # VSO integration — delivers the admin API credentials from Vault as the
 # `apisix-admin` secret (keys: admin, viewer).

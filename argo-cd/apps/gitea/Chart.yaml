@@ -10,7 +10,7 @@ dependencies:
 - name: valkey
   alias: valkey
   version: 0.25.13
-  repository: oci://registry-1.docker.io/cloudpirates
+  repository: oci://ghcr.io/cloudpirates-io/helm-charts
 - name: cluster
   alias: cnpg
   version: 0.9.0
