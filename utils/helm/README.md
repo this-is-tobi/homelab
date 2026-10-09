@@ -18,10 +18,10 @@ A Helm chart to deploy ohmlab.
 
 ## Requirements
 
-| Repository | Name | Version |
-|------------|------|---------|
-| https://argoproj.github.io/argo-helm | argo-cd(argo-cd) | 10.9.6 |
-| https://this-is-tobi.github.io/helm-charts | vso(vso-utils) | 2.1.0 |
+| Name | Repository |
+|------|------------|
+| argo-cd | https://argoproj.github.io/argo-helm |
+| vso-utils (as vso) | https://this-is-tobi.github.io/helm-charts |
 
 ## Values
 
