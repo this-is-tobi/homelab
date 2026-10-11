@@ -1,48 +1,28 @@
 homepage:
   replicaCount: 1
-  image:
-    repository: ghcr.io/gethomepage/homepage
-    pullPolicy: IfNotPresent
-    tag: v2.4.0
-  # Pod-level so it also covers the chart's hardcoded config-init container,
-  # which has no securityContext of its own (restricted PSS). It only copies
-  # the ConfigMap into an emptyDir, which needs no root.
-  podSecurityContext:
-    fsGroup: 1000
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-    seccompProfile:
-      type: RuntimeDefault
-  # Merged over the chart default (non-root 1000, drop ALL).
-  securityContext:
-    allowPrivilegeEscalation: false
-  serviceAccount:
-    create: true
-    annotations: {}
-    name: ""
-  enableRbac: true
+  # Image, security contexts (Pod Security restricted, read-only root
+  # filesystem), probes and resources come from the chart defaults.
+  #
+  # Hosts accepted in the Host header (HOMEPAGE_ALLOWED_HOSTS). The routes
+  # come from this wrapper (gateway.routes), not from the chart, so the chart
+  # cannot derive them: list each route hostname here.
+  allowedHosts: []
+  # Cluster access for the kubernetes widget, pod status and service
+  # discovery: mounts the ServiceAccount token and creates a read-only
+  # ClusterRole. Off unless a widget or a service uses it.
+  kubernetes:
+    enabled: false
   service:
     type: ClusterIP
     port: 3000
-    annotations: {}
-  # Exposed via Gateway API HTTPRoute (gateway.routes) — no Ingress.
-  ingress:
-    main:
-      enabled: false
-  env:
-  - name: HOMEPAGE_ALLOWED_HOSTS
-    value: "*"
   config:
-    kubernetes:
-      mode: cluster
     settings:
       title: ""
       favicon: ""
       theme: dark
       color: slate
       headerStyle: clean
-      layout: {}
+      # layout:
       # - Services:
       #     style: row
       #     columns: 3
@@ -69,28 +49,19 @@ homepage:
     #       siteMonitor: https://git.example.com
     #       description: Private DevOps Platform
     #       icon: gitea.png
-    widgets:
-    - kubernetes:
-        cluster:
-          show: true
-          cpu: true
-          memory: true
-          showLabel: true
-          label: cluster
-        nodes:
-          show: false
-          cpu: true
-          memory: true
-          showLabel: true
+    widgets: []
+    # The kubernetes widget needs kubernetes.enabled:
+    # - kubernetes:
+    #     cluster:
+    #       show: true
+    #       cpu: true
+    #       memory: true
+    #       showLabel: true
+    #       label: cluster
+    #     nodes:
+    #       show: false
   customCss: ""
   customJs: ""
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
   nodeSelector: {}
   tolerations: []
   affinity: {}

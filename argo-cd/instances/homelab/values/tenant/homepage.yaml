@@ -1,7 +1,6 @@
 homepage:
-  env:
-  - name: HOMEPAGE_ALLOWED_HOSTS
-    value: ohmlab.fr
+  allowedHosts:
+  - ohmlab.fr
   config:
     settings:
       title: "Tobi's Cloud"
@@ -86,19 +85,6 @@ homepage:
           siteMonitor: https://hubble.int.ohmlab.fr
           description: Cilium network flow visibility (LAN only)
           icon: cilium.png
-    widgets:
-    - kubernetes:
-        cluster:
-          show: false
-          cpu: true
-          memory: true
-          showLabel: true
-          label: homelab
-        nodes:
-          show: false
-          cpu: true
-          memory: true
-          showLabel: true
 
 gateway:
   enabled: true
@@ -114,14 +100,11 @@ gateway:
       backendPort: 3000
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
-# only the traffic this namespace needs. Apiserver egress is genuinely
-# needed, not just show:false cosmetics: gethomepage's "kubernetes"
-# widget fires its useSWR fetch and backend listNode()/getNodeMetrics()
-# calls unconditionally — show:false only hides the UI card, it doesn't
-# stop the calls. siteMonitor pings (every *.ohmlab.fr service URL in
-# this file, HEAD/GET every 30s per open browser tab) need the
-# SSO-hairpin egress path too, but only fire while a dashboard tab is
-# open.
+# only the traffic this namespace needs. No apiserver egress: the dashboard
+# has no kubernetes widget and no service discovery, so the chart mounts no
+# ServiceAccount token. siteMonitor pings (every *.ohmlab.fr service URL in
+# this file, HEAD/GET every 30s per open browser tab) need the SSO-hairpin
+# egress path, but only fire while a dashboard tab is open.
 networkPolicy:
   enabled: true
   egressDeny: true
@@ -135,12 +118,6 @@ networkPolicy:
       ports:
       - { protocol: TCP, port: 3000 }
   extraEgress:
-  - name: apiserver
-    rules:
-    - to:
-      - ipBlock: { cidr: 192.168.1.0/24 }
-      ports:
-      - { protocol: TCP, port: 6443 }
   - name: sso-hairpin
     rules:
     - to:

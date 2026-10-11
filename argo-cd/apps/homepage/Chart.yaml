@@ -5,5 +5,5 @@ version: 0.1.0
 dependencies:
 - name: homepage
   alias: homepage
-  version: 1.8.8
-  repository: https://unknowniq.github.io/helm-charts/
+  version: 0.1.0
+  repository: https://this-is-tobi.github.io/helm-charts

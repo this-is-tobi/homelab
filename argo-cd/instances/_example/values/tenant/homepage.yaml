@@ -1,18 +1,10 @@
 homepage:
-  ingress:
-    main:
-      hosts:
-      - host: example.com
-        paths:
-        - path: /
-          pathType: Prefix
-      tls:
-      - secretName: example.com-tls
-        hosts:
-        - example.com
-  env:
-  - name: HOMEPAGE_ALLOWED_HOSTS
-    value: example.com
+  # Hostnames of the routes in front of Homepage (it rejects any other Host).
+  allowedHosts:
+  - example.com
+  # The kubernetes widget below reads nodes and their metrics.
+  kubernetes:
+    enabled: true
   config:
     settings:
       title: Homelab Dashboard
