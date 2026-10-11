@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.2.1...catalog-v0.3.0) (2026-10-11)
+
+
+### Features
+
+* **homepage:** use the hardened this-is-tobi homepage chart ([4e612e6](https://github.com/this-is-tobi/homelab/commit/4e612e64412963258540755123902658c79c2534))
+
 ## [0.2.1](https://github.com/this-is-tobi/homelab/compare/catalog-v0.2.0...catalog-v0.2.1) (2026-10-10)
 
 
