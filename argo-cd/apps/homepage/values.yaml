@@ -3,7 +3,7 @@ homepage:
   image:
     repository: ghcr.io/gethomepage/homepage
     pullPolicy: IfNotPresent
-    tag: v2.4.0
+    tag: v2.5.0
   # Pod-level so it also covers the chart's hardcoded config-init container,
   # which has no securityContext of its own (restricted PSS). It only copies
   # the ConfigMap into an emptyDir, which needs no root.
