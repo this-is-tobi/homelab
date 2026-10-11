@@ -21,26 +21,6 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: homepage-abc
-  namespace: homepage
-spec:
-  containers:
-  - image: nginx:1.27
-    name: a
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: homepage-wrongns
-  namespace: homepage-other
-spec:
-  containers:
-  - image: nginx:1.27
-    name: a
----
-apiVersion: v1
-kind: Pod
-metadata:
   name: rustfs-abc
   namespace: rustfs
 spec:
@@ -198,107 +178,6 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: homepage-r-ok
-  namespace: homepage
-spec:
-  containers:
-  - image: ghcr.io/gethomepage/homepage:v1
-    name: homepage
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-  initContainers:
-  - image: busybox:1.37
-    name: config-init
-    securityContext:
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: homepage-r-main-bad
-  namespace: homepage
-spec:
-  containers:
-  - image: ghcr.io/gethomepage/homepage:v1
-    name: homepage
-    securityContext:
-      allowPrivilegeEscalation: true
-      capabilities:
-        drop:
-        - ALL
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-  initContainers:
-  - image: busybox:1.37
-    name: config-init
-    securityContext:
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: homepage-r-init-uid0
-  namespace: homepage
-spec:
-  containers:
-  - image: ghcr.io/gethomepage/homepage:v1
-    name: homepage
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-  initContainers:
-  - image: busybox:1.37
-    name: config-init
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 0
-      seccompProfile:
-        type: RuntimeDefault
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: homepage-r-wrong-ns
-  namespace: other
-spec:
-  containers:
-  - image: ghcr.io/gethomepage/homepage:v1
-    name: homepage
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-  initContainers:
-  - image: busybox:1.37
-    name: config-init
-    securityContext:
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
----
-apiVersion: v1
-kind: Pod
-metadata:
   name: apply-baseline-other-priv-only
   namespace: system-upgrade
 spec:
@@ -393,44 +272,9 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: other-in-homepage
-  namespace: homepage
-spec:
-  containers:
-  - image: nginx:1.27
-    name: a
----
-apiVersion: v1
-kind: Pod
-metadata:
   name: other-in-rustfs
   namespace: rustfs
 spec:
   containers:
   - image: nginx:1.27
     name: a
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: other-in-homepage-restricted
-  namespace: homepage
-spec:
-  containers:
-  - image: ghcr.io/x/y:1
-    name: a
-    securityContext:
-      allowPrivilegeEscalation: false
-      capabilities:
-        drop:
-        - ALL
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault
-  initContainers:
-  - image: busybox:1.37
-    name: i
-    securityContext:
-      runAsNonRoot: true
-      seccompProfile:
-        type: RuntimeDefault

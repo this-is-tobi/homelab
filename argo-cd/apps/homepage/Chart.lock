@@ -1,6 +1,6 @@
 dependencies:
 - name: homepage
-  repository: https://unknowniq.github.io/helm-charts/
-  version: 1.8.8
-digest: sha256:b554aab1c823e2c4ed6a7fcf9bc6227f2b44f4147a2b4d499cd1d99cdaf8226d
-generated: "2026-09-09T21:58:24.321361299Z"
+  repository: https://this-is-tobi.github.io/helm-charts
+  version: 0.1.0
+digest: sha256:21d5a7436109a639d86e1bb10c57cc8230978a7eb17ec487d6a35c193a1c9c3d
+generated: "2026-10-12T00:37:52.796126+02:00"

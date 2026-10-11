@@ -25,18 +25,6 @@ results:
   isValidatingPolicy: true
   kind: Pod
   resources:
-  - homepage-abc
-  result: skip
-- policy: require-resource-limits
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
-  - homepage-wrongns
-  result: fail
-- policy: require-resource-limits
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
   - rustfs-abc
   result: skip
 - policy: require-resource-limits
@@ -87,30 +75,6 @@ results:
   resources:
   - apply-baseline-wrong-ns
   result: fail
-- policy: pod-security-restricted
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
-  - homepage-r-ok
-  result: pass
-- policy: pod-security-restricted
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
-  - homepage-r-main-bad
-  result: fail
-- policy: pod-security-restricted
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
-  - homepage-r-init-uid0
-  result: fail
-- policy: pod-security-restricted
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
-  - homepage-r-wrong-ns
-  result: fail
 - policy: pod-security-baseline
   isValidatingPolicy: true
   kind: Pod
@@ -145,17 +109,5 @@ results:
   isValidatingPolicy: true
   kind: Pod
   resources:
-  - other-in-homepage
-  result: fail
-- policy: require-resource-limits
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
   - other-in-rustfs
-  result: fail
-- policy: pod-security-restricted
-  isValidatingPolicy: true
-  kind: Pod
-  resources:
-  - other-in-homepage-restricted
   result: fail
