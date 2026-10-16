@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.3.1](https://github.com/this-is-tobi/homelab/compare/catalog-v0.3.0...catalog-v0.3.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update cnpg postgres images ([cc51a5c](https://github.com/this-is-tobi/homelab/commit/cc51a5cfe497c46adeff7fbec3d9893484bb1930))
+* **deps:** update dependency hashicorp/vault to v2.2.0 ([c90661c](https://github.com/this-is-tobi/homelab/commit/c90661c7e2f978b138fa38541e92bcfae494c01f))
+* **deps:** update ghcr.io/this-is-tobi/mirror/outline docker tag to v1.11.0 ([162f88d](https://github.com/this-is-tobi/homelab/commit/162f88dd7a693b2e82feb411161506b3167dab6d))
+* **deps:** update helm release apisix to v2.18.1 ([5f333eb](https://github.com/this-is-tobi/homelab/commit/5f333eb99981e601966fe60fec464625cf33f422))
+* **deps:** update helm release apisix to v2.18.2 ([43413ff](https://github.com/this-is-tobi/homelab/commit/43413ffa518a9fc2c2ee7016e7aef820e9ee37a2))
+* **deps:** update helm release argo-cd to v10.10.3 ([bf4573b](https://github.com/this-is-tobi/homelab/commit/bf4573b0575661f4e1fef77b566ecb4602b67d0d))
+* **deps:** update helm release argo-cd to v10.10.5 ([d8f595a](https://github.com/this-is-tobi/homelab/commit/d8f595a31caf9446511aa1f169eb18e8902134d1))
+* **deps:** update helm release argo-workflows to v2.0.13 ([55dfa71](https://github.com/this-is-tobi/homelab/commit/55dfa719e38b000cd527e05493e6d20f905f415f))
+* **deps:** update helm release cilium to v1.20.3 ([e49033b](https://github.com/this-is-tobi/homelab/commit/e49033b432a378e42d6c9d7f79b86dd8b0a0fe36))
+* **deps:** update helm release harbor to v1.19.4 ([f6e7da4](https://github.com/this-is-tobi/homelab/commit/f6e7da43818018b6742a572088b155b3a95b5627))
+* **deps:** update helm release loki to v18.16.2 ([6bceaac](https://github.com/this-is-tobi/homelab/commit/6bceaac86205e2a979478b53b00a7a9db59248a0))
+* **deps:** update helm release mattermost-team-edition to v6.6.109 ([e830f03](https://github.com/this-is-tobi/homelab/commit/e830f03a6fdb416b342135cf70e7c6ee25c3e2ec))
+* **deps:** update helm release rustfs to v1.0.2 ([2d2a094](https://github.com/this-is-tobi/homelab/commit/2d2a094e8116f62dc3168afa9d5de28743311dff))
+* **deps:** update helm release teleport-cluster to v18.11.4 ([5673a88](https://github.com/this-is-tobi/homelab/commit/5673a88927bcfa2ad9a5afb627108078bc0433a9))
+* **deps:** update kube-prometheus-stack docker tag to v92.4.0 ([af73a24](https://github.com/this-is-tobi/homelab/commit/af73a240f236fa0dc005a70d77e49b56930137a8))
+* **deps:** update kube-prometheus-stack docker tag to v92.6.0 ([8a6efd0](https://github.com/this-is-tobi/homelab/commit/8a6efd045cedba90cc006def47e9a02cf74600ba))
+* **deps:** update kube-prometheus-stack docker tag to v92.7.0 ([1be5967](https://github.com/this-is-tobi/homelab/commit/1be5967e482dc466eaa3f5dd7bb3e639253524db))
+
 ## [0.3.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.2.1...catalog-v0.3.0) (2026-10-11)
 
 
