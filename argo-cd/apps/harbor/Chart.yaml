@@ -6,7 +6,7 @@ version: 0.1.0
 dependencies:
 - name: harbor
   alias: harbor
-  version: 1.19.2
+  version: 1.19.4
   repository: https://helm.goharbor.io
 - name: cluster
   alias: cnpg
