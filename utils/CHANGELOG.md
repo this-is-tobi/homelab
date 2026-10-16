@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/this-is-tobi/homelab/compare/v0.1.1...v0.1.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency hashicorp/vault to v2.2.0 ([c90661c](https://github.com/this-is-tobi/homelab/commit/c90661c7e2f978b138fa38541e92bcfae494c01f))
+
 ## [0.1.1](https://github.com/this-is-tobi/homelab/compare/v0.1.0...v0.1.1) (2026-10-09)
 
 
