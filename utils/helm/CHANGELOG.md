@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/this-is-tobi/homelab/compare/chart-v0.1.5...chart-v0.1.6) (2026-10-16)
+
+
+### Bug Fixes
+
+* **deps:** update helm release argo-cd to v10.10.5 ([d8f595a](https://github.com/this-is-tobi/homelab/commit/d8f595a31caf9446511aa1f169eb18e8902134d1))
+
 ## [0.1.5](https://github.com/this-is-tobi/homelab/compare/chart-v0.1.4...chart-v0.1.5) (2026-10-14)
 
 
