@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.2](https://github.com/this-is-tobi/homelab/compare/catalog-v0.3.1...catalog-v0.3.2) (2026-10-17)
+
+
+### Bug Fixes
+
+* **deps:** update ghcr.io/this-is-tobi/homelab/ohmlab docker tag to v0.1.2 ([ef269da](https://github.com/this-is-tobi/homelab/commit/ef269da2d0d629ca64175660a4fb2e78bf4a6d76))
+* **deps:** update helm release loki to v18.17.0 ([ecb6a52](https://github.com/this-is-tobi/homelab/commit/ecb6a52c095fda5493358790273e6e74efae4860))
+* **deps:** update kube-prometheus-stack docker tag to v92.10.1 ([1deabbb](https://github.com/this-is-tobi/homelab/commit/1deabbbdfe929369abf62cb29ec0d304971b7c20))
+
 ## [0.3.1](https://github.com/this-is-tobi/homelab/compare/catalog-v0.3.0...catalog-v0.3.1) (2026-10-16)
 
 
