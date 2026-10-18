@@ -188,6 +188,15 @@ jobs:
         run: |
           scripts/ci/check-vso-isolation.test.sh
           scripts/ci/check-vso-isolation.sh
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: utils/go.mod
+          cache-dependency-path: utils/go.sum
+      - name: Check that the generated API files are current
+        working-directory: utils
+        run: |
+          go generate ./api/...
+          git diff --exit-code -- api ../argo-cd/apps/ohmlab-controller/files
       - name: Check that every chart can read its secrets from Vault
         run: |
           scripts/ci/check-vault-access.test.sh
