@@ -1,28 +1,9 @@
 package vault
 
 import (
-	"crypto/rand"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"math/big"
-	"regexp"
-	"strings"
 
-	"filippo.io/age"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
-)
-
-const alphanumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
-var (
-	reRandom = regexp.MustCompile(`<random:(\d+)>`)
-	reHex    = regexp.MustCompile(`<hex:(\d+)>`)
-	reUUID   = regexp.MustCompile(`<uuid>`)
-	reAge    = regexp.MustCompile(`<age:(secret|public)>`)
-	reRef    = regexp.MustCompile(`<ref:([^#]+)#([^>]+)>`)
-	reBcrypt = regexp.MustCompile(`<bcrypt:([^>]+)>`)
+	"github.com/this-is-tobi/homelab/utils/internal/secretgen"
 )
 
 // TemplateEngine processes placeholder strings in secret data.
@@ -36,23 +17,27 @@ var (
 //	<age:public> — age X25519 public key (paired with the secret key)
 //	<ref:path#key.path> — reference a value from another Vault secret
 //	<bcrypt:key.path>   — bcrypt hash of a field in the same secret (resolved after processing)
+//
+// The generation itself lives in secretgen, which the controller shares.
 type TemplateEngine struct {
 	vaultClient *Client // for resolving <ref:...> placeholders
-	ageIdentity *age.X25519Identity
+	renderer    secretgen.Renderer
 }
 
 // NewTemplateEngine creates a template engine with an optional Vault client
 // for resolving cross-references.
 func NewTemplateEngine(vaultClient *Client) *TemplateEngine {
-	return &TemplateEngine{
-		vaultClient: vaultClient,
+	e := &TemplateEngine{vaultClient: vaultClient}
+	if vaultClient != nil {
+		e.renderer.Ref = e.resolveRef
 	}
+	return e
 }
 
 // Process walks a data map and replaces all placeholder strings with generated values.
 // Each call resets the age keypair so that <age:secret> and <age:public> are paired.
 func (e *TemplateEngine) Process(data map[string]any) (map[string]any, error) {
-	e.ageIdentity = nil // reset per-secret age keypair
+	e.renderer.Age = nil // reset per-secret age keypair
 	result, err := e.processMap(data)
 	if err != nil {
 		return nil, err
@@ -76,7 +61,7 @@ func (e *TemplateEngine) processMap(data map[string]any) (map[string]any, error)
 func (e *TemplateEngine) processValue(v any) (any, error) {
 	switch val := v.(type) {
 	case string:
-		return e.processString(val)
+		return e.renderer.Render(val)
 	case map[string]any:
 		return e.processMap(val)
 	case []any:
@@ -94,204 +79,39 @@ func (e *TemplateEngine) processValue(v any) (any, error) {
 	}
 }
 
-func (e *TemplateEngine) processString(s string) (string, error) {
-	var err error
-
-	// Replace all <random:N> (each gets a unique value)
-	s = reRandom.ReplaceAllStringFunc(s, func(match string) string {
-		if err != nil {
-			return match
-		}
-		sub := reRandom.FindStringSubmatch(match)
-		var n int
-		if _, e := fmt.Sscanf(sub[1], "%d", &n); e != nil {
-			err = fmt.Errorf("invalid random length %q: %w", sub[1], e)
-			return match
-		}
-		val, e := generateRandom(n)
-		if e != nil {
-			err = fmt.Errorf("generate random(%d): %w", n, e)
-			return match
-		}
-		return val
-	})
+// resolveRef reads a <ref:vaultPath#dotPath> source from Vault.
+func (e *TemplateEngine) resolveRef(vaultPath, keyPath string) (string, error) {
+	// Convention: first path segment is the mount, rest is the path.
+	mount, secretPath, ok := splitFirst(vaultPath)
+	if !ok {
+		return "", fmt.Errorf("invalid ref vault path %q", vaultPath)
+	}
+	data, err := e.vaultClient.KVGet(mount, secretPath)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to read ref from Vault: %w", err)
 	}
-
-	// Replace all <hex:N> (each gets a unique value)
-	s = reHex.ReplaceAllStringFunc(s, func(match string) string {
-		if err != nil {
-			return match
-		}
-		sub := reHex.FindStringSubmatch(match)
-		var n int
-		if _, e := fmt.Sscanf(sub[1], "%d", &n); e != nil {
-			err = fmt.Errorf("invalid hex length %q: %w", sub[1], e)
-			return match
-		}
-		val, e := generateHex(n)
-		if e != nil {
-			err = fmt.Errorf("generate hex(%d): %w", n, e)
-			return match
-		}
-		return val
-	})
-	if err != nil {
-		return "", err
+	if data == nil {
+		return "", fmt.Errorf("ref secret not found in Vault (path %s): %w", vaultPath, secretgen.ErrRefNotFound)
 	}
-
-	// Replace all <uuid> (each gets a unique value)
-	s = reUUID.ReplaceAllStringFunc(s, func(_ string) string {
-		return uuid.New().String()
-	})
-
-	// Replace <age:secret> and <age:public>
-	if reAge.MatchString(s) {
-		if e.ageIdentity == nil {
-			identity, genErr := age.GenerateX25519Identity()
-			if genErr != nil {
-				return "", fmt.Errorf("generate age keypair: %w", genErr)
-			}
-			e.ageIdentity = identity
-		}
-		s = strings.ReplaceAll(s, "<age:secret>", e.ageIdentity.String())
-		s = strings.ReplaceAll(s, "<age:public>", e.ageIdentity.Recipient().String())
+	val := navigateJSON(data, keyPath)
+	if val == "" {
+		return "", fmt.Errorf("ref key path %q not found or empty: %w", keyPath, secretgen.ErrRefNotFound)
 	}
-
-	// Replace <ref:path#key.path>
-	if reRef.MatchString(s) {
-		s, err = e.resolveRefs(s)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return s, nil
+	return val, nil
 }
 
-// resolveRefs resolves all <ref:vaultPath#dotPath> placeholders by reading from Vault.
-func (e *TemplateEngine) resolveRefs(s string) (string, error) {
-	if e.vaultClient == nil {
-		return "", fmt.Errorf("cannot resolve <ref:...>: no Vault client configured")
+func splitFirst(p string) (string, string, bool) {
+	for i := 0; i < len(p); i++ {
+		if p[i] == '/' {
+			return p[:i], p[i+1:], i > 0 && i+1 < len(p)
+		}
 	}
-
-	var refErr error
-	result := reRef.ReplaceAllStringFunc(s, func(match string) string {
-		if refErr != nil {
-			return match
-		}
-
-		sub := reRef.FindStringSubmatch(match)
-		vaultPath := sub[1]
-		keyPath := sub[2]
-
-		// Split vaultPath into mount and secret path.
-		// Convention: first path segment is the mount, rest is the path.
-		parts := strings.SplitN(vaultPath, "/", 2)
-		if len(parts) < 2 {
-			refErr = fmt.Errorf("invalid ref vault path %q in %s", vaultPath, match)
-			return match
-		}
-		mount := parts[0]
-		secretPath := parts[1]
-
-		data, err := e.vaultClient.KVGet(mount, secretPath)
-		if err != nil {
-			refErr = fmt.Errorf("failed to read ref %s from Vault: %w", match, err)
-			return match
-		}
-		if data == nil {
-			refErr = fmt.Errorf("ref secret not found in Vault: %s (path %s)", match, vaultPath)
-			return match
-		}
-
-		val := navigateJSON(data, keyPath)
-		if val == "" {
-			refErr = fmt.Errorf("ref key path %q not found or empty in %s", keyPath, match)
-			return match
-		}
-		return val
-	})
-
-	if refErr != nil {
-		return "", refErr
-	}
-	return result, nil
+	return "", "", false
 }
 
 // navigateJSON traverses a nested map using a dot-separated key path.
 func navigateJSON(data map[string]any, dotPath string) string {
-	keys := strings.Split(dotPath, ".")
-	var current any = data
-
-	for _, key := range keys {
-		m, ok := current.(map[string]any)
-		if !ok {
-			return ""
-		}
-		current, ok = m[key]
-		if !ok {
-			return ""
-		}
-	}
-
-	switch v := current.(type) {
-	case string:
-		return v
-	case json.Number:
-		return v.String()
-	case float64:
-		return fmt.Sprintf("%v", v)
-	case bool:
-		return fmt.Sprintf("%v", v)
-	default:
-		// For complex types, marshal to JSON string
-		b, err := json.Marshal(v)
-		if err != nil {
-			return ""
-		}
-		return string(b)
-	}
-}
-
-// generateRandom produces a cryptographically random alphanumeric string.
-func generateRandom(length int) (string, error) {
-	if length <= 0 {
-		return "", fmt.Errorf("length must be positive, got %d", length)
-	}
-
-	result := make([]byte, length)
-	max := big.NewInt(int64(len(alphanumeric)))
-
-	for i := range result {
-		n, err := rand.Int(rand.Reader, max)
-		if err != nil {
-			return "", fmt.Errorf("crypto/rand: %w", err)
-		}
-		result[i] = alphanumeric[n.Int64()]
-	}
-
-	return string(result), nil
-}
-
-// generateHex produces a cryptographically random lowercase hex string of the
-// requested character length. Consumers that need N random bytes (an AES key,
-// for instance) ask for 2N characters.
-func generateHex(length int) (string, error) {
-	if length <= 0 {
-		return "", fmt.Errorf("length must be positive, got %d", length)
-	}
-	if length%2 != 0 {
-		return "", fmt.Errorf("length must be even, got %d", length)
-	}
-
-	buf := make([]byte, length/2)
-	if _, err := rand.Read(buf); err != nil {
-		return "", fmt.Errorf("crypto/rand: %w", err)
-	}
-
-	return hex.EncodeToString(buf), nil
+	return secretgen.NavigateJSON(data, dotPath)
 }
 
 // resolveBcryptFields walks a processed data map and replaces any remaining
@@ -312,20 +132,15 @@ func (e *TemplateEngine) resolveBcryptFields(data, root map[string]any) (map[str
 func (e *TemplateEngine) resolveBcryptValue(v any, root map[string]any) (any, error) {
 	switch val := v.(type) {
 	case string:
-		if !reBcrypt.MatchString(val) {
+		keyPath, ok := secretgen.BcryptTarget(val)
+		if !ok {
 			return val, nil
 		}
-		sub := reBcrypt.FindStringSubmatch(val)
-		keyPath := sub[1]
 		plaintext := navigateJSON(root, keyPath)
 		if plaintext == "" {
 			return "", fmt.Errorf("bcrypt: field %q not found or empty in secret data", keyPath)
 		}
-		hash, err := bcrypt.GenerateFromPassword([]byte(plaintext), bcrypt.DefaultCost)
-		if err != nil {
-			return "", fmt.Errorf("bcrypt hash: %w", err)
-		}
-		return string(hash), nil
+		return secretgen.Bcrypt(plaintext)
 	case map[string]any:
 		return e.resolveBcryptFields(val, root)
 	case []any:
