@@ -1,14 +1,12 @@
 {{- if .Values.vault.enabled }}
 ---
-# Unified post-install configuration job for Vault and other services.
-# Runs ohmlab CLI commands to configure Vault with secrets, identity groups,
-# and other declarative configurations defined in Helm values.
+# Post-install job that seeds Vault with the secrets declared in Helm values.
+# Identity groups and aliases are not its business any more: the Vault CR's
+# externalConfig carries them (templates/vault.yaml).
 #
 # Architecture:
-# - Single job runs multiple sequential commands based on ohmlab.* config
-# - Each command (vault secrets, vault identity, etc.) is idempotent
-# - Reusable pattern for harbor, sonarqube, and other services
-# - Hook weight ordering: 10=secrets, 11=identity, 12+=other services
+# - Each command is idempotent
+# - Hook weight ordering: 10=secrets, 12+=other services
 #
 # ServiceAccount and RBAC defined in vault-init-rbac.yaml.
 
@@ -88,15 +86,6 @@ spec:
           EOF
           
           ohmlab vault secret $COMMON_FLAGS {{- if .Values.ohmlab.vault.config.forceRotate }} --force-rotate{{- end }} --config=/tmp/secrets-config.json
-          {{- end }}
-          
-          # Task 2: Configure Vault identity
-          {{- if or .Values.ohmlab.vault.identity.groups .Values.ohmlab.vault.identity.groupAliases }}
-          cat > /tmp/identity-config.json <<'EOF'
-          {{ .Values.ohmlab.vault.identity | toJson }}
-          EOF
-          
-          ohmlab vault identity $COMMON_FLAGS --config=/tmp/identity-config.json
           {{- end }}
         resources:
           {{- toYaml .Values.ohmlab.vault.config.resources | nindent 10 }}

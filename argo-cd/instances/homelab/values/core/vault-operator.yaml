@@ -48,7 +48,8 @@ vault:
 # file would drop everything defined here.
 ohmlab:
   vault:
-    # Identity configuration for ohmlab vault identity command
+    # Identity groups and aliases, applied by bank-vaults from the Vault
+    # resource's externalConfig (templates/vault.yaml).
     identity:
       groups:
       - name: homelab-admins
@@ -58,7 +59,6 @@ ohmlab:
       groupAliases:
       - name: "/admin"
         group: homelab-admins
-        mountAccessor: ""  # Auto-discovered if empty (finds first 'oidc' mount)
     # Declarative secrets configuration for ohmlab vault secrets command
     secrets:
     - path: homelab/platforms/production/core/cert-manager

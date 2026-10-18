@@ -241,6 +241,35 @@ spec:
           ttl: 1h
       {{- end }}
     {{- end }}
+    {{- /*
+      Identity groups and their aliases (OIDC group mapping). bank-vaults adopts
+      a group or alias that already exists by name and keeps its id, so moving
+      them here from the post-config Job changes nothing in Vault.
+    */}}
+    {{- $identity := .Values.ohmlab.vault.identity }}
+    {{- if $identity.groups }}
+    groups:
+    {{- range $g := $identity.groups }}
+    - name: {{ $g.name | quote }}
+      type: {{ $g.type | default "internal" | quote }}
+      policies: {{ $g.policies | default list | toJson }}
+      {{- with $g.metadata }}
+      metadata:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- if $identity.groupAliases }}
+    {{- if and (eq ($identity.mountPath | default "oidc") "oidc") (not .Values.vault.externalConfig.oidcEnabled) }}
+    {{- fail "ohmlab.vault.identity.groupAliases map groups of the oidc auth method: set vault.externalConfig.oidcEnabled, or mountPath to another auth method" }}
+    {{- end }}
+    group-aliases:
+    {{- range $a := $identity.groupAliases }}
+    - name: {{ $a.name | quote }}
+      mountpath: {{ $a.mountPath | default $identity.mountPath | default "oidc" | quote }}
+      group: {{ $a.group | quote }}
+    {{- end }}
+    {{- end }}
     {{- if .Values.vault.externalConfig.secrets }}
     secrets:
       {{- toYaml .Values.vault.externalConfig.secrets | nindent 6 }}
