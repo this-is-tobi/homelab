@@ -15,7 +15,9 @@ ohmlab check
 # vault-post-config Job; can be run manually after a Vault recovery)
 ohmlab vault secret --config secrets.json --auth-method token
 
-# Configure Vault identity groups/aliases (OIDC group mapping)
+# Repair Vault identity groups/aliases by hand (OIDC group mapping). The
+# platform applies them through bank-vaults (ohmlab.vault.identity in the
+# vault-operator values); this is only for a manual repair.
 ohmlab vault identity --config identity.json
 
 # Discover the active Vault raft leader
