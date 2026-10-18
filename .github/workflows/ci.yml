@@ -26,7 +26,7 @@ jobs:
       pull-requests: read
     with:
       GROUPS: >-
-        {"utils": ["utils/*"],
+        {"utils": ["utils/*", "scripts/ci/utils-test-env*"],
         "charts": ["argo-cd/apps/*", "argo-cd/instances/*", "utils/helm/*", "scripts/ci/test-prometheus-rules*", "scripts/ci/check-dashboards*", "scripts/ci/test-kyverno-policies*", "scripts/ci/check-no-legacy-kyverno*", "scripts/ci/test-instance-manager*", "scripts/ci/check-vso-isolation*", "scripts/ci/check-vault-access*", "scripts/ci/test-vault-identity*", "scripts/ci/render-example*", "scripts/build-catalog*", "scripts/lib/*", "scripts/ci/test-catalog-bundle*"],
         "ansible": ["ansible/*"],
         "shell": ["run.sh", "scripts/*"],
@@ -313,6 +313,9 @@ jobs:
       contents: read
     with:
       WORKING_DIRECTORY: utils
+      # A Vault dev server for the suites that check Vault's own behaviour, and
+      # an API server for envtest; see the script for what it sets.
+      TEST_PRECOMMAND: source ../scripts/ci/utils-test-env.sh
 
   govulncheck:
     needs: classify
