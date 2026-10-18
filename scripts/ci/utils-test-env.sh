@@ -2,6 +2,10 @@
 # Sourced by the Go test job (working directory utils/) to prepare what the
 # suites expect, in the shell that then runs `go test`:
 #
+#   KUBEBUILDER_ASSETS      an API server and etcd for envtest, fetched by the
+#                           module's own setup-envtest tool
+#   OHMLAB_REQUIRE_ENVTEST  a missing API server fails the suite instead of
+#                           skipping it, so CI cannot go green on nothing
 #   OHMLAB_TEST_VAULT_*     a Vault dev server, for the tests that check what
 #                           the in-memory KV only imitates (compare-and-set,
 #                           the controller's policy, parity with the CLI engine)
@@ -13,6 +17,10 @@
 # Locally: `source ../scripts/ci/utils-test-env.sh` from utils/, then go test.
 
 _ohmlab_fail() { echo "utils-test-env: $*" >&2; return 1; }
+
+KUBEBUILDER_ASSETS="$(go tool setup-envtest use -p path)" || { _ohmlab_fail "setup-envtest failed"; return 1; }
+export KUBEBUILDER_ASSETS
+export OHMLAB_REQUIRE_ENVTEST=1
 
 _ohmlab_version="$(sed -n 's/^ARG VAULT_VERSION=//p' Dockerfile)"
 [ -n "$_ohmlab_version" ] || { _ohmlab_fail "no VAULT_VERSION in Dockerfile"; return 1; }
@@ -36,5 +44,5 @@ for _ohmlab_i in $(seq 1 50); do
   sleep 0.2
 done
 curl -fsS "$OHMLAB_TEST_VAULT_ADDR/v1/sys/health" >/dev/null 2>&1 || { _ohmlab_fail "the Vault dev server did not start: $(tail -3 "$_ohmlab_dir/vault.log")"; return 1; }
-echo "utils-test-env: Vault $_ohmlab_version dev server at $OHMLAB_TEST_VAULT_ADDR"
+echo "utils-test-env: envtest at $KUBEBUILDER_ASSETS, Vault $_ohmlab_version dev server at $OHMLAB_TEST_VAULT_ADDR"
 unset -f _ohmlab_fail
