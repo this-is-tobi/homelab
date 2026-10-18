@@ -37,6 +37,9 @@ type Client struct {
 	addr   string
 	token  string
 	client *http.Client
+	// session serves the context-aware API (kv2.go); the token above serves
+	// the original one.
+	session *session
 }
 
 // ClientConfig holds configuration for creating a Vault client.
