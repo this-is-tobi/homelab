@@ -9,7 +9,7 @@ dependencies:
   repository: oci://ghcr.io/bank-vaults/helm-charts
 - name: vault-secrets-operator
   alias: vso
-  version: 1.6.0
+  version: 1.6.2
   repository: https://helm.releases.hashicorp.com
   condition: vso.enabled
 - name: backup-utils
