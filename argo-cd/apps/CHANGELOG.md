@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.3.1...catalog-v0.4.0) (2026-10-21)
+
+
+### Features
+
+* **deps:** update helm release traefik to v42 ([75874d4](https://github.com/this-is-tobi/homelab/commit/75874d47e967d0d6a531a4662b652092c0b35dd8))
+
+
+### Bug Fixes
+
+* **deps:** update cnpg postgres images ([d37ff3d](https://github.com/this-is-tobi/homelab/commit/d37ff3d7f95b1c2df1ee191179d018eb77816d48))
+* **deps:** update ghcr.io/this-is-tobi/homelab/ohmlab docker tag to v0.1.2 ([ef269da](https://github.com/this-is-tobi/homelab/commit/ef269da2d0d629ca64175660a4fb2e78bf4a6d76))
+* **deps:** update helm release coder to v2.38.1 ([ce7a7fb](https://github.com/this-is-tobi/homelab/commit/ce7a7fbf9e70b40e9602a54d587d1dc1117dad69))
+* **deps:** update helm release kyverno to v3.9.2 ([6425cf9](https://github.com/this-is-tobi/homelab/commit/6425cf9ca49353fb48893f5eacfbc2772fc4b7da))
+* **deps:** update helm release loki to v18.17.0 ([ecb6a52](https://github.com/this-is-tobi/homelab/commit/ecb6a52c095fda5493358790273e6e74efae4860))
+* **deps:** update helm release loki to v18.17.1 ([b6410ae](https://github.com/this-is-tobi/homelab/commit/b6410ae16f7f9da6a1a5a8f4f3ef9aa85aca6735))
+* **deps:** update helm release rustfs to v1.0.3 ([0f2abbe](https://github.com/this-is-tobi/homelab/commit/0f2abbea8d89f30a8e4191960420538e11237406))
+* **deps:** update helm release teleport-cluster to v18.11.6 ([03f0362](https://github.com/this-is-tobi/homelab/commit/03f0362abe47f7c4f9fe1ed76826068683148bd1))
+* **deps:** update helm release vault-secrets-operator to v1.6.2 ([2e3dcbb](https://github.com/this-is-tobi/homelab/commit/2e3dcbb3f37e83fd5ac878d869806fc3ae43e55c))
+* **deps:** update keycloak docker tag to v0.21.48 ([edce52e](https://github.com/this-is-tobi/homelab/commit/edce52e9e75006ccc3c526de8763fa287aa0a148))
+* **deps:** update kube-prometheus-stack docker tag to v92.10.1 ([1deabbb](https://github.com/this-is-tobi/homelab/commit/1deabbbdfe929369abf62cb29ec0d304971b7c20))
+
 ## [0.3.1](https://github.com/this-is-tobi/homelab/compare/catalog-v0.3.0...catalog-v0.3.1) (2026-10-16)
 
 
