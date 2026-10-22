@@ -123,7 +123,7 @@ A Helm chart to deploy ohmlab.
 | argo-cd.server.resources.requests.memory | string | `"128Mi"` |  |
 | coredns.clusterIP | string | `"10.43.0.10"` |  |
 | coredns.enabled | bool | `false` |  |
-| coredns.image | string | `"rancher/mirrored-coredns-coredns:1.14.7"` |  |
+| coredns.image | string | `"rancher/mirrored-coredns-coredns:1.15.0"` |  |
 | coredns.nodeHosts | list | `[]` |  |
 | coredns.replicas | int | `1` |  |
 | coredns.resources.limits.memory | string | `"170Mi"` |  |
