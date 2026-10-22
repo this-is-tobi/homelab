@@ -1,9 +1,9 @@
 dependencies:
 - name: argo-workflows
   repository: https://argoproj.github.io/argo-helm
-  version: 2.0.13
+  version: 2.0.14
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:ea7cd03b4ceda952e870493c58139b53876739d44722d4e099be2efbb07b7cd0
-generated: "2026-10-14T21:51:57.056216632Z"
+digest: sha256:db87df4d5c6cfa743c643c63d8582dd2756f474a98682a69b855298ab196c9e3
+generated: "2026-10-22T18:49:54.102103646Z"
