@@ -17,7 +17,7 @@ dependencies:
   repository: https://cloudnative-pg.github.io/charts
 - name: loki
   alias: loki
-  version: 18.17.1
+  version: 19.0.3
   repository: https://grafana-community.github.io/helm-charts
   condition: loki.enabled
 - name: alloy
