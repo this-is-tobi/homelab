@@ -1,5 +1,5 @@
 ARG GO_IMAGE=mirror.gcr.io/library/golang:1.27-alpine
-ARG BASE_IMAGE=mirror.gcr.io/library/alpine:3.24.2
+ARG BASE_IMAGE=mirror.gcr.io/library/alpine:3.24.3
 
 # =============================================================================
 # Stage 1: Build Go binary
