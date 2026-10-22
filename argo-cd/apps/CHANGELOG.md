@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.4.0...catalog-v0.5.0) (2026-10-22)
+
+
+### Features
+
+* **deps:** update helm release loki to v19 ([ec858cf](https://github.com/this-is-tobi/homelab/commit/ec858cfc8afc675faba3b7c10762f1b4fd48bc0e))
+
+
+### Bug Fixes
+
+* **deps:** update ghcr.io/this-is-tobi/homelab/ohmlab docker tag to v0.1.3 ([9725091](https://github.com/this-is-tobi/homelab/commit/97250913848266ad2c57e10da24ed567f34d1668))
+* **deps:** update helm release alloy to v1.14.1 ([553eb30](https://github.com/this-is-tobi/homelab/commit/553eb30fcf1d18954a19d13d67b1e5ba9f93bd7d))
+* **deps:** update helm release alloy to v1.14.2 ([c60e364](https://github.com/this-is-tobi/homelab/commit/c60e3643ecab98de10835671c984517190f2e4a0))
+* **deps:** update helm release argo-workflows to v2.0.14 ([ef98033](https://github.com/this-is-tobi/homelab/commit/ef98033700a5136953dd76744f533be28adf8ca7))
+* **deps:** update helm release teleport-cluster to v18.11.7 ([52a2244](https://github.com/this-is-tobi/homelab/commit/52a2244271b355c75d05ed93205b9ff55000819c))
+* **deps:** update helm release traefik to v42.1.3 ([ec6165e](https://github.com/this-is-tobi/homelab/commit/ec6165ea0f73a643eab23d7a0566a360365c75a4))
+* **deps:** update keycloak docker tag to v0.21.49 ([eedbf75](https://github.com/this-is-tobi/homelab/commit/eedbf754cdf8f3f7b76292754059f4206ef21a85))
+* **deps:** update kube-prometheus-stack docker tag to v92.11.0 ([9b3e7b6](https://github.com/this-is-tobi/homelab/commit/9b3e7b6b938156e5bcd00c1a50ebe42229c6dc6f))
+* **deps:** update valkey docker tag to v0.25.15 ([8dbfb81](https://github.com/this-is-tobi/homelab/commit/8dbfb812f316dda3c35d7ca7f0bf942859a80ee5))
+* **deps:** update valkey docker tag to v0.25.16 ([48b9d4b](https://github.com/this-is-tobi/homelab/commit/48b9d4b4aaa4f6cebd33e13a14166038678640f7))
+
 ## [0.4.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.3.1...catalog-v0.4.0) (2026-10-21)
 
 
