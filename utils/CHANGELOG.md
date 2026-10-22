@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/this-is-tobi/homelab/compare/v0.1.2...v0.1.3) (2026-10-22)
+
+
+### Bug Fixes
+
+* **utils:** build with Go 1.27.3 for the crypto/x509 fix ([060d180](https://github.com/this-is-tobi/homelab/commit/060d18058884b9633d5d5ab85e8d8c948368025c))
+
 ## [0.1.2](https://github.com/this-is-tobi/homelab/compare/v0.1.1...v0.1.2) (2026-10-16)
 
 
