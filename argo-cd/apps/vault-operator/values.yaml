@@ -674,7 +674,7 @@ ohmlab:
       # The ohmlab CLI, released from utils/ by cd.yml. Pinned by digest so a
       # sync runs exactly the reviewed release; Renovate proposes each new
       # one. Kyverno's verify-images policy checks its signature.
-      image: "ghcr.io/this-is-tobi/homelab/ohmlab:0.1.2@sha256:4e26d3948302513e2b7477c97a403eb0d3cf3446ff15a787484c9e5204a2cff9"
+      image: "ghcr.io/this-is-tobi/homelab/ohmlab:0.1.3@sha256:c83f26ee4fa97460a1480458f18ac4a932fe2848ece0fc7caab549a3b283e2d6"
       vaultRole: vault-post-config
       authMethod: kubernetes
       authMount: kubernetes
