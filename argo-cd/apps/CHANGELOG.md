@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.5.0...catalog-v0.6.0) (2026-10-24)
+
+
+### Features
+
+* **utils:** add the VaultSeed API and an ohmlab validate command ([eefe372](https://github.com/this-is-tobi/homelab/commit/eefe372ce6d10bf8d9fcb68b5c1c02b2c505c2bf))
+* **vault-operator:** apply identity groups through bank-vaults ([926990c](https://github.com/this-is-tobi/homelab/commit/926990ce5a46a3c6084b24d8cdcfdda7e58ae8d6))
+
+
+### Bug Fixes
+
+* **deps:** update dependency hashicorp/vault to v2.2.1 ([bf51040](https://github.com/this-is-tobi/homelab/commit/bf5104090ed1a3334b9352419f5b2fe55f50f1bd))
+* **deps:** update gha-runner-scale-set docker tag to v0.15.1 ([8e8c4d6](https://github.com/this-is-tobi/homelab/commit/8e8c4d6848cfc4a43f3edc5a0f83f8e9c3503cb7))
+* **deps:** update gha-runner-scale-set-controller docker tag to v0.15.1 ([604bbf8](https://github.com/this-is-tobi/homelab/commit/604bbf81500247672c2624a7a463b1f0b265aacf))
+* **deps:** update helm release alloy to v1.14.3 ([d2e9401](https://github.com/this-is-tobi/homelab/commit/d2e940140ae773d3c4f4c32b24c90a4208ddb0eb))
+* **deps:** update helm release argo-cd to v10.11.1 ([b105631](https://github.com/this-is-tobi/homelab/commit/b105631701e6f48e724084787326616670f6822d))
+* **deps:** update helm release cert-manager to v1.21.3 ([a3306df](https://github.com/this-is-tobi/homelab/commit/a3306df9733521f8b79ac65548152003a0729770))
+* **deps:** update helm release cilium to v1.20.4 ([fd21c68](https://github.com/this-is-tobi/homelab/commit/fd21c6863d6754165010287c37061432052ce182))
+* **deps:** update helm release loki to v19.2.1 ([fee28fb](https://github.com/this-is-tobi/homelab/commit/fee28fbd87a140a6675076270d2c41b5a393da13))
+
 ## [0.5.0](https://github.com/this-is-tobi/homelab/compare/catalog-v0.4.0...catalog-v0.5.0) (2026-10-22)
 
 
