@@ -1,7 +1,7 @@
 dependencies:
 - name: gha-runner-scale-set-controller
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
-  version: 0.15.0
+  version: 0.15.1
 - name: gha-runner-scale-set
   repository: oci://ghcr.io/actions/actions-runner-controller-charts
   version: 0.15.0
@@ -11,5 +11,5 @@ dependencies:
 - name: vso-utils
   repository: https://this-is-tobi.github.io/helm-charts
   version: 2.1.0
-digest: sha256:120c6c06bb43771420d87df6a500b9bc2bbdcbebbb4141190e8aa6c29a5a174b
-generated: "2026-10-06T14:08:38.567274+02:00"
+digest: sha256:e53bc5904c2f9039579808bff9d652c237d8d7dbe9c5ba9d315c6447a560a5f9
+generated: "2026-10-24T18:44:14.214326356Z"
