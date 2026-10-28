@@ -36,8 +36,10 @@ k3sResolvConfNameservers:
 k3sCni: cilium
 # Values used if the CNI ever has to be bootstrapped on a rebuilt cluster
 # (k3s/cni role). No-op on the running cluster — the role skips when a CNI
-# is already present, and ArgoCD owns cilium from then on.
-k3sCniChartValues: argo-cd/instances/homelab/values/core/cilium.yaml
+# is already present, and ArgoCD owns cilium from then on. The path starts
+# from this inventory: the role renders from an ohmlab checkout, where this
+# instance's values are not.
+k3sCniChartValues: "{{ inventory_dir }}/../../argo-cd/instances/homelab/values/core/cilium.yaml"
 #
 # false: no ServiceLB. Traefik's Service carries a static `spec.externalIPs`
 #   list instead (argo-cd/instances/homelab/values/core/traefik.yaml), so
