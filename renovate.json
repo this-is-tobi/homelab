@@ -1,0 +1,92 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "description": "k3s moves one minor at a time (Kubernetes does not support skipping one) and merging the PR upgrades every node in the next maintenance window — one PR per minor, minors gated behind the dashboard, and a week of soak for re-spun releases",
+      "matchDepNames": [
+        "k3s-io/k3s"
+      ],
+      "separateMultipleMinor": true,
+      "minimumReleaseAge": "7 days",
+      "prBodyNotes": [
+        "Merging upgrades every node in the next system-upgrade window (immediately if merged during one): control-plane nodes one at a time, then the agents."
+      ]
+    },
+    {
+      "matchDepNames": [
+        "k3s-io/k3s"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "dependencyDashboardApproval": true,
+      "prBodyNotes": [
+        "#### Kubernetes minor checklist",
+        "- [ ] every chart deployed on the cluster supports the new Kubernetes minor",
+        "- [ ] the ohmlab release this instance consumes runs kubectl of the same minor (`KUBECTL_VERSION` in `utils/Dockerfile`, `controller.job.kubectlImage` in `argo-cd/apps/system-upgrade/values.yaml`)"
+      ]
+    },
+    {
+      "description": "A release of the ohmlab bootstrap chart was already reviewed and verified in the product repository: take minors and patches without a second review. Majors wait for a human",
+      "matchDepNames": [
+        "ghcr.io/this-is-tobi/charts/ohmlab"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "k3s version: the Ansible inventory pin and the in-cluster system-upgrade Plan version — bumped together",
+      "managerFilePatterns": [
+        "/^ansible/inventory/group_vars/k3s\\.ya?ml$/",
+        "/^argo-cd/instances/[^/]+/values/core/system-upgrade\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "k3sVersion: \"(?<currentValue>v[^\"]+)\"",
+        "version: \"(?<currentValue>v\\d+\\.\\d+\\.\\d+\\+k3s\\d+)\""
+      ],
+      "depNameTemplate": "k3s-io/k3s",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)\\+k3s(?<build>\\d+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Custom ARM64 mattermost image (upstream has no official arm64 build) — tracked independently of the chart, whose appVersion/digest targets amd64 only",
+      "managerFilePatterns": [
+        "/^argo-cd/instances/.*/values/tenant/mattermost\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "tag: (?<currentValue>[0-9.]+)"
+      ],
+      "depNameTemplate": "ghcr.io/this-is-tobi/mirror/mattermost",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Pinned ohmlab bootstrap chart (the registry catalog entry) in each instance's core.yaml; merging the bump is what updates the self-managed Argo CD",
+      "managerFilePatterns": [
+        "/^argo-cd/instances/[^/]+/core\\.yaml$/"
+      ],
+      "matchStrings": [
+        "catalog: ohmlab\\n\\s+targetRevision: (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\\s*\\n"
+      ],
+      "depNameTemplate": "ghcr.io/this-is-tobi/charts/ohmlab",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "semver"
+    }
+  ]
+}
