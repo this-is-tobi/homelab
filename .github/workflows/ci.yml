@@ -19,11 +19,12 @@ jobs:
   # The product's checks of an instance (Vault access, VaultSeeds, VSO
   # isolation), at the product revision this instance consumes.
   validate-instance:
-    uses: this-is-tobi/homelab/.github/workflows/validate-instance.yml@main
+    uses: this-is-tobi/ohmlab/.github/workflows/validate-instance.yml@main
     permissions:
       contents: read
     with:
       ref: main
+      product-repository: this-is-tobi/ohmlab
 
   # Scans the commits the pull request brings. The shared workflow's default
   # walks the whole history.
