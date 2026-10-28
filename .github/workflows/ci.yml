@@ -1,0 +1,55 @@
+name: CI
+
+# Pull requests only: GitHub runs them against the merge of the branch into
+# main, so what is checked is what lands.
+on:
+  pull_request:
+    branches:
+      - main
+
+# A new push to a pull request supersedes the run in flight.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # The product's checks of an instance (Vault access, VaultSeeds, VSO
+  # isolation), at the product revision this instance consumes.
+  validate-instance:
+    uses: this-is-tobi/homelab/.github/workflows/validate-instance.yml@main
+    permissions:
+      contents: read
+    with:
+      ref: main
+
+  # Scans the commits the pull request brings. The shared workflow's default
+  # walks the whole history.
+  gitleaks:
+    uses: this-is-tobi/github-workflows/.github/workflows/scan-gitleaks.yml@v0
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+    with:
+      LOG_OPTS: ${{ format('{0}..{1}', github.event.pull_request.base.sha, github.sha) }}
+
+  lint-commits:
+    uses: this-is-tobi/github-workflows/.github/workflows/lint-commits.yml@v0
+    permissions:
+      contents: read
+
+  # The single check to require in branch protection.
+  ci-status:
+    if: ${{ always() }}
+    needs:
+      - validate-instance
+      - gitleaks
+      - lint-commits
+    uses: this-is-tobi/github-workflows/.github/workflows/check-jobs.yml@v0
+    permissions: {}
+    with:
+      NEEDS: ${{ toJson(needs) }}
+      ALLOW_SKIPPED: true
