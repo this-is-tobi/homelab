@@ -11,7 +11,7 @@ destination:
   server: https://kubernetes.default.svc
 
 # The instance repository: this file, core.yaml, tenant.yaml and the values.
-repoURL: https://github.com/this-is-tobi/homelab-instance.git
+repoURL: https://github.com/this-is-tobi/homelab.git
 valuesRepoURL: ""
 targetRevision: main
 

@@ -52,7 +52,7 @@ rootManager:
     # The instance-manager chart.
     sources: https://github.com/this-is-tobi/ohmlab.git
     # The instance folders (argo-cd/instances/*).
-    values: https://github.com/this-is-tobi/homelab-instance.git
+    values: https://github.com/this-is-tobi/homelab.git
   targetRevision: main
 
 # Dormant CoreDNS capability (templates/coredns.yaml) — coredns.enabled
