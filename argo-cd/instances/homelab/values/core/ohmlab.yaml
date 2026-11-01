@@ -112,7 +112,7 @@ argo-cd:
       # If Keycloak is down, ArgoCD falls back to local admin login — no disruption.
       oidc.config: |
         name: "Keycloak"
-        issuer: "https://sso.core.ohmlab.fr/realms/homelab"
+        issuer: "https://sso.core.ohmlab.fr/realms/ohmlab"
         clientID: "argo-cd-core"
         clientSecret: "$argocd-core-oidc:OIDC_CLIENT_SECRET"
         requestedScopes: ["openid", "profile", "email", "groups"]
