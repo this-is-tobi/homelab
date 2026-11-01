@@ -24,7 +24,9 @@ monitoring:
 # BackendTLSPolicy below.
 gateway:
   enabled: true
-  gatewayName: homelab-gateway-traefik
+  # Named here because the pinned ohmlab chart release does not read the
+  # instance's names yet.
+  gatewayName: homelab-gateway
   gatewayNamespace: kube-system
   backendTLSPolicies:
   - name: argocd-server

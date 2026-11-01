@@ -39,11 +39,10 @@ vso:
 
 # DECOMMISSIONED (app disabled in core.yaml; kept as an escape hatch).
 # gateway.enabled MUST stay false on any re-enable: the traefik app owns
-# the homelab-gateway-traefik Gateway and the gateway-wildcard-tls
+# the homelab-gateway Gateway and the gateway-wildcard-tls
 # Certificate now.
 gateway:
   enabled: false
-  name: homelab-gateway
   namespace: kube-system
   domain: ohmlab.fr
   clusterIssuer: letsencrypt-dns-prod

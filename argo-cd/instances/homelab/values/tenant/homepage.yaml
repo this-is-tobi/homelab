@@ -88,7 +88,6 @@ homepage:
 
 gateway:
   enabled: true
-  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
   routes:
   - name: homepage
