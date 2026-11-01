@@ -10,7 +10,6 @@
 # BackendTLSPolicy below.
 gateway:
   enabled: true
-  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
   backendTLSPolicies:
   - name: argocd-server

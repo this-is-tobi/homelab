@@ -12,7 +12,6 @@ ciliumGateway:
 # attached only as defense-in-depth; do not rely on it alone.
 gateway:
   enabled: true
-  gatewayName: homelab-gateway-traefik
   gatewayNamespace: kube-system
   routes:
   - name: hubble-ui

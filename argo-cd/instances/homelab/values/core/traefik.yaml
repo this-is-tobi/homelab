@@ -72,7 +72,6 @@ crowdsecBouncer:
 
 gateway:
   enabled: true
-  name: homelab-gateway-traefik
   namespace: kube-system
   domain: ohmlab.fr
   wildcardTlsSecret: gateway-wildcard-tls
