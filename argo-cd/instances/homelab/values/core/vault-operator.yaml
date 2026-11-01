@@ -13,6 +13,10 @@ gateway:
     - backendService: vault
       backendPort: 8200
 
+# The core tier's secrets stay in the instance's KV mount until they are
+# copied to the ohmlab system mount.
+systemMount: homelab
+
 vault:
   externalConfig:
     # Requires the NAT hairpin from inside the cluster to Keycloak's
