@@ -535,8 +535,12 @@ backup-utils:
 # controller's apiserver-watch (both run here).
 networkPolicy:
   enabled: true
+  # Vault, the bank-vaults operator, and the Vault Secrets Operator (its
+  # kube-rbac-proxy).
   prometheusScrapePorts:
   - { protocol: TCP, port: 8200 }
+  - { protocol: TCP, port: 8383 }
+  - { protocol: TCP, port: 8443 }
   extraIngress:
   - name: traefik
     rules:
