@@ -71,7 +71,7 @@ clusterIssuers:
 vso:
   vaultStaticSecrets:
     scwCreds:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/cert-manager
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for

@@ -273,7 +273,7 @@ vso:
       caCertSecretRef: vault-tls
   vaultStaticSecrets:
     argoCdCoreOidc:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/argo-cd
       type: kv-v2
       vaultAuthRef: ohmlab-vso-default
