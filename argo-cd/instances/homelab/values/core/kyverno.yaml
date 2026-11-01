@@ -15,7 +15,6 @@ kyverno: {}
 # as the apiserver instance handling a given call.
 networkPolicy:
   enabled: true
-  egressDeny: true
   # Metrics port shared by the four controllers (templates/servicemonitor.yaml).
   prometheusScrapePorts:
   - { protocol: TCP, port: 8000 }

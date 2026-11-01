@@ -13,9 +13,6 @@ keycloak:
   keycloak:
     hostnameAdmin: "https://sso.core.ohmlab.fr"
     hostname: "https://sso.core.ohmlab.fr"
-    existingSecret: keycloak-admin
-    secretKeys:
-      adminPasswordKey: password
   database:
     host: keycloak-pg-cluster-rw
     port: "5432"
@@ -45,7 +42,6 @@ cnpg:
 # egress rule either.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9000 }   # keycloak itself, http-metrics
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter

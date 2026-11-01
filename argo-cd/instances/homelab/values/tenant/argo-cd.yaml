@@ -44,18 +44,11 @@ argo-cd:
         clientSecret: "$argo-cd-sso:OIDC_CLIENT_SECRET"
         requestedScopes: ["openid", "profile", "email", "groups"]
   notifications:
-    enabled: false
     argocdUrl: "https://gitops.ohmlab.fr"
     context:
       provider: self-hosted
       cluster: homelab
       environment: production
-    secret:
-      create: false
-      items:
-        mattermost-token: ""
-        email-username: ""
-        email-password: ""
     notifiers:
       service.email: |
         username: $email-username
@@ -71,7 +64,6 @@ argo-cd:
       domain: gitops.ohmlab.fr
   crds:
     install: false
-    keep: true
 
 # Zero-trust NetworkPolicy. EGRESS ONLY (ingress is already chart-shipped
 # — this namespace's application-controller/applicationset-controller/
@@ -79,8 +71,6 @@ argo-cd:
 # NetworkPolicy).
 networkPolicy:
   enabled: true
-  egressDeny: true
-  extraIngress: []
   extraEgress:
   - name: apiserver
     rules:

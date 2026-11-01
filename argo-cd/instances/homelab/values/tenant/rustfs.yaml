@@ -17,9 +17,6 @@ gateway:
       backendPort: 9000
 
 rustfs:
-  # Exposed via Gateway API HTTPRoutes (gateway.routes) — no Ingress.
-  ingress:
-    enabled: false
   config:
     rustfs:
       # Metrics only, pushed over OTLP/HTTP to Alloy, which drops the
@@ -89,8 +86,6 @@ rustfs:
 # standalone S3 storage, no database.
 networkPolicy:
   enabled: true
-  egressDeny: true
-  prometheusScrapePorts: []
   extraIngress:
   - name: traefik
     rules:

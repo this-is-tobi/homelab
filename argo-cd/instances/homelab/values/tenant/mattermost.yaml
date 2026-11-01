@@ -21,7 +21,6 @@ mattermost:
   config:
     MM_SERVICESETTINGS_SITEURL: "https://mattermost.ohmlab.fr"
     MM_FILESETTINGS_AMAZONS3BUCKET: mattermost
-    MM_FILESETTINGS_AMAZONS3PATHPREFIX: ""
     MM_FILESETTINGS_AMAZONS3REGION: fr-par
     MM_FILESETTINGS_AMAZONS3ENDPOINT: s3.fr-par.scw.cloud
   extraEnvVars:
@@ -60,7 +59,6 @@ cnpg:
 # mattermost has no OIDC.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter only; app itself has no ServiceMonitor
   extraIngress:

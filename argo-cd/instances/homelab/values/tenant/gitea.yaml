@@ -33,7 +33,6 @@ gitea:
         ROOT_URL: "https://git.ohmlab.fr"
       openid:
         WHITELISTED_URIS: sso.core.ohmlab.fr
-    additionalConfigSources: []
     # - secret:
     #     secretName: "gitea-app-ini-oauth"
     # - configMap:
@@ -105,7 +104,6 @@ cnpg:
 # only the traffic this namespace needs.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 3000 }   # gitea app /metrics, same port as the UI
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter

@@ -6,8 +6,6 @@
 # inventory/group_vars/gateway.yml).
 
 traefik:
-  deployment:
-    replicas: 2
   service:
     spec:
       # One entry per node. There is no LoadBalancer controller in this
@@ -72,12 +70,8 @@ crowdsecBouncer:
 
 gateway:
   enabled: true
-  namespace: kube-system
   domain: ohmlab.fr
-  wildcardTlsSecret: gateway-wildcard-tls
-  apexTlsSecret: gateway-wildcard-tls
   manageCertificate: true
-  dnsClusterIssuer: letsencrypt-dns-prod
   extraDnsNames:
   - "*.core.ohmlab.fr"
   - "*.s3.ohmlab.fr"

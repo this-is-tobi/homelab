@@ -10,7 +10,6 @@ cloudnative-pg: {}
 # on failover/switchover, or once Database/DatabaseRole CRs are used).
 networkPolicy:
   enabled: true
-  egressDeny: true
   # Operator metrics (templates/podmonitor.yaml).
   prometheusScrapePorts:
   - { protocol: TCP, port: 8080 }
