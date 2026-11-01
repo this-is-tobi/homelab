@@ -3,9 +3,7 @@
 targets:
   vault:
     enabled: true
-    # Observe only while the core secrets move to the ohmlab system mount: the
-    # controller reports what it would write and writes nothing.
-    observeOnly: true
+    observeOnly: false
     watchNamespaces:
     - vault-operator-system
 
