@@ -75,8 +75,10 @@ gateway:
   extraDnsNames:
   - "*.core.ohmlab.fr"
   - "*.s3.ohmlab.fr"
-  # TLS cert wildcards match a single label: appset.gitops.ohmlab.fr needs
-  # its own SAN (*.ohmlab.fr does not cover it).
+  # TLS cert wildcards match a single label: a host under gitops.ohmlab.fr
+  # needs its own SAN (*.ohmlab.fr does not cover it), as the tenant
+  # ApplicationSet webhook (appset.gitops.ohmlab.fr) will when Git webhooks
+  # are turned on.
   - "*.gitops.ohmlab.fr"
   # LAN-only UIs (hubble, traefik dashboard, longhorn — see the lan-only
   # Middleware below). The Scaleway zone has a deep wildcard so these names
