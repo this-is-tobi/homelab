@@ -22,7 +22,7 @@ vault:
     # the first thing to check (and the first thing to flip back to
     # false to unblock policy application while debugging).
     oidcEnabled: true
-    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/homelab"
+    oidcDiscoveryUrl: "https://sso.core.ohmlab.fr/realms/ohmlab"
     oidcRedirectUris:
     - "https://vault.core.ohmlab.fr/ui/vault/auth/oidc/oidc/callback"
     - "https://vault.core.ohmlab.fr/oidc/callback"
@@ -58,13 +58,13 @@ ohmlab:
     # resource's externalConfig (templates/vault.yaml).
     identity:
       groups:
-      - name: homelab-admins
+      - name: ohmlab-admins
         type: external
         policies:
         - admin
       groupAliases:
       - name: "/admin"
-        group: homelab-admins
+        group: ohmlab-admins
     # Declarative secrets configuration for ohmlab vault secrets command
     secrets:
     - path: ohmlab/platforms/production/core/cert-manager
