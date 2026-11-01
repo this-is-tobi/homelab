@@ -96,7 +96,9 @@ longhorn:
     # 8 s is shorter than these disks stall under load: replicas were dropped
     # in bursts (6, 9, 8 at a time) and each one cost a rebuild, which loads
     # the disks again. 20 s rides out a stall; a dead replica still goes.
-    engineReplicaTimeout: '{"v1":"20"}'
+    # Longhorn skips a value that does not name every data engine
+    # ("mismatched data engines"), so v2, unused here, keeps its default.
+    engineReplicaTimeout: '{"v1":"20","v2":"8"}'
   # Control-plane pods of Longhorn: two of each are enough to survive a node.
   csi:
     attacherReplicaCount: 2
