@@ -3,15 +3,11 @@
 targets:
   vault:
     enabled: true
-    observeOnly: false
-    watchNamespaces:
-    - vault-operator-system
 
 # Zero-trust NetworkPolicy for this namespace: the API server and Vault, plus
 # DNS (added by the chart); Prometheus scrapes the metrics port.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 8080 }
   extraEgress:

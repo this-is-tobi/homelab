@@ -146,7 +146,6 @@ lokiStack:
   singleReplicaStorage:
     enabled: true
 loki:
-  deploymentMode: Monolithic
   loki:
     auth_enabled: false
     # Chart default is 3 (assumes a multi-instance SimpleScalable/
@@ -178,7 +177,6 @@ loki:
     # unused.
     sidecar: false
     persistence:
-      enabled: true
       size: 20Gi
       storageClass: longhorn-single-replica
     resources:
@@ -225,7 +223,6 @@ alloy:
   enabled: true
   controller:
     type: deployment
-    replicas: 1
   alloy:
     configMap:
       content: |
@@ -325,7 +322,6 @@ alloy:
   # Idle except on reload bursts, which a 50m quota throttled constantly.
   configReloader:
     resources:
-      requests: { cpu: 10m, memory: 50Mi }
       limits: { cpu: 250m, memory: 64Mi }
   # No hostPath needed (see above), so any non-root UID works. Nested
   # under global: — that's the key this chart actually reads; a

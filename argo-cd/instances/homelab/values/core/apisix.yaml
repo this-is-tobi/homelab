@@ -2,7 +2,6 @@
 # Replacement for ingress-nginx — enable one at a time.
 
 apisix:
-  replicaCount: 2
 
   nginx:
     logs:
@@ -13,21 +12,12 @@ apisix:
       accessLogFormat: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $http_host $request_time $upstream_addr $upstream_status $upstream_response_time'
 
   service:
-    type: LoadBalancer
     externalTrafficPolicy: Local
-
-  ingress-controller:
-    enabled: true
-    config:
-      apisix:
-        adminAPIVersion: v3
 
 # Standalone etcd (cloudpirates chart) — replaces the bundled bitnami etcd.
 etcd:
-  replicaCount: 3
   persistence:
     storageClass: longhorn
-    size: 5Gi
 
 # DECOMMISSIONED (app disabled in core.yaml; kept as an escape hatch).
 # gateway.enabled MUST stay false on any re-enable: the traefik app owns
@@ -35,12 +25,7 @@ etcd:
 # Certificate now.
 gateway:
   enabled: false
-  namespace: kube-system
   domain: ohmlab.fr
-  clusterIssuer: letsencrypt-dns-prod
-  dnsClusterIssuer: letsencrypt-dns-prod
-  wildcardTlsSecret: gateway-wildcard-tls
-  apexTlsSecret: gateway-wildcard-tls
   extraListeners:
   - name: https-wildcard-core
     protocol: HTTPS

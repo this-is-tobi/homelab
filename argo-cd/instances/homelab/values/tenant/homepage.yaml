@@ -4,9 +4,6 @@ homepage:
   config:
     settings:
       title: "Tobi's Cloud"
-      theme: dark
-      color: slate
-      headerStyle: clean
       layout:
       - Core Services:
           style: row
@@ -106,7 +103,6 @@ gateway:
 # egress path, but only fire while a dashboard tab is open.
 networkPolicy:
   enabled: true
-  egressDeny: true
   extraIngress:
   - name: traefik
     rules:

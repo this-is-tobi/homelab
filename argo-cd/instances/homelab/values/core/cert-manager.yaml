@@ -1,7 +1,4 @@
 cert-manager:
-  crds:
-    enabled: true
-    keep: true
   extraArgs:
     - --dns01-recursive-nameservers=ns0.dom.scw.cloud:53,ns1.dom.scw.cloud:53
     - --dns01-recursive-nameservers-only
@@ -78,7 +75,6 @@ clusterIssuers:
 # pod-CIDR identity, not the calling node's own IP.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9402 }   # namespace-wide: cainjector has no metrics port, harmless no-op
   extraIngress:

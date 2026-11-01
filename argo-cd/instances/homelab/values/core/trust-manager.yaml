@@ -2,7 +2,6 @@
 # the traffic trust-manager needs.
 networkPolicy:
   enabled: true
-  egressDeny: true
   extraIngress:
   # The Bundle validating webhook (failurePolicy Fail) is called by the
   # apiserver; the pod-CIDR ipBlock matches how that call arrives.

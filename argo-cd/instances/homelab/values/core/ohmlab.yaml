@@ -49,13 +49,9 @@ gateway:
       backendPort: 7000
 
 rootManager:
-  enabled: true
   repoURL:
-    # The instance-manager chart.
-    sources: https://github.com/this-is-tobi/ohmlab.git
     # The instance folders (argo-cd/instances/*).
     values: https://github.com/this-is-tobi/homelab.git
-  targetRevision: main
 
 # Dormant CoreDNS capability (templates/coredns.yaml) — coredns.enabled
 # stays false (chart default) until a deliberate activation decision.
@@ -75,8 +71,6 @@ coredns:
 
 projects:
   core:
-    enabled: true
-    name: admin-core
     # The chart default lists only the git repositories. The registry holds
     # the published ohmlab chart (`catalogs` in instance.yaml); it has to be
     # allowed before an app takes its chart from there. A source is allowed
@@ -86,8 +80,6 @@ projects:
     - "ghcr.io/this-is-tobi/charts"
     - "https://github.com/this-is-tobi/ohmlab.git"
   tenant:
-    enabled: true
-    name: admin-tenant
     # Tenant apps take their charts from the product repository and their
     # values from the instance repository, under the same names as above.
     sourceRepos:
@@ -95,7 +87,6 @@ projects:
     - "https://github.com/this-is-tobi/ohmlab.git"
 
 argo-cd:
-  enabled: true
   configs:
     secret:
       # Set at bootstrap via:
@@ -214,15 +205,10 @@ argo-cd:
     pdb:
       enabled: true
       maxUnavailable: 1
-    # Webhook exposed via HTTPRoute (gateway wildcard TLS) — no Ingress.
-    ingress:
-      enabled: false
   server:
     pdb:
       enabled: true
       maxUnavailable: 1
-    ingress:
-      enabled: false
     certificate:
       enabled: true
       domain: gitops.core.ohmlab.fr
@@ -230,9 +216,6 @@ argo-cd:
         group: cert-manager.io
         kind: ClusterIssuer
         name: letsencrypt-dns-prod
-  crds:
-    install: true
-    keep: true
   controller:
     pdb:
       enabled: true
@@ -260,17 +243,8 @@ vso:
       name: vso
   vaultAuth:
     default:
-      method: kubernetes
-      mount: kubernetes
       kubernetes:
         role: argo-cd-core
-        serviceAccount: vso
-        audiences: [vault]
-  vaultConnection:
-    default:
-      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-      skipTLSVerify: false
-      caCertSecretRef: vault-tls
   vaultStaticSecrets:
     argoCdCoreOidc:
       mount: ohmlab
@@ -300,8 +274,6 @@ vso:
 # argocd-system from being able to sync this very NetworkPolicy change).
 networkPolicy:
   enabled: true
-  egressDeny: true
-  extraIngress: []
   extraEgress:
   - name: apiserver
     rules:

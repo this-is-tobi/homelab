@@ -27,27 +27,6 @@ lanOnly:
   - 10.45.0.0/16 # cilium pod CIDR
 
 vso:
-  vaultStaticSecrets:
-    longhornSso:
-      type: kv-v2
-      vaultAuthRef: longhorn-system-vso-default
-      refreshAfter: 1h
-      hmacSecretData: true
-      destination:
-        name: longhorn-oauth2-proxy-creds
-        create: true
-        type: Opaque
-        transformation:
-          excludeRaw: true
-          excludes:
-          - ".*"
-          templates:
-            client-id:
-              text: '{{ get .Secrets "keycloak" | dig "clientId" "" }}'
-            client-secret:
-              text: '{{ get .Secrets "keycloak" | dig "clientSecret" "" }}'
-            cookie-secret:
-              text: '{{ get .Secrets "keycloak" | dig "cookieSecret" "" }}'
   extraObjects:
   - apiVersion: v1
     kind: ServiceAccount
@@ -105,8 +84,6 @@ backups:
   #   retain: 4
 
 longhorn:
-  ingress:
-    enabled: false
   # Sized for this cluster: four storage nodes (pi1, pi2, pi5, pi6), each a
   # USB 3 spinning disk on Raspberry Pi 4s. Random writes are the limit, so
   # background work is kept to one task per node at a time.
@@ -148,7 +125,6 @@ longhorn:
 # ever changes.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 9500 }   # longhorn-manager, SM port "manager"
   extraIngress:

@@ -35,7 +35,6 @@ users:
 # operator (8080) — templates/podmonitors.yaml.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 3000 }
   - { protocol: TCP, port: 8080 }

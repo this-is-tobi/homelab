@@ -81,7 +81,7 @@ ohmlab:
         admin:
           username: admin
           password: "<random:24>"
-        # Admin user in the homelab realm (for OIDC login into apps).
+        # Admin user of both realms, ohmlab and homelab (for OIDC login into apps).
         # This is distinct from the Keycloak service-admin (above).
         # Password is injected by VSO into keycloak-config secret → used by
         # keycloak-config-cli to create the user on first deploy.
@@ -89,14 +89,13 @@ ohmlab:
           username: admin@ohmlab.fr
           password: "<random:24>"
         domain: sso.core.ohmlab.fr
-        realm: homelab
         rootDomain: ohmlab.fr
         # Centralized OIDC client credentials — each app references these via
         # <ref:ohmlab/platforms/production/core/keycloak#clients.<app>.clientSecret>
         # so keycloak policy only needs access to its own path.
         clients:
-          # Core services — must use distinct clientIds to avoid collision with
-          # tenant apps that share the same 'homelab' realm.
+          # Core services sign in through the ohmlab realm; distinct clientIds keep
+          # them apart from the tenant apps' clients wherever both share one realm.
           argo-cd-core:
             clientId: argo-cd-core
             clientSecret: "<random:32>"
@@ -526,25 +525,6 @@ ohmlab:
     #       clientId: "vaultwarden"
     #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
 
-vaultOidcCredentials:
-  enabled: true
-
-vso:
-  enabled: true
-  vaultConnection:
-    default:
-      address: "https://vault.vault-operator-system.svc.cluster.local:8200"
-      skipTLSVerify: false
-      caCertSecretRef: vault-tls
-  vaultAuth:
-    default:
-      method: kubernetes
-      mount: kubernetes
-      kubernetes:
-        role: vault-operator
-        serviceAccount: vso
-      vaultConnectionRef: default
-
 backup-utils:
   enabled: false  # S3 keys not configured yet — re-enable when available
 
@@ -555,7 +535,6 @@ backup-utils:
 # controller's apiserver-watch (both run here).
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 8200 }
   extraIngress:

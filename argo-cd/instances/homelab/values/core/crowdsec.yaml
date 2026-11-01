@@ -13,7 +13,6 @@ cnpg:
 # only the traffic this namespace needs.
 networkPolicy:
   enabled: true
-  egressDeny: true
   prometheusScrapePorts:
   - { protocol: TCP, port: 6060 }   # lapi + agent, both expose "metrics" on this port
   - { protocol: TCP, port: 9187 }   # CNPG postgres-exporter
