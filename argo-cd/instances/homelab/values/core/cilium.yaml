@@ -53,7 +53,7 @@ cilium:
 vso:
   vaultStaticSecrets:
     hubbleSso:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/hubble
 
 sso:

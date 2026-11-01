@@ -39,46 +39,46 @@ cnpg:
 vso:
   vaultStaticSecrets:
     keycloakAdmin:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     keycloakConfig:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     keycloakDbInfos:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     keycloakDbAdmin:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     keycloakDbApp:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     keycloakPgBackup:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientGitea:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientGrafanaCore:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientArgoCd:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientArgoCdCore:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientVaultCore:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientLonghornCore:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientHubbleCore:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
     clientRustfs:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/keycloak
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for

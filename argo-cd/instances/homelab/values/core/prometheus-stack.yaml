@@ -63,22 +63,22 @@ kube-prometheus-stack:
 vso:
   vaultStaticSecrets:
     monitoringAdmin:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/prometheus-stack
     monitoringSso:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/prometheus-stack
     alertmanagerMattermost:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/prometheus-stack
     grafanaDbAdmin:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/prometheus-stack
     grafanaDbApp:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/prometheus-stack
     grafanaPgBackup:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/prometheus-stack
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for

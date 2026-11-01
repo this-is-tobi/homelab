@@ -12,10 +12,6 @@ gateway:
     - backendService: vault
       backendPort: 8200
 
-# The core tier's secrets stay in the instance's KV mount until they are
-# copied to the ohmlab system mount.
-systemMount: homelab
-
 vault:
   externalConfig:
     # Requires the NAT hairpin from inside the cluster to Keycloak's
@@ -55,12 +51,9 @@ ohmlab:
     enabled: true
   vault:
     # The secrets below as VaultSeed objects: the controller seeds them and
-    # keeps them as declared. Off while the core secrets move to the ohmlab
-    # system mount: a VaultSeed's path cannot change, so the objects are
-    # removed (Retain: Vault keeps every path) and come back with their new
-    # paths.
+    # keeps them as declared.
     seeds:
-      enabled: false
+      enabled: true
     # Identity groups and aliases, applied by bank-vaults from the Vault
     # resource's externalConfig (templates/vault.yaml).
     identity:
@@ -74,7 +67,7 @@ ohmlab:
         group: homelab-admins
     # Declarative secrets configuration for ohmlab vault secrets command
     secrets:
-    - path: homelab/platforms/production/core/cert-manager
+    - path: ohmlab/platforms/production/core/cert-manager
       data:
         email: this-is-tobi@proton.me
         scaleway:
@@ -83,7 +76,7 @@ ohmlab:
           projectId: ""
           domain: ohmlab.fr
     # Keycloak MUST come before apps that use <ref:...> to its clients
-    - path: homelab/platforms/production/core/keycloak
+    - path: ohmlab/platforms/production/core/keycloak
       data:
         admin:
           username: admin
@@ -99,7 +92,7 @@ ohmlab:
         realm: homelab
         rootDomain: ohmlab.fr
         # Centralized OIDC client credentials — each app references these via
-        # <ref:homelab/platforms/production/core/keycloak#clients.<app>.clientSecret>
+        # <ref:ohmlab/platforms/production/core/keycloak#clients.<app>.clientSecret>
         # so keycloak policy only needs access to its own path.
         clients:
           # Core services — must use distinct clientIds to avoid collision with
@@ -149,7 +142,7 @@ ohmlab:
             endpoint: "https://s3.fr-par.scw.cloud"
             region: fr-par
             secretKey: ""
-    - path: homelab/platforms/production/core/argo-cd
+    - path: ohmlab/platforms/production/core/argo-cd
       # Core ArgoCD (bootstrapped via run.sh into argocd-system).
       # Password is set at bootstrap time via $ARGOCD_ADMIN_PASSWORD; this entry
       # serves as the Vault source-of-truth for rotation and auditing.
@@ -161,7 +154,7 @@ ohmlab:
           passwordHashed: "<bcrypt:admin.password>"
         keycloak:
           clientId: argo-cd-core
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-cd-core.clientSecret>"
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.argo-cd-core.clientSecret>"
     - path: homelab/platforms/production/tenant/argo-cd
       # Tenant ArgoCD instance (deployed as an ArgoCD app into argo-cd namespace).
       # Credentials are injected at runtime via VSO into the argo-cd namespace.
@@ -172,7 +165,7 @@ ohmlab:
           passwordHashed: "<bcrypt:admin.password>"
         keycloak:
           clientId: argo-cd
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-cd.clientSecret>"
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.argo-cd.clientSecret>"
     - path: homelab/platforms/production/tenant/gitea
       data:
         admin:
@@ -199,7 +192,7 @@ ohmlab:
             secretKey: ""
         keycloak:
           clientId: gitea
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.gitea.clientSecret>"
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.gitea.clientSecret>"
     - path: homelab/platforms/production/tenant/mattermost
       data:
         admin:
@@ -236,25 +229,25 @@ ohmlab:
           secretKey: "<random:32>"
         keycloak:
           clientId: rustfs
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.rustfs.clientSecret>"
-    - path: homelab/platforms/production/core/longhorn
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.rustfs.clientSecret>"
+    - path: ohmlab/platforms/production/core/longhorn
       data:
         keycloak:
           clientId: longhorn-core
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.longhorn-core.clientSecret>"
-    - path: homelab/platforms/production/core/hubble
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.longhorn-core.clientSecret>"
+    - path: ohmlab/platforms/production/core/hubble
       data:
         keycloak:
           clientId: hubble-core
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.hubble-core.clientSecret>"
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.hubble-core.clientSecret>"
           cookieSecret: "<random:32>"
-    - path: homelab/platforms/production/core/traefik-dashboard
+    - path: ohmlab/platforms/production/core/traefik-dashboard
       data:
         keycloak:
           clientId: traefik-dashboard-core
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.traefik-dashboard-core.clientSecret>"
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.traefik-dashboard-core.clientSecret>"
           cookieSecret: "<random:32>"
-    - path: homelab/platforms/production/core/prometheus-stack
+    - path: ohmlab/platforms/production/core/prometheus-stack
       data:
         # Set manually in Vault with `vault kv patch` (Mattermost generates
         # the hook id): the in-cluster form
@@ -266,7 +259,7 @@ ohmlab:
           password: "<random:24>"
         keycloak:
           clientId: grafana-core
-          clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.grafana-core.clientSecret>"
+          clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.grafana-core.clientSecret>"
         postgres:
           admin:
             username: postgres
@@ -293,7 +286,7 @@ ohmlab:
           id: ""
           installationId: ""
           privateKey: ""
-    - path: homelab/platforms/production/core/apisix
+    - path: ohmlab/platforms/production/core/apisix
       # APISIX admin API credentials — delivered by VSO into apisix/apisix-admin.
       # Rotation: change here is NOT enough — the apisix pods read the key via
       # env, so restart the apisix deployment after a rotate.
@@ -301,7 +294,7 @@ ohmlab:
         admin:
           adminKey: "<random:32>"
           viewerKey: "<random:32>"
-    - path: homelab/platforms/production/core/traefik
+    - path: ohmlab/platforms/production/core/traefik
       # Shared credential between traefik (bouncer plugin, reads it via VSO
       # as a mounted key file) and crowdsec (LAPI pre-registers the bouncer
       # from it, via the <ref:> below) — traefik's path is the source of
@@ -310,7 +303,7 @@ ohmlab:
       data:
         crowdsecBouncer:
           lapiKey: "<random:32>"
-    - path: homelab/platforms/production/core/crowdsec
+    - path: ohmlab/platforms/production/core/crowdsec
       data:
         console:
           enrollKey: "" # Set manually in Vault (from https://app.crowdsec.net/security-engines)
@@ -319,7 +312,7 @@ ohmlab:
         bouncers:
           # Mirrors traefik's bouncer key at seed time (refs resolve in
           # entry order — the traefik path above is written first).
-          traefik: "<ref:homelab/platforms/production/core/traefik#crowdsecBouncer.lapiKey>"
+          traefik: "<ref:ohmlab/platforms/production/core/traefik#crowdsecBouncer.lapiKey>"
         postgres:
           admin:
             username: postgres
@@ -341,7 +334,7 @@ ohmlab:
     #   data:
     #     keycloak:
     #       clientId: "argo-workflows"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.argo-workflows.clientSecret>"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.argo-workflows.clientSecret>"
     # - path: "homelab/platforms/production/tenant/coder"
     #   data:
     #     admin:
@@ -366,7 +359,7 @@ ohmlab:
     #         secretKey: ""
     #     keycloak:
     #       clientId: "coder"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.coder.clientSecret>"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.coder.clientSecret>"
     # - path: "homelab/platforms/production/tenant/harbor"
     #   data:
     #     admin:
@@ -398,7 +391,7 @@ ohmlab:
     #       secretKey: ""
     #     keycloak:
     #       clientId: "harbor"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.harbor.clientSecret>"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.harbor.clientSecret>"
     # - path: "homelab/platforms/production/tenant/mlflow"
     #   data:
     #     admin:
@@ -430,7 +423,7 @@ ohmlab:
     #       secretKey: ""
     #     keycloak:
     #       clientId: "mlflow"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.mlflow.clientSecret>"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.mlflow.clientSecret>"
     # - path: "homelab/platforms/production/tenant/outline"
     #   data:
     #     admin:
@@ -468,7 +461,7 @@ ohmlab:
     #       secretKey: ""
     #     keycloak:
     #       clientId: "outline"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.outline.clientSecret>"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.outline.clientSecret>"
     # - path: "homelab/platforms/production/tenant/sonarqube"
     #   data:
     #     admin:
@@ -493,22 +486,22 @@ ohmlab:
     #         secretKey: ""
     #     keycloak:
     #       clientId: "sonarqube"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.sonarqube.clientSecret>"
-    # - path: "homelab/platforms/production/core/vault"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.sonarqube.clientSecret>"
+    # - path: "ohmlab/platforms/production/core/vault"
     #   data:
     #     admin:
     #       token: ""
     #     keycloak:
     #       clientId: "vault"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vault.clientSecret>"
-    # - path: "homelab/platforms/production/core/vault-operator"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.vault.clientSecret>"
+    # - path: "ohmlab/platforms/production/core/vault-operator"
     #   data:
     #     admin:
     #       token: ""
     #     keycloak:
     #       clientId: "vault-operator"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vault-operator.clientSecret>"
-    # - path: "homelab/platforms/production/core/vaultwarden"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.vault-operator.clientSecret>"
+    # - path: "ohmlab/platforms/production/core/vaultwarden"
     #   data:
     #     admin:
     #       token: "<random:24>"
@@ -531,11 +524,11 @@ ohmlab:
     #         secretKey: ""
     #     keycloak:
     #       clientId: "vaultwarden"
-    #       clientSecret: "<ref:homelab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
+    #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
 
 vaultOidcCredentials:
   enabled: true
-  mount: homelab
+  mount: ohmlab
   path: platforms/production/core/keycloak
 
 vso:

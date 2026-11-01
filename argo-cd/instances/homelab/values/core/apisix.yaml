@@ -34,7 +34,7 @@ etcd:
 vso:
   vaultStaticSecrets:
     apisixAdmin:
-      mount: homelab
+      mount: ohmlab
       path: platforms/production/core/apisix
 
 # DECOMMISSIONED (app disabled in core.yaml; kept as an escape hatch).
