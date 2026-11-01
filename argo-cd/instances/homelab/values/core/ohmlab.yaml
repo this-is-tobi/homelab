@@ -24,9 +24,6 @@ monitoring:
 # BackendTLSPolicy below.
 gateway:
   enabled: true
-  # Named here because the pinned ohmlab chart release does not read the
-  # instance's names yet.
-  gatewayName: homelab-gateway
   gatewayNamespace: kube-system
   backendTLSPolicies:
   - name: argocd-server
@@ -240,8 +237,6 @@ vso:
         role: argo-cd-core
   vaultStaticSecrets:
     argoCdCoreOidc:
-      mount: ohmlab
-      path: platforms/production/core/argo-cd
       type: kv-v2
       vaultAuthRef: ohmlab-vso-default
       refreshAfter: 1h
