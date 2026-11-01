@@ -528,8 +528,6 @@ ohmlab:
 
 vaultOidcCredentials:
   enabled: true
-  mount: ohmlab
-  path: platforms/production/core/keycloak
 
 vso:
   enabled: true

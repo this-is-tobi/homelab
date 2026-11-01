@@ -9,27 +9,6 @@ cnpg:
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
 
-vso:
-  vaultStaticSecrets:
-    crowdsecConsole:
-      mount: ohmlab
-      path: platforms/production/core/crowdsec
-    crowdsecDbAdmin:
-      mount: ohmlab
-      path: platforms/production/core/crowdsec
-    crowdsecDbApp:
-      mount: ohmlab
-      path: platforms/production/core/crowdsec
-    crowdsecPgBackup:
-      mount: ohmlab
-      path: platforms/production/core/crowdsec
-    crowdsecMattermostWebhook:
-      mount: ohmlab
-      path: platforms/production/core/crowdsec
-    crowdsecTraefikBouncerKey:
-      mount: ohmlab
-      path: platforms/production/core/crowdsec
-
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs.
 networkPolicy:

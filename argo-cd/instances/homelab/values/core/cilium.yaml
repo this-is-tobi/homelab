@@ -50,12 +50,6 @@ cilium:
   policyCIDRMatchMode:
   - nodes
 
-vso:
-  vaultStaticSecrets:
-    hubbleSso:
-      mount: ohmlab
-      path: platforms/production/core/hubble
-
 sso:
   config:
     configFile: |-

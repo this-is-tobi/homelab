@@ -52,27 +52,6 @@ cnpg:
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
 
-vso:
-  vaultStaticSecrets:
-    mattermostS3:
-      mount: homelab
-      path: platforms/production/tenant/mattermost
-    mattermostDbInfos:
-      mount: homelab
-      path: platforms/production/tenant/mattermost
-    mattermostDbSecret:
-      mount: homelab
-      path: platforms/production/tenant/mattermost
-    mattermostDbAdmin:
-      mount: homelab
-      path: platforms/production/tenant/mattermost
-    mattermostDbApp:
-      mount: homelab
-      path: platforms/production/tenant/mattermost
-    mattermostPgBackup:
-      mount: homelab
-      path: platforms/production/tenant/mattermost
-
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. Kubelet probes need no ingress
 # rule (unenforced by Cilium on this cluster). Apiserver egress targets

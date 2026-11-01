@@ -84,15 +84,6 @@ rustfs:
   - name: RUSTFS_IDENTITY_OPENID_DISPLAY_NAME
     value: "Keycloak"
 
-vso:
-  vaultStaticSecrets:
-    rustfsAdmin:
-      mount: homelab
-      path: platforms/production/tenant/rustfs
-    rustfsOidc:
-      mount: homelab
-      path: platforms/production/tenant/rustfs
-
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. No apiserver/CNPG egress:
 # standalone S3 storage, no database.

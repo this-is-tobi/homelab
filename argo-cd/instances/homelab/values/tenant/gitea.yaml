@@ -101,30 +101,6 @@ cnpg:
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
 
-vso:
-  vaultStaticSecrets:
-    giteaValkeyAuth:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-    giteaAdmin:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-    giteaDbInfos:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-    giteaDbAdmin:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-    giteaDbApp:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-    giteaPgBackup:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-    giteaSso:
-      mount: homelab
-      path: platforms/production/tenant/gitea
-
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs.
 networkPolicy:
