@@ -29,8 +29,6 @@ lanOnly:
 vso:
   vaultStaticSecrets:
     longhornSso:
-      mount: ohmlab
-      path: platforms/production/core/longhorn
       type: kv-v2
       vaultAuthRef: longhorn-system-vso-default
       refreshAfter: 1h

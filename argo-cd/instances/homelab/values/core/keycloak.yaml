@@ -36,51 +36,6 @@ cnpg:
     endpointURL: "https://s3.fr-par.scw.cloud"
     destinationPath: "s3://ohmlab-backups/cnpg"
 
-vso:
-  vaultStaticSecrets:
-    keycloakAdmin:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    keycloakConfig:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    keycloakDbInfos:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    keycloakDbAdmin:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    keycloakDbApp:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    keycloakPgBackup:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientGitea:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientGrafanaCore:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientArgoCd:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientArgoCdCore:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientVaultCore:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientLonghornCore:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientHubbleCore:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-    clientRustfs:
-      mount: ohmlab
-      path: platforms/production/core/keycloak
-
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. Deliberately NO SSO-hairpin
 # egress rule here: keycloak's --hostname flags only construct URLs

@@ -73,18 +73,6 @@ argo-cd:
     install: false
     keep: true
 
-vso:
-  vaultStaticSecrets:
-    argoCdAdmin:
-      mount: homelab
-      path: platforms/production/tenant/argo-cd
-    argoCdConfig:
-      mount: homelab
-      path: platforms/production/tenant/argo-cd
-    argoCdSso:
-      mount: homelab
-      path: platforms/production/tenant/argo-cd
-
 # Zero-trust NetworkPolicy. EGRESS ONLY (ingress is already chart-shipped
 # — this namespace's application-controller/applicationset-controller/
 # redis/repo-server/server pods each ship their own ingress
