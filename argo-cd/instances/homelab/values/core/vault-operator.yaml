@@ -55,9 +55,12 @@ ohmlab:
     enabled: true
   vault:
     # The secrets below as VaultSeed objects: the controller seeds them and
-    # keeps them as declared.
+    # keeps them as declared. Off while the core secrets move to the ohmlab
+    # system mount: a VaultSeed's path cannot change, so the objects are
+    # removed (Retain: Vault keeps every path) and come back with their new
+    # paths.
     seeds:
-      enabled: true
+      enabled: false
     # Identity groups and aliases, applied by bank-vaults from the Vault
     # resource's externalConfig (templates/vault.yaml).
     identity:
