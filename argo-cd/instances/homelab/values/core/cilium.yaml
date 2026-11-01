@@ -38,6 +38,10 @@ lanOnly:
 # Turn on the Hubble UI backend for the oauth2-proxy upstream below (off by
 # default in the chart — nothing rendered it before this).
 cilium:
+  # The Kubernetes API through the gateway host's HAProxy (pi-gw,
+  # ansible/inventory/hosts.yml), so the agents do not depend on kube-proxy
+  # for their own connection to it.
+  k8sServiceHost: 192.168.1.99
   hubble:
     ui:
       enabled: true

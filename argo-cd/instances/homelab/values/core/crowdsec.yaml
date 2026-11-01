@@ -79,3 +79,27 @@ networkPolicy:
           except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
       ports:
       - { protocol: TCP, port: 443 }
+
+# CrowdSec's whitelist, set in full here: its LAN entry is this instance's
+# network, not the chart's. Never banned: the LAN, and the cluster's pod and
+# service ranges.
+crowdsec:
+  config:
+    postoverflows:
+      s01-whitelist:
+        whitelist-local.yaml: |
+          name: local/k8s-whitelist
+          description: "Whitelist local and cluster networks"
+          # Never ban these. Both common pod CIDRs are listed so this works
+          # under either CNI without editing (an unused range just never
+          # matches). ⚠ The LAN entry is an example — set it to your own
+          # subnet. Deliberately kept narrow (/24, not the whole
+          # 192.168.0.0/16) so a wrong value under-matches rather than
+          # silently exempting a wide range from all bans.
+          whitelist:
+            reason: "local network"
+            cidr:
+              - "192.168.1.0/24" # LAN — set this to your actual subnet
+              - "10.42.0.0/16" # k3s + flannel default pod CIDR
+              - "10.45.0.0/16" # pod CIDR used by this repo's cilium config
+              - "10.43.0.0/16" # k3s default service CIDR
