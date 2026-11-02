@@ -32,7 +32,7 @@
       "prBodyNotes": [
         "#### Kubernetes minor checklist",
         "- [ ] every chart deployed on the cluster supports the new Kubernetes minor",
-        "- [ ] the ohmlab release this instance consumes runs kubectl of the same minor (`KUBECTL_VERSION` in `utils/Dockerfile`, `controller.job.kubectlImage` in `argo-cd/apps/system-upgrade/values.yaml`)"
+        "- [ ] the ohmlab release this instance consumes runs kubectl of the same minor (`KUBECTL_VERSION` in `cli/Dockerfile`, `controller.job.kubectlImage` in `argo-cd/apps/system-upgrade/values.yaml`)"
       ]
     },
     {
