@@ -1,5 +1,5 @@
 # APISIX instance overrides for `homelab`.
-# Replacement for ingress-nginx — enable one at a time.
+# An alternative to traefik — enable one at a time.
 
 apisix:
 

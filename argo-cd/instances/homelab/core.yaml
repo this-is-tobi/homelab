@@ -24,9 +24,6 @@ apps:
 - app: cert-manager
   enabled: "true"
   syncWave: 10
-- app: ingress-nginx
-  enabled: "false"
-  syncWave: 10
 # THE ingress controller — Gateway API only, zero Ingress objects in this
 # cluster. apisix below is kept disabled as an escape hatch.
 - app: traefik
@@ -35,7 +32,7 @@ apps:
   syncWave: 11
 - app: apisix
   # Decommissioned — traefik is the ingress controller. The catalog app is
-  # kept as an escape hatch (like ingress-nginx): re-enabling deploys a
+  # kept as an escape hatch: re-enabling deploys a
   # fresh stack, but port 80/443 ownership (traefik's externalIPs Service
   # currently owns both) must be resolved first. Application deletion
   # does not cascade — the namespace was cleaned up manually.
