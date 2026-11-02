@@ -8,7 +8,7 @@ apps:
   namespace: argocd-system
   syncWave: -10
   releaseName: ohmlab
-  # Pinned published chart: a change under utils/helm only reaches the
+  # Pinned published chart: a change under charts/ohmlab only reaches the
   # cluster once its version is released and bumped here.
   catalog: ohmlab
   targetRevision: 0.4.2
