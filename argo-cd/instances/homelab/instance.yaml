@@ -1,5 +1,6 @@
 # `homelab` instance — personal, all-in-one production cluster.
-# Schema reference + full documentation: ../_example/instance.yaml
+# Schema reference + full documentation:
+# https://github.com/this-is-tobi/ohmlab/blob/main/argo-cd/instances/_example/instance.yaml
 
 instance:
   name: homelab

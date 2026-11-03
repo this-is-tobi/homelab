@@ -1,4 +1,5 @@
-# The ohmlab controller on the `homelab` instance (docs/08-controller.md).
+# The ohmlab controller on the `homelab` instance
+# (https://github.com/this-is-tobi/ohmlab/blob/main/docs/08-controller.md).
 
 targets:
   vault:
