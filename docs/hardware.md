@@ -1,6 +1,6 @@
 # Hardware
 
-The machines this instance runs on, and the choices made for them. The generic requirements (operating systems, access, the install options) are in the ohmlab documentation.
+The machines this instance runs on, and the choices made for them. The generic requirements (operating systems, access, the install options) are in the [ohmlab documentation](https://github.com/this-is-tobi/ohmlab/blob/main/docs/02-compatibility.md).
 
 ## Equipment
 

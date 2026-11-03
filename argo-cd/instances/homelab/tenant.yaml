@@ -1,6 +1,7 @@
 # Tenant (apps) tier app catalog for the `homelab` instance.
 # Slim list — only what is actually deployed.
-# Schema reference: ../_example/tenant.yaml
+# Schema reference:
+# https://github.com/this-is-tobi/ohmlab/blob/main/argo-cd/instances/_example/tenant.yaml
 
 apps:
 - app: argo-cd
@@ -16,7 +17,7 @@ apps:
     jqPathExpressions:
     - .data
 - app: actions-runner-controller
-  enabled: "false" # Disabled during Cilium migration — crash-looping
+  enabled: "false" # Off until its runners are tested on this cluster
   syncWave: 110
 - app: gitea
   enabled: "true"

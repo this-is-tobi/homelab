@@ -2,7 +2,7 @@
 
 The instance of [ohmlab](https://github.com/this-is-tobi/ohmlab) that runs my own cluster: what is deployed, with which values, on which machines.
 
-ohmlab provides the charts, the bootstrap chart, the controller and the provisioning roles. This repository only holds what is specific to this cluster.
+ohmlab provides the charts, the bootstrap chart, the controller and the provisioning roles, and documents them in its [docs](https://github.com/this-is-tobi/ohmlab/tree/main/docs). This repository only holds what is specific to this cluster.
 
 ## Layout
 
@@ -15,6 +15,18 @@ ohmlab provides the charts, the bootstrap chart, the controller and the provisio
 ## How the cluster reads it
 
 The root manager of the cluster's Argo CD takes its charts from the ohmlab repository and its values from this one (`rootManager.repoURL.sources` and `rootManager.repoURL.values` in `values/core/ohmlab.yaml`). A change merged here is applied by Argo CD; nothing else needs to run.
+
+## Provisioning
+
+From an ohmlab checkout, pointing Ansible at this inventory:
+
+```sh
+ANSIBLE_INVENTORY=<path to this repository>/ansible/inventory \
+ANSIBLE_VAULT_PASSWORD_FILE=<path to the vault password> \
+./run.sh -p ./ansible/install.yml
+```
+
+Add `-k` to fetch the kubeconfig. Its context is named `ohmlab` unless `KUBE_CONTEXT_NAME` says otherwise, and this cluster's is `homelab`.
 
 ## Bootstrap
 
