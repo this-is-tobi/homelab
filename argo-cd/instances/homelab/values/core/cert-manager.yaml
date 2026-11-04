@@ -13,6 +13,10 @@ defaultWildcard:
   enabled: false
   dnsZone: ohmlab.fr
 
+# The ClusterIssuer ohmlab-internal-ca, for the certificates of in-cluster TLS.
+internalCA:
+  enabled: true
+
 clusterIssuers:
 - name: letsencrypt-http-staging
   spec:
