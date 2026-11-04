@@ -1,0 +1,144 @@
+# The workspace file of the ohmlab CLI. `ohmlab audit tls` allows these
+# in-cluster ports to stay plaintext, each for its reason; it reports an entry
+# that allows nothing any more (its port speaks TLS now) as stale, to remove.
+audit:
+  tls:
+    exceptions:
+    # Nothing to encrypt, or nothing that can.
+    - namespace: homepage
+      service: homepage
+      ports: [3000]
+      reason: Homepage serves HTTP only
+    - namespace: kube-system
+      service: hubble-ui
+      ports: [80]
+      reason: Hubble UI, reached only by its oauth2-proxy in the same namespace
+    - namespace: longhorn-system
+      service: longhorn-frontend
+      ports: [80]
+      reason: Longhorn UI, reached only by its oauth2-proxy in the same namespace
+    - namespace: prometheus-stack
+      service: prometheus-stack-kube-prom-prometheus
+      ports: [8080]
+      reason: the config reloader's metrics and reload trigger
+    - namespace: prometheus-stack
+      service: prometheus-stack-kube-prom-alertmanager
+      ports: [8080]
+      reason: the config reloader's metrics and reload trigger
+    - namespace: prometheus-stack
+      service: prometheus-stack-kube-prom-prometheus
+      ports: [9090]
+      reason: Prometheus's query API and UI serve metrics, as the scrape ports do
+    - namespace: prometheus-stack
+      service: prometheus-stack-kube-prom-alertmanager
+      ports: [9093]
+      reason: Alertmanager's API and UI serve alerts built from metrics
+    - namespace: prometheus-stack
+      service: alertmanager-operated
+      ports: [9094]
+      reason: Alertmanager's cluster gossip
+    - namespace: prometheus-stack
+      service: prometheus-stack-loki-memberlist
+      ports: [7946]
+      reason: Loki's memberlist gossip
+    - namespace: vault-operator-system
+      service: vault
+      ports: [9102]
+      reason: Vault's telemetry through the statsd exporter, metrics only
+    - namespace: vault-operator-system
+      service: vault-operator
+      ports: [80]
+      reason: the operator's health check
+    - namespace: argo-cd
+      service: argo-cd-argocd-applicationset-controller
+      ports: [7000]
+      reason: the ApplicationSet controller's Git webhook listener, which no route leads to
+    - namespace: argocd-system
+      service: argocd-applicationset-controller
+      ports: [7000]
+      reason: the ApplicationSet controller's Git webhook listener, which no route leads to
+    - namespace: traefik
+      service: traefik
+      ports: [80, 443]
+      reason: the public entrypoints expect a PROXY protocol header first, which the probe does not send
+
+    # Storage: Longhorn serves these plain; only WireGuard between the nodes,
+    # too heavy for them, would encrypt them.
+    - namespace: longhorn-system
+      service: longhorn-backend
+      ports: [9500]
+      reason: Longhorn's manager API, for its UI and CSI plugin
+    - namespace: longhorn-system
+      service: longhorn-recovery-backend
+      ports: [9503]
+      reason: Longhorn's recovery backend of RWX volumes
+    - namespace: longhorn-system
+      service: pvc-b7a4e37e-05f3-4525-98b7-6ede14205ae3
+      ports: [2049]
+      reason: NFS of Gitea's shared RWX volume (gitea-shared-storage)
+
+    # Plain until they serve TLS from the internal CA.
+    - namespace: argo-cd
+      service: argo-cd-argocd-redis
+      ports: [6379]
+      reason: Argo CD's Redis
+    - namespace: argocd-system
+      service: argocd-redis-ha-announce-0
+      ports: [6379, 26379]
+      reason: the core Argo CD's Redis and Sentinel, the last to move
+    - namespace: argocd-system
+      service: argocd-redis-ha-announce-1
+      ports: [6379, 26379]
+      reason: the core Argo CD's Redis and Sentinel, the last to move
+    - namespace: argocd-system
+      service: argocd-redis-ha-announce-2
+      ports: [6379, 26379]
+      reason: the core Argo CD's Redis and Sentinel, the last to move
+    - namespace: argocd-system
+      service: argocd-redis-ha-haproxy
+      ports: [6379]
+      reason: the core Argo CD's Redis and Sentinel, the last to move
+    - namespace: keycloak-system
+      service: keycloak
+      ports: [8080]
+      reason: a backend of the gateway
+    - namespace: gitea
+      service: gitea-http
+      ports: [3000]
+      reason: a backend of the gateway
+    - namespace: mattermost
+      service: mattermost
+      ports: [8065]
+      reason: a backend of the gateway
+    - namespace: prometheus-stack
+      service: prometheus-stack-grafana
+      ports: [80]
+      reason: a backend of the gateway
+    - namespace: rustfs
+      service: rustfs-svc
+      ports: [9000, 9001]
+      reason: a backend of the gateway (S3 API and console)
+    - namespace: kube-system
+      service: hubble-oauth2-proxy
+      ports: [80]
+      reason: a backend of the gateway
+    - namespace: longhorn-system
+      service: longhorn-oauth2-proxy
+      ports: [80]
+      reason: a backend of the gateway
+    - namespace: kube-system
+      service: hubble-relay
+      ports: [80]
+      reason: Hubble Relay's flow API, which Hubble UI reads
+    - namespace: crowdsec
+      service: crowdsec-service
+      ports: [8080]
+      reason: CrowdSec's LAPI (bouncer key, agent credentials)
+    - namespace: prometheus-stack
+      service: prometheus-stack-loki
+      ports: [3100, 9095, 9096]
+      reason: Loki's push, query and gRPC APIs
+    - namespace: prometheus-stack
+      service: prometheus-stack-alloy
+      ports: [4318]
+      reason: Alloy's OTLP receiver

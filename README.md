@@ -11,6 +11,7 @@ ohmlab provides the charts, the bootstrap chart, the controller and the provisio
 | `argo-cd/instances/homelab/`  | The instance: `instance.yaml`, the `core.yaml` and `tenant.yaml` catalogs, and `values/{core,tenant}/<app>.yaml` |
 | `ansible/inventory/`          | The hosts and the variables of the provisioning roles (`vault.yml` is encrypted with ansible-vault) |
 | [docs/hardware.md](docs/hardware.md) | The machines and the choices made for them                                            |
+| `ohmlab.yaml`                 | The ohmlab CLI's workspace file: the in-cluster ports `ohmlab audit tls` allows to stay plaintext, each with its reason |
 
 ## How the cluster reads it
 
@@ -39,3 +40,5 @@ ARGOCD_ADMIN_PASSWORD=<choose-a-password> ./run.sh -b homelab -i <path to this r
 ## Checks
 
 Pull requests run the product's instance checks (`validate-instance.yml`: Vault access, VaultSeeds, VSO isolation), gitleaks on the new commits and the commit message lint. `ci-status` is the check to require.
+
+Before and after a change that touches in-cluster TLS, `ohmlab audit tls --context homelab` from the root of this repository checks the cluster against `ohmlab.yaml`: it fails on a plaintext port no entry allows and lists the entries that allow nothing any more.
