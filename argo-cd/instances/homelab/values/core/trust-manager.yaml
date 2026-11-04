@@ -18,3 +18,8 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
+
+# The internal CA's root as the ConfigMap ohmlab-internal-ca (key ca.crt) in
+# trust-manager's target namespaces, for the clients of in-cluster TLS.
+internalCaBundle:
+  enabled: true
