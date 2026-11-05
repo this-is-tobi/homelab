@@ -1,6 +1,11 @@
-# The workspace file of the ohmlab CLI. `ohmlab audit tls` allows these
-# in-cluster ports to stay plaintext, each for its reason; it reports an entry
-# that allows nothing any more (its port speaks TLS now) as stale, to remove.
+# The workspace file of the ohmlab CLI.
+
+# The name of the cluster, user and context `ohmlab kubeconfig` merges.
+contextName: homelab
+
+# `ohmlab audit tls` allows these in-cluster ports to stay plaintext, each for
+# its reason; it reports an entry that allows nothing any more (its port speaks
+# TLS now) as stale, to remove.
 audit:
   tls:
     exceptions:
