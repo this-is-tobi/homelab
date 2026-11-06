@@ -234,6 +234,7 @@ ohmlab:
         keycloak:
           clientId: longhorn-core
           clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.longhorn-core.clientSecret>"
+          cookieSecret: "<random:32>"
     - path: ohmlab/platforms/production/core/hubble
       data:
         keycloak:
@@ -304,6 +305,7 @@ ohmlab:
           lapiKey: "<random:32>"
     - path: ohmlab/platforms/production/core/crowdsec
       data:
+        crowdsecMattermostWebhookUrl: "" # Set manually in Vault (the incoming webhook CrowdSec's alerts post to)
         console:
           enrollKey: "" # Set manually in Vault (from https://app.crowdsec.net/security-engines)
           instanceName: homelab-k8s
