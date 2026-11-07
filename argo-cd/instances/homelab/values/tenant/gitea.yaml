@@ -89,6 +89,12 @@ gitea:
           name: gitea-pg-cluster-app
           key: password
 
+# Valkey's certificate from the internal CA (internalCA in cert-manager.yaml).
+valkeyCertificate:
+  issuerRef:
+    kind: ClusterIssuer
+    name: ohmlab-internal-ca
+
 cnpg:
   cluster:
     superuserSecret: gitea-pg-cluster-admin
