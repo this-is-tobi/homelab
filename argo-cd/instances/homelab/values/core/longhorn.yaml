@@ -8,7 +8,7 @@ gateway:
     - longhorn.int.ohmlab.fr
     rules:
     - backendService: longhorn-oauth2-proxy
-      backendPort: 80
+      backendPort: 443
       # LAN-only; oauth2-proxy stays on as a second factor — this narrows
       # WHERE the login page is even reachable from, it doesn't replace
       # auth.
@@ -35,6 +35,11 @@ vso:
       namespace: longhorn-system
 
 sso:
+  # TLS from the internal CA: https only, on container port 4443.
+  httpScheme: https
+  service:
+    portNumber: 443
+    appProtocol: https
   config:
     configFile: |-
       provider = "keycloak-oidc"
@@ -163,7 +168,7 @@ networkPolicy:
           matchLabels:
             kubernetes.io/metadata.name: traefik
       ports:
-      - { protocol: TCP, port: 4180 }
+      - { protocol: TCP, port: 4443 }
   extraEgress:
   - name: apiserver
     rules:
@@ -186,3 +191,8 @@ networkPolicy:
       - ipBlock: { cidr: 82.66.77.140/32 }
       ports:
       - { protocol: TCP, port: 443 }
+
+# The gateway verifies the proxy against the CA of its own certificate's
+# Secret: no trust bundle in this namespace.
+ssoCertificate:
+  caConfigMap: ""
