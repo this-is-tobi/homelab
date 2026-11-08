@@ -13,11 +13,8 @@ mattermost:
   image:
     repository: ghcr.io/this-is-tobi/mirror/mattermost
     tag: 12.0.2
-  persistence:
-    data:
-      enabled: true
-    plugins:
-      enabled: true
+  # No persistence (the catalog default): files live in S3, and plugins
+  # re-sync from it at start.
   config:
     MM_SERVICESETTINGS_SITEURL: "https://mattermost.ohmlab.fr"
     MM_FILESETTINGS_AMAZONS3BUCKET: mattermost
