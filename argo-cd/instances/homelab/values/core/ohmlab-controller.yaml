@@ -4,9 +4,27 @@
 targets:
   vault:
     enabled: true
+  # Gitea and the oauth2-proxies read their certificate only when they start:
+  # roll them each time cert-manager issues it again.
+  certificates:
+    enabled: true
+    restarts:
+    - namespace: gitea
+      certificate: gitea-tls
+      workloads:
+      - { kind: Deployment, name: gitea }
+    - namespace: kube-system
+      certificate: hubble-oauth2-proxy-tls
+      workloads:
+      - { kind: Deployment, name: hubble-oauth2-proxy }
+    - namespace: longhorn-system
+      certificate: longhorn-oauth2-proxy-tls
+      workloads:
+      - { kind: Deployment, name: longhorn-oauth2-proxy }
 
-# Zero-trust NetworkPolicy for this namespace: the API server and Vault, plus
-# DNS (added by the chart); Prometheus scrapes the metrics port.
+# Zero-trust NetworkPolicy for this namespace: the API server, and Vault for
+# the vault target, plus DNS (added by the chart); Prometheus scrapes the
+# metrics port.
 networkPolicy:
   enabled: true
   prometheusScrapePorts:
@@ -18,7 +36,11 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
+  # The vault target's pods only.
   - name: vault
+    podSelector:
+      matchLabels:
+        app.kubernetes.io/component: vault
     rules:
     - to:
       - namespaceSelector:
