@@ -104,14 +104,6 @@ audit:
       ports: [8065]
       reason: a backend of the gateway
     - namespace: kube-system
-      service: hubble-oauth2-proxy
-      ports: [80]
-      reason: a backend of the gateway
-    - namespace: longhorn-system
-      service: longhorn-oauth2-proxy
-      ports: [80]
-      reason: a backend of the gateway
-    - namespace: kube-system
       service: hubble-relay
       ports: [80]
       reason: Hubble Relay's flow API, which Hubble UI reads

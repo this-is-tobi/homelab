@@ -20,7 +20,7 @@ gateway:
     - "hubble.int.ohmlab.fr"
     rules:
     - backendService: hubble-oauth2-proxy
-      backendPort: 80
+      backendPort: 443
       filters:
       - type: ExtensionRef
         extensionRef:
@@ -55,6 +55,11 @@ cilium:
   - nodes
 
 sso:
+  # TLS from the internal CA: https only, on container port 4443.
+  httpScheme: https
+  service:
+    portNumber: 443
+    appProtocol: https
   config:
     configFile: |-
       provider = "keycloak-oidc"
@@ -70,3 +75,8 @@ sso:
 # No migration overlay: Cilium is the sole, fully-rolled-out CNI. Catalog
 # defaults apply: customConf=false, exclusive=true, policy enforcement
 # default, unmanagedPodWatcher.restart=true, migration.enabled=false.
+
+# The gateway verifies the proxy against the CA of its own certificate's
+# Secret: no trust bundle in this namespace.
+ssoCertificate:
+  caConfigMap: ""
