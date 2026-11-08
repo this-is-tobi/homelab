@@ -102,7 +102,7 @@ audit:
     - namespace: mattermost
       service: mattermost
       ports: [8065]
-      reason: a backend of the gateway
+      reason: a backend of the gateway; Mattermost's chart writes its probes without a scheme, so it cannot serve HTTPS yet
     - namespace: kube-system
       service: hubble-relay
       ports: [80]
