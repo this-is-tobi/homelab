@@ -99,10 +99,6 @@ audit:
       service: argocd-redis-ha-haproxy
       ports: [6379]
       reason: the core Argo CD's Redis and Sentinel, the last to move
-    - namespace: keycloak-system
-      service: keycloak
-      ports: [8080]
-      reason: a backend of the gateway
     - namespace: gitea
       service: gitea-http
       ports: [3000]
