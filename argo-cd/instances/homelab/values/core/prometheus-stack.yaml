@@ -52,13 +52,32 @@ kube-prometheus-stack:
         secretKeyRef:
           name: prometheus-stack-pg-cluster-app
           key: password
+    # TLS from the internal CA: Grafana's chart has no switch, so the recipe
+    # (protocol, the tls mount, HTTPS probes, the https scrape, the sidecars'
+    # https reloads) is set here, and the app checks it.
+    extraSecretMounts: [{name: tls, mountPath: /etc/grafana/tls, secretName: grafana-tls, readOnly: true}]
+    livenessProbe: {httpGet: {scheme: HTTPS}}
+    readinessProbe: {httpGet: {scheme: HTTPS}}
+    serviceMonitor: {scheme: https, tlsConfig: {insecureSkipVerify: true}}
+    sidecar:
+      dashboards: {reloadURL: "https://localhost:3000/api/admin/provisioning/dashboards/reload", env: {REQ_SKIP_TLS_VERIFY: "true"}}
+      datasources: {reloadURL: "https://localhost:3000/api/admin/provisioning/datasources/reload", env: {REQ_SKIP_TLS_VERIFY: "true"}}
     grafana.ini:
       server:
         root_url: "https://monitoring.ohmlab.fr"
+        protocol: https
+        cert_file: /etc/grafana/tls/tls.crt
+        cert_key: /etc/grafana/tls/tls.key
+        certs_watch_interval: 1h
       auth.generic_oauth:
         auth_url: "https://sso.core.ohmlab.fr/realms/ohmlab/protocol/openid-connect/auth"
         token_url: "https://sso.core.ohmlab.fr/realms/ohmlab/protocol/openid-connect/token"
         api_url: "https://sso.core.ohmlab.fr/realms/ohmlab/protocol/openid-connect/userinfo"
+
+# The gateway verifies Grafana against the CA of its own certificate's Secret:
+# no trust bundle in this namespace.
+grafanaCertificate:
+  caConfigMap: ""
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. SPECIAL CASE: egressDeny stays

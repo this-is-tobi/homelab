@@ -103,10 +103,6 @@ audit:
       service: mattermost
       ports: [8065]
       reason: a backend of the gateway
-    - namespace: prometheus-stack
-      service: prometheus-stack-grafana
-      ports: [80]
-      reason: a backend of the gateway
     - namespace: rustfs
       service: rustfs-svc
       ports: [9000, 9001]
