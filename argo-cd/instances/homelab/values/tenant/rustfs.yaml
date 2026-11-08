@@ -17,6 +17,9 @@ gateway:
       backendPort: 9000
 
 rustfs:
+  # The S3 API and the console over TLS from the internal CA.
+  tls:
+    enabled: true
   config:
     rustfs:
       # Metrics only, pushed over OTLP/HTTP to Alloy, which drops the
@@ -80,6 +83,11 @@ rustfs:
     value: "preferred_username"
   - name: RUSTFS_IDENTITY_OPENID_DISPLAY_NAME
     value: "Keycloak"
+
+# The gateway verifies RustFS against the CA of its own certificate's Secret:
+# no trust bundle in this namespace.
+certificate:
+  caConfigMap: ""
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. No apiserver/CNPG egress:
