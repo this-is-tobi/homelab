@@ -13,8 +13,8 @@ keycloak:
   keycloak:
     hostnameAdmin: "https://sso.core.ohmlab.fr"
     hostname: "https://sso.core.ohmlab.fr"
-    # HTTP stays beside HTTPS until it closes; the gateway reaches 8443.
     httpsEnabled: true
+    httpEnabled: false
   tls:
     enabled: true
   database:
@@ -65,7 +65,6 @@ networkPolicy:
             kubernetes.io/metadata.name: traefik
       ports:
       - { protocol: TCP, port: 8443 }
-      - { protocol: TCP, port: 8080 }   # until HTTP closes
   - name: cnpg-operator
     podSelector:
       matchLabels: { cnpg.io/cluster: keycloak-pg-cluster }
