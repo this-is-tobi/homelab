@@ -23,6 +23,12 @@ networkPolicy:
 # trust-manager's target namespaces, for the clients of in-cluster TLS.
 internalCaBundle:
   enabled: true
+  # Its only reader: Keycloak's gateway policy.
+  namespaces: [keycloak-system]
+
+# Vault's CA, for its only reader: Vault's gateway policy.
+vaultCaBundle:
+  namespaces: [vault-operator-system]
 
 trust-manager:
   app:
