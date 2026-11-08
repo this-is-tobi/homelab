@@ -13,6 +13,10 @@ keycloak:
   keycloak:
     hostnameAdmin: "https://sso.core.ohmlab.fr"
     hostname: "https://sso.core.ohmlab.fr"
+    # HTTP stays beside HTTPS for the gateway, until its route moves to 8443.
+    httpsEnabled: true
+  tls:
+    enabled: true
   database:
     host: keycloak-pg-cluster-rw
     port: "5432"
@@ -21,6 +25,11 @@ keycloak:
     secretKeys:
       usernameKey: username
       passwordKey: password
+
+keycloakConfigCli:
+  env:
+    # Follows keycloak.tls.enabled, which keycloak-config-cli's chart cannot see.
+    KEYCLOAK_URL: https://keycloak:8443
 
 cnpg:
   cluster:
