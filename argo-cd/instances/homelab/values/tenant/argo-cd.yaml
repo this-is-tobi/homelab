@@ -56,8 +56,17 @@ argo-cd:
   server:
     certificate:
       domain: gitops.ohmlab.fr
+  redis:
+    tls:
+      enabled: true
   crds:
     install: false
+
+# Redis's certificate from the internal CA (internalCA in cert-manager.yaml).
+redisCertificate:
+  issuerRef:
+    kind: ClusterIssuer
+    name: ohmlab-internal-ca
 
 # Zero-trust NetworkPolicy. EGRESS ONLY (ingress is already chart-shipped
 # — this namespace's application-controller/applicationset-controller/
