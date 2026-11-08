@@ -31,8 +31,13 @@ gitea:
       server:
         DOMAIN: git.ohmlab.fr
         ROOT_URL: "https://git.ohmlab.fr"
+        # TLS from the internal CA, with the https scrape below.
+        PROTOCOL: https
       openid:
         WHITELISTED_URIS: sso.core.ohmlab.fr
+    metrics:
+      serviceMonitor:
+        scheme: https
     # - secret:
     #     secretName: "gitea-app-ini-oauth"
     # - configMap:
@@ -88,6 +93,11 @@ gitea:
         secretKeyRef:
           name: gitea-pg-cluster-app
           key: password
+
+# The gateway verifies Gitea against the CA of its own certificate's Secret:
+# no trust bundle in this namespace.
+certificate:
+  caConfigMap: ""
 
 # Valkey's certificate from the internal CA (internalCA in cert-manager.yaml).
 valkeyCertificate:
