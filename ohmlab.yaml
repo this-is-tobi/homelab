@@ -83,10 +83,6 @@ audit:
       reason: NFS of Gitea's shared RWX volume (gitea-shared-storage)
 
     # Plain until they serve TLS from the internal CA.
-    - namespace: argo-cd
-      service: argo-cd-argocd-redis
-      ports: [6379]
-      reason: Argo CD's Redis
     - namespace: argocd-system
       service: argocd-redis-ha-announce-0
       ports: [6379, 26379]
