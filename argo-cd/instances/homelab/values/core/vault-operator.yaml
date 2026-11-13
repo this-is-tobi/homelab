@@ -221,6 +221,13 @@ ohmlab:
           endpoint: "https://s3.fr-par.scw.cloud"
           region: fr-par
           secretKey: ""
+    # The backups store's root keys, read by the store and by the controller's
+    # storage target.
+    - path: ohmlab/platforms/production/core/rustfs-backups
+      data:
+        admin:
+          accessKey: "<random:20>"
+          secretKey: "<random:40>"
     - path: homelab/platforms/production/tenant/rustfs
       data:
         admin:

@@ -53,3 +53,9 @@ networkPolicy:
           except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8, 169.254.0.0/16]
       ports:
       - { protocol: TCP, port: 443 }
+
+# The backups store (core.yaml's rustfs-backups) runs the rustfs chart outside
+# its default namespace.
+exceptionNamespaces:
+  rustfs-init-step-limits:
+  - rustfs-backups

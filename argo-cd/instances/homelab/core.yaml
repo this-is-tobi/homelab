@@ -80,6 +80,15 @@ apps:
   enabled: "true"
   namespace: ohmlab-system
   syncWave: 11
+# The backups store (https://github.com/this-is-tobi/ohmlab/blob/main/docs/10-object-storage.md):
+# the catalog's rustfs chart again, after the controller (11), whose storage
+# target fills it from instance.yaml's storage block.
+- app: rustfs-backups
+  enabled: "true"
+  chart: rustfs
+  releaseName: rustfs
+  namespace: rustfs-backups
+  syncWave: 12
 # After cert-manager (10): its webhook certificate. Publishes the Vault CA
 # ConfigMap Traefik validates Vault against, so Kyverno needs no Secret access.
 - app: trust-manager

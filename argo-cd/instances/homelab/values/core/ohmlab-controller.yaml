@@ -21,10 +21,15 @@ targets:
       certificate: longhorn-oauth2-proxy-tls
       workloads:
       - { kind: Deployment, name: longhorn-oauth2-proxy }
+  # The instance-manager turns it on with instance.yaml's storage block and
+  # gives it the stores; it plans every change and writes none until live.
+  storage:
+    observeOnly: true
 
 # Zero-trust NetworkPolicy for this namespace: the API server, and Vault for
-# the vault target, plus DNS (added by the chart); Prometheus scrapes the
-# metrics port.
+# the vault and storage targets, plus DNS (added by the chart); Prometheus
+# scrapes the metrics port. The storage target's egress to the stores is the
+# chart's own.
 networkPolicy:
   enabled: true
   prometheusScrapePorts:
@@ -36,11 +41,13 @@ networkPolicy:
       - ipBlock: { cidr: 192.168.1.0/24 }
       ports:
       - { protocol: TCP, port: 6443 }
-  # The vault target's pods only.
+  # The vault and storage targets' pods only.
   - name: vault
     podSelector:
-      matchLabels:
-        app.kubernetes.io/component: vault
+      matchExpressions:
+      - key: app.kubernetes.io/component
+        operator: In
+        values: [vault, storage]
     rules:
     - to:
       - namespaceSelector:

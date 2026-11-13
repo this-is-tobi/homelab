@@ -23,8 +23,9 @@ networkPolicy:
 # trust-manager's target namespaces, for the clients of in-cluster TLS.
 internalCaBundle:
   enabled: true
-  # Its only reader: Keycloak's gateway policy.
-  namespaces: [keycloak-system]
+  # Its readers: Keycloak's gateway policy, and the controller's storage
+  # target, which verifies the stores with it.
+  namespaces: [keycloak-system, ohmlab-system]
 
 # Vault's CA, for its only reader: Vault's gateway policy.
 vaultCaBundle:
@@ -32,7 +33,9 @@ vaultCaBundle:
 
 trust-manager:
   app:
-    # Replaces the product's: where Vault's and Keycloak's gateway policies read their CA.
+    # Replaces the product's: where Vault's and Keycloak's gateway policies,
+    # and the storage target, read their CA.
     targetNamespaces:
     - vault-operator-system
     - keycloak-system
+    - ohmlab-system
