@@ -31,9 +31,7 @@ projects:
   core: admin-core
   tenant: admin-tenant
 
-# Object storage (https://github.com/this-is-tobi/ohmlab/blob/main/docs/10-object-storage.md),
-# rolled out in three steps: the records first, with wireConsumers off and the
-# controller's storage target observe-only, then live, then the consumers.
+# Object storage (https://github.com/this-is-tobi/ohmlab/blob/main/docs/10-object-storage.md).
 storage:
   stores:
     rustfs-backups:
@@ -45,7 +43,7 @@ storage:
       size: 50Gi
       storageClass: longhorn-two-replicas
   backups: rustfs-backups
-  wireConsumers: false
+  wireConsumers: true
   # The clients' egress to the store. prometheus-stack's claim gets none: its
   # namespace keeps egress open, so a policy would isolate its pods.
   networkPolicies: true
