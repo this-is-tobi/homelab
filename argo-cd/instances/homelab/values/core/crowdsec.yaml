@@ -4,10 +4,6 @@ cnpg:
     initdb:
       secret:
         name: crowdsec-pg-cluster-app
-  backups:
-    enabled: false
-    endpointURL: "https://s3.fr-par.scw.cloud"
-    destinationPath: "s3://ohmlab-backups/cnpg"
 
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs.

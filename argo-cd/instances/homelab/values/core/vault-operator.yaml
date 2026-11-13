@@ -534,9 +534,6 @@ ohmlab:
     #       clientId: "vaultwarden"
     #       clientSecret: "<ref:ohmlab/platforms/production/core/keycloak#clients.vaultwarden.clientSecret>"
 
-backup-utils:
-  enabled: false  # S3 keys not configured yet — re-enable when available
-
 # Zero-trust NetworkPolicy: default-deny with explicit allow rules for
 # only the traffic this namespace needs. No probe-only ingress rule
 # (dropped — no webhook config in this cluster targets this namespace).
