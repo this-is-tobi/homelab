@@ -137,15 +137,18 @@ networkPolicy:
           matchLabels: { k8s-app: crowdsec, type: agent }
       ports:
       - { protocol: TCP, port: 3100 }
-  # RustFS pushes its metrics to Alloy's OTLP receiver (alloy values below).
+  # RustFS pushes its metrics to Alloy's OTLP receiver (alloy values below):
+  # the tenant store and the backups store.
   - name: rustfs-otlp
     podSelector:
       matchLabels: { app.kubernetes.io/name: alloy }
     rules:
     - from:
       - namespaceSelector:
-          matchLabels:
-            kubernetes.io/metadata.name: rustfs
+          matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: In
+            values: [rustfs, rustfs-backups]
       ports:
       - { protocol: TCP, port: 4318 }
 
