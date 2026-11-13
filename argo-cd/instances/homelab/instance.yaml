@@ -46,7 +46,6 @@ storage:
       storageClass: longhorn-two-replicas
   backups: rustfs-backups
   wireConsumers: false
-  # Off until every claimed app's namespace denies egress by default:
-  # prometheus-stack does not, and a claim's egress policy would be the only
-  # one selecting its Postgres pods, cutting them off from the API server.
-  networkPolicies: false
+  # The clients' egress to the store. prometheus-stack's claim gets none: its
+  # namespace keeps egress open, so a policy would isolate its pods.
+  networkPolicies: true
