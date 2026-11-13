@@ -22,9 +22,10 @@ targets:
       workloads:
       - { kind: Deployment, name: longhorn-oauth2-proxy }
   # The instance-manager turns it on with instance.yaml's storage block and
-  # gives it the stores; it plans every change and writes none until live.
+  # gives it the stores. Live: it creates each claim's bucket, user and
+  # policy, and writes the app's record.
   storage:
-    observeOnly: true
+    observeOnly: false
 
 # Zero-trust NetworkPolicy for this namespace: the API server, and Vault for
 # the vault and storage targets, plus DNS (added by the chart); Prometheus
