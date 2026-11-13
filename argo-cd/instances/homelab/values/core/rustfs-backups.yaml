@@ -1,0 +1,59 @@
+# The backups store (https://github.com/this-is-tobi/ohmlab/blob/main/docs/10-object-storage.md):
+# the catalog's rustfs chart again, as core.yaml's rustfs-backups entry. The
+# instance-manager sets its volume (50Gi, longhorn-two-replicas) and region
+# from instance.yaml's storage block. Admin only: no console, no route; the
+# controller's storage target and the claims' pods reach its S3 API.
+rustfs:
+  tls:
+    enabled: true
+  config:
+    rustfs:
+      console_enable: "false"
+      obs_endpoint:
+        enabled: true
+        metrics:
+          enabled: true
+          endpoint: http://prometheus-stack-alloy.prometheus-stack.svc.cluster.local:4318/v1/metrics
+  storageclass:
+    logStorageSize: 1Gi
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  # Longhorn's trim group (values/core/longhorn.yaml): out of the daily
+  # snapshots, trimmed weekly. The chart's PVC template alone takes them.
+  commonLabels:
+    recurring-job.longhorn.io/source: enabled
+    recurring-job-group.longhorn.io/trim: enabled
+
+# Its own Vault role and record, not the tenant store's; no SSO.
+vso:
+  vaultAuth:
+    default:
+      login:
+        role: rustfs-backups
+  vaultStaticSecretDefaults:
+    path: '{{ with dig "ohmlab" "vault" "pathPrefix" "" (.Values.global | default dict) }}{{ . }}/rustfs-backups{{ end }}'
+  vaultStaticSecrets:
+    rustfsOidc:
+      enabled: false
+
+# Zero-trust: egress to Alloy for its metrics, plus DNS (added by the chart).
+# Who reaches its S3 API is the claims' policy (ohmlab-storage-core and
+# ohmlab-storage-tenant).
+networkPolicy:
+  enabled: true
+  extraEgress:
+  - name: otlp-metrics
+    rules:
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: prometheus-stack
+        podSelector:
+          matchLabels:
+            app.kubernetes.io/name: alloy
+      ports:
+      - { protocol: TCP, port: 4318 }
