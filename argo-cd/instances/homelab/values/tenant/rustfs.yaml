@@ -36,12 +36,20 @@ rustfs:
     ohmlab.fr/config-revision: "obs-metrics-otlp"
   extraEnv:
   # Lists replace on merge, so this list drops the app-level rustfs.extraEnv
-  # entirely. These two repeat it verbatim to keep log cleanup working;
-  # keep them identical to argo-cd/apps/rustfs/values.yaml.
+  # entirely. These four repeat it verbatim, for log cleanup and for the
+  # environment the catalog's RustFSMetricsAbsent selects (the namespace,
+  # which tells this RustFS from the backups store); keep them identical to
+  # argo-cd/apps/rustfs/values.yaml.
   - name: RUSTFS_OBS_LOG_COMPRESS_OLD_FILES
     value: "false"
   - name: RUSTFS_OBS_LOG_MAX_TOTAL_SIZE_BYTES
     value: "536870912"
+  - name: RUSTFS_OBS_ENVIRONMENT
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.namespace
+  - name: RUSTFS_OBS_LOG_STDOUT_ENABLED
+    value: "true"
   # Keycloak SSO for the console. RustFS discovers the provider once at
   # startup and drops it (no retry) if Keycloak is unreachable then, so a
   # missing login button means: check the sso-hairpin egress rule below,
