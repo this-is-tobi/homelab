@@ -57,3 +57,8 @@ networkPolicy:
             app.kubernetes.io/name: alloy
       ports:
       - { protocol: TCP, port: 4318 }
+
+# A store of instance.yaml's storage block: the chart renders only once the
+# instance-manager's wiring of its volume and region has reached it.
+store:
+  enabled: true
