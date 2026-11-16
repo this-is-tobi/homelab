@@ -12,7 +12,7 @@ gateway:
 mattermost:
   image:
     repository: ghcr.io/this-is-tobi/mirror/mattermost
-    tag: 12.0.2
+    tag: 12.1.0
   # No persistence (the catalog default): files live in S3, and plugins
   # re-sync from it at start.
   config:
